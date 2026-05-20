@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_dimens.dart';
+import '../../shared/widgets/app_state_views.dart';
 import '../home/providers/home_providers.dart';
 
 /// Loaded workout plan from JSON
 final workoutPlanProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final jsonStr = await rootBundle.loadString('assets/data/workout_plan.json');
+  final jsonStr =
+      await rootBundle.loadString('assets/data/workout_plan.json');
   return json.decode(jsonStr) as Map<String, dynamic>;
 });
 
@@ -19,14 +23,31 @@ class WorkoutListScreen extends ConsumerWidget {
     final planAsync = ref.watch(workoutPlanProvider);
     final profileAsync = ref.watch(userProfileProvider);
 
+    Widget skeleton() => ListView(
+          padding: AppSpacing.screen,
+          children: [
+            const Skeleton(width: 180, height: 24),
+            AppSpacing.vGapLg,
+            Skeleton.card(height: 110),
+            AppSpacing.vGapMd,
+            Skeleton.card(height: 110),
+          ],
+        );
+
     return Scaffold(
       appBar: AppBar(title: const Text('Antrenman')),
       body: planAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Hata: $e')),
+        loading: skeleton,
+        error: (_, _) => ErrorState(
+          message: 'Antrenman planı yüklenemedi',
+          onRetry: () => ref.invalidate(workoutPlanProvider),
+        ),
         data: (plan) => profileAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Hata: $e')),
+          loading: skeleton,
+          error: (_, _) => ErrorState(
+            message: 'Profil yüklenemedi',
+            onRetry: () => ref.invalidate(userProfileProvider),
+          ),
           data: (profile) {
             final currentPhase = profile?.currentPhase ?? 1;
             final phases = plan['phases'] as List<dynamic>;
@@ -36,36 +57,35 @@ class WorkoutListScreen extends ConsumerWidget {
             );
             final workouts = phase['workouts'] as List<dynamic>;
 
+            if (workouts.isEmpty) {
+              return const EmptyState(
+                icon: Icons.fitness_center_outlined,
+                title: 'Bu fazda antrenman yok',
+                message: 'Ayarlardan fazı kontrol et',
+              );
+            }
+
             return ListView(
-              padding: const EdgeInsets.all(16),
+              padding: AppSpacing.screen,
               children: [
-                // Phase header
-                Text(
-                  phase['name'] as String,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Hafta ${profile?.currentWeek ?? 1}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey,
-                      ),
-                ),
-                const SizedBox(height: 20),
-
-                // Workout cards
-                ...workouts.map((w) => _WorkoutCard(workout: w)),
-
-                const SizedBox(height: 20),
-
-                // History button
+                Text(phase['name'] as String,
+                    style: context.texts.headlineSmall),
+                AppSpacing.vGapXs,
+                Text('Hafta ${profile?.currentWeek ?? 1}',
+                    style: context.texts.bodyMedium
+                        ?.copyWith(color: context.colors.onSurfaceVariant)),
+                AppSpacing.vGapXl,
+                ...workouts.map((w) => Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: _WorkoutCard(workout: w),
+                    )),
+                AppSpacing.vGapMd,
                 OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Navigate to workout history
-                  },
-                  icon: const Icon(Icons.history),
+                  onPressed: () => ScaffoldMessenger.of(context)
+                      .showSnackBar(const SnackBar(
+                          content: Text('Antrenman geçmişi yakında'))),
+                  icon: const Icon(Icons.history_rounded,
+                      size: AppIconSize.sm),
                   label: const Text('Antrenman Geçmişi'),
                 ),
               ],
@@ -79,14 +99,13 @@ class WorkoutListScreen extends ConsumerWidget {
 
 class _WorkoutCard extends StatelessWidget {
   final dynamic workout;
-
   const _WorkoutCard({required this.workout});
 
   IconData _iconForType(String type) {
-    if (type == 'Cardio') return Icons.directions_run;
-    if (type.startsWith('Upper')) return Icons.accessibility_new;
-    if (type.startsWith('Lower')) return Icons.directions_walk;
-    return Icons.fitness_center;
+    if (type == 'Cardio') return Icons.directions_run_rounded;
+    if (type.startsWith('Upper')) return Icons.sports_gymnastics_rounded;
+    if (type.startsWith('Lower')) return Icons.directions_walk_rounded;
+    return Icons.fitness_center_rounded;
   }
 
   @override
@@ -97,61 +116,55 @@ class _WorkoutCard extends StatelessWidget {
     final exercises = workout['exercises'] as List<dynamic>;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: () => context.push('/workout/session/$type'),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.brLg,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.card,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(_iconForType(type), color: Colors.blue, size: 28),
-                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color:
+                          context.colors.primary.withValues(alpha: 0.14),
+                      borderRadius: AppRadius.brMd,
+                    ),
+                    child: Icon(_iconForType(type),
+                        color: context.colors.primary,
+                        size: AppIconSize.md),
+                  ),
+                  AppSpacing.hGapMd,
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          name,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                        Text(
-                          day,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey,
-                              ),
-                        ),
+                        Text(name, style: context.texts.titleMedium),
+                        Text(day,
+                            style: context.texts.bodySmall?.copyWith(
+                                color: context.colors.onSurfaceVariant)),
                       ],
                     ),
                   ),
-                  Text(
-                    '${exercises.length} hareket',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey,
-                        ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.chevron_right, color: Colors.grey),
+                  Text('${exercises.length} hareket',
+                      style: context.texts.bodySmall?.copyWith(
+                          color: context.colors.onSurfaceVariant)),
+                  AppSpacing.hGapSm,
+                  Icon(Icons.chevron_right_rounded,
+                      color: context.colors.onSurfaceVariant),
                 ],
               ),
-              const SizedBox(height: 8),
+              AppSpacing.vGapMd,
               Wrap(
-                spacing: 8,
-                runSpacing: 4,
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.xs,
                 children: exercises.take(4).map<Widget>((e) {
                   return Chip(
-                    label: Text(
-                      e['name'] as String,
-                      style: const TextStyle(fontSize: 11),
-                    ),
+                    label: Text(e['name'] as String),
                     visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   );
                 }).toList(),
               ),

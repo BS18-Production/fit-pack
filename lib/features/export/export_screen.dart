@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_dimens.dart';
 import '../../data/services/export_service.dart';
 import '../../data/providers.dart';
 
 enum _Format { markdown, json, csv }
+
 enum _Range { week, month, all }
 
 extension on _Range {
@@ -41,6 +44,16 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
   ExportScope _scope = ExportScope.all;
   bool _exporting = false;
 
+  void _snack(String message, {bool error = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: error ? context.colors.error : null,
+      ),
+    );
+  }
+
   Future<void> _export() async {
     setState(() => _exporting = true);
     try {
@@ -49,18 +62,21 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       final start = _range.start(now);
 
       final content = switch (_format) {
-        _Format.markdown => await service.exportMarkdown(start, now, scope: _scope),
+        _Format.markdown =>
+          await service.exportMarkdown(start, now, scope: _scope),
         _Format.json => await service.exportJson(start, now, scope: _scope),
         _Format.csv => await service.exportCsv(start, now, scope: _scope),
       };
 
-      await Share.share(content, subject: 'fit_pack_export.${_format.ext}');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Export hatası: $e'), backgroundColor: Colors.red),
-        );
+      if (content.trim().isEmpty) {
+        _snack('Seçilen aralıkta dışa aktarılacak veri yok');
+        return;
       }
+
+      await Share.share(content,
+          subject: 'fit_pack_export.${_format.ext}');
+    } catch (_) {
+      _snack('Paylaşım başarısız oldu, tekrar dene', error: true);
     } finally {
       if (mounted) setState(() => _exporting = false);
     }
@@ -69,74 +85,106 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Veri Export')),
+      appBar: AppBar(title: const Text('Veri Dışa Aktar')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.screen,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.file_download, size: 48, color: Colors.blue),
-            const SizedBox(height: 8),
-            Text(
-              'Verini export et, LLM ile analiz et',
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                decoration: BoxDecoration(
+                  color: context.colors.primary.withValues(alpha: 0.14),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.ios_share_rounded,
+                    size: AppIconSize.lg, color: context.colors.primary),
+              ),
             ),
-            const SizedBox(height: 24),
-
-            Text('Format', style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
-            SegmentedButton<_Format>(
-              segments: const [
-                ButtonSegment(value: _Format.markdown, label: Text('Markdown')),
-                ButtonSegment(value: _Format.json, label: Text('JSON')),
-                ButtonSegment(value: _Format.csv, label: Text('CSV')),
-              ],
-              selected: {_format},
-              onSelectionChanged: (v) => setState(() => _format = v.first),
+            AppSpacing.vGapMd,
+            Text('Verini dışa aktar, yapay zekâ ile analiz et',
+                style: context.texts.titleMedium,
+                textAlign: TextAlign.center),
+            AppSpacing.vGapXl,
+            _Section(
+              title: 'Format',
+              child: SegmentedButton<_Format>(
+                segments: const [
+                  ButtonSegment(
+                      value: _Format.markdown, label: Text('Markdown')),
+                  ButtonSegment(value: _Format.json, label: Text('JSON')),
+                  ButtonSegment(value: _Format.csv, label: Text('CSV')),
+                ],
+                selected: {_format},
+                onSelectionChanged: (v) =>
+                    setState(() => _format = v.first),
+              ),
             ),
-            const SizedBox(height: 20),
-
-            Text('Tarih Aralığı', style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
-            SegmentedButton<_Range>(
-              segments: const [
-                ButtonSegment(value: _Range.week, label: Text('1 Hafta')),
-                ButtonSegment(value: _Range.month, label: Text('1 Ay')),
-                ButtonSegment(value: _Range.all, label: Text('Tümü')),
-              ],
-              selected: {_range},
-              onSelectionChanged: (v) => setState(() => _range = v.first),
+            _Section(
+              title: 'Tarih Aralığı',
+              child: SegmentedButton<_Range>(
+                segments: const [
+                  ButtonSegment(value: _Range.week, label: Text('1 Hafta')),
+                  ButtonSegment(value: _Range.month, label: Text('1 Ay')),
+                  ButtonSegment(value: _Range.all, label: Text('Tümü')),
+                ],
+                selected: {_range},
+                onSelectionChanged: (v) => setState(() => _range = v.first),
+              ),
             ),
-            const SizedBox(height: 20),
-
-            Text('Kapsam', style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
-            SegmentedButton<ExportScope>(
-              segments: const [
-                ButtonSegment(value: ExportScope.all, label: Text('Hepsi')),
-                ButtonSegment(value: ExportScope.workout, label: Text('Antrenman')),
-                ButtonSegment(value: ExportScope.nutrition, label: Text('Beslenme')),
-              ],
-              selected: {_scope},
-              onSelectionChanged: (v) => setState(() => _scope = v.first),
+            _Section(
+              title: 'Kapsam',
+              child: SegmentedButton<ExportScope>(
+                segments: const [
+                  ButtonSegment(value: ExportScope.all, label: Text('Hepsi')),
+                  ButtonSegment(
+                      value: ExportScope.workout, label: Text('Antrenman')),
+                  ButtonSegment(
+                      value: ExportScope.nutrition, label: Text('Beslenme')),
+                ],
+                selected: {_scope},
+                onSelectionChanged: (v) => setState(() => _scope = v.first),
+              ),
             ),
             const Spacer(),
-
-            ElevatedButton.icon(
+            FilledButton.icon(
               onPressed: _exporting ? null : _export,
               icon: _exporting
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                  ? SizedBox(
+                      width: AppIconSize.sm,
+                      height: AppIconSize.sm,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: context.colors.onPrimary),
                     )
-                  : const Icon(Icons.share),
-              label: Text(_exporting ? 'Hazırlanıyor...' : 'Export & Paylaş'),
+                  : const Icon(Icons.ios_share_rounded),
+              label: Text(_exporting ? 'Hazırlanıyor…' : 'Dışa Aktar & Paylaş'),
             ),
-            const SizedBox(height: 32),
+            AppSpacing.vGapXl,
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _Section extends StatelessWidget {
+  final String title;
+  final Widget child;
+  const _Section({required this.title, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: context.texts.titleSmall),
+          AppSpacing.vGapSm,
+          child,
+        ],
       ),
     );
   }

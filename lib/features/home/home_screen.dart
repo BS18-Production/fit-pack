@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_dimens.dart';
 import '../../data/database/daos/nutrition_dao.dart';
+import '../../shared/widgets/app_state_views.dart';
+import '../../shared/widgets/progress_indicators.dart';
 import '../home/providers/home_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -21,10 +25,12 @@ class HomeScreen extends ConsumerWidget {
         title: const Text('Fit Pack'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.file_download_outlined),
+            tooltip: 'Veri dışa aktar',
+            icon: const Icon(Icons.ios_share_rounded),
             onPressed: () => context.push('/export'),
           ),
           IconButton(
+            tooltip: 'Ayarlar',
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => context.push('/settings'),
           ),
@@ -39,88 +45,77 @@ class HomeScreen extends ConsumerWidget {
           ref.invalidate(workoutStreakProvider);
         },
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.screen,
           children: [
-            // Phase & Week info
             profileAsync.when(
-              data: (profile) {
-                if (profile == null) return const SizedBox.shrink();
-                return _PhaseCard(
-                  phase: profile.currentPhase,
-                  week: profile.currentWeek,
-                );
-              },
-              loading: () => const _ShimmerCard(),
+              data: (profile) => profile == null
+                  ? const SizedBox.shrink()
+                  : _PhaseCard(
+                      phase: profile.currentPhase,
+                      week: profile.currentWeek),
+              loading: () => Skeleton.card(height: 80),
               error: (_, _) => const SizedBox.shrink(),
             ),
-            const SizedBox(height: 16),
-
-            // Start Workout
+            AppSpacing.vGapLg,
             lastSessionAsync.when(
-              data: (lastSession) {
-                final daysSince = lastSession != null
+              data: (lastSession) => _StartWorkoutCard(
+                daysSince: lastSession != null
                     ? DateTime.now().difference(lastSession.date).inDays
-                    : null;
-                return _StartWorkoutCard(daysSince: daysSince);
-              },
-              loading: () => const _ShimmerCard(),
+                    : null,
+              ),
+              loading: () => Skeleton.card(height: 88),
               error: (_, _) => const _StartWorkoutCard(daysSince: null),
             ),
-            const SizedBox(height: 16),
-
-            // Nutrition
+            AppSpacing.vGapLg,
             todayNutritionAsync.when(
-              data: (nutrition) => profileAsync.when(
+              data: (nutrition) => profileAsync.maybeWhen(
                 data: (profile) => _NutritionCard(
                   nutrition: nutrition,
                   kcalGoal: profile?.kcalGoal ?? 2200,
                   proteinGoal: profile?.proteinGoal ?? 180,
                 ),
-                loading: () => const _ShimmerCard(),
-                error: (_, _) => const SizedBox.shrink(),
+                orElse: () => Skeleton.card(height: 130),
               ),
-              loading: () => const _ShimmerCard(),
+              loading: () => Skeleton.card(height: 130),
               error: (_, _) => const SizedBox.shrink(),
             ),
-            const SizedBox(height: 16),
-
-            // Streak & Weight row
+            AppSpacing.vGapLg,
             Row(
               children: [
                 Expanded(
                   child: streakAsync.when(
                     data: (streak) => _StatCard(
-                      icon: Icons.local_fire_department,
-                      iconColor: Colors.orange,
+                      icon: Icons.local_fire_department_rounded,
+                      tone: _StatTone.warning,
                       label: 'Seri',
                       value: '$streak gün',
                     ),
-                    loading: () => const _ShimmerCard(),
+                    loading: () => Skeleton.card(height: 104),
                     error: (_, _) => const _StatCard(
-                      icon: Icons.local_fire_department,
-                      iconColor: Colors.orange,
+                      icon: Icons.local_fire_department_rounded,
+                      tone: _StatTone.warning,
                       label: 'Seri',
                       value: '0 gün',
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                AppSpacing.hGapLg,
                 Expanded(
                   child: latestWeightAsync.when(
-                    data: (measurement) => _StatCard(
+                    data: (m) => _StatCard(
                       icon: Icons.monitor_weight_outlined,
-                      iconColor: Colors.blue,
+                      tone: _StatTone.primary,
                       label: 'Son Kilo',
-                      value: measurement?.weightKg != null
-                          ? '${measurement!.weightKg!.toStringAsFixed(1)} kg'
-                          : '-- kg',
+                      value: m?.weightKg != null
+                          ? '${m!.weightKg!.toStringAsFixed(1)} kg'
+                          : '— kg',
                     ),
-                    loading: () => const _ShimmerCard(),
+                    loading: () => Skeleton.card(height: 104),
                     error: (_, _) => const _StatCard(
                       icon: Icons.monitor_weight_outlined,
-                      iconColor: Colors.blue,
+                      tone: _StatTone.primary,
                       label: 'Son Kilo',
-                      value: '-- kg',
+                      value: '— kg',
                     ),
                   ),
                 ),
@@ -136,43 +131,46 @@ class HomeScreen extends ConsumerWidget {
 class _PhaseCard extends StatelessWidget {
   final int phase;
   final int week;
-
   const _PhaseCard({required this.phase, required this.week});
 
-  String _phaseName() {
-    switch (phase) {
-      case 1:
-        return 'Full Body (Faz 1)';
-      case 2:
-        return 'Upper/Lower Split (Faz 2)';
-      case 3:
-        return 'İleri Upper/Lower (Faz 3)';
-      default:
-        return 'Faz $phase';
-    }
-  }
+  String _phaseName() => switch (phase) {
+        1 => 'Full Body (Faz 1)',
+        2 => 'Upper/Lower Split (Faz 2)',
+        3 => 'İleri Upper/Lower (Faz 3)',
+        _ => 'Faz $phase',
+      };
 
   @override
   Widget build(BuildContext context) {
-    final today = DateFormat('EEEE, d MMMM', 'tr_TR').format(DateTime.now());
+    final today =
+        DateFormat('EEEE, d MMMM', 'tr_TR').format(DateTime.now());
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: AppSpacing.card,
+        child: Row(
           children: [
-            Text(
-              today,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey,
-                  ),
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: context.colors.primary.withValues(alpha: 0.14),
+                borderRadius: AppRadius.brMd,
+              ),
+              child: Icon(Icons.calendar_today_rounded,
+                  color: context.colors.primary, size: AppIconSize.md),
             ),
-            const SizedBox(height: 4),
-            Text(
-              '${_phaseName()}, Hafta $week',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+            AppSpacing.hGapLg,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(today,
+                      style: context.texts.bodySmall?.copyWith(
+                          color: context.colors.onSurfaceVariant)),
+                  AppSpacing.vGapXs,
+                  Text('${_phaseName()} · Hafta $week',
+                      style: context.texts.titleMedium),
+                ],
+              ),
             ),
           ],
         ),
@@ -183,45 +181,70 @@ class _PhaseCard extends StatelessWidget {
 
 class _StartWorkoutCard extends StatelessWidget {
   final int? daysSince;
-
   const _StartWorkoutCard({required this.daysSince});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: () => context.go('/workout'),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              const Icon(Icons.fitness_center, size: 40, color: Colors.blue),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Antrenmanı Başlat',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    if (daysSince != null)
-                      Text(
-                        daysSince == 0
-                            ? 'Bugün antrenman yaptın'
-                            : 'Son antrenman: $daysSince gün önce',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey,
-                            ),
-                      ),
-                  ],
+    final subtitle = daysSince == null
+        ? 'Programını aç ve başla'
+        : daysSince == 0
+            ? 'Bugün antrenman yaptın 💪'
+            : 'Son antrenman: $daysSince gün önce';
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.brLg,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.indigoBright, AppColors.indigoDeep],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.indigo.withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: AppRadius.brLg,
+        child: InkWell(
+          onTap: () => context.go('/workout'),
+          borderRadius: AppRadius.brLg,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    borderRadius: AppRadius.brMd,
+                  ),
+                  child: const Icon(Icons.fitness_center_rounded,
+                      size: AppIconSize.md, color: Colors.white),
                 ),
-              ),
-              const Icon(Icons.chevron_right, color: Colors.grey),
-            ],
+                AppSpacing.hGapLg,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Antrenmanı Başlat',
+                          style: context.texts.titleMedium
+                              ?.copyWith(color: Colors.white)),
+                      AppSpacing.vGapXs,
+                      Text(subtitle,
+                          style: context.texts.bodySmall?.copyWith(
+                              color:
+                                  Colors.white.withValues(alpha: 0.85))),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_rounded,
+                    color: Colors.white),
+              ],
+            ),
           ),
         ),
       ),
@@ -242,45 +265,63 @@ class _NutritionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final kcalPct = kcalGoal > 0 ? nutrition.kcal / kcalGoal : 0.0;
-    final proteinPct = proteinGoal > 0 ? nutrition.protein / proteinGoal : 0.0;
-
     return Card(
       child: InkWell(
         onTap: () => context.go('/nutrition'),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.brLg,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.card,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Bugünkü Beslenme',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                  const Icon(Icons.add_circle_outline, color: Colors.green),
+                  Text('Bugünkü Beslenme',
+                      style: context.texts.titleSmall),
+                  Icon(Icons.chevron_right_rounded,
+                      color: context.colors.onSurfaceVariant,
+                      size: AppIconSize.md),
                 ],
               ),
-              const SizedBox(height: 12),
-              _ProgressRow(
-                label: 'Kalori',
-                current: nutrition.kcal.round(),
-                goal: kcalGoal,
-                unit: 'kcal',
-                progress: kcalPct.clamp(0.0, 1.0),
-                color: Colors.orange,
-              ),
-              const SizedBox(height: 8),
-              _ProgressRow(
-                label: 'Protein',
-                current: nutrition.protein.round(),
-                goal: proteinGoal,
-                unit: 'g',
-                progress: proteinPct.clamp(0.0, 1.0),
-                color: Colors.red,
+              AppSpacing.vGapLg,
+              Row(
+                children: [
+                  CalorieRing(
+                      consumed: nutrition.kcal,
+                      goal: kcalGoal,
+                      size: 104),
+                  AppSpacing.hGapXl,
+                  Expanded(
+                    child: Column(
+                      children: [
+                        MacroBar(
+                          label: 'Protein',
+                          current: nutrition.protein,
+                          goal: proteinGoal,
+                          unit: 'g',
+                          color: context.semantic.macroProtein,
+                        ),
+                        AppSpacing.vGapMd,
+                        MacroBar(
+                          label: 'Karbonhidrat',
+                          current: nutrition.carb,
+                          goal: null,
+                          unit: 'g',
+                          color: context.semantic.macroCarbs,
+                        ),
+                        AppSpacing.vGapMd,
+                        MacroBar(
+                          label: 'Yağ',
+                          current: nutrition.fat,
+                          goal: null,
+                          unit: 'g',
+                          color: context.semantic.macroFat,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -290,102 +331,50 @@ class _NutritionCard extends StatelessWidget {
   }
 }
 
-class _ProgressRow extends StatelessWidget {
-  final String label;
-  final int current;
-  final int goal;
-  final String unit;
-  final double progress;
-  final Color color;
-
-  const _ProgressRow({
-    required this.label,
-    required this.current,
-    required this.goal,
-    required this.unit,
-    required this.progress,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.bodySmall),
-            Text(
-              '$current / $goal $unit',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            backgroundColor: color.withValues(alpha: 0.2),
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            minHeight: 8,
-          ),
-        ),
-      ],
-    );
-  }
-}
+enum _StatTone { primary, warning }
 
 class _StatCard extends StatelessWidget {
   final IconData icon;
-  final Color iconColor;
+  final _StatTone tone;
   final String label;
   final String value;
 
   const _StatCard({
     required this.icon,
-    required this.iconColor,
+    required this.tone,
     required this.label,
     required this.value,
   });
 
   @override
   Widget build(BuildContext context) {
+    final color = switch (tone) {
+      _StatTone.primary => context.colors.primary,
+      _StatTone.warning => context.semantic.warning,
+    };
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.card,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: iconColor, size: 32),
-            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.14),
+                borderRadius: AppRadius.brMd,
+              ),
+              child: Icon(icon, color: color, size: AppIconSize.md),
+            ),
+            AppSpacing.vGapMd,
             Text(value,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    )),
+                style: context.texts.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.w800)),
+            AppSpacing.vGapXs,
             Text(label,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey,
-                    )),
+                style: context.texts.bodySmall
+                    ?.copyWith(color: context.colors.onSurfaceVariant)),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ShimmerCard extends StatelessWidget {
-  const _ShimmerCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Container(
-        height: 60,
-        padding: const EdgeInsets.all(16),
-        child: const Center(
-          child: CircularProgressIndicator(strokeWidth: 2),
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:fit_pack/features/home/home_screen.dart';
 import 'package:fit_pack/features/workout/workout_list_screen.dart';
 import 'package:fit_pack/features/workout/workout_session_screen.dart';
 import 'package:fit_pack/features/nutrition/nutrition_screen.dart';
+import 'package:fit_pack/features/nutrition/foods_screen.dart';
 import 'package:fit_pack/features/body_metrics/body_metrics_screen.dart';
 import 'package:fit_pack/features/export/export_screen.dart';
 import 'package:fit_pack/features/settings/settings_screen.dart';
@@ -53,6 +54,11 @@ final appRouter = GoRouter(
         final workoutType = state.pathParameters['workoutType']!;
         return WorkoutSessionScreen(workoutType: workoutType);
       },
+    ),
+    GoRoute(
+      path: '/foods',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const FoodsScreen(),
     ),
     GoRoute(
       path: '/export',

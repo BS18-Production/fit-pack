@@ -1,22 +1,27 @@
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/nutrition_dao.dart';
+import '../../shared/widgets/app_state_views.dart';
+import '../../shared/widgets/progress_indicators.dart';
 import '../home/providers/home_providers.dart';
+import 'barcode_flow.dart';
 
-/// Selected date for nutrition log
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
-/// Food logs for selected date
-final foodLogsForDateProvider = FutureProvider<List<FoodLog>>((ref) {
+/// Kayıtlar + yemek adı (join). UI'da ne eklendiği görünsün diye.
+final logsWithFoodProvider =
+    FutureProvider<List<FoodLogWithFood>>((ref) {
   final date = ref.watch(selectedDateProvider);
-  return ref.watch(nutritionDaoProvider).getLogsForDate(date);
+  return ref.watch(nutritionDaoProvider).getLogsWithFoodForDate(date);
 });
 
-/// Nutrition totals for selected date
 final nutritionTotalsProvider = FutureProvider<DailyNutrition>((ref) {
   final date = ref.watch(selectedDateProvider);
   return ref.watch(nutritionDaoProvider).getDailyTotals(date);
@@ -25,24 +30,62 @@ final nutritionTotalsProvider = FutureProvider<DailyNutrition>((ref) {
 class NutritionScreen extends ConsumerWidget {
   const NutritionScreen({super.key});
 
+  void _invalidateAll(WidgetRef ref) {
+    ref.invalidate(logsWithFoodProvider);
+    ref.invalidate(nutritionTotalsProvider);
+    ref.invalidate(todayNutritionProvider);
+  }
+
+  Future<void> _delete(
+      BuildContext context, WidgetRef ref, FoodLogWithFood item) async {
+    await ref.read(nutritionDaoProvider).deleteFoodLog(item.log.id);
+    _invalidateAll(ref);
+    if (!context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(SnackBar(
+      content: Text('${item.food.name} silindi'),
+      action: SnackBarAction(
+        label: 'Geri al',
+        onPressed: () async {
+          await ref.read(nutritionDaoProvider).insertFoodLog(
+                FoodLogsCompanion(
+                  date: Value(item.log.date),
+                  mealType: Value(item.log.mealType),
+                  foodId: Value(item.log.foodId),
+                  grams: Value(item.log.grams),
+                  computedKcal: Value(item.log.computedKcal),
+                  computedProtein: Value(item.log.computedProtein),
+                  computedCarb: Value(item.log.computedCarb),
+                  computedFat: Value(item.log.computedFat),
+                ),
+              );
+          _invalidateAll(ref);
+        },
+      ),
+    ));
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final date = ref.watch(selectedDateProvider);
     final totalsAsync = ref.watch(nutritionTotalsProvider);
-    final logsAsync = ref.watch(foodLogsForDateProvider);
+    final logsAsync = ref.watch(logsWithFoodProvider);
     final profileAsync = ref.watch(userProfileProvider);
+    final isToday = DateUtils.isSameDay(date, DateTime.now());
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Beslenme'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.calendar_today),
+            tooltip: 'Tarih seç',
+            icon: const Icon(Icons.calendar_today_rounded),
             onPressed: () async {
               final picked = await showDatePicker(
                 context: context,
                 initialDate: date,
-                firstDate: DateTime(2024),
+                firstDate: DateTime(2020),
                 lastDate: DateTime.now(),
               );
               if (picked != null) {
@@ -52,101 +95,136 @@ class NutritionScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddFoodDialog(context, ref),
-        child: const Icon(Icons.add),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddFoodSheet(context, ref),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Yemek Ekle'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Date navigation
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left),
-                onPressed: () {
-                  ref.read(selectedDateProvider.notifier).state =
-                      date.subtract(const Duration(days: 1));
-                },
+      body: RefreshIndicator(
+        onRefresh: () async => _invalidateAll(ref),
+        child: ListView(
+          padding: AppSpacing.screen,
+          children: [
+            _DateBar(
+              date: date,
+              isToday: isToday,
+              onPrev: () => ref.read(selectedDateProvider.notifier).state =
+                  date.subtract(const Duration(days: 1)),
+              onNext: isToday
+                  ? null
+                  : () => ref.read(selectedDateProvider.notifier).state =
+                      date.add(const Duration(days: 1)),
+            ),
+            AppSpacing.vGapLg,
+            totalsAsync.when(
+              data: (totals) => profileAsync.maybeWhen(
+                data: (profile) => _SummaryHero(
+                  totals: totals,
+                  kcalGoal: profile?.kcalGoal ?? 2200,
+                  proteinGoal: profile?.proteinGoal ?? 180,
+                ),
+                orElse: () => Skeleton.card(height: 280),
               ),
-              Text(
-                DateFormat('d MMMM yyyy, EEEE', 'tr_TR').format(date),
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right),
-                onPressed: () {
-                  final tomorrow = date.add(const Duration(days: 1));
-                  if (tomorrow.isBefore(DateTime.now().add(const Duration(days: 1)))) {
-                    ref.read(selectedDateProvider.notifier).state = tomorrow;
-                  }
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Macro summary card
-          totalsAsync.when(
-            data: (totals) => profileAsync.when(
-              data: (profile) => _MacroSummaryCard(
-                totals: totals,
-                kcalGoal: profile?.kcalGoal ?? 2200,
-                proteinGoal: profile?.proteinGoal ?? 180,
-              ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => Skeleton.card(height: 280),
               error: (_, _) => const SizedBox.shrink(),
             ),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, _) => const SizedBox.shrink(),
-          ),
-          const SizedBox(height: 16),
-
-          // Meal sections
-          ...['breakfast', 'lunch', 'dinner', 'snack'].map((mealType) {
-            return logsAsync.when(
-              data: (logs) {
-                final mealLogs = logs.where((l) => l.mealType == mealType).toList();
-                return _MealSection(
-                  mealType: mealType,
-                  logs: mealLogs,
-                  onAddFood: () => _showAddFoodDialog(context, ref, mealType: mealType),
-                  onDelete: (id) async {
-                    await ref.read(nutritionDaoProvider).deleteFoodLog(id);
-                    ref.invalidate(foodLogsForDateProvider);
-                    ref.invalidate(nutritionTotalsProvider);
-                    ref.invalidate(todayNutritionProvider);
-                  },
-                );
-              },
-              loading: () => const SizedBox.shrink(),
-              error: (_, _) => const SizedBox.shrink(),
-            );
-          }),
-        ],
+            AppSpacing.vGapLg,
+            logsAsync.when(
+              loading: () => Column(children: [
+                Skeleton.card(height: 96),
+                AppSpacing.vGapMd,
+                Skeleton.card(height: 96),
+              ]),
+              error: (_, _) => ErrorState(
+                message: 'Beslenme kayıtları yüklenemedi',
+                onRetry: () => _invalidateAll(ref),
+              ),
+              data: (logs) => Column(
+                children: ['breakfast', 'lunch', 'dinner', 'snack']
+                    .map((mealType) => Padding(
+                          padding:
+                              const EdgeInsets.only(bottom: AppSpacing.md),
+                          child: _MealSection(
+                            mealType: mealType,
+                            items: logs
+                                .where((l) => l.log.mealType == mealType)
+                                .toList(),
+                            onAddFood: () => _showAddFoodSheet(context, ref,
+                                mealType: mealType),
+                            onDelete: (item) => _delete(context, ref, item),
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ),
+            const SizedBox(height: 88),
+          ],
+        ),
       ),
     );
   }
 
-  void _showAddFoodDialog(BuildContext context, WidgetRef ref, {String? mealType}) {
+  void _showAddFoodSheet(BuildContext context, WidgetRef ref,
+      {String? mealType}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => _AddFoodSheet(
-        mealType: mealType ?? 'lunch',
-        ref: ref,
-      ),
+      useSafeArea: true,
+      backgroundColor: context.colors.surface,
+      builder: (ctx) =>
+          _AddFoodSheet(mealType: mealType ?? 'lunch', ref: ref),
     );
   }
 }
 
-class _MacroSummaryCard extends StatelessWidget {
+class _DateBar extends StatelessWidget {
+  final DateTime date;
+  final bool isToday;
+  final VoidCallback onPrev;
+  final VoidCallback? onNext;
+
+  const _DateBar({
+    required this.date,
+    required this.isToday,
+    required this.onPrev,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton.filledTonal(
+          tooltip: 'Önceki gün',
+          icon: const Icon(Icons.chevron_left_rounded),
+          onPressed: onPrev,
+        ),
+        Column(
+          children: [
+            Text(isToday ? 'Bugün' : DateFormat('EEEE', 'tr_TR').format(date),
+                style: context.texts.titleMedium),
+            Text(DateFormat('d MMMM', 'tr_TR').format(date),
+                style: context.texts.bodySmall
+                    ?.copyWith(color: context.colors.onSurfaceVariant)),
+          ],
+        ),
+        IconButton.filledTonal(
+          tooltip: 'Sonraki gün',
+          icon: const Icon(Icons.chevron_right_rounded),
+          onPressed: onNext,
+        ),
+      ],
+    );
+  }
+}
+
+class _SummaryHero extends StatelessWidget {
   final DailyNutrition totals;
   final int kcalGoal;
   final int proteinGoal;
 
-  const _MacroSummaryCard({
+  const _SummaryHero({
     required this.totals,
     required this.kcalGoal,
     required this.proteinGoal,
@@ -156,48 +234,37 @@ class _MacroSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           children: [
-            Text(
-              '${totals.kcal.round()} / $kcalGoal kcal',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+            CalorieRing(consumed: totals.kcal, goal: kcalGoal),
+            AppSpacing.vGapSm,
+            Text('${totals.kcal.round()} / $kcalGoal kcal',
+                style: context.texts.bodySmall
+                    ?.copyWith(color: context.colors.onSurfaceVariant)),
+            AppSpacing.vGapXl,
+            MacroBar(
+              label: 'Protein',
+              current: totals.protein,
+              goal: proteinGoal,
+              unit: 'g',
+              color: context.semantic.macroProtein,
             ),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: (totals.kcal / kcalGoal).clamp(0.0, 1.0),
-                backgroundColor: Colors.orange.withValues(alpha: 0.2),
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange),
-                minHeight: 10,
-              ),
+            AppSpacing.vGapMd,
+            MacroBar(
+              label: 'Karbonhidrat',
+              current: totals.carb,
+              goal: null,
+              unit: 'g',
+              color: context.semantic.macroCarbs,
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _MacroChip(
-                  label: 'Protein',
-                  value: '${totals.protein.round()}g',
-                  goal: '${proteinGoal}g',
-                  color: Colors.red,
-                ),
-                _MacroChip(
-                  label: 'Karb',
-                  value: '${totals.carb.round()}g',
-                  goal: '--',
-                  color: Colors.blue,
-                ),
-                _MacroChip(
-                  label: 'Yağ',
-                  value: '${totals.fat.round()}g',
-                  goal: '--',
-                  color: Colors.yellow,
-                ),
-              ],
+            AppSpacing.vGapMd,
+            MacroBar(
+              label: 'Yağ',
+              current: totals.fat,
+              goal: null,
+              unit: 'g',
+              color: context.semantic.macroFat,
             ),
           ],
         ),
@@ -206,131 +273,156 @@ class _MacroSummaryCard extends StatelessWidget {
   }
 }
 
-class _MacroChip extends StatelessWidget {
-  final String label;
-  final String value;
-  final String goal;
-  final Color color;
+/// Birim sayısını okunur yaz: 2 → "2", 1.5 → "1.5".
+String _fmtNum(double v) =>
+    v == v.roundToDouble() ? v.round().toString() : v.toString();
 
-  const _MacroChip({
-    required this.label,
-    required this.value,
-    required this.goal,
-    required this.color,
-  });
+String _mealName(String type) => switch (type) {
+      'breakfast' => 'Kahvaltı',
+      'lunch' => 'Öğle',
+      'dinner' => 'Akşam',
+      'snack' => 'Atıştırma',
+      _ => type,
+    };
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600)),
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        Text(goal, style: const TextStyle(color: Colors.grey, fontSize: 11)),
-      ],
-    );
-  }
-}
-
-String _mealName(String type) {
-  switch (type) {
-    case 'breakfast':
-      return 'Kahvaltı';
-    case 'lunch':
-      return 'Öğle';
-    case 'dinner':
-      return 'Akşam';
-    case 'snack':
-      return 'Atıştırma';
-    default:
-      return type;
-  }
-}
+IconData _mealIcon(String type) => switch (type) {
+      'breakfast' => Icons.bakery_dining_rounded,
+      'lunch' => Icons.lunch_dining_rounded,
+      'dinner' => Icons.dinner_dining_rounded,
+      'snack' => Icons.cookie_rounded,
+      _ => Icons.restaurant_rounded,
+    };
 
 class _MealSection extends StatelessWidget {
   final String mealType;
-  final List<FoodLog> logs;
+  final List<FoodLogWithFood> items;
   final VoidCallback onAddFood;
-  final Function(int) onDelete;
+  final void Function(FoodLogWithFood) onDelete;
 
   const _MealSection({
     required this.mealType,
-    required this.logs,
+    required this.items,
     required this.onAddFood,
     required this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
-    final totalKcal = logs.fold<double>(0, (sum, l) => sum + l.computedKcal);
+    final totalKcal =
+        items.fold<double>(0, (sum, i) => sum + i.log.computedKcal);
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: AppSpacing.cardCompact,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  _mealName(mealType),
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color:
+                        context.colors.secondary.withValues(alpha: 0.14),
+                    borderRadius: AppRadius.brSm,
+                  ),
+                  child: Icon(_mealIcon(mealType),
+                      size: AppIconSize.sm,
+                      color: context.colors.secondary),
                 ),
-                Row(
-                  children: [
-                    Text(
-                      '${totalKcal.round()} kcal',
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.add, size: 20),
-                      onPressed: onAddFood,
-                      visualDensity: VisualDensity.compact,
-                    ),
-                  ],
+                AppSpacing.hGapMd,
+                Text(_mealName(mealType),
+                    style: context.texts.titleSmall),
+                const Spacer(),
+                if (totalKcal > 0)
+                  Text('${totalKcal.round()} kcal',
+                      style: context.texts.labelMedium?.copyWith(
+                          color: context.colors.onSurfaceVariant)),
+                IconButton(
+                  tooltip: '${_mealName(mealType)} ekle',
+                  icon: const Icon(Icons.add_rounded),
+                  onPressed: onAddFood,
+                  visualDensity: VisualDensity.compact,
                 ),
               ],
             ),
-            if (logs.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  'Henüz kayıt yok',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
-                ),
+            if (items.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: AppSpacing.xs, bottom: AppSpacing.sm),
+                child: Text('Henüz kayıt yok',
+                    style: context.texts.bodySmall?.copyWith(
+                        color: context.colors.onSurfaceVariant)),
               )
             else
-              ...logs.map((log) => Dismissible(
-                    key: ValueKey(log.id),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: 16),
-                      color: Colors.red,
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                    onDismissed: (_) => onDelete(log.id),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              '${log.computedKcal.round()} kcal',
-                              style: const TextStyle(fontSize: 13),
-                            ),
-                          ),
-                          Text(
-                            'P:${log.computedProtein.round()} K:${log.computedCarb.round()} Y:${log.computedFat.round()}',
-                            style: const TextStyle(color: Colors.grey, fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
+              ...items.map((item) => _FoodLogRow(
+                    item: item,
+                    onDelete: () => onDelete(item),
                   )),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Tek kayıt satırı: yemek adı + gram + kcal + makro, görünür sil butonu.
+/// Hem buton hem kaydırma ile silinir (kaydırma keşfedilebilir değil tek
+/// başına — açık buton şart).
+class _FoodLogRow extends StatelessWidget {
+  final FoodLogWithFood item;
+  final VoidCallback onDelete;
+
+  const _FoodLogRow({required this.item, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    final log = item.log;
+    return Dismissible(
+      key: ValueKey(log.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+        padding: const EdgeInsets.only(right: AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: context.colors.error,
+          borderRadius: AppRadius.brMd,
+        ),
+        child: Icon(Icons.delete_rounded, color: context.colors.onError),
+      ),
+      onDismissed: (_) => onDelete(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.food.name,
+                      style: context.texts.bodyLarge,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  AppSpacing.vGapXs,
+                  Text(
+                    '${log.grams.round()} g  ·  P${log.computedProtein.round()} K${log.computedCarb.round()} Y${log.computedFat.round()}',
+                    style: context.texts.labelSmall?.copyWith(
+                        color: context.colors.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ),
+            AppSpacing.hGapSm,
+            Text('${log.computedKcal.round()} kcal',
+                style: context.texts.titleSmall),
+            IconButton(
+              tooltip: 'Sil',
+              icon: const Icon(Icons.delete_outline_rounded),
+              color: context.colors.onSurfaceVariant,
+              visualDensity: VisualDensity.compact,
+              onPressed: onDelete,
+            ),
           ],
         ),
       ),
@@ -350,10 +442,23 @@ class _AddFoodSheet extends StatefulWidget {
 
 class _AddFoodSheetState extends State<_AddFoodSheet> {
   final _searchController = TextEditingController();
+  final _gramsController = TextEditingController(text: '100');
+  final _unitController = TextEditingController(text: '1');
+  List<Food> _all = [];
   List<Food> _results = [];
   Food? _selected;
-  final _gramsController = TextEditingController(text: '100');
+  double _grams = 100;
+  // Birim modu: yemeğin unitLabel'i varsa adet/dilim ile gir; gram = adet ×
+  // defaultPortionGrams. _grams loglama için tek doğruluk kaynağı kalır.
+  bool _useUnit = false;
+  double _units = 1;
   String _currentMealType = 'lunch';
+  bool _saving = false;
+  int _sessionCount = 0;
+  String? _lastAdded;
+
+  bool _hasUnit(Food f) =>
+      f.unitLabel != null && (f.defaultPortionGrams ?? 0) > 0;
 
   @override
   void initState() {
@@ -362,50 +467,193 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
     _loadAllFoods();
   }
 
-  Future<void> _loadAllFoods() async {
-    final dao = widget.ref.read(nutritionDaoProvider);
-    final foods = await dao.getAllFoods();
-    setState(() => _results = foods.take(20).toList());
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _gramsController.dispose();
+    _unitController.dispose();
+    super.dispose();
   }
 
-  Future<void> _search(String query) async {
-    if (query.isEmpty) {
-      _loadAllFoods();
-      return;
-    }
-    final dao = widget.ref.read(nutritionDaoProvider);
-    final foods = await dao.searchFoods(query);
-    setState(() => _results = foods);
+  void _setGrams(double g) {
+    final clamped = g.clamp(1.0, 3000.0);
+    setState(() => _grams = clamped);
+    final txt = clamped.round().toString();
+    if (_gramsController.text != txt) _gramsController.text = txt;
   }
 
-  Future<void> _addFood() async {
+  /// Yemek seçilince: birimi varsa adet moduna geç (1 birim), yoksa 100 g.
+  void _selectFood(Food food) {
+    setState(() {
+      _selected = food;
+      if (_hasUnit(food)) {
+        _useUnit = true;
+        _units = 1;
+        _grams = food.defaultPortionGrams!;
+        _unitController.text = '1';
+      } else {
+        _useUnit = false;
+        _grams = 100;
+        _gramsController.text = '100';
+      }
+    });
+  }
+
+  void _setUnits(double u) {
+    final clamped = u.clamp(0.25, 99.0);
+    final portion = _selected?.defaultPortionGrams ?? 100;
+    setState(() {
+      _units = clamped;
+      _grams = (clamped * portion).clamp(1.0, 5000.0);
+    });
+    final txt = clamped == clamped.roundToDouble()
+        ? clamped.round().toString()
+        : clamped.toString();
+    if (_unitController.text != txt) _unitController.text = txt;
+  }
+
+  void _bumpUnits(double delta) => _setUnits(_units + delta);
+
+  void _setUnitMode(bool useUnit) {
     if (_selected == null) return;
-    final grams = double.tryParse(_gramsController.text) ?? 100;
-    final ratio = grams / 100;
+    setState(() => _useUnit = useUnit);
+    if (useUnit) {
+      _setUnits(_units);
+    } else {
+      _setGrams(_grams);
+    }
+  }
+
+  /// TÜM yemekleri yükler (artık 30 ile sınırlı DEĞİL). Özel (custom)
+  /// yemekler en üstte, sonra alfabetik.
+  Future<void> _loadAllFoods() async {
+    final foods =
+        await widget.ref.read(nutritionDaoProvider).getAllFoods();
+    foods.sort((a, b) {
+      if (a.isCustom != b.isCustom) return a.isCustom ? -1 : 1;
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
+    if (mounted) {
+      setState(() {
+        _all = foods;
+        _applyFilter(_searchController.text);
+      });
+    }
+  }
+
+  void _applyFilter(String query) {
+    final q = query.trim().toLowerCase();
+    _results = q.isEmpty
+        ? _all
+        : _all.where((f) => f.name.toLowerCase().contains(q)).toList();
+  }
+
+  void _bumpGrams(double delta) => _setGrams(_grams + delta);
+
+  /// Ekler ama SAYFAYI KAPATMAZ — kullanıcı bir öğüne arka arkaya birden
+  /// fazla şey girebilsin (1 avokado + 3 yumurta + 50g peynir...).
+  /// Bitince üstteki ✕ ile kapatır.
+  Future<void> _addFood() async {
+    if (_selected == null || _saving) return;
+    setState(() => _saving = true);
+    final added = _selected!;
+    final addedGrams = _grams;
+    final addedLabel = _useUnit && _hasUnit(added)
+        ? '${_fmtNum(_units)} ${added.unitLabel}'
+        : '${addedGrams.round()} g';
+    final ratio = addedGrams / 100;
     final date = widget.ref.read(selectedDateProvider);
+    try {
+      await widget.ref
+          .read(nutritionDaoProvider)
+          .insertFoodLog(FoodLogsCompanion(
+            date: Value(date),
+            mealType: Value(_currentMealType),
+            foodId: Value(added.id),
+            grams: Value(addedGrams),
+            computedKcal: Value(added.kcalPer100g * ratio),
+            computedProtein: Value(added.proteinPer100g * ratio),
+            computedCarb: Value(added.carbPer100g * ratio),
+            computedFat: Value(added.fatPer100g * ratio),
+          ));
+      widget.ref.invalidate(logsWithFoodProvider);
+      widget.ref.invalidate(nutritionTotalsProvider);
+      widget.ref.invalidate(todayNutritionProvider);
+      HapticFeedback.lightImpact();
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _sessionCount++;
+          _lastAdded = '${added.name} ($addedLabel)';
+          _selected = null;
+          _grams = 100;
+          _useUnit = false;
+          _units = 1;
+        });
+        _gramsController.text = '100';
+        _unitController.text = '1';
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Eklenemedi, tekrar dene'),
+            backgroundColor: context.colors.error,
+          ),
+        );
+      }
+    }
+  }
 
-    await widget.ref.read(nutritionDaoProvider).insertFoodLog(FoodLogsCompanion(
-          date: Value(date),
-          mealType: Value(_currentMealType),
-          foodId: Value(_selected!.id),
-          grams: Value(grams),
-          computedKcal: Value(_selected!.kcalPer100g * ratio),
-          computedProtein: Value(_selected!.proteinPer100g * ratio),
-          computedCarb: Value(_selected!.carbPer100g * ratio),
-          computedFat: Value(_selected!.fatPer100g * ratio),
-        ));
+  /// Barkod tara → lokal/OpenFoodFacts çöz → seç.
+  Future<void> _scanBarcode() async {
+    final food = await scanBarcodeToFood(context, widget.ref);
+    if (food == null || !mounted) return;
+    setState(() {
+      if (!_all.any((f) => f.id == food.id)) _all = [food, ..._all];
+      _searchController.clear();
+      _applyFilter('');
+    });
+    _selectFood(food);
+  }
 
-    widget.ref.invalidate(foodLogsForDateProvider);
-    widget.ref.invalidate(nutritionTotalsProvider);
-    widget.ref.invalidate(todayNutritionProvider);
-
-    if (mounted) Navigator.pop(context);
+  Future<void> _openCustomFood() async {
+    final result = await showDialog<_CustomFood>(
+      context: context,
+      builder: (_) => const _CustomFoodDialog(),
+    );
+    if (result == null || !mounted) return;
+    final dao = widget.ref.read(nutritionDaoProvider);
+    final id = await dao.insertFood(FoodsCompanion(
+      name: Value(result.name),
+      kcalPer100g: Value(result.kcalPer100g),
+      proteinPer100g: Value(result.proteinPer100g),
+      carbPer100g: Value(result.carbPer100g),
+      fatPer100g: Value(result.fatPer100g),
+      source: const Value('custom'),
+      isCustom: const Value(true),
+      isRecipe: const Value(false),
+      defaultPortionGrams: Value(result.defaultGrams),
+      unitLabel: Value(result.unitLabel),
+    ));
+    final food = await dao.getFoodById(id);
+    if (food == null || !mounted) return;
+    setState(() {
+      _all = [food, ..._all];
+      _searchController.clear();
+      _applyFilter('');
+    });
+    _selectFood(food);
   }
 
   @override
   Widget build(BuildContext context) {
+    final subtitle = _sessionCount == 0
+        ? 'Birden fazla ekleyebilirsin'
+        : '$_sessionCount eklendi · son: $_lastAdded';
     return DraggableScrollableSheet(
-      initialChildSize: 0.85,
+      initialChildSize: 0.92,
       maxChildSize: 0.95,
       minChildSize: 0.5,
       expand: false,
@@ -413,92 +661,555 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 16,
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
           ),
           child: Column(
             children: [
-              // Meal type selector
+              SheetHeader(title: 'Yemek Ekle', subtitle: subtitle),
+              AppSpacing.vGapSm,
               SegmentedButton<String>(
                 segments: const [
-                  ButtonSegment(value: 'breakfast', label: Text('Kahvaltı')),
+                  ButtonSegment(
+                      value: 'breakfast', label: Text('Kahvaltı')),
                   ButtonSegment(value: 'lunch', label: Text('Öğle')),
                   ButtonSegment(value: 'dinner', label: Text('Akşam')),
-                  ButtonSegment(value: 'snack', label: Text('Atıştırma')),
+                  ButtonSegment(value: 'snack', label: Text('Atıştır.')),
                 ],
                 selected: {_currentMealType},
-                onSelectionChanged: (v) => setState(() => _currentMealType = v.first),
+                onSelectionChanged: (v) =>
+                    setState(() => _currentMealType = v.first),
               ),
-              const SizedBox(height: 12),
-
-              // Search
-              TextField(
-                controller: _searchController,
-                decoration: const InputDecoration(
-                  hintText: 'Yemek ara...',
-                  prefixIcon: Icon(Icons.search),
-                ),
-                onChanged: _search,
+              AppSpacing.vGapMd,
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      autofocus: false,
+                      decoration: InputDecoration(
+                        hintText: 'Yemek ara… (${_all.length})',
+                        prefixIcon: const Icon(Icons.search_rounded),
+                        suffixIcon: _searchController.text.isEmpty
+                            ? null
+                            : IconButton(
+                                icon: const Icon(Icons.clear_rounded),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _applyFilter(''));
+                                },
+                              ),
+                      ),
+                      onChanged: (v) =>
+                          setState(() => _applyFilter(v)),
+                    ),
+                  ),
+                  AppSpacing.hGapSm,
+                  IconButton.filledTonal(
+                    tooltip: 'Barkod tara',
+                    onPressed: _scanBarcode,
+                    icon: const Icon(Icons.qr_code_scanner_rounded),
+                  ),
+                  AppSpacing.hGapSm,
+                  IconButton.filledTonal(
+                    tooltip: 'Kendi yemeğini ekle',
+                    onPressed: _openCustomFood,
+                    icon: const Icon(Icons.edit_note_rounded),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-
-              // Results
+              AppSpacing.vGapMd,
               Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: _results.length,
-                  itemBuilder: (context, index) {
-                    final food = _results[index];
-                    final isSelected = _selected?.id == food.id;
-
-                    return ListTile(
-                      title: Text(food.name),
-                      subtitle: Text(
-                        '${food.kcalPer100g.round()} kcal | P:${food.proteinPer100g.round()} K:${food.carbPer100g.round()} Y:${food.fatPer100g.round()} (100g)',
-                        style: const TextStyle(fontSize: 11),
+                child: _results.isEmpty
+                    ? _EmptyResults(
+                        query: _searchController.text,
+                        onCreate: _openCustomFood,
+                      )
+                    : ListView.separated(
+                        controller: scrollController,
+                        itemCount: _results.length,
+                        separatorBuilder: (_, _) =>
+                            const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final food = _results[index];
+                          final isSelected = _selected?.id == food.id;
+                          return ListTile(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: AppRadius.brMd),
+                            title: Row(
+                              children: [
+                                Flexible(child: Text(food.name)),
+                                if (food.isCustom) ...[
+                                  AppSpacing.hGapSm,
+                                  Icon(Icons.person_rounded,
+                                      size: AppIconSize.sm,
+                                      color: context.colors.secondary),
+                                ],
+                              ],
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${food.kcalPer100g.round()} kcal · P${food.proteinPer100g.round()} K${food.carbPer100g.round()} Y${food.fatPer100g.round()} /100g',
+                                  style: context.texts.labelSmall
+                                      ?.copyWith(
+                                          color: context
+                                              .colors.onSurfaceVariant),
+                                ),
+                                if (food.unitLabel != null &&
+                                    (food.defaultPortionGrams ?? 0) > 0)
+                                  Text(
+                                    '1 ${food.unitLabel} ≈ ${food.defaultPortionGrams!.round()} g',
+                                    style: context.texts.labelSmall
+                                        ?.copyWith(
+                                            color:
+                                                context.colors.secondary),
+                                  ),
+                              ],
+                            ),
+                            selected: isSelected,
+                            selectedTileColor: context.colors.primary
+                                .withValues(alpha: 0.12),
+                            trailing: isSelected
+                                ? Icon(Icons.check_circle_rounded,
+                                    color: context.colors.primary)
+                                : const Icon(
+                                    Icons.add_circle_outline_rounded),
+                            onTap: () => _selectFood(food),
+                          );
+                        },
                       ),
-                      selected: isSelected,
-                      selectedColor: Colors.blue,
-                      onTap: () => setState(() => _selected = food),
-                    );
-                  },
-                ),
               ),
-
-              // Grams input + Add button
-              if (_selected != null) ...[
-                const Divider(),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _selected!.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 80,
-                      child: TextField(
-                        controller: _gramsController,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        decoration: const InputDecoration(suffixText: 'g'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: _addFood,
-                      child: const Text('Ekle'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-              ],
+              if (_selected != null) _QuantityFooter(
+                food: _selected!,
+                grams: _grams,
+                hasUnit: _hasUnit(_selected!),
+                useUnit: _useUnit,
+                units: _units,
+                gramsController: _gramsController,
+                unitController: _unitController,
+                saving: _saving,
+                onBumpGrams: _bumpGrams,
+                onSetGrams: _setGrams,
+                onBumpUnits: _bumpUnits,
+                onSetUnits: _setUnits,
+                onSetUnitMode: _setUnitMode,
+                onAdd: _addFood,
+              ),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+class _EmptyResults extends StatelessWidget {
+  final String query;
+  final VoidCallback onCreate;
+  const _EmptyResults({required this.query, required this.onCreate});
+
+  @override
+  Widget build(BuildContext context) {
+    return EmptyState(
+      icon: Icons.no_food_rounded,
+      title: query.isEmpty ? 'Yemek yok' : '"$query" bulunamadı',
+      message: 'Listede yoksa kendin ekleyebilirsin',
+      actionLabel: 'Kendi yemeğini ekle',
+      onAction: onCreate,
+      compact: true,
+    );
+  }
+}
+
+/// Custom food creator sonucu — porsiyon değerleri /100g'a çevrilir.
+class _CustomFood {
+  final String name;
+  final double kcalPer100g;
+  final double proteinPer100g;
+  final double carbPer100g;
+  final double fatPer100g;
+  final double defaultGrams;
+  final String? unitLabel; // null → birim yok (sadece gram)
+
+  _CustomFood({
+    required this.name,
+    required this.kcalPer100g,
+    required this.proteinPer100g,
+    required this.carbPer100g,
+    required this.fatPer100g,
+    required this.defaultGrams,
+    required this.unitLabel,
+  });
+}
+
+/// Custom yemek + Yemekler ekranında ortak birim seçenekleri.
+const kUnitOptions = <String>[
+  'porsiyon',
+  'adet',
+  'dilim',
+  'kâse',
+  'su bardağı',
+  'bardak',
+  'yemek kaşığı',
+  'avuç',
+  'diş',
+  'ölçek',
+  'kutu',
+];
+
+/// Kullanıcı kendi yemeğini girer. "Yediğin porsiyon" mantığı: toplam
+/// gram + o porsiyonun toplam kcal/P/K/Y'si → /100g'a çevrilip kaydedilir
+/// (tekrar kullanılabilir). Örn: "3 Yumurtalı Omlet" 220 g, 320 kcal...
+class _CustomFoodDialog extends StatefulWidget {
+  const _CustomFoodDialog();
+
+  @override
+  State<_CustomFoodDialog> createState() => _CustomFoodDialogState();
+}
+
+class _CustomFoodDialogState extends State<_CustomFoodDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _name = TextEditingController();
+  final _grams = TextEditingController(text: '100');
+  final _kcal = TextEditingController();
+  final _protein = TextEditingController();
+  final _carb = TextEditingController();
+  final _fat = TextEditingController();
+  // Birim: "porsiyon" varsayılan. null → "birim yok" (sadece gram).
+  String? _unit = 'porsiyon';
+
+  @override
+  void dispose() {
+    for (final c in [_name, _grams, _kcal, _protein, _carb, _fat]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  double _num(TextEditingController c) =>
+      double.tryParse(c.text.trim().replaceAll(',', '.')) ?? 0;
+
+  void _save() {
+    if (!_formKey.currentState!.validate()) return;
+    final g = _num(_grams);
+    final f = 100 / g; // porsiyon → /100g
+    Navigator.pop(
+      context,
+      _CustomFood(
+        name: _name.text.trim(),
+        kcalPer100g: _num(_kcal) * f,
+        proteinPer100g: _num(_protein) * f,
+        carbPer100g: _num(_carb) * f,
+        fatPer100g: _num(_fat) * f,
+        defaultGrams: g,
+        unitLabel: _unit,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Kendi yemeğin'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Bir birimin (örn. 1 porsiyon "3 Yumurtalı Omlet") değerlerini '
+                'gir: kaç gram + o miktarın kcal/makrosu. /100g\'a çevrilip '
+                'kaydedilir, tekrar kullanılır. Birim yoksa "(birim yok)" seç.',
+                style: context.texts.bodySmall?.copyWith(
+                    color: context.colors.onSurfaceVariant),
+              ),
+              AppSpacing.vGapMd,
+              TextFormField(
+                controller: _name,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                    labelText: 'Yemek adı'),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Ad gir'
+                    : null,
+              ),
+              AppSpacing.vGapMd,
+              DropdownButtonFormField<String?>(
+                initialValue: _unit,
+                decoration: const InputDecoration(labelText: 'Birim'),
+                items: [
+                  const DropdownMenuItem(
+                      value: null, child: Text('(birim yok — sadece gram)')),
+                  ...kUnitOptions.map((u) =>
+                      DropdownMenuItem(value: u, child: Text('1 $u'))),
+                ],
+                onChanged: (v) => setState(() => _unit = v),
+              ),
+              AppSpacing.vGapMd,
+              _NumberField(
+                  controller: _grams,
+                  label: _unit == null
+                      ? 'Porsiyon (g)'
+                      : '1 $_unit kaç gram?',
+                  requiredField: true),
+              AppSpacing.vGapMd,
+              _NumberField(
+                  controller: _kcal,
+                  label: 'Toplam kcal',
+                  requiredField: true),
+              AppSpacing.vGapMd,
+              _NumberField(controller: _protein, label: 'Protein (g)'),
+              AppSpacing.vGapMd,
+              _NumberField(controller: _carb, label: 'Karbonhidrat (g)'),
+              AppSpacing.vGapMd,
+              _NumberField(controller: _fat, label: 'Yağ (g)'),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Vazgeç'),
+        ),
+        FilledButton(onPressed: _save, child: const Text('Kaydet')),
+      ],
+    );
+  }
+}
+
+class _NumberField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final bool requiredField;
+
+  const _NumberField({
+    required this.controller,
+    required this.label,
+    this.requiredField = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      keyboardType:
+          const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+      ],
+      decoration: InputDecoration(labelText: label),
+      validator: (raw) {
+        final t = (raw ?? '').trim().replaceAll(',', '.');
+        if (t.isEmpty) return requiredField ? 'Zorunlu' : null;
+        final v = double.tryParse(t);
+        if (v == null) return 'Geçersiz sayı';
+        if (requiredField && v <= 0) return '0\'dan büyük olmalı';
+        if (v < 0) return 'Negatif olamaz';
+        return null;
+      },
+    );
+  }
+}
+
+/// Seçili yemek için miktar (adet/birim VEYA gram) + canlı kalori + Ekle.
+/// Yemeğin birimi varsa adet/g geçişi; gram her zaman tek doğruluk kaynağı.
+class _QuantityFooter extends StatelessWidget {
+  final Food food;
+  final double grams;
+  final bool hasUnit;
+  final bool useUnit;
+  final double units;
+  final TextEditingController gramsController;
+  final TextEditingController unitController;
+  final bool saving;
+  final void Function(double) onBumpGrams;
+  final void Function(double) onSetGrams;
+  final void Function(double) onBumpUnits;
+  final void Function(double) onSetUnits;
+  final void Function(bool) onSetUnitMode;
+  final VoidCallback onAdd;
+
+  const _QuantityFooter({
+    required this.food,
+    required this.grams,
+    required this.hasUnit,
+    required this.useUnit,
+    required this.units,
+    required this.gramsController,
+    required this.unitController,
+    required this.saving,
+    required this.onBumpGrams,
+    required this.onSetGrams,
+    required this.onBumpUnits,
+    required this.onSetUnits,
+    required this.onSetUnitMode,
+    required this.onAdd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final ratio = grams / 100;
+    final kcal = (food.kcalPer100g * ratio).round();
+    final unitMode = hasUnit && useUnit;
+    final unitLabel = food.unitLabel ?? 'adet';
+    final summary = unitMode
+        ? '$kcal kcal · ${_fmtNum(units)} $unitLabel ≈ ${grams.round()} g'
+        : '$kcal kcal · ${grams.round()} g';
+
+    return Container(
+      margin: const EdgeInsets.only(top: AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: context.colors.surfaceContainerHigh,
+        borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppRadius.lg)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(food.name,
+                        style: context.texts.titleSmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    Text(summary,
+                        style: context.texts.labelMedium?.copyWith(
+                            color: context.semantic.macroCalories,
+                            fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              ),
+              if (hasUnit)
+                SegmentedButton<bool>(
+                  showSelectedIcon: false,
+                  style: ButtonStyle(
+                      visualDensity: VisualDensity.compact,
+                      tapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap),
+                  segments: [
+                    ButtonSegment(
+                        value: true, label: Text(unitLabel)),
+                    const ButtonSegment(
+                        value: false, label: Text('g')),
+                  ],
+                  selected: {useUnit},
+                  onSelectionChanged: (v) =>
+                      onSetUnitMode(v.first),
+                ),
+            ],
+          ),
+          AppSpacing.vGapMd,
+          if (unitMode)
+            Row(
+              children: [
+                IconButton.filledTonal(
+                  tooltip: '-1 $unitLabel',
+                  onPressed:
+                      units > 0.25 ? () => onBumpUnits(-1) : null,
+                  icon: const Icon(Icons.remove_rounded),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm),
+                    child: TextField(
+                      controller: unitController,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(
+                              decimal: true),
+                      textAlign: TextAlign.center,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'[0-9.,]')),
+                      ],
+                      decoration: InputDecoration(
+                          suffixText: unitLabel, isDense: true),
+                      onChanged: (v) {
+                        final u = double.tryParse(
+                            v.replaceAll(',', '.'));
+                        if (u != null && u >= 0.25 && u <= 99) {
+                          onSetUnits(u);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+                IconButton.filledTonal(
+                  tooltip: '+1 $unitLabel',
+                  onPressed:
+                      units < 99 ? () => onBumpUnits(1) : null,
+                  icon: const Icon(Icons.add_rounded),
+                ),
+              ],
+            )
+          else
+            Row(
+              children: [
+                IconButton.filledTonal(
+                  tooltip: '-10 g',
+                  onPressed:
+                      grams > 1 ? () => onBumpGrams(-10) : null,
+                  icon: const Icon(Icons.remove_rounded),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm),
+                    child: TextField(
+                      controller: gramsController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      decoration: const InputDecoration(
+                          suffixText: 'g', isDense: true),
+                      onChanged: (v) {
+                        final g = double.tryParse(v);
+                        if (g != null && g >= 1 && g <= 3000) {
+                          onSetGrams(g);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+                IconButton.filledTonal(
+                  tooltip: '+10 g',
+                  onPressed:
+                      grams < 3000 ? () => onBumpGrams(10) : null,
+                  icon: const Icon(Icons.add_rounded),
+                ),
+              ],
+            ),
+          AppSpacing.vGapMd,
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: saving ? null : onAdd,
+              icon: saving
+                  ? SizedBox(
+                      width: AppIconSize.sm,
+                      height: AppIconSize.sm,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: context.colors.onPrimary),
+                    )
+                  : const Icon(Icons.check_rounded),
+              label: Text(saving ? 'Ekleniyor…' : 'Ekle'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

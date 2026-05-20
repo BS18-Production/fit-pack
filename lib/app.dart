@@ -10,7 +10,9 @@ class FitPackApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Fit Pack',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.system,
       routerConfig: appRouter,
     );
   }

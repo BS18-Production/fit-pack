@@ -1751,6 +1751,28 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _defaultPortionGramsMeta =
+      const VerificationMeta('defaultPortionGrams');
+  @override
+  late final GeneratedColumn<double> defaultPortionGrams =
+      GeneratedColumn<double>(
+        'default_portion_grams',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _unitLabelMeta = const VerificationMeta(
+    'unitLabel',
+  );
+  @override
+  late final GeneratedColumn<String> unitLabel = GeneratedColumn<String>(
+    'unit_label',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1763,6 +1785,8 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
     source,
     isCustom,
     isRecipe,
+    defaultPortionGrams,
+    unitLabel,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1852,6 +1876,21 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
         isRecipe.isAcceptableOrUnknown(data['is_recipe']!, _isRecipeMeta),
       );
     }
+    if (data.containsKey('default_portion_grams')) {
+      context.handle(
+        _defaultPortionGramsMeta,
+        defaultPortionGrams.isAcceptableOrUnknown(
+          data['default_portion_grams']!,
+          _defaultPortionGramsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('unit_label')) {
+      context.handle(
+        _unitLabelMeta,
+        unitLabel.isAcceptableOrUnknown(data['unit_label']!, _unitLabelMeta),
+      );
+    }
     return context;
   }
 
@@ -1901,6 +1940,14 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_recipe'],
       )!,
+      defaultPortionGrams: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}default_portion_grams'],
+      ),
+      unitLabel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit_label'],
+      ),
     );
   }
 
@@ -1921,6 +1968,8 @@ class Food extends DataClass implements Insertable<Food> {
   final String source;
   final bool isCustom;
   final bool isRecipe;
+  final double? defaultPortionGrams;
+  final String? unitLabel;
   const Food({
     required this.id,
     required this.name,
@@ -1932,6 +1981,8 @@ class Food extends DataClass implements Insertable<Food> {
     required this.source,
     required this.isCustom,
     required this.isRecipe,
+    this.defaultPortionGrams,
+    this.unitLabel,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1948,6 +1999,12 @@ class Food extends DataClass implements Insertable<Food> {
     map['source'] = Variable<String>(source);
     map['is_custom'] = Variable<bool>(isCustom);
     map['is_recipe'] = Variable<bool>(isRecipe);
+    if (!nullToAbsent || defaultPortionGrams != null) {
+      map['default_portion_grams'] = Variable<double>(defaultPortionGrams);
+    }
+    if (!nullToAbsent || unitLabel != null) {
+      map['unit_label'] = Variable<String>(unitLabel);
+    }
     return map;
   }
 
@@ -1965,6 +2022,12 @@ class Food extends DataClass implements Insertable<Food> {
       source: Value(source),
       isCustom: Value(isCustom),
       isRecipe: Value(isRecipe),
+      defaultPortionGrams: defaultPortionGrams == null && nullToAbsent
+          ? const Value.absent()
+          : Value(defaultPortionGrams),
+      unitLabel: unitLabel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(unitLabel),
     );
   }
 
@@ -1984,6 +2047,10 @@ class Food extends DataClass implements Insertable<Food> {
       source: serializer.fromJson<String>(json['source']),
       isCustom: serializer.fromJson<bool>(json['isCustom']),
       isRecipe: serializer.fromJson<bool>(json['isRecipe']),
+      defaultPortionGrams: serializer.fromJson<double?>(
+        json['defaultPortionGrams'],
+      ),
+      unitLabel: serializer.fromJson<String?>(json['unitLabel']),
     );
   }
   @override
@@ -2000,6 +2067,8 @@ class Food extends DataClass implements Insertable<Food> {
       'source': serializer.toJson<String>(source),
       'isCustom': serializer.toJson<bool>(isCustom),
       'isRecipe': serializer.toJson<bool>(isRecipe),
+      'defaultPortionGrams': serializer.toJson<double?>(defaultPortionGrams),
+      'unitLabel': serializer.toJson<String?>(unitLabel),
     };
   }
 
@@ -2014,6 +2083,8 @@ class Food extends DataClass implements Insertable<Food> {
     String? source,
     bool? isCustom,
     bool? isRecipe,
+    Value<double?> defaultPortionGrams = const Value.absent(),
+    Value<String?> unitLabel = const Value.absent(),
   }) => Food(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -2025,6 +2096,10 @@ class Food extends DataClass implements Insertable<Food> {
     source: source ?? this.source,
     isCustom: isCustom ?? this.isCustom,
     isRecipe: isRecipe ?? this.isRecipe,
+    defaultPortionGrams: defaultPortionGrams.present
+        ? defaultPortionGrams.value
+        : this.defaultPortionGrams,
+    unitLabel: unitLabel.present ? unitLabel.value : this.unitLabel,
   );
   Food copyWithCompanion(FoodsCompanion data) {
     return Food(
@@ -2046,6 +2121,10 @@ class Food extends DataClass implements Insertable<Food> {
       source: data.source.present ? data.source.value : this.source,
       isCustom: data.isCustom.present ? data.isCustom.value : this.isCustom,
       isRecipe: data.isRecipe.present ? data.isRecipe.value : this.isRecipe,
+      defaultPortionGrams: data.defaultPortionGrams.present
+          ? data.defaultPortionGrams.value
+          : this.defaultPortionGrams,
+      unitLabel: data.unitLabel.present ? data.unitLabel.value : this.unitLabel,
     );
   }
 
@@ -2061,7 +2140,9 @@ class Food extends DataClass implements Insertable<Food> {
           ..write('fatPer100g: $fatPer100g, ')
           ..write('source: $source, ')
           ..write('isCustom: $isCustom, ')
-          ..write('isRecipe: $isRecipe')
+          ..write('isRecipe: $isRecipe, ')
+          ..write('defaultPortionGrams: $defaultPortionGrams, ')
+          ..write('unitLabel: $unitLabel')
           ..write(')'))
         .toString();
   }
@@ -2078,6 +2159,8 @@ class Food extends DataClass implements Insertable<Food> {
     source,
     isCustom,
     isRecipe,
+    defaultPortionGrams,
+    unitLabel,
   );
   @override
   bool operator ==(Object other) =>
@@ -2092,7 +2175,9 @@ class Food extends DataClass implements Insertable<Food> {
           other.fatPer100g == this.fatPer100g &&
           other.source == this.source &&
           other.isCustom == this.isCustom &&
-          other.isRecipe == this.isRecipe);
+          other.isRecipe == this.isRecipe &&
+          other.defaultPortionGrams == this.defaultPortionGrams &&
+          other.unitLabel == this.unitLabel);
 }
 
 class FoodsCompanion extends UpdateCompanion<Food> {
@@ -2106,6 +2191,8 @@ class FoodsCompanion extends UpdateCompanion<Food> {
   final Value<String> source;
   final Value<bool> isCustom;
   final Value<bool> isRecipe;
+  final Value<double?> defaultPortionGrams;
+  final Value<String?> unitLabel;
   const FoodsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -2117,6 +2204,8 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     this.source = const Value.absent(),
     this.isCustom = const Value.absent(),
     this.isRecipe = const Value.absent(),
+    this.defaultPortionGrams = const Value.absent(),
+    this.unitLabel = const Value.absent(),
   });
   FoodsCompanion.insert({
     this.id = const Value.absent(),
@@ -2129,6 +2218,8 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     this.source = const Value.absent(),
     this.isCustom = const Value.absent(),
     this.isRecipe = const Value.absent(),
+    this.defaultPortionGrams = const Value.absent(),
+    this.unitLabel = const Value.absent(),
   }) : name = Value(name),
        kcalPer100g = Value(kcalPer100g),
        proteinPer100g = Value(proteinPer100g),
@@ -2145,6 +2236,8 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     Expression<String>? source,
     Expression<bool>? isCustom,
     Expression<bool>? isRecipe,
+    Expression<double>? defaultPortionGrams,
+    Expression<String>? unitLabel,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2157,6 +2250,9 @@ class FoodsCompanion extends UpdateCompanion<Food> {
       if (source != null) 'source': source,
       if (isCustom != null) 'is_custom': isCustom,
       if (isRecipe != null) 'is_recipe': isRecipe,
+      if (defaultPortionGrams != null)
+        'default_portion_grams': defaultPortionGrams,
+      if (unitLabel != null) 'unit_label': unitLabel,
     });
   }
 
@@ -2171,6 +2267,8 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     Value<String>? source,
     Value<bool>? isCustom,
     Value<bool>? isRecipe,
+    Value<double?>? defaultPortionGrams,
+    Value<String?>? unitLabel,
   }) {
     return FoodsCompanion(
       id: id ?? this.id,
@@ -2183,6 +2281,8 @@ class FoodsCompanion extends UpdateCompanion<Food> {
       source: source ?? this.source,
       isCustom: isCustom ?? this.isCustom,
       isRecipe: isRecipe ?? this.isRecipe,
+      defaultPortionGrams: defaultPortionGrams ?? this.defaultPortionGrams,
+      unitLabel: unitLabel ?? this.unitLabel,
     );
   }
 
@@ -2219,6 +2319,14 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     if (isRecipe.present) {
       map['is_recipe'] = Variable<bool>(isRecipe.value);
     }
+    if (defaultPortionGrams.present) {
+      map['default_portion_grams'] = Variable<double>(
+        defaultPortionGrams.value,
+      );
+    }
+    if (unitLabel.present) {
+      map['unit_label'] = Variable<String>(unitLabel.value);
+    }
     return map;
   }
 
@@ -2234,7 +2342,9 @@ class FoodsCompanion extends UpdateCompanion<Food> {
           ..write('fatPer100g: $fatPer100g, ')
           ..write('source: $source, ')
           ..write('isCustom: $isCustom, ')
-          ..write('isRecipe: $isRecipe')
+          ..write('isRecipe: $isRecipe, ')
+          ..write('defaultPortionGrams: $defaultPortionGrams, ')
+          ..write('unitLabel: $unitLabel')
           ..write(')'))
         .toString();
   }
@@ -6105,6 +6215,8 @@ typedef $$FoodsTableCreateCompanionBuilder =
       Value<String> source,
       Value<bool> isCustom,
       Value<bool> isRecipe,
+      Value<double?> defaultPortionGrams,
+      Value<String?> unitLabel,
     });
 typedef $$FoodsTableUpdateCompanionBuilder =
     FoodsCompanion Function({
@@ -6118,6 +6230,8 @@ typedef $$FoodsTableUpdateCompanionBuilder =
       Value<String> source,
       Value<bool> isCustom,
       Value<bool> isRecipe,
+      Value<double?> defaultPortionGrams,
+      Value<String?> unitLabel,
     });
 
 final class $$FoodsTableReferences
@@ -6236,6 +6350,16 @@ class $$FoodsTableFilterComposer extends Composer<_$AppDatabase, $FoodsTable> {
 
   ColumnFilters<bool> get isRecipe => $composableBuilder(
     column: $table.isRecipe,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get defaultPortionGrams => $composableBuilder(
+    column: $table.defaultPortionGrams,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unitLabel => $composableBuilder(
+    column: $table.unitLabel,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6373,6 +6497,16 @@ class $$FoodsTableOrderingComposer
     column: $table.isRecipe,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<double> get defaultPortionGrams => $composableBuilder(
+    column: $table.defaultPortionGrams,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unitLabel => $composableBuilder(
+    column: $table.unitLabel,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$FoodsTableAnnotationComposer
@@ -6421,6 +6555,14 @@ class $$FoodsTableAnnotationComposer
 
   GeneratedColumn<bool> get isRecipe =>
       $composableBuilder(column: $table.isRecipe, builder: (column) => column);
+
+  GeneratedColumn<double> get defaultPortionGrams => $composableBuilder(
+    column: $table.defaultPortionGrams,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get unitLabel =>
+      $composableBuilder(column: $table.unitLabel, builder: (column) => column);
 
   Expression<T> foodLogsRefs<T extends Object>(
     Expression<T> Function($$FoodLogsTableAnnotationComposer a) f,
@@ -6540,6 +6682,8 @@ class $$FoodsTableTableManager
                 Value<String> source = const Value.absent(),
                 Value<bool> isCustom = const Value.absent(),
                 Value<bool> isRecipe = const Value.absent(),
+                Value<double?> defaultPortionGrams = const Value.absent(),
+                Value<String?> unitLabel = const Value.absent(),
               }) => FoodsCompanion(
                 id: id,
                 name: name,
@@ -6551,6 +6695,8 @@ class $$FoodsTableTableManager
                 source: source,
                 isCustom: isCustom,
                 isRecipe: isRecipe,
+                defaultPortionGrams: defaultPortionGrams,
+                unitLabel: unitLabel,
               ),
           createCompanionCallback:
               ({
@@ -6564,6 +6710,8 @@ class $$FoodsTableTableManager
                 Value<String> source = const Value.absent(),
                 Value<bool> isCustom = const Value.absent(),
                 Value<bool> isRecipe = const Value.absent(),
+                Value<double?> defaultPortionGrams = const Value.absent(),
+                Value<String?> unitLabel = const Value.absent(),
               }) => FoodsCompanion.insert(
                 id: id,
                 name: name,
@@ -6575,6 +6723,8 @@ class $$FoodsTableTableManager
                 source: source,
                 isCustom: isCustom,
                 isRecipe: isRecipe,
+                defaultPortionGrams: defaultPortionGrams,
+                unitLabel: unitLabel,
               ),
           withReferenceMapper: (p0) => p0
               .map(

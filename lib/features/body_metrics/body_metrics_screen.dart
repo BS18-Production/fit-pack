@@ -1,9 +1,13 @@
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
+import '../../shared/widgets/app_state_views.dart';
 
 final allMeasurementsProvider = FutureProvider<List<BodyMeasurement>>((ref) {
   return ref.watch(bodyDaoProvider).getAllMeasurements();
@@ -18,26 +22,34 @@ class BodyMetricsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('İlerleme')),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddMeasurementDialog(context, ref),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Ölçüm Ekle'),
       ),
       body: measurementsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Hata: $e')),
+        loading: () => ListView(
+          padding: AppSpacing.screen,
+          children: [
+            Skeleton.card(height: 120),
+            AppSpacing.vGapLg,
+            Skeleton.card(height: 72),
+            AppSpacing.vGapMd,
+            Skeleton.card(height: 72),
+          ],
+        ),
+        error: (_, _) => ErrorState(
+          message: 'Ölçümler yüklenemedi',
+          onRetry: () => ref.invalidate(allMeasurementsProvider),
+        ),
         data: (measurements) {
           if (measurements.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.monitor_weight_outlined, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('Henüz ölçüm yok', style: TextStyle(color: Colors.grey)),
-                  SizedBox(height: 8),
-                  Text('+ butonuyla ilk ölçümünü ekle', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                ],
-              ),
+            return EmptyState(
+              icon: Icons.monitor_weight_outlined,
+              title: 'Henüz ölçüm yok',
+              message: 'İlk vücut ölçümünü ekleyerek ilerlemeni takip et',
+              actionLabel: 'Ölçüm Ekle',
+              onAction: () => _showAddMeasurementDialog(context, ref),
             );
           }
 
@@ -45,27 +57,32 @@ class BodyMetricsScreen extends ConsumerWidget {
           final oldest = measurements.length > 1 ? measurements.last : null;
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: AppSpacing.screen,
             children: [
-              // Summary card
               _SummaryCard(latest: latest, oldest: oldest),
-              const SizedBox(height: 16),
-
-              // History
-              Text(
-                'Geçmiş Ölçümler',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+              AppSpacing.vGapLg,
+              Text('Geçmiş Ölçümler', style: context.texts.titleMedium),
+              AppSpacing.vGapSm,
+              ...measurements.map((m) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: _MeasurementCard(
+                      measurement: m,
+                      onDelete: () async {
+                        final ok = await confirmAction(
+                          context,
+                          title: 'Ölçümü sil',
+                          message:
+                              '${DateFormat('d MMM yyyy', 'tr_TR').format(m.date)} tarihli ölçüm silinsin mi?',
+                        );
+                        if (!ok) return;
+                        await ref
+                            .read(bodyDaoProvider)
+                            .deleteMeasurement(m.id);
+                        ref.invalidate(allMeasurementsProvider);
+                      },
                     ),
-              ),
-              const SizedBox(height: 8),
-              ...measurements.map((m) => _MeasurementCard(
-                    measurement: m,
-                    onDelete: () async {
-                      await ref.read(bodyDaoProvider).deleteMeasurement(m.id);
-                      ref.invalidate(allMeasurementsProvider);
-                    },
                   )),
+              const SizedBox(height: 80),
             ],
           );
         },
@@ -90,34 +107,42 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final weightDiff = oldest != null && latest.weightKg != null && oldest!.weightKg != null
+    final weightDiff = oldest != null &&
+            latest.weightKg != null &&
+            oldest!.weightKg != null
         ? latest.weightKg! - oldest!.weightKg!
         : null;
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.card,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Son Ölçümler', style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 12),
+            Text('Son Ölçümler', style: context.texts.titleSmall),
+            AppSpacing.vGapMd,
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _MetricTile(
                   label: 'Kilo',
-                  value: latest.weightKg != null ? '${latest.weightKg!.toStringAsFixed(1)} kg' : '--',
+                  value: latest.weightKg != null
+                      ? '${latest.weightKg!.toStringAsFixed(1)} kg'
+                      : '—',
                   diff: weightDiff,
                   unit: 'kg',
                 ),
                 _MetricTile(
                   label: 'Bel',
-                  value: latest.waistCm != null ? '${latest.waistCm!.toStringAsFixed(1)} cm' : '--',
+                  value: latest.waistCm != null
+                      ? '${latest.waistCm!.toStringAsFixed(1)} cm'
+                      : '—',
                 ),
                 _MetricTile(
                   label: 'Kol',
-                  value: latest.armCm != null ? '${latest.armCm!.toStringAsFixed(1)} cm' : '--',
+                  value: latest.armCm != null
+                      ? '${latest.armCm!.toStringAsFixed(1)} cm'
+                      : '—',
                 ),
               ],
             ),
@@ -143,18 +168,34 @@ class _MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final down = (diff ?? 0) < 0;
+    final diffColor =
+        down ? context.semantic.success : context.colors.error;
     return Column(
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        if (diff != null)
-          Text(
-            '${diff! > 0 ? '+' : ''}${diff!.toStringAsFixed(1)} $unit',
-            style: TextStyle(
-              fontSize: 11,
-              color: diff! < 0 ? Colors.green : Colors.red,
-            ),
+        Text(label,
+            style: context.texts.bodySmall
+                ?.copyWith(color: context.colors.onSurfaceVariant)),
+        AppSpacing.vGapXs,
+        Text(value,
+            style: context.texts.titleMedium
+                ?.copyWith(fontWeight: FontWeight.w700)),
+        if (diff != null && diff != 0) ...[
+          AppSpacing.vGapXs,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                  down
+                      ? Icons.arrow_downward_rounded
+                      : Icons.arrow_upward_rounded,
+                  size: 12,
+                  color: diffColor),
+              Text('${diff!.abs().toStringAsFixed(1)} $unit',
+                  style: context.texts.labelSmall?.copyWith(color: diffColor)),
+            ],
           ),
+        ],
       ],
     );
   }
@@ -162,27 +203,31 @@ class _MetricTile extends StatelessWidget {
 
 class _MeasurementCard extends StatelessWidget {
   final BodyMeasurement measurement;
-  final VoidCallback onDelete;
+  final Future<void> Function() onDelete;
 
   const _MeasurementCard({required this.measurement, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        title: Text(DateFormat('d MMM yyyy').format(measurement.date)),
+        title: Text(
+            DateFormat('d MMM yyyy', 'tr_TR').format(measurement.date)),
         subtitle: Text(
           [
-            if (measurement.weightKg != null) '${measurement.weightKg!.toStringAsFixed(1)} kg',
-            if (measurement.waistCm != null) 'Bel: ${measurement.waistCm!.toStringAsFixed(1)}',
-            if (measurement.armCm != null) 'Kol: ${measurement.armCm!.toStringAsFixed(1)}',
-            if (measurement.chestCm != null) 'Göğüs: ${measurement.chestCm!.toStringAsFixed(1)}',
-          ].join(' | '),
-          style: const TextStyle(fontSize: 12),
+            if (measurement.weightKg != null)
+              '${measurement.weightKg!.toStringAsFixed(1)} kg',
+            if (measurement.waistCm != null)
+              'Bel ${measurement.waistCm!.toStringAsFixed(1)}',
+            if (measurement.armCm != null)
+              'Kol ${measurement.armCm!.toStringAsFixed(1)}',
+            if (measurement.chestCm != null)
+              'Göğüs ${measurement.chestCm!.toStringAsFixed(1)}',
+          ].join('  ·  '),
         ),
         trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, size: 20),
+          tooltip: 'Sil',
+          icon: const Icon(Icons.delete_outline_rounded),
           onPressed: onDelete,
         ),
       ),
@@ -192,7 +237,6 @@ class _MeasurementCard extends StatelessWidget {
 
 class _AddMeasurementSheet extends StatefulWidget {
   final WidgetRef ref;
-
   const _AddMeasurementSheet({required this.ref});
 
   @override
@@ -200,6 +244,7 @@ class _AddMeasurementSheet extends StatefulWidget {
 }
 
 class _AddMeasurementSheetState extends State<_AddMeasurementSheet> {
+  final _formKey = GlobalKey<FormState>();
   final _weightController = TextEditingController();
   final _waistController = TextEditingController();
   final _chestController = TextEditingController();
@@ -207,75 +252,159 @@ class _AddMeasurementSheetState extends State<_AddMeasurementSheet> {
   final _hipController = TextEditingController();
   final _neckController = TextEditingController();
   final _fatController = TextEditingController();
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    for (final c in [
+      _weightController,
+      _waistController,
+      _chestController,
+      _armController,
+      _hipController,
+      _neckController,
+      _fatController,
+    ]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  double? _parse(TextEditingController c) {
+    final t = c.text.trim().replaceAll(',', '.');
+    return t.isEmpty ? null : double.tryParse(t);
+  }
 
   Future<void> _save() async {
-    await widget.ref.read(bodyDaoProvider).insertMeasurement(
-          BodyMeasurementsCompanion(
-            date: Value(DateTime.now()),
-            weightKg: Value(double.tryParse(_weightController.text)),
-            waistCm: Value(double.tryParse(_waistController.text)),
-            chestCm: Value(double.tryParse(_chestController.text)),
-            armCm: Value(double.tryParse(_armController.text)),
-            hipCm: Value(double.tryParse(_hipController.text)),
-            neckCm: Value(double.tryParse(_neckController.text)),
-            bodyFatPct: Value(double.tryParse(_fatController.text)),
+    if (!_formKey.currentState!.validate()) return;
+    final weight = _parse(_weightController);
+    final waist = _parse(_waistController);
+    final chest = _parse(_chestController);
+    final arm = _parse(_armController);
+    final hip = _parse(_hipController);
+    final neck = _parse(_neckController);
+    final fat = _parse(_fatController);
+
+    if ([weight, waist, chest, arm, hip, neck, fat]
+        .every((v) => v == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('En az bir değer gir')),
+      );
+      return;
+    }
+
+    setState(() => _saving = true);
+    try {
+      await widget.ref.read(bodyDaoProvider).insertMeasurement(
+            BodyMeasurementsCompanion(
+              date: Value(DateTime.now()),
+              weightKg: Value(weight),
+              waistCm: Value(waist),
+              chestCm: Value(chest),
+              armCm: Value(arm),
+              hipCm: Value(hip),
+              neckCm: Value(neck),
+              bodyFatPct: Value(fat),
+            ),
+          );
+      widget.ref.invalidate(allMeasurementsProvider);
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Kaydedilemedi, tekrar dene'),
+            backgroundColor: context.colors.error,
           ),
         );
-    widget.ref.invalidate(allMeasurementsProvider);
-    if (mounted) Navigator.pop(context);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-        left: 16,
-        right: 16,
-        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('Yeni Ölçüm',
-                style: Theme.of(context).textTheme.titleLarge,
-                textAlign: TextAlign.center),
-            const SizedBox(height: 20),
-            _FieldRow(label: 'Kilo (kg)', controller: _weightController),
-            _FieldRow(label: 'Bel (cm)', controller: _waistController),
-            _FieldRow(label: 'Göğüs (cm)', controller: _chestController),
-            _FieldRow(label: 'Kol (cm)', controller: _armController),
-            _FieldRow(label: 'Kalça (cm)', controller: _hipController),
-            _FieldRow(label: 'Boyun (cm)', controller: _neckController),
-            _FieldRow(label: 'Yağ Oranı (%)', controller: _fatController),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _save,
-              child: const Text('Kaydet'),
-            ),
-          ],
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SheetHeader(
+                title: 'Yeni Ölçüm',
+                subtitle: 'Boş bıraktığın alan kaydedilmez',
+              ),
+              AppSpacing.vGapLg,
+              _Field(label: 'Kilo (kg)', controller: _weightController, min: 30, max: 300),
+              _Field(label: 'Bel (cm)', controller: _waistController, min: 30, max: 250),
+              _Field(label: 'Göğüs (cm)', controller: _chestController, min: 30, max: 250),
+              _Field(label: 'Kol (cm)', controller: _armController, min: 10, max: 100),
+              _Field(label: 'Kalça (cm)', controller: _hipController, min: 30, max: 250),
+              _Field(label: 'Boyun (cm)', controller: _neckController, min: 10, max: 100),
+              _Field(label: 'Yağ Oranı (%)', controller: _fatController, min: 1, max: 70),
+              AppSpacing.vGapLg,
+              FilledButton(
+                onPressed: _saving ? null : _save,
+                child: _saving
+                    ? SizedBox(
+                        width: AppIconSize.sm,
+                        height: AppIconSize.sm,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: context.colors.onPrimary),
+                      )
+                    : const Text('Kaydet'),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _FieldRow extends StatelessWidget {
+class _Field extends StatelessWidget {
   final String label;
   final TextEditingController controller;
+  final double min;
+  final double max;
 
-  const _FieldRow({required this.label, required this.controller});
+  const _Field({
+    required this.label,
+    required this.controller,
+    required this.min,
+    required this.max,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextField(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: TextFormField(
         controller: controller,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        keyboardType:
+            const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+        ],
         decoration: InputDecoration(labelText: label),
+        validator: (raw) {
+          final t = (raw ?? '').trim().replaceAll(',', '.');
+          if (t.isEmpty) return null; // opsiyonel alan
+          final v = double.tryParse(t);
+          if (v == null) return 'Geçersiz sayı';
+          if (v < min || v > max) {
+            return '$min – $max aralığında olmalı';
+          }
+          return null;
+        },
       ),
     );
   }

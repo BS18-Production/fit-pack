@@ -11,6 +11,12 @@ class Foods extends Table {
   TextColumn get source => text().withDefault(const Constant('local'))(); // local, openfoodfacts, custom
   BoolColumn get isCustom => boolean().withDefault(const Constant(false))();
   BoolColumn get isRecipe => boolean().withDefault(const Constant(false))();
+
+  // V2 (Beslenme V2 — adet/birim porsiyon, bkz. docs/07-nutrition-v2.md).
+  // İkisi de nullable → additive migration, V1 satırları NULL = "sadece gram".
+  // gram = adet × defaultPortionGrams. FoodLogs.grams tek doğruluk kaynağı kalır.
+  RealColumn get defaultPortionGrams => real().nullable()(); // 1 birim kaç gram
+  TextColumn get unitLabel => text().nullable()(); // adet, dilim, porsiyon...
 }
 
 class FoodLogs extends Table {

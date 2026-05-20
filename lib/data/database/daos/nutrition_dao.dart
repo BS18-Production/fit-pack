@@ -14,11 +14,31 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
   Future<List<Food>> searchFoods(String query) =>
       (select(foods)..where((f) => f.name.like('%$query%'))).get();
 
+  Future<Food?> getFoodById(int id) =>
+      (select(foods)..where((f) => f.id.equals(id))).getSingleOrNull();
+
   Future<Food?> getFoodByBarcode(String barcode) =>
       (select(foods)..where((f) => f.barcode.equals(barcode))).getSingleOrNull();
 
   Future<int> insertFood(FoodsCompanion entry) =>
       into(foods).insert(entry);
+
+  /// Yemeği günceller (Yemekler ekranı — sadece custom düzenlenir, kural
+  /// UI'da; DAO mekanik). `id` companion'da değil parametrede.
+  Future<bool> updateFood(int id, FoodsCompanion entry) =>
+      (update(foods)..where((f) => f.id.equals(id))).write(entry).then((n) => n > 0);
+
+  /// Bu yemeğe kaç log bağlı? Silmeden önce sorulur — log varsa silinmez
+  /// (FK bütünlüğü + geçmiş kaybolmasın, ADR-007 yıkıcı işlem yok).
+  Future<int> foodLogCount(int foodId) async {
+    final c = countAll(filter: foodLogs.foodId.equals(foodId));
+    final q = selectOnly(foodLogs)..addColumns([c]);
+    return (await q.getSingle()).read(c) ?? 0;
+  }
+
+  /// Yemeği siler. Önce [foodLogCount] kontrol edilmeli; bu metot ham siler.
+  Future<int> deleteFood(int id) =>
+      (delete(foods)..where((f) => f.id.equals(id))).go();
 
   Future<void> insertFoods(List<FoodsCompanion> entries) async {
     await batch((b) => b.insertAll(foods, entries));
@@ -32,6 +52,26 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
           ..where((l) => l.date.isBetweenValues(start, end))
           ..orderBy([(l) => OrderingTerm.asc(l.mealType)]))
         .get();
+  }
+
+  /// Bir günün kayıtları + yemek adı (join). UI'da "Tavuk · 150g" göstermek
+  /// için gerekir — düz FoodLog'da yemek adı yok, kullanıcı ne eklediğini
+  /// göremez.
+  Future<List<FoodLogWithFood>> getLogsWithFoodForDate(DateTime date) async {
+    final start = DateTime(date.year, date.month, date.day);
+    final end = start.add(const Duration(days: 1));
+    final query = select(foodLogs).join([
+      innerJoin(foods, foods.id.equalsExp(foodLogs.foodId)),
+    ])
+      ..where(foodLogs.date.isBetweenValues(start, end))
+      ..orderBy([OrderingTerm.asc(foodLogs.id)]);
+    final rows = await query.get();
+    return rows
+        .map((r) => FoodLogWithFood(
+              log: r.readTable(foodLogs),
+              food: r.readTable(foods),
+            ))
+        .toList();
   }
 
   Future<List<FoodLog>> getLogsInRange(DateTime start, DateTime end) =>
@@ -65,6 +105,13 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
 
   Future<void> insertRecipeItem(RecipeItemsCompanion entry) =>
       into(recipeItems).insert(entry);
+}
+
+/// FoodLog + ait olduğu Food (join sonucu). UI yemek adını buradan okur.
+class FoodLogWithFood {
+  final FoodLog log;
+  final Food food;
+  FoodLogWithFood({required this.log, required this.food});
 }
 
 class DailyNutrition {

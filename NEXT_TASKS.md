@@ -31,7 +31,7 @@ Bu doküman, Samet'in **bir sonraki session'da neye dokunacağını** netleştir
 
 ## ✅ Sprint N — Beslenme V2 TAMAM (2026-05-18)
 
-Pilot geri bildirimi (P-1/2/3, [docs/07-nutrition-v2.md](docs/07-nutrition-v2.md)). **Commit'siz çalışma seti** (dal `feat/sprint-0.1-migration`, Samet "temel otursun" dedi).
+Pilot geri bildirimi (P-1/2/3, [docs/07-nutrition-v2.md](docs/07-nutrition-v2.md)). **Commit'lendi + push'landı** (2026-05-20, `9ceb223`, dal `feat/sprint-0.1-migration`).
 
 - [x] **T-050** Şema **v1→v2**: `foods.defaultPortionGrams` + `unitLabel` (nullable, additive) · `app_database.dart` schemaVersion 2 + onUpgrade · `drift_schema_v2.json` · migration_test tripwire→2 + `migrations/migration_v1_to_v2_test.dart` (SchemaVerifier lossless)
 - [x] **T-051** `turkish_foods.json` 111 yemek porsiyon/birim · `seed_manager` map · **+ `_backfillFoodUnits()`** (mevcut DB'lerde birimi NULL local yemekleri JSON'dan doldurur, idempotent)
@@ -94,7 +94,7 @@ Doc'lar bitince **kod yazımı başlıyor.** Aşama 0 Sprint 0.1 task'ları:
 2. `NEXT_TASKS.md`'yi oku — Sprint N (Beslenme V2) **TAMAM**
 3. **Samet'in Beslenme V2 cihaz testi geri bildirimini sor** (R96YB00XJPB'de: birim seçici, Yemekler ekranı, barkod tarama). Sorun varsa öncelik düzeltme.
 4. Sorun yoksa **Aşama 0 kalan** (T-002 yedek helper → T-003 `drift_sqlcipher` → T-004 SecureKeyManager → T-006 V1→şifreli göç → T-007/008 test) **veya** Samet'in seçtiği yön.
-5. **Commit:** Samet "temel otursun" dedi, hâlâ commit'siz. Beslenme V2 oturduysa Samet'e commit sorulabilir (`feat/sprint-0.1-migration`).
+5. **Commit:** Beslenme V2 commit'lendi + push'landı (`9ceb223`, `feat/sprint-0.1-migration`). PR açılmadı — Samet isterse açılır. Yeni iş yeni commit ister.
 
 ---
 

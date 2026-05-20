@@ -10,7 +10,7 @@ Bu doküman, projenin **şu andaki canlı durumunu** anlatır. Her session sonun
 
 ## 🟢 Aktif Durum
 
-**Şu an neredeyiz:** Pilot beslenme geri bildirimi → **Sprint N (Beslenme V2)** kod fazı: birim/adet porsiyon (şema v1→v2), Yemekler yönetim ekranı, OpenFoodFacts/barkod. Tasarım: [docs/07-nutrition-v2.md](docs/07-nutrition-v2.md). Aşama 0-1 arasına araya alındı. Dal: `feat/sprint-0.1-migration` (devam).
+**Şu an neredeyiz:** Pilot beslenme geri bildirimi → **Sprint N (Beslenme V2)** kod fazı: birim/adet porsiyon (şema v1→v2), Yemekler yönetim ekranı, OpenFoodFacts/barkod. Tasarım: [docs/07-nutrition-v2.md](docs/07-nutrition-v2.md). Aşama 0-1 arasına araya alındı. Commit `9ceb223` push'landı (dal `feat/sprint-0.1-migration`).
 
 **Engelleyici:** Yok. Samet'in 6 doc'a okuma feedback'i bekleniyor (engelleyici değil — kod paralel başlayabilir, doc'lar v1.x bump edilir).
 

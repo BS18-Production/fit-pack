@@ -117,6 +117,48 @@ class _RingPainter extends CustomPainter {
       old.track != track;
 }
 
+/// "P20 K28 Y45" satırı — kısaltmalar makro renkleriyle kodlu, böylece
+/// P/K/Y'nin ne olduğu çubuklardaki renklerle eşleşerek anlaşılır.
+class MacroInlineText extends StatelessWidget {
+  final double protein;
+  final double carb;
+  final double fat;
+  final String? prefix; // örn. "560 kcal · "
+  final String? suffix; // örn. " /100g"
+
+  const MacroInlineText({
+    super.key,
+    required this.protein,
+    required this.carb,
+    required this.fat,
+    this.prefix,
+    this.suffix,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final base = context.texts.labelSmall
+        ?.copyWith(color: context.colors.onSurfaceVariant);
+    TextSpan macro(String letter, double value, Color color) => TextSpan(
+          text: '$letter${value.round()}',
+          style: base?.copyWith(color: color, fontWeight: FontWeight.w700),
+        );
+    return Text.rich(
+      TextSpan(style: base, children: [
+        if (prefix != null) TextSpan(text: prefix),
+        macro('P', protein, context.semantic.macroProtein),
+        const TextSpan(text: ' '),
+        macro('K', carb, context.semantic.macroCarbs),
+        const TextSpan(text: ' '),
+        macro('Y', fat, context.semantic.macroFat),
+        if (suffix != null) TextSpan(text: suffix),
+      ]),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+}
+
 /// Makro çubuğu — tüketilen vs hedef, kalan/aşım gösterir, animasyonlu.
 class MacroBar extends StatelessWidget {
   final String label;

@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart' hide Column;
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/widgets/app_state_views.dart';
+import '../home/providers/home_providers.dart';
 
 final allMeasurementsProvider = FutureProvider<List<BodyMeasurement>>((ref) {
   return ref.watch(bodyDaoProvider).getAllMeasurements();
@@ -44,23 +46,34 @@ class BodyMetricsScreen extends ConsumerWidget {
         ),
         data: (measurements) {
           if (measurements.isEmpty) {
-            return EmptyState(
+            // Tek CTA: sağ alttaki FAB. İkinci buton kafa karıştırır.
+            return const EmptyState(
               icon: Icons.monitor_weight_outlined,
               title: 'Henüz ölçüm yok',
               message: 'İlk vücut ölçümünü ekleyerek ilerlemeni takip et',
-              actionLabel: 'Ölçüm Ekle',
-              onAction: () => _showAddMeasurementDialog(context, ref),
             );
           }
 
           final latest = measurements.first;
           final oldest = measurements.length > 1 ? measurements.last : null;
+          // Grafik için kilolu ölçümler, eskiden yeniye.
+          final weighted = measurements
+              .where((m) => m.weightKg != null)
+              .toList()
+            ..sort((a, b) => a.date.compareTo(b.date));
+          final goalWeight =
+              ref.watch(userProfileProvider).valueOrNull?.goalWeightKg;
 
           return ListView(
             padding: AppSpacing.screen,
             children: [
               _SummaryCard(latest: latest, oldest: oldest),
               AppSpacing.vGapLg,
+              if (weighted.length >= 2) ...[
+                _WeightChartCard(
+                    measurements: weighted, goalWeight: goalWeight),
+                AppSpacing.vGapLg,
+              ],
               Text('Geçmiş Ölçümler', style: context.texts.titleMedium),
               AppSpacing.vGapSm,
               ...measurements.map((m) => Padding(
@@ -95,6 +108,181 @@ class BodyMetricsScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       builder: (ctx) => _AddMeasurementSheet(ref: ref),
+    );
+  }
+}
+
+/// Kilo trend grafiği — cut yolculuğunun kanıtı. Hedef kilo profile
+/// girilmişse kesikli çizgiyle gösterilir.
+class _WeightChartCard extends StatelessWidget {
+  final List<BodyMeasurement> measurements; // eskiden yeniye, weightKg dolu
+  final double? goalWeight;
+
+  const _WeightChartCard({required this.measurements, this.goalWeight});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = context.colors.primary;
+    final spots = measurements
+        .map((m) => FlSpot(
+            m.date.millisecondsSinceEpoch.toDouble(), m.weightKg!))
+        .toList();
+
+    final weights = measurements.map((m) => m.weightKg!).toList();
+    var minY = weights.reduce((a, b) => a < b ? a : b);
+    var maxY = weights.reduce((a, b) => a > b ? a : b);
+    // Hedef görünür aralıkta kalsın, üst/alt nefes payı.
+    if (goalWeight != null) {
+      minY = minY < goalWeight! ? minY : goalWeight!;
+      maxY = maxY > goalWeight! ? maxY : goalWeight!;
+    }
+    minY -= 1;
+    maxY += 1;
+
+    final firstX = spots.first.x;
+    final lastX = spots.last.x;
+    final dateFmt = DateFormat('d MMM', 'tr_TR');
+
+    return Card(
+      child: Padding(
+        padding: AppSpacing.card,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text('Kilo Trendi', style: context.texts.titleSmall),
+                const Spacer(),
+                if (goalWeight != null)
+                  Text('Hedef ${goalWeight!.toStringAsFixed(0)} kg',
+                      style: context.texts.labelSmall?.copyWith(
+                          color: context.semantic.success,
+                          fontWeight: FontWeight.w600)),
+              ],
+            ),
+            AppSpacing.vGapLg,
+            SizedBox(
+              height: 180,
+              child: LineChart(
+                LineChartData(
+                  minY: minY,
+                  maxY: maxY,
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    getDrawingHorizontalLine: (_) => FlLine(
+                      color: context.colors.surfaceContainerHighest,
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  titlesData: FlTitlesData(
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 36,
+                        getTitlesWidget: (value, meta) {
+                          if (value == meta.min || value == meta.max) {
+                            return const SizedBox.shrink();
+                          }
+                          return Text(value.toStringAsFixed(0),
+                              style: context.texts.labelSmall?.copyWith(
+                                  color:
+                                      context.colors.onSurfaceVariant));
+                        },
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 28,
+                        interval: (lastX - firstX) <= 0
+                            ? 1
+                            : (lastX - firstX),
+                        getTitlesWidget: (value, meta) {
+                          // Sadece ilk ve son tarih — kalabalık olmasın.
+                          if (value != firstX && value != lastX) {
+                            return const SizedBox.shrink();
+                          }
+                          return Padding(
+                            padding:
+                                const EdgeInsets.only(top: AppSpacing.xs),
+                            child: Text(
+                              dateFmt.format(
+                                  DateTime.fromMillisecondsSinceEpoch(
+                                      value.toInt())),
+                              style: context.texts.labelSmall?.copyWith(
+                                  color:
+                                      context.colors.onSurfaceVariant),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  extraLinesData: goalWeight == null
+                      ? const ExtraLinesData()
+                      : ExtraLinesData(horizontalLines: [
+                          HorizontalLine(
+                            y: goalWeight!,
+                            color: context.semantic.success
+                                .withValues(alpha: 0.6),
+                            strokeWidth: 1.5,
+                            dashArray: [6, 4],
+                          ),
+                        ]),
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipItems: (touched) => touched
+                          .map((t) => LineTooltipItem(
+                                '${t.y.toStringAsFixed(1)} kg\n${dateFmt.format(DateTime.fromMillisecondsSinceEpoch(t.x.toInt()))}',
+                                context.texts.labelMedium!.copyWith(
+                                    color: context.colors.onPrimary),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      curveSmoothness: 0.3,
+                      preventCurveOverShooting: true,
+                      color: color,
+                      barWidth: 3,
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, _, _, index) =>
+                            FlDotCirclePainter(
+                          radius: index == spots.length - 1 ? 4 : 2.5,
+                          color: color,
+                          strokeWidth: 0,
+                        ),
+                      ),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            color.withValues(alpha: 0.22),
+                            color.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

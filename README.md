@@ -2,7 +2,7 @@
 
 Sportif gelişimini tek yerde toplayan, AI destekli kişisel fitness asistanı uygulaması. Flutter + Drift + Riverpod.
 
-> **Durum:** V1 prod çalışır; V2 geliştirme — **Beslenme V2 tamam** (DB şema v2; adet/birim porsiyon, Yemekler yönetim ekranı, OpenFoodFacts/barkod).
+> **Durum:** V1 prod çalışır; V2 geliştirme — **Beslenme V2 + Premium Cila sprint'i tamam** (ghost değerler, antrenman geçmişi/ön izleme, kilo trend grafiği, son kullanılanlar/dünü kopyala, türetilmiş makro hedefleri).
 
 ## Hızlı Bağlantılar
 

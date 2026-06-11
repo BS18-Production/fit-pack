@@ -8,6 +8,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/widgets/app_state_views.dart';
+import '../../shared/widgets/progress_indicators.dart';
 import 'barcode_flow.dart';
 import 'nutrition_screen.dart' show kUnitOptions;
 
@@ -307,10 +308,12 @@ class _FoodRow extends StatelessWidget {
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '${food.kcalPer100g.round()} kcal · P${food.proteinPer100g.round()} K${food.carbPer100g.round()} Y${food.fatPer100g.round()} /100g',
-            style: context.texts.labelSmall
-                ?.copyWith(color: context.colors.onSurfaceVariant),
+          MacroInlineText(
+            protein: food.proteinPer100g,
+            carb: food.carbPer100g,
+            fat: food.fatPer100g,
+            prefix: '${food.kcalPer100g.round()} kcal · ',
+            suffix: ' /100g',
           ),
           if (hasUnit)
             Text(

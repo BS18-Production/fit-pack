@@ -1,7 +1,7 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-05-18
-> **Faz:** V2 Geliştirme — **Sprint N: Beslenme V2** (pilot geri bildirimi, kod fazı)
+> **Son güncelleme:** 2026-06-11
+> **Faz:** V2 Geliştirme — **Sprint P: Premium Cila** tamam (Claude analiz bulguları)
 > **Sahibi:** Samet Orhan
 
 Bu doküman, projenin **şu andaki canlı durumunu** anlatır. Her session sonunda güncellenir.
@@ -10,7 +10,13 @@ Bu doküman, projenin **şu andaki canlı durumunu** anlatır. Her session sonun
 
 ## 🟢 Aktif Durum
 
-**Şu an neredeyiz:** Pilot beslenme geri bildirimi → **Sprint N (Beslenme V2)** kod fazı: birim/adet porsiyon (şema v1→v2), Yemekler yönetim ekranı, OpenFoodFacts/barkod. Tasarım: [docs/07-nutrition-v2.md](docs/07-nutrition-v2.md). Aşama 0-1 arasına araya alındı. Commit `9ceb223` push'landı (dal `feat/sprint-0.1-migration`).
+**Şu an neredeyiz:** **Sprint P (Premium Cila) tamam** (2026-06-11). Uygulamanın "premium ürün" analizinden çıkan tüm yüksek öncelikli bulgular kodlandı:
+- **Antrenman:** seans ekranında geçen seansın ghost değerleri (alan ipuçları + "Geçen seans" satırı), seans başlığı düzeltildi (FullA → Full Body A), geri tuşunda çıkış onayı (PopScope), set ekle/çıkar, antrenman ön izleme ekranı (`/workout/preview/:type` — karta dokununca kronometre değil önizleme), **Antrenman Geçmişi ekranı** (`/workout/history` — seans listesi + set dökümü + toplam hacim; ölü "yakında" butonu gerçek ekrana bağlandı).
+- **İlerleme:** fl_chart kilo trend grafiği (hedef kilo kesikli çizgi, dokunma tooltip'i), çift "Ölçüm Ekle" CTA teke indirildi.
+- **Beslenme:** Son kullanılanlar şeridi (Yemek Ekle'de chip'ler), "Dünün öğünlerini kopyala" (gün boşken), karb/yağ hedefi kalori+proteinden türetiliyor (`macro_goals.dart`), P/K/Y kısaltmaları makro renkleriyle kodlu (`MacroInlineText`), arama placeholder temizliği.
+- **Ana sayfa:** boş haller davet eder ("Seri yok/Bugün başlat" → Antrenman, "Ekle/İlk kilonu gir" → İlerleme; kartlar tıklanır), 7+ gün arada "Yeniden başlamak için harika bir gün".
+
+Önceki sprint: Beslenme V2 (`9ceb223`), tasarım [docs/07-nutrition-v2.md](docs/07-nutrition-v2.md). Dal: `feat/sprint-0.1-migration`.
 
 **Engelleyici:** Yok. Samet'in 6 doc'a okuma feedback'i bekleniyor (engelleyici değil — kod paralel başlayabilir, doc'lar v1.x bump edilir).
 
@@ -49,8 +55,9 @@ Bu doküman, projenin **şu andaki canlı durumunu** anlatır. Her session sonun
 **Bugünden V2 release'e kadar:**
 1. ✅ Dokümantasyon 6/6 + 07-nutrition-v2.md (2026-05-18)
 2. ✅ Aşama 0 T-001 (migration iskeleti) + **Sprint N Beslenme V2 tamam** (2026-05-18): şema v1→v2, adet/birim, Yemekler ekranı, OpenFoodFacts/barkod, backfill — analyze 0 · test 18/18 · gerçek cihaz DB'sinde lossless doğrulandı
-3. **← SIRADA:** Aşama 0 kalan (T-002..T-008: yedek + SQLCipher şifreleme) **veya** Samet'in Beslenme V2 cihaz testi geri bildirimi
-4. Aşama 1, 2, 3 sırayla
+3. ✅ **Sprint P Premium Cila tamam** (2026-06-11): ghost değerler, geçmiş/ön izleme ekranları, kilo grafiği, beslenme kısayolları, boş hal cilası — analyze 0 · test 24/24 · emülatörde tüm akışlar doğrulandı
+4. **← SIRADA:** Premium analizden ertelenenler (NEXT_TASKS "Sprint P+") **veya** Aşama 0 kalan (T-002..T-008: yedek + SQLCipher şifreleme) **veya** Samet'in cihaz testi geri bildirimi
+5. Aşama 1, 2, 3 sırayla
 
 ---
 

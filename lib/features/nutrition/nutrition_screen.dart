@@ -12,6 +12,7 @@ import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/progress_indicators.dart';
 import '../home/providers/home_providers.dart';
 import 'barcode_flow.dart';
+import 'macro_goals.dart';
 
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
@@ -140,7 +141,21 @@ class NutritionScreen extends ConsumerWidget {
                 onRetry: () => _invalidateAll(ref),
               ),
               data: (logs) => Column(
-                children: ['breakfast', 'lunch', 'dinner', 'snack']
+                children: [
+                  if (logs.isEmpty)
+                    Padding(
+                      padding:
+                          const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: OutlinedButton.icon(
+                        onPressed: () => _copyYesterday(context, ref),
+                        icon: const Icon(Icons.content_copy_rounded,
+                            size: AppIconSize.sm),
+                        label: Text(isToday
+                            ? 'Dünün öğünlerini kopyala'
+                            : 'Önceki günün öğünlerini kopyala'),
+                      ),
+                    ),
+                  ...['breakfast', 'lunch', 'dinner', 'snack']
                     .map((mealType) => Padding(
                           padding:
                               const EdgeInsets.only(bottom: AppSpacing.md),
@@ -153,8 +168,8 @@ class NutritionScreen extends ConsumerWidget {
                                 mealType: mealType),
                             onDelete: (item) => _delete(context, ref, item),
                           ),
-                        ))
-                    .toList(),
+                        )),
+                ],
               ),
             ),
             const SizedBox(height: 88),
@@ -162,6 +177,27 @@ class NutritionScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Seçili gün boşsa bir önceki günün tüm kayıtlarını kopyalar.
+  Future<void> _copyYesterday(BuildContext context, WidgetRef ref) async {
+    final date = ref.read(selectedDateProvider);
+    final from = date.subtract(const Duration(days: 1));
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final copied =
+          await ref.read(nutritionDaoProvider).copyDayLogs(from, date);
+      _invalidateAll(ref);
+      messenger.clearSnackBars();
+      messenger.showSnackBar(SnackBar(
+        content: Text(copied == 0
+            ? 'Önceki günde kayıt yok'
+            : '$copied kayıt kopyalandı'),
+      ));
+    } catch (_) {
+      messenger.showSnackBar(
+          const SnackBar(content: Text('Kopyalanamadı, tekrar dene')));
+    }
   }
 
   void _showAddFoodSheet(BuildContext context, WidgetRef ref,
@@ -232,6 +268,9 @@ class _SummaryHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Karb/yağ hedefi kaloriden türetilir — "hedefsiz çıplak sayı" kalmasın.
+    final derived =
+        deriveMacroGoals(kcalGoal: kcalGoal, proteinGoal: proteinGoal);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
@@ -254,7 +293,7 @@ class _SummaryHero extends StatelessWidget {
             MacroBar(
               label: 'Karbonhidrat',
               current: totals.carb,
-              goal: null,
+              goal: derived.carb,
               unit: 'g',
               color: context.semantic.macroCarbs,
             ),
@@ -262,7 +301,7 @@ class _SummaryHero extends StatelessWidget {
             MacroBar(
               label: 'Yağ',
               current: totals.fat,
-              goal: null,
+              goal: derived.fat,
               unit: 'g',
               color: context.semantic.macroFat,
             ),
@@ -405,10 +444,11 @@ class _FoodLogRow extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis),
                   AppSpacing.vGapXs,
-                  Text(
-                    '${log.grams.round()} g  ·  P${log.computedProtein.round()} K${log.computedCarb.round()} Y${log.computedFat.round()}',
-                    style: context.texts.labelSmall?.copyWith(
-                        color: context.colors.onSurfaceVariant),
+                  MacroInlineText(
+                    protein: log.computedProtein,
+                    carb: log.computedCarb,
+                    fat: log.computedFat,
+                    prefix: '${log.grams.round()} g  ·  ',
                   ),
                 ],
               ),
@@ -445,6 +485,7 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
   final _gramsController = TextEditingController(text: '100');
   final _unitController = TextEditingController(text: '1');
   List<Food> _all = [];
+  List<Food> _recent = [];
   List<Food> _results = [];
   Food? _selected;
   double _grams = 100;
@@ -527,8 +568,9 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
   /// TÜM yemekleri yükler (artık 30 ile sınırlı DEĞİL). Özel (custom)
   /// yemekler en üstte, sonra alfabetik.
   Future<void> _loadAllFoods() async {
-    final foods =
-        await widget.ref.read(nutritionDaoProvider).getAllFoods();
+    final dao = widget.ref.read(nutritionDaoProvider);
+    final foods = await dao.getAllFoods();
+    final recent = await dao.getRecentFoods();
     foods.sort((a, b) {
       if (a.isCustom != b.isCustom) return a.isCustom ? -1 : 1;
       return a.name.toLowerCase().compareTo(b.name.toLowerCase());
@@ -536,6 +578,7 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
     if (mounted) {
       setState(() {
         _all = foods;
+        _recent = recent;
         _applyFilter(_searchController.text);
       });
     }
@@ -688,7 +731,7 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                       controller: _searchController,
                       autofocus: false,
                       decoration: InputDecoration(
-                        hintText: 'Yemek ara… (${_all.length})',
+                        hintText: 'Yemek ara…',
                         prefixIcon: const Icon(Icons.search_rounded),
                         suffixIcon: _searchController.text.isEmpty
                             ? null
@@ -718,6 +761,31 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                   ),
                 ],
               ),
+              // Son kullanılanlar — arama boşken tek dokunuşla seç.
+              if (_recent.isNotEmpty && _searchController.text.isEmpty) ...[
+                AppSpacing.vGapMd,
+                SizedBox(
+                  height: 36,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _recent.length,
+                    separatorBuilder: (_, _) => AppSpacing.hGapSm,
+                    itemBuilder: (context, i) {
+                      final food = _recent[i];
+                      return ActionChip(
+                        avatar: Icon(Icons.history_rounded,
+                            size: 16,
+                            color: context.colors.onSurfaceVariant),
+                        label: Text(food.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () => _selectFood(food),
+                      );
+                    },
+                  ),
+                ),
+              ],
               AppSpacing.vGapMd,
               Expanded(
                 child: _results.isEmpty
@@ -751,12 +819,13 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                               crossAxisAlignment:
                                   CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  '${food.kcalPer100g.round()} kcal · P${food.proteinPer100g.round()} K${food.carbPer100g.round()} Y${food.fatPer100g.round()} /100g',
-                                  style: context.texts.labelSmall
-                                      ?.copyWith(
-                                          color: context
-                                              .colors.onSurfaceVariant),
+                                MacroInlineText(
+                                  protein: food.proteinPer100g,
+                                  carb: food.carbPer100g,
+                                  fat: food.fatPer100g,
+                                  prefix:
+                                      '${food.kcalPer100g.round()} kcal · ',
+                                  suffix: ' /100g',
                                 ),
                                 if (food.unitLabel != null &&
                                     (food.defaultPortionGrams ?? 0) > 0)

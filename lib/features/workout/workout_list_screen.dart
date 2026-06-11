@@ -1,19 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../home/providers/home_providers.dart';
-
-/// Loaded workout plan from JSON
-final workoutPlanProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final jsonStr =
-      await rootBundle.loadString('assets/data/workout_plan.json');
-  return json.decode(jsonStr) as Map<String, dynamic>;
-});
+import 'workout_plan_providers.dart';
 
 class WorkoutListScreen extends ConsumerWidget {
   const WorkoutListScreen({super.key});
@@ -81,9 +73,7 @@ class WorkoutListScreen extends ConsumerWidget {
                     )),
                 AppSpacing.vGapMd,
                 OutlinedButton.icon(
-                  onPressed: () => ScaffoldMessenger.of(context)
-                      .showSnackBar(const SnackBar(
-                          content: Text('Antrenman geçmişi yakında'))),
+                  onPressed: () => context.push('/workout/history'),
                   icon: const Icon(Icons.history_rounded,
                       size: AppIconSize.sm),
                   label: const Text('Antrenman Geçmişi'),
@@ -117,7 +107,7 @@ class _WorkoutCard extends StatelessWidget {
 
     return Card(
       child: InkWell(
-        onTap: () => context.push('/workout/session/$type'),
+        onTap: () => context.push('/workout/preview/$type'),
         borderRadius: AppRadius.brLg,
         child: Padding(
           padding: AppSpacing.card,

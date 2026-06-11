@@ -1,7 +1,33 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
-> **Son güncelleme:** 2026-05-18
+> **Son güncelleme:** 2026-06-11
 > **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [docs/04-roadmap.md](docs/04-roadmap.md)
+
+---
+
+## ✅ Sprint P — Premium Cila TAMAM (2026-06-11)
+
+Claude'un "premium uygulama" analizinden çıkan bulgular. Doğrulama: analyze 0 · test 24/24 (4 yeni: makro türetme, recents, dünü kopyala, son seans sorgusu) · emülatörde tüm akışlar görsel doğrulandı.
+
+- [x] **P-01** Ghost değerler: `WorkoutDao.getLastSessionWithSets` → seans ekranında alan ipuçları (geçen kg/tekrar) + hareket başına "Geçen seans: 60×8 · …" satırı
+- [x] **P-02** Seans başlığı `FullA` → "Full Body A" (plan JSON `name`)
+- [x] **P-03** PopScope çıkış onayı — set girilmişken geri tuşu "Antrenmandan çık?" sorar
+- [x] **P-04** Set ekle / Set çıkar (hareket kartı altında)
+- [x] **P-05** `/workout/history` — Antrenman Geçmişi (ExpansionTile: set dökümü + toplam hacim); ölü "yakında" butonu bağlandı
+- [x] **P-06** `/workout/preview/:type` — ön izleme (hareketler + geçen seans + Başla); kart dokunuşu artık seansı direkt başlatmıyor
+- [x] **P-07** İlerleme: fl_chart kilo trend grafiği (hedef kilo kesikli çizgi, tooltip) + çift CTA → tek FAB
+- [x] **P-08** Beslenme: Son kullanılanlar chip şeridi (`getRecentFoods`), "Dünün öğünlerini kopyala" (`copyDayLogs`), karb/yağ hedef türetme (`macro_goals.dart`), `MacroInlineText` renkli P/K/Y (3 ekranda), placeholder temizliği
+- [x] **P-09** Ana sayfa: boş haller aksiyona davet (Seri yok → Bugün başlat, kilo yok → İlk kilonu gir; kartlar tıklanır), 7+ gün "Yeniden başlamak için harika bir gün"
+
+### Sprint P+ — Analizden bilinçli ERTELENENLER (sırada önerilen)
+
+- [ ] **P-10** Onboarding akışı (ilk açılışta hedef kişiselleştirme — V2 release öncesi ŞART; profil tablosuna `onboarded` kolonu = şema v3)
+- [ ] **P-11** Dinlenme zamanlayıcısı bildirimi (ekran kapalıyken lokal bildirim — `flutter_local_notifications` + izinler)
+- [ ] **P-12** Faz/Hafta otomatik ilerleme (yanlış otomasyon > manuel; tasarım gerekiyor)
+- [ ] **P-13** Hareket detay sayfası (hedef kas + form ipuçları — içerik üretimi gerekiyor)
+- [ ] **P-14** Achievements kararı: V2'de UI yap YA DA tabloyu kaldır (şema v3 ile birleştirilebilir)
+- [ ] **P-15** Uygulama ikonu + splash hâlâ varsayılan Flutter logosu — release öncesi marka ikonu (flutter_launcher_icons)
+- [ ] **P-16** Isınma seti işaretleme UI (alan `isWarmup` DB'de var, arayüzü yok)
 
 Bu doküman, Samet'in **bir sonraki session'da neye dokunacağını** netleştirir. Roadmap büyük resmi, bu doc bugün/yarın yapılacakları gösterir.
 
@@ -91,10 +117,10 @@ Doc'lar bitince **kod yazımı başlıyor.** Aşama 0 Sprint 0.1 task'ları:
 ## 💡 Sonraki Session Açılışında Yapılacaklar
 
 1. `PROJECT_STATE.md`'yi oku — projenin canlı durumu
-2. `NEXT_TASKS.md`'yi oku — Sprint N (Beslenme V2) **TAMAM**
-3. **Samet'in Beslenme V2 cihaz testi geri bildirimini sor** (R96YB00XJPB'de: birim seçici, Yemekler ekranı, barkod tarama). Sorun varsa öncelik düzeltme.
-4. Sorun yoksa **Aşama 0 kalan** (T-002 yedek helper → T-003 `drift_sqlcipher` → T-004 SecureKeyManager → T-006 V1→şifreli göç → T-007/008 test) **veya** Samet'in seçtiği yön.
-5. **Commit:** Beslenme V2 commit'lendi + push'landı (`9ceb223`, `feat/sprint-0.1-migration`). PR açılmadı — Samet isterse açılır. Yeni iş yeni commit ister.
+2. `NEXT_TASKS.md`'yi oku — Sprint N (Beslenme V2) + Sprint P (Premium Cila) **TAMAM**
+3. **Samet'in cihaz testi geri bildirimini sor** (R96YB00XJPB'de: Beslenme V2 + Sprint P yenilikleri — ghost değerler, geçmiş, grafik). Sorun varsa öncelik düzeltme.
+4. Sorun yoksa: **Sprint P+** (P-10 onboarding öncelikli) **veya** **Aşama 0 kalan** (T-002 yedek helper → T-003 `drift_sqlcipher` → T-004 SecureKeyManager → T-006 V1→şifreli göç → T-007/008 test) **veya** Samet'in seçtiği yön.
+5. **Commit:** Sprint P commit'lendi (`feat/sprint-0.1-migration` dalı). PR açılmadı — Samet isterse açılır. Yeni iş yeni commit ister.
 
 ---
 

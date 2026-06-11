@@ -25,6 +25,11 @@ class _WorkoutSessionScreenState
     extends ConsumerState<WorkoutSessionScreen> {
   List<dynamic> _exercises = [];
   final Map<int, List<_SetEntry>> _setLogs = {};
+  String? _workoutName;
+  // Geçen seansın setleri, hareket ADIYLA eşlenir (id değil — plan JSON'u
+  // ad bazlı). Ghost değerler buradan okunur.
+  Map<String, List<WorkoutSet>> _lastSets = {};
+  DateTime? _lastSessionDate;
   DateTime? _startTime;
   int _energy = 5;
   int _rpe = 5;
@@ -55,23 +60,51 @@ class _WorkoutSessionScreenState
           await rootBundle.loadString('assets/data/workout_plan.json');
       final plan = json.decode(jsonStr) as Map<String, dynamic>;
       final phases = plan['phases'] as List<dynamic>;
+      Map<String, dynamic>? found;
       for (final phase in phases) {
         for (final workout in phase['workouts'] as List<dynamic>) {
           if (workout['type'] == widget.workoutType) {
-            if (!mounted) return;
-            setState(() {
-              _exercises = workout['exercises'] as List<dynamic>;
-              for (var i = 0; i < _exercises.length; i++) {
-                _setLogs[i] = List.generate(
-                    _exercises[i]['sets'] as int, (_) => _SetEntry());
-              }
-              _loading = false;
-            });
-            return;
+            found = workout as Map<String, dynamic>;
+            break;
           }
         }
+        if (found != null) break;
       }
-      if (mounted) setState(() => _loading = false);
+      // Geçen seansın setlerini hareket adına çevir (ghost değerler).
+      Map<String, List<WorkoutSet>> lastSets = {};
+      DateTime? lastDate;
+      try {
+        final dao = ref.read(workoutDaoProvider);
+        final last = await dao.getLastSessionWithSets(widget.workoutType);
+        if (last != null) {
+          lastDate = last.$1.date;
+          final nameById = {
+            for (final e in await dao.getAllExercises()) e.id: e.name
+          };
+          for (final set in last.$2) {
+            final name = nameById[set.exerciseId];
+            if (name != null) {
+              lastSets.putIfAbsent(name, () => []).add(set);
+            }
+          }
+        }
+      } catch (_) {
+        // Geçmiş yüklenemezse ghost'suz devam — seans engellenmez.
+      }
+      if (!mounted) return;
+      setState(() {
+        if (found != null) {
+          _workoutName = found['name'] as String?;
+          _exercises = found['exercises'] as List<dynamic>;
+          for (var i = 0; i < _exercises.length; i++) {
+            _setLogs[i] = List.generate(
+                _exercises[i]['sets'] as int, (_) => _SetEntry());
+          }
+        }
+        _lastSets = lastSets;
+        _lastSessionDate = lastDate;
+        _loading = false;
+      });
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
@@ -183,11 +216,33 @@ class _WorkoutSessionScreenState
     }
   }
 
+  /// Set girilmişken geri çıkış onay ister — salonda yanlış dokunuş
+  /// 40 dakikalık seansı sessizce silmesin.
+  Future<void> _onPopRequested(bool didPop) async {
+    if (didPop) return;
+    if (!_hasAnyLoggedSet) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final ok = await confirmAction(
+      context,
+      title: 'Antrenmandan çık',
+      message:
+          'Girdiğin setler kaydedilmeyecek. Kaydetmek için sağ üstteki '
+          '"Bitir"i kullan. Yine de çıkılsın mı?',
+      confirmLabel: 'Çık',
+    );
+    if (ok && mounted) Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) => _onPopRequested(didPop),
+      child: Scaffold(
       appBar: AppBar(
-        title: Text(widget.workoutType),
+        title: Text(_workoutName ?? widget.workoutType),
         actions: [
           if (!_loading && _exercises.isNotEmpty)
             Padding(
@@ -258,9 +313,17 @@ class _WorkoutSessionScreenState
                               name: exercise['name'] as String,
                               repRange: exercise['repRange'] as String,
                               sets: sets,
+                              lastSets:
+                                  _lastSets[exercise['name']] ?? const [],
+                              lastSessionDate: _lastSessionDate,
                               onSetComplete: () => _startRestTimer(
                                   isCompound ? 'compound' : 'isolation'),
                               onSetChanged: () => setState(() {}),
+                              onAddSet: () => setState(
+                                  () => sets.add(_SetEntry())),
+                              onRemoveSet: sets.length > 1
+                                  ? () => setState(() => sets.removeLast())
+                                  : null,
                             ),
                           );
                         },
@@ -268,6 +331,7 @@ class _WorkoutSessionScreenState
                     ),
                   ],
                 ),
+      ),
     );
   }
 }
@@ -306,19 +370,36 @@ class _SetEntry {
   bool isWarmup = false;
 }
 
+/// "60×8" biçiminde kompakt set özeti (ghost satırı için).
+String _fmtSet(WorkoutSet s) {
+  final w = s.weightKg;
+  final wTxt = w == null
+      ? '—'
+      : (w == w.roundToDouble() ? w.round().toString() : w.toStringAsFixed(1));
+  return '$wTxt×${s.reps ?? '—'}';
+}
+
 class _ExerciseCard extends StatelessWidget {
   final String name;
   final String repRange;
   final List<_SetEntry> sets;
+  final List<WorkoutSet> lastSets;
+  final DateTime? lastSessionDate;
   final VoidCallback onSetComplete;
   final VoidCallback onSetChanged;
+  final VoidCallback onAddSet;
+  final VoidCallback? onRemoveSet;
 
   const _ExerciseCard({
     required this.name,
     required this.repRange,
     required this.sets,
+    required this.lastSets,
+    required this.lastSessionDate,
     required this.onSetComplete,
     required this.onSetChanged,
+    required this.onAddSet,
+    required this.onRemoveSet,
   });
 
   @override
@@ -336,6 +417,26 @@ class _ExerciseCard extends StatelessWidget {
             Text('Hedef: $repRange tekrar',
                 style: context.texts.bodySmall
                     ?.copyWith(color: context.colors.onSurfaceVariant)),
+            if (lastSets.isNotEmpty) ...[
+              AppSpacing.vGapXs,
+              Row(
+                children: [
+                  Icon(Icons.history_rounded,
+                      size: 14, color: context.colors.primary),
+                  AppSpacing.hGapXs,
+                  Expanded(
+                    child: Text(
+                      'Geçen seans: ${lastSets.map(_fmtSet).join(' · ')}',
+                      style: context.texts.labelSmall?.copyWith(
+                          color: context.colors.primary,
+                          fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             AppSpacing.vGapMd,
             Row(
               children: [
@@ -355,9 +456,27 @@ class _ExerciseCard extends StatelessWidget {
                 (i) => _SetRow(
                       index: i,
                       entry: sets[i],
+                      last: i < lastSets.length ? lastSets[i] : null,
                       onComplete: onSetComplete,
                       onChanged: onSetChanged,
                     )),
+            AppSpacing.vGapSm,
+            Row(
+              children: [
+                TextButton.icon(
+                  onPressed: onAddSet,
+                  icon: const Icon(Icons.add_rounded, size: AppIconSize.sm),
+                  label: const Text('Set ekle'),
+                ),
+                AppSpacing.hGapSm,
+                TextButton.icon(
+                  onPressed: onRemoveSet,
+                  icon:
+                      const Icon(Icons.remove_rounded, size: AppIconSize.sm),
+                  label: const Text('Set çıkar'),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -368,15 +487,27 @@ class _ExerciseCard extends StatelessWidget {
 class _SetRow extends StatelessWidget {
   final int index;
   final _SetEntry entry;
+  final WorkoutSet? last; // geçen seansın aynı sırasındaki seti (ghost)
   final VoidCallback onComplete;
   final VoidCallback onChanged;
 
   const _SetRow({
     required this.index,
     required this.entry,
+    required this.last,
     required this.onComplete,
     required this.onChanged,
   });
+
+  String get _kgHint {
+    final w = last?.weightKg;
+    if (w == null) return 'kg';
+    return w == w.roundToDouble()
+        ? w.round().toString()
+        : w.toStringAsFixed(1);
+  }
+
+  String get _repsHint => last?.reps?.toString() ?? 'tekrar';
 
   @override
   Widget build(BuildContext context) {
@@ -395,7 +526,7 @@ class _SetRow extends StatelessWidget {
           ),
           Expanded(
             child: _NumField(
-              hint: 'kg',
+              hint: _kgHint,
               decimal: true,
               onChanged: (v) {
                 final parsed = double.tryParse(v.replaceAll(',', '.'));
@@ -411,7 +542,7 @@ class _SetRow extends StatelessWidget {
           AppSpacing.hGapSm,
           Expanded(
             child: _NumField(
-              hint: 'tekrar',
+              hint: _repsHint,
               decimal: false,
               onChanged: (v) {
                 final parsed = int.tryParse(v);

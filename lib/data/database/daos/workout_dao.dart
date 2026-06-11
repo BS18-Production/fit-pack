@@ -106,6 +106,21 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
     return result.read(count) ?? 0;
   }
 
+  /// Bu antrenman tipinin (örn. FullA) EN SON seansı + setleri. Seans
+  /// ekranında "geçen seans" ghost değerleri için: kullanıcı her sette
+  /// neyi geçmesi gerektiğini görür (progressive overload'un kalbi).
+  Future<(WorkoutSession, List<WorkoutSet>)?> getLastSessionWithSets(
+      String workoutType) async {
+    final session = await (select(workoutSessions)
+          ..where((s) => s.workoutType.equals(workoutType))
+          ..orderBy([(s) => OrderingTerm.desc(s.date)])
+          ..limit(1))
+        .getSingleOrNull();
+    if (session == null) return null;
+    final sets = await getSetsForSession(session.id);
+    return (session, sets);
+  }
+
   /// Get the last recorded weight for an exercise
   Future<WorkoutSet?> getLastSetForExercise(int exerciseId) async {
     final query = select(workoutSets).join([

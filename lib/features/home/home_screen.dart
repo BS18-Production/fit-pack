@@ -8,6 +8,7 @@ import '../../data/database/daos/nutrition_dao.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/progress_indicators.dart';
 import '../home/providers/home_providers.dart';
+import '../nutrition/macro_goals.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -84,12 +85,21 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 Expanded(
                   child: streakAsync.when(
-                    data: (streak) => _StatCard(
-                      icon: Icons.local_fire_department_rounded,
-                      tone: _StatTone.warning,
-                      label: 'Seri',
-                      value: '$streak gün',
-                    ),
+                    data: (streak) => streak > 0
+                        ? _StatCard(
+                            icon: Icons.local_fire_department_rounded,
+                            tone: _StatTone.warning,
+                            label: 'Seri',
+                            value: '$streak gün',
+                          )
+                        // Boş hal suçlamaz, davet eder.
+                        : _StatCard(
+                            icon: Icons.local_fire_department_rounded,
+                            tone: _StatTone.warning,
+                            label: 'Bugün başlat',
+                            value: 'Seri yok',
+                            onTap: () => context.go('/workout'),
+                          ),
                     loading: () => Skeleton.card(height: 104),
                     error: (_, _) => const _StatCard(
                       icon: Icons.local_fire_department_rounded,
@@ -102,20 +112,28 @@ class HomeScreen extends ConsumerWidget {
                 AppSpacing.hGapLg,
                 Expanded(
                   child: latestWeightAsync.when(
-                    data: (m) => _StatCard(
-                      icon: Icons.monitor_weight_outlined,
-                      tone: _StatTone.primary,
-                      label: 'Son Kilo',
-                      value: m?.weightKg != null
-                          ? '${m!.weightKg!.toStringAsFixed(1)} kg'
-                          : '— kg',
-                    ),
+                    data: (m) => m?.weightKg != null
+                        ? _StatCard(
+                            icon: Icons.monitor_weight_outlined,
+                            tone: _StatTone.primary,
+                            label: 'Son Kilo',
+                            value:
+                                '${m!.weightKg!.toStringAsFixed(1)} kg',
+                            onTap: () => context.go('/progress'),
+                          )
+                        : _StatCard(
+                            icon: Icons.monitor_weight_outlined,
+                            tone: _StatTone.primary,
+                            label: 'İlk kilonu gir',
+                            value: 'Ekle',
+                            onTap: () => context.go('/progress'),
+                          ),
                     loading: () => Skeleton.card(height: 104),
                     error: (_, _) => const _StatCard(
                       icon: Icons.monitor_weight_outlined,
                       tone: _StatTone.primary,
                       label: 'Son Kilo',
-                      value: '— kg',
+                      value: '—',
                     ),
                   ),
                 ),
@@ -185,11 +203,14 @@ class _StartWorkoutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 7+ gün arada suçlayıcı sayaç yerine davet — kullanıcı zaten biliyor.
     final subtitle = daysSince == null
         ? 'Programını aç ve başla'
         : daysSince == 0
             ? 'Bugün antrenman yaptın 💪'
-            : 'Son antrenman: $daysSince gün önce';
+            : daysSince! >= 7
+                ? 'Yeniden başlamak için harika bir gün'
+                : 'Son antrenman: $daysSince gün önce';
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: AppRadius.brLg,
@@ -265,6 +286,8 @@ class _NutritionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final derived =
+        deriveMacroGoals(kcalGoal: kcalGoal, proteinGoal: proteinGoal);
     return Card(
       child: InkWell(
         onTap: () => context.go('/nutrition'),
@@ -306,7 +329,7 @@ class _NutritionCard extends StatelessWidget {
                         MacroBar(
                           label: 'Karbonhidrat',
                           current: nutrition.carb,
-                          goal: null,
+                          goal: derived.carb,
                           unit: 'g',
                           color: context.semantic.macroCarbs,
                         ),
@@ -314,7 +337,7 @@ class _NutritionCard extends StatelessWidget {
                         MacroBar(
                           label: 'Yağ',
                           current: nutrition.fat,
-                          goal: null,
+                          goal: derived.fat,
                           unit: 'g',
                           color: context.semantic.macroFat,
                         ),
@@ -338,12 +361,14 @@ class _StatCard extends StatelessWidget {
   final _StatTone tone;
   final String label;
   final String value;
+  final VoidCallback? onTap;
 
   const _StatCard({
     required this.icon,
     required this.tone,
     required this.label,
     required this.value,
+    this.onTap,
   });
 
   @override
@@ -353,28 +378,34 @@ class _StatCard extends StatelessWidget {
       _StatTone.warning => context.semantic.warning,
     };
     return Card(
-      child: Padding(
-        padding: AppSpacing.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.14),
-                borderRadius: AppRadius.brMd,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.brLg,
+        child: Padding(
+          padding: AppSpacing.card,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.14),
+                  borderRadius: AppRadius.brMd,
+                ),
+                child: Icon(icon, color: color, size: AppIconSize.md),
               ),
-              child: Icon(icon, color: color, size: AppIconSize.md),
-            ),
-            AppSpacing.vGapMd,
-            Text(value,
-                style: context.texts.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w800)),
-            AppSpacing.vGapXs,
-            Text(label,
-                style: context.texts.bodySmall
-                    ?.copyWith(color: context.colors.onSurfaceVariant)),
-          ],
+              AppSpacing.vGapMd,
+              Text(value,
+                  style: context.texts.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w800)),
+              AppSpacing.vGapXs,
+              Text(label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.texts.bodySmall?.copyWith(
+                      color: context.colors.onSurfaceVariant)),
+            ],
+          ),
         ),
       ),
     );

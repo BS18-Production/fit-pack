@@ -83,6 +83,46 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
   Future<int> insertFoodLog(FoodLogsCompanion entry) =>
       into(foodLogs).insert(entry);
 
+  /// Son eklenen DISTINCT yemekler — "Son kullanılanlar" hızlı şeridi.
+  /// Aynı şeyleri yiyen kullanıcı her gün 111 yemek içinde aramasın.
+  Future<List<Food>> getRecentFoods({int limit = 8}) async {
+    final query = select(foodLogs).join([
+      innerJoin(foods, foods.id.equalsExp(foodLogs.foodId)),
+    ])
+      ..orderBy([OrderingTerm.desc(foodLogs.id)])
+      ..limit(limit * 5); // tekrarlar elenince limit dolsun diye geniş çek
+    final rows = await query.get();
+    final seen = <int>{};
+    final result = <Food>[];
+    for (final r in rows) {
+      final f = r.readTable(foods);
+      if (seen.add(f.id)) {
+        result.add(f);
+        if (result.length >= limit) break;
+      }
+    }
+    return result;
+  }
+
+  /// [from] gününün tüm kayıtlarını [to] gününe kopyalar ("dünü kopyala").
+  /// Kopyalanan kayıt sayısını döner; 0 → kaynak gün boş.
+  Future<int> copyDayLogs(DateTime from, DateTime to) async {
+    final logs = await getLogsForDate(from);
+    for (final log in logs) {
+      await insertFoodLog(FoodLogsCompanion(
+        date: Value(DateTime(to.year, to.month, to.day)),
+        mealType: Value(log.mealType),
+        foodId: Value(log.foodId),
+        grams: Value(log.grams),
+        computedKcal: Value(log.computedKcal),
+        computedProtein: Value(log.computedProtein),
+        computedCarb: Value(log.computedCarb),
+        computedFat: Value(log.computedFat),
+      ));
+    }
+    return logs.length;
+  }
+
   Future<int> deleteFoodLog(int id) =>
       (delete(foodLogs)..where((l) => l.id.equals(id))).go();
 

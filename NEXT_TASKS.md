@@ -16,7 +16,7 @@ Claude Design (Apple Fitness vibe + Indigo/Teal). HTML export: `design/code/`. B
 - [ ] **D-05** Beslenme ekranı reskin
 - [ ] **D-06** İlerleme ekranı reskin
 - [ ] **D-07** Ayarlar + Onboarding reskin (Onboarding fonksiyon olarak var, görsel reskin gerek)
-- [ ] **D-08** P-15: uygulama ikonu hâlâ Flutter logosu! (tasarımda mor dumbbell ikon var → flutter_launcher_icons)
+- [x] **D-08** P-15: uygulama ikonu TAMAM (2026-06-21) — "Yükseliş" Işıyan varyant (koyu radial zemin + ışıyan chevron + teal spark). `flutter_launcher_icons` ile Android legacy+adaptive + iOS tüm boyutlar. Kaynak: `assets/icon/icon_{full,bg,fg}.png` (headless Chrome ile SVG→PNG). Android label "fit_pack"→"Fit Pack". Emülatörde doğrulandı. Konseptler: `design/icon-concepts.html`
 
 ### Antrenman V2 — Hevy/Strong seviyesi (tasarım onaylandı, kod büyük iş)
 Samet "tam esnek" + 4 loglama özelliği seçti (önceki seans / dinlenme sayacı / RPE+set tipleri / PR+grafik). Mimari: hareket kütüphanesi (kategori+kas+ekipman+ölçüm tipi), rutin oluşturucu, aktif seans (set tablosu), hareket detayı (geçmiş/grafik/PR), antrenman özeti. Şema v5+ gerektirir. Hareket seed listesi (İngilizce, 5 kategori) `docs/08-design-brief.md`'de. **Önce PRD + şema tasarımı (doc-first), sonra kod.**

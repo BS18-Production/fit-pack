@@ -60,6 +60,21 @@ dev_dependencies:
   custom_lint: ^0.7.5
   riverpod_lint: ^2.6.3
 
+  # Uygulama ikonu üretimi (P-15 — "Yükseliş" Işıyan ikon)
+  flutter_launcher_icons: ^0.14.3
+
+# P-15: Marka ikonu. Kaynak 1024px PNG'ler assets/icon/ (Claude Design
+# "Yükseliş" varyant A — koyu radial zemin + ışıyan chevron + teal spark).
+# Değiştirmek için: assets/icon/* güncelle → dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon_full.png"
+  remove_alpha_ios: true
+  min_sdk_android: 21
+  adaptive_icon_background: "assets/icon/icon_bg.png"
+  adaptive_icon_foreground: "assets/icon/icon_fg.png"
+
 flutter:
   uses-material-design: true
 

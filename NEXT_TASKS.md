@@ -12,7 +12,7 @@ Claude Design (Apple Fitness vibe + Indigo/Teal). HTML export: `design/code/`. B
 - [x] **D-01** Manrope fontu (`app_theme.dart`), `app_dimens` (vGapxl_/brPill token)
 - [x] **D-02** Şema v4: su takibi (`water_intake` + `waterGoalMl`), migration lossless test 3/3
 - [x] **D-03** Ana Sayfa reskin: header (safe-area fix), dinlenme günü zekası, hero ring 196px, su kartı (DB-backed interaktif), Seri+Kilo satırı — emülatörde dark+light doğrulandı
-- [ ] **D-04** Antrenman sekmesi reskin + **BÜYÜK genişleme** (Hevy/Strong seviyesi — bkz. aşağı "Antrenman V2")
+- [ ] **D-04** Antrenman V2 — Hevy/Strong genişleme. **PRD HAZIR:** [docs/09-workout-v2.md](docs/09-workout-v2.md). Karar: tam geçiş (sadece rutinler). Fazlar: A(kütüphane v5)→B(rutinler v6)→C(seans v7)→D(PR v8). S-1..S-4 açık soruları Samet onayı bekliyor, sonra Faz A kodu.
 - [ ] **D-05** Beslenme ekranı reskin
 - [ ] **D-06** İlerleme ekranı reskin
 - [ ] **D-07** Ayarlar + Onboarding reskin (Onboarding fonksiyon olarak var, görsel reskin gerek)

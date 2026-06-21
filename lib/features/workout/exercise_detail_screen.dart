@@ -9,8 +9,8 @@ import '../../data/database/app_database.dart';
 import '../../data/database/daos/workout_dao.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
-import 'exercise_library_screen.dart'
-    show kEquipmentTr, kCategoryTr, kMuscleTr, libraryExercisesProvider;
+import 'exercise_library_screen.dart' show libraryExercisesProvider;
+import 'workout_ui.dart';
 
 /// Hareket Detayı (Antrenman V2 Faz D). Geçmiş / Grafik (e1RM) / Rekorlar.
 
@@ -128,19 +128,39 @@ class _InfoCard extends StatelessWidget {
   const _InfoCard(this.ex);
   @override
   Widget build(BuildContext context) {
-    final parts = [
-      kCategoryTr[ex.category] ?? ex.category,
-      kMuscleTr[ex.primaryMuscle] ?? '',
-      kEquipmentTr[ex.equipment] ?? '',
-    ].where((s) => s.isNotEmpty).join(' · ');
+    final catColor = WorkoutUi.categoryColor(context, ex.category);
+    final subtitle = WorkoutUi.muscleEquip(ex.primaryMuscle, ex.equipment);
     return Card(
       child: Padding(
         padding: AppSpacing.card,
         child: Row(
           children: [
-            Icon(Icons.fitness_center_rounded, color: context.colors.primary),
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: catColor.withValues(alpha: 0.13),
+                borderRadius: AppRadius.brLg,
+              ),
+              child: Icon(WorkoutUi.equipmentIcon(ex.equipment),
+                  color: catColor, size: 26),
+            ),
             AppSpacing.hGapMd,
-            Expanded(child: Text(parts, style: context.texts.bodyMedium)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(WorkoutUi.categoryLabel(ex.category),
+                      style: context.texts.titleSmall),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(subtitle,
+                        style: context.texts.bodySmall?.copyWith(
+                            color: context.colors.onSurfaceVariant)),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
       ),

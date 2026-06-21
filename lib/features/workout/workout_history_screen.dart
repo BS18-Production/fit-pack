@@ -127,14 +127,23 @@ class _SessionDetail extends ConsumerWidget {
   const _SessionDetail({required this.sessionId});
 
   String _fmtSet(WorkoutSet s) {
-    final w = s.weightKg;
-    final wTxt = w == null
-        ? '—'
-        : (w == w.roundToDouble()
-            ? w.round().toString()
-            : w.toStringAsFixed(1));
+    String fmt(double v) =>
+        v == v.roundToDouble() ? v.round().toString() : v.toStringAsFixed(1);
+    // Ölçüm tipini set'in dolu alanından çıkar (kayıtta tutulmuyor).
+    if (s.durationSec != null || s.distanceM != null) {
+      final parts = <String>[
+        if (s.distanceM != null) '${fmt(s.distanceM! / 1000)} km',
+        if (s.durationSec != null) _mmss(s.durationSec!),
+      ];
+      return parts.join(' · ');
+    }
+    if (s.weightKg == null && s.reps != null) return '${s.reps} tekrar';
+    final wTxt = s.weightKg == null ? '—' : fmt(s.weightKg!);
     return '$wTxt kg × ${s.reps ?? '—'}';
   }
+
+  String _mmss(int sec) =>
+      '${sec ~/ 60}:${(sec % 60).toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

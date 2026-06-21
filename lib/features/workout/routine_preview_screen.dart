@@ -5,11 +5,11 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
-import 'exercise_library_screen.dart' show kEquipmentTr;
 import 'routine_providers.dart';
+import 'workout_ui.dart';
 
-/// Rutin Önizleme (Antrenman V2 Faz B). Hareketler + hedef set×tekrar +
-/// "Antrenmana Başla" + Düzenle/Arşivle.
+/// Rutin Önizleme (Claude Design reskin). Hareketler + hedef set×tekrar +
+/// "Antrenmana Başla" + Düzenle/Arşivle. Hareket adları İngilizce.
 class RoutinePreviewScreen extends ConsumerWidget {
   final int routineId;
   const RoutinePreviewScreen({super.key, required this.routineId});
@@ -30,8 +30,7 @@ class RoutinePreviewScreen extends ConsumerWidget {
           IconButton(
             tooltip: 'Düzenle',
             icon: const Icon(Icons.edit_outlined),
-            onPressed: () =>
-                context.push('/workout/routine/$routineId/edit'),
+            onPressed: () => context.push('/workout/routine/$routineId/edit'),
           ),
           IconButton(
             tooltip: 'Arşivle',
@@ -76,28 +75,32 @@ class RoutinePreviewScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(
                 AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, 96),
             itemCount: items.length,
-            separatorBuilder: (_, _) => AppSpacing.vGapSm,
+            separatorBuilder: (_, _) => AppSpacing.vGapMd,
             itemBuilder: (_, i) {
               final it = items[i];
               final re = it.routineExercise;
               final target = re.targetSets != null
-                  ? '${re.targetSets} × ${re.targetRepsMin ?? ''}'
+                  ? '${re.targetSets}×${re.targetRepsMin ?? ''}'
                       '${re.targetRepsMax != null ? '-${re.targetRepsMax}' : ''}'
                   : '';
               return Card(
                 child: Padding(
-                  padding: AppSpacing.cardCompact,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md, vertical: AppSpacing.md + 1),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor:
-                            context.colors.primary.withValues(alpha: 0.12),
+                      SizedBox(
+                        width: 26,
                         child: Text('${i + 1}',
-                            style: context.texts.labelMedium?.copyWith(
-                                color: context.colors.primary,
-                                fontWeight: FontWeight.w800)),
+                            textAlign: TextAlign.center,
+                            style: context.texts.titleSmall?.copyWith(
+                              color: context.colors.onSurfaceVariant
+                                  .withValues(alpha: 0.6),
+                              fontWeight: FontWeight.w800,
+                            )),
                       ),
+                      AppSpacing.hGapSm,
+                      _EquipBadge(equipment: it.exercise.equipment),
                       AppSpacing.hGapMd,
                       Expanded(
                         child: Column(
@@ -109,16 +112,31 @@ class RoutinePreviewScreen extends ConsumerWidget {
                                 overflow: TextOverflow.ellipsis),
                             const SizedBox(height: 2),
                             Text(
-                              [
-                                kEquipmentTr[it.exercise.equipment] ?? '',
-                                if (target.isNotEmpty) 'Hedef: $target',
-                              ].where((s) => s.isNotEmpty).join(' · '),
+                              WorkoutUi.muscleEquip(it.exercise.primaryMuscle,
+                                  it.exercise.equipment),
                               style: context.texts.bodySmall?.copyWith(
                                   color: context.colors.onSurfaceVariant),
                             ),
                           ],
                         ),
                       ),
+                      if (target.isNotEmpty) ...[
+                        AppSpacing.hGapSm,
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 9, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: context.colors.primary
+                                .withValues(alpha: 0.12),
+                            borderRadius: AppRadius.brSm,
+                          ),
+                          child: Text(target,
+                              style: context.texts.labelMedium?.copyWith(
+                                color: context.colors.primary,
+                                fontWeight: FontWeight.w700,
+                              )),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -127,6 +145,26 @@ class RoutinePreviewScreen extends ConsumerWidget {
           );
         },
       ),
+    );
+  }
+}
+
+class _EquipBadge extends StatelessWidget {
+  final String? equipment;
+  const _EquipBadge({required this.equipment});
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: context.colors.onSurface.withValues(alpha: dark ? 0.06 : 0.05),
+        borderRadius: AppRadius.brMd,
+      ),
+      child: Icon(WorkoutUi.equipmentIcon(equipment),
+          color: context.colors.onSurfaceVariant, size: 19),
     );
   }
 }

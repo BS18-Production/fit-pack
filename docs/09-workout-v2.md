@@ -59,7 +59,11 @@ Yeni kolonlar (hepsi nullable veya default'lu → kayıpsız migration):
 
 `category` artık 5 değer: compound, isolation, calisthenics, cardio, flexibility. (Mevcut compound/isolation korunur; backfill ile diğerleri.)
 
-**Seed:** `docs/08-design-brief.md`'deki İngilizce tam liste (~90 hareket, 5 kategori, ekipman+kas+ölçüm tipi). Mevcut Türkçe-bağlamlı seed İngilizce isimlere taşınır; eski hareketler ada göre eşlenip korunur.
+**Seed:** `lib/data/seed/exercises_seed.dart` — İngilizce tam liste, 5 kategori, ekipman+kas+ölçüm tipi. Mevcut Türkçe-bağlamlı seed İngilizce isimlere taşınır; eski hareketler ada göre eşlenip korunur.
+
+**Kütüphane zenginliği (2026-06-21, genişletildi):** ~155 hareket. Türkiye'deki büyük zincir salonlarda (özellikle **MacFit**) bulunan makineler hazır gelir — kullanıcı kendi eklemek zorunda kalmasın: Hip Abduction/Adduction Machine, Pendulum/V-Squat/Belt Squat, Iso-Lateral Row/Pulldown/Chest Press, Machine Shoulder Press, Assisted Pull-Up/Dip Machine, Ab Crunch Machine, Face Pull, Rope Pushdown, Recumbent Bike, Arc Trainer, Battle Ropes, Sled Push vb. Mevcut kurulumlara `SeedManager._backfillExercises` ile gelir (şema bump gerekmez). Bütünlük testi: `test/data/workout_v2_test.dart`.
+
+**Türkçe arama (2026-06-21):** Hareket adları İngilizce olduğundan, kütüphane araması İngilizce ad + **İngilizce/Türkçe kas + ekipman + kategori** üzerinde eşleşir (`WorkoutUi.searchHaystack`/`matchesQuery`). Türkçe karakter duyarsız, çoklu kelime AND. Kullanıcı "bacak", "arka kol", "makine", "kalça" ile de bulur. DB değişikliği yok — UI filtre katmanı.
 
 ### 3.2 Routines (yeni)
 

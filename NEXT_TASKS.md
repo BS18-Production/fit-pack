@@ -1,7 +1,25 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
-> **Son güncelleme:** 2026-06-11
-> **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [docs/04-roadmap.md](docs/04-roadmap.md)
+> **Son güncelleme:** 2026-06-21
+> **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [docs/04-roadmap.md](docs/04-roadmap.md), [docs/08-design-brief.md](docs/08-design-brief.md)
+
+---
+
+## 🎨 Sprint D — Tasarım Reskin (DEVAM EDİYOR)
+
+Claude Design (Apple Fitness vibe + Indigo/Teal). HTML export: `design/code/`. Brief: `docs/08-design-brief.md`.
+
+- [x] **D-01** Manrope fontu (`app_theme.dart`), `app_dimens` (vGapxl_/brPill token)
+- [x] **D-02** Şema v4: su takibi (`water_intake` + `waterGoalMl`), migration lossless test 3/3
+- [x] **D-03** Ana Sayfa reskin: header (safe-area fix), dinlenme günü zekası, hero ring 196px, su kartı (DB-backed interaktif), Seri+Kilo satırı — emülatörde dark+light doğrulandı
+- [ ] **D-04** Antrenman sekmesi reskin + **BÜYÜK genişleme** (Hevy/Strong seviyesi — bkz. aşağı "Antrenman V2")
+- [ ] **D-05** Beslenme ekranı reskin
+- [ ] **D-06** İlerleme ekranı reskin
+- [ ] **D-07** Ayarlar + Onboarding reskin (Onboarding fonksiyon olarak var, görsel reskin gerek)
+- [ ] **D-08** P-15: uygulama ikonu hâlâ Flutter logosu! (tasarımda mor dumbbell ikon var → flutter_launcher_icons)
+
+### Antrenman V2 — Hevy/Strong seviyesi (tasarım onaylandı, kod büyük iş)
+Samet "tam esnek" + 4 loglama özelliği seçti (önceki seans / dinlenme sayacı / RPE+set tipleri / PR+grafik). Mimari: hareket kütüphanesi (kategori+kas+ekipman+ölçüm tipi), rutin oluşturucu, aktif seans (set tablosu), hareket detayı (geçmiş/grafik/PR), antrenman özeti. Şema v5+ gerektirir. Hareket seed listesi (İngilizce, 5 kategori) `docs/08-design-brief.md`'de. **Önce PRD + şema tasarımı (doc-first), sonra kod.**
 
 ---
 

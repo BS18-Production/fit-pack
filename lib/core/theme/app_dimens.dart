@@ -31,6 +31,8 @@ class AppSpacing {
   static const SizedBox vGapMd = SizedBox(height: md);
   static const SizedBox vGapLg = SizedBox(height: lg);
   static const SizedBox vGapXl = SizedBox(height: xl);
+  // Bloklar arası nefes (Apple Fitness ferahlığı — tasarımda ~26px).
+  static const SizedBox vGapxl_ = SizedBox(height: 26);
   static const SizedBox hGapXs = SizedBox(width: xs);
   static const SizedBox hGapSm = SizedBox(width: sm);
   static const SizedBox hGapMd = SizedBox(width: md);
@@ -51,6 +53,7 @@ class AppRadius {
   static const BorderRadius brMd = BorderRadius.all(Radius.circular(md));
   static const BorderRadius brLg = BorderRadius.all(Radius.circular(lg));
   static const BorderRadius brXl = BorderRadius.all(Radius.circular(xl));
+  static const BorderRadius brPill = BorderRadius.all(Radius.circular(pill));
 }
 
 class AppIconSize {

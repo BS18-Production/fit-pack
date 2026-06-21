@@ -7,4 +7,5 @@ mixin _$NutritionDaoMixin on DatabaseAccessor<AppDatabase> {
   $FoodsTable get foods => attachedDatabase.foods;
   $FoodLogsTable get foodLogs => attachedDatabase.foodLogs;
   $RecipeItemsTable get recipeItems => attachedDatabase.recipeItems;
+  $WaterIntakeTable get waterIntake => attachedDatabase.waterIntake;
 }

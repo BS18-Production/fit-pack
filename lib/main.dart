@@ -18,10 +18,15 @@ void main() async {
   // Seed initial data
   await SeedManager(db).seedIfNeeded();
 
+  // İlk açılış (P-10) tamamlandı mı? seedIfNeeded profili garanti etti;
+  // onboarded=false ise router onboarding ekranıyla başlar.
+  final profile = await db.userProfileDao.getProfile();
+  final onboarded = profile?.onboarded ?? false;
+
   runApp(
     UncontrolledProviderScope(
       container: container,
-      child: const FitPackApp(),
+      child: FitPackApp(onboarded: onboarded),
     ),
   );
 }

@@ -31,8 +31,12 @@ class CalorieRing extends StatelessWidget {
     final ringColor = context.semantic.macroCalories;
     final overColor = context.semantic.warning;
     final trackColor = context.colors.surfaceContainerHighest;
+    // Sayı boyutu halka boyutuyla orantılı: 204px halka → ~48px sayı (hero).
     final titleStyle = context.texts.displaySmall?.copyWith(
-        fontWeight: FontWeight.w800, height: 1.0);
+        fontSize: size * 0.235,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.03 * (size * 0.235),
+        height: 1.0);
     final subStyle = context.texts.labelMedium
         ?.copyWith(color: context.colors.onSurfaceVariant);
 
@@ -54,7 +58,8 @@ class CalorieRing extends StatelessWidget {
               progress: animated,
               color: active,
               track: trackColor,
-              stroke: size * 0.085,
+              // Tasarım: 204px halkada ~14px iz → ~0.068 oran.
+              stroke: size * 0.068,
             ),
             child: Center(
               child: Column(

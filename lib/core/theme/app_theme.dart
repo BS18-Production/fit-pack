@@ -5,8 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_dimens.dart';
 
-/// Fit Pack tema sistemi — Material 3, "Pro" (Indigo/Teal), Inter.
+/// Fit Pack tema sistemi — Material 3, "Pro" (Indigo/Teal), Manrope.
 /// Dark öncelikli; light de tam destekli (sistem takip eder).
+/// Font: Manrope (Claude Design onaylı tasarım fontu — yumuşak, modern,
+/// tam Türkçe glyph desteği). Inter'den geçiş 2026-06-21.
 class AppTheme {
   AppTheme._();
 
@@ -30,23 +32,24 @@ class AppTheme {
       colorScheme: scheme,
     );
 
-    // Inter type scale — okunaklı, hiyerarşik.
-    final text = GoogleFonts.interTextTheme(base.textTheme).copyWith(
-      displaySmall: GoogleFonts.inter(
-          fontSize: 32, fontWeight: FontWeight.w700, letterSpacing: -0.5),
-      headlineMedium: GoogleFonts.inter(
-          fontSize: 26, fontWeight: FontWeight.w700, letterSpacing: -0.3),
-      headlineSmall: GoogleFonts.inter(
-          fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: -0.2),
-      titleLarge: GoogleFonts.inter(fontSize: 19, fontWeight: FontWeight.w600),
-      titleMedium: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
-      titleSmall: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
-      bodyLarge: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w400),
-      bodyMedium: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w400),
-      bodySmall: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w400),
-      labelLarge: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
-      labelMedium: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w500),
-      labelSmall: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w500),
+    // Manrope type scale — okunaklı, hiyerarşik. Tasarım (Claude Design)
+    // ağırlıkları daha kalın kullanıyor (başlıklar 800); ona yaklaşıldı.
+    final text = GoogleFonts.manropeTextTheme(base.textTheme).copyWith(
+      displaySmall: GoogleFonts.manrope(
+          fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+      headlineMedium: GoogleFonts.manrope(
+          fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+      headlineSmall: GoogleFonts.manrope(
+          fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.3),
+      titleLarge: GoogleFonts.manrope(fontSize: 19, fontWeight: FontWeight.w700),
+      titleMedium: GoogleFonts.manrope(fontSize: 16, fontWeight: FontWeight.w700),
+      titleSmall: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w700),
+      bodyLarge: GoogleFonts.manrope(fontSize: 16, fontWeight: FontWeight.w500),
+      bodyMedium: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w500),
+      bodySmall: GoogleFonts.manrope(fontSize: 12.5, fontWeight: FontWeight.w500),
+      labelLarge: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w700),
+      labelMedium: GoogleFonts.manrope(fontSize: 12.5, fontWeight: FontWeight.w600),
+      labelSmall: GoogleFonts.manrope(fontSize: 11.5, fontWeight: FontWeight.w600),
     ).apply(
       bodyColor: scheme.onSurface,
       displayColor: scheme.onSurface,

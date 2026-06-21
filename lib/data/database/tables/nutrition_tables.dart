@@ -39,3 +39,12 @@ class RecipeItems extends Table {
   IntColumn get foodId => integer().references(Foods, #id)();
   RealColumn get grams => real()();
 }
+
+/// v4 (2026-06-21, Home su takibi): günlük su tüketimi. Gün başına TEK satır
+/// (`date` 00:00'a normalize), `amountMl` kümülatif artırılır/sıfırlanır.
+/// Hedef `user_profile.waterGoalMl`'de tutulur (varsayılan 2500 ml).
+class WaterIntake extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  DateTimeColumn get date => dateTime()();
+  IntColumn get amountMl => integer().withDefault(const Constant(0))();
+}

@@ -4,9 +4,44 @@ import '../tables/nutrition_tables.dart';
 
 part 'nutrition_dao.g.dart';
 
-@DriftAccessor(tables: [Foods, FoodLogs, RecipeItems])
+@DriftAccessor(tables: [Foods, FoodLogs, RecipeItems, WaterIntake])
 class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixin {
   NutritionDao(super.db);
+
+  // === Su takibi (v4) — gün başına tek satır, kümülatif ml ===
+  DateTime _dayStart(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  /// Günün toplam su miktarı (ml). Kayıt yoksa 0.
+  Future<int> getWaterForDay(DateTime day) async {
+    final row = await (select(waterIntake)
+          ..where((w) => w.date.equals(_dayStart(day))))
+        .getSingleOrNull();
+    return row?.amountMl ?? 0;
+  }
+
+  /// Güne [ml] ekler (negatif = azaltır), 0 altına düşmez. Yeni güne satır
+  /// açar, varsa artırır. Güncellenmiş toplamı döner.
+  Future<int> addWater(DateTime day, int ml) async {
+    final d = _dayStart(day);
+    final existing = await (select(waterIntake)..where((w) => w.date.equals(d)))
+        .getSingleOrNull();
+    if (existing == null) {
+      final v = ml < 0 ? 0 : ml;
+      await into(waterIntake)
+          .insert(WaterIntakeCompanion.insert(date: d, amountMl: Value(v)));
+      return v;
+    }
+    final next = (existing.amountMl + ml).clamp(0, 100000);
+    await (update(waterIntake)..where((w) => w.id.equals(existing.id)))
+        .write(WaterIntakeCompanion(amountMl: Value(next)));
+    return next;
+  }
+
+  /// Günün su kaydını sıfırlar (uzun basışla geri al).
+  Future<void> resetWater(DateTime day) async {
+    await (delete(waterIntake)..where((w) => w.date.equals(_dayStart(day))))
+        .go();
+  }
 
   // === Foods ===
   Future<List<Food>> getAllFoods() => select(foods).get();

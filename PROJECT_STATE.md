@@ -1,8 +1,18 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-06-11
-> **Faz:** V2 Geliştirme — **Sprint P: Premium Cila** tamam (Claude analiz bulguları)
+> **Son güncelleme:** 2026-06-21
+> **Faz:** V2 Geliştirme — **Sprint D: Tasarım Reskin (Ana Sayfa)** tamam
 > **Sahibi:** Samet Orhan
+
+## 🆕 Sprint D — Claude Design Reskin: Ana Sayfa (2026-06-21)
+
+Claude Design'da Apple Fitness vibe + Indigo/Teal paletiyle tasarım yapıldı (HTML export `design/code/`). Mevcut uygulamaya geçirme başladı — **Ana Sayfa tamam**:
+- **Font:** Inter → **Manrope** (tasarım fontu, `app_theme.dart`)
+- **Şema v3→v4:** `water_intake` tablosu + `user_profile.waterGoalMl` (default 2500). Migration lossless, test 3/3.
+- **Onboarding (P-10):** önceki session'dan zaten kodluydu — bu cihazda sıfır kurulumda çalıştı, doğrulandı.
+- **Ana Sayfa yeniden kuruldu** (`home_screen.dart`): özel header (BUGÜN + tarih, safe-area fix), durum-duyarlı birincil kart (**dinlenme günü zekası** — plandan türetiliyor: antrenman günü→gradient CTA, dinlenme→sakin kart + "Yarın: X" + yürüyüş önerisi), beslenme hero halkası (196px, ölçeklenen 48px sayı), **su takibi kartı** (+250ml/+1 bardak, DB-backed, uzun bas=sıfırla), sessiz Seri+Kilo satırı (dikey ayraç, ↓0.4 trend rozeti).
+- **Doğrulama:** analyze 0 · test 30/30 · emülatörde dark+light + su etkileşimi (0.7L) + dinlenme günü + onboarding akışı ekran görüntüsüyle doğrulandı.
+- **Sıradaki reskin ekranları:** Antrenman, Beslenme, İlerleme, Ayarlar (aynı token sistemi hazır).
 
 Bu doküman, projenin **şu andaki canlı durumunu** anlatır. Her session sonunda güncellenir.
 
@@ -30,7 +40,7 @@ Bu doküman, projenin **şu andaki canlı durumunu** anlatır. Her session sonun
 |---------|----------|-------|
 | Uygulama | V1.0.0+1 | Prod (lokal, Samet pilot) |
 | V2 hedef | 2.0.0 | Geliştirme — Sprint N (Beslenme V2) tamam |
-| DB schema | **v2** | Migration sistemi + v1→v2 (Beslenme V2) canlı, lossless test geçti |
+| DB schema | **v4** | v1→v2 (Beslenme V2), v2→v3 (Onboarding), v3→v4 (Su takibi) — hepsi lossless test geçti |
 | GitHub | anox2077/fit-pack | private |
 
 ---

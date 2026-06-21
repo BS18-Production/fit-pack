@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    input, button { font-family: 'Inter', system-ui, sans-serif; }
+    input:focus { outline: none; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+    @keyframes fpFade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fpSlide { from { transform: translateX(28px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fpSheet { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes fpPop { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+  </style>
+</helmet>
+
+<div style="min-width:100%; min-height:100vh; box-sizing:border-box; padding:44px 64px 64px; background:#e7e5df; font-family:'Inter',system-ui,sans-serif; display:flex; flex-direction:column; align-items:center; gap:20px;">
+  <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+    <div style="display:flex; background:rgba(16,18,24,0.06); border-radius:99px; padding:4px; gap:2px;">
+      <button onClick="{{ setLight }}" style="{{ segLight }}">Açık</button>
+      <button onClick="{{ setDark }}" style="{{ segDark }}">Koyu</button>
+    </div>
+    <div style="display:flex; background:rgba(16,18,24,0.06); border-radius:99px; padding:4px; gap:2px;">
+      <button onClick="{{ setTrain }}" style="{{ segTrain }}">Antrenman Günü</button>
+      <button onClick="{{ setRest }}" style="{{ segRest }}">Dinlenme Günü</button>
+    </div>
+    <button onClick="{{ openOnb }}" style="{{ onbBtn }}">Tanıtım</button>
+  </div>
+  <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ dark }}" hint-size="402px,874px">{{ app }}</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.h = React.createElement;
+    this.WORKOUTS = [
+      {id:'upperA', name:'Upper A', day:'Pazartesi', ex:[
+        {n:'Bench Press', last:[[60,8],[60,8],[57.5,8]]},
+        {n:'Barbell Row', last:[[70,8],[70,8],[67.5,8]]},
+        {n:'Overhead Press', last:[[40,8],[40,7],[37.5,8]]},
+        {n:'Lat Pulldown', last:[[65,10],[65,10],[60,10]]},
+        {n:'Incline DB Press', last:[[24,10],[24,9]]},
+        {n:'Face Pull', last:[[20,15],[20,15]]},
+      ]},
+      {id:'lowerA', name:'Lower A', day:'Salı', ex:[
+        {n:'Squat', last:[[100,6],[100,6],[95,6]]},
+        {n:'Romanian Deadlift', last:[[90,8],[90,8]]},
+        {n:'Leg Press', last:[[180,10],[180,10]]},
+        {n:'Leg Curl', last:[[45,12],[45,12]]},
+        {n:'Calf Raise', last:[[80,15],[80,15],[80,15]]},
+      ]},
+      {id:'upperB', name:'Upper B', day:'Perşembe', ex:[
+        {n:'Incline Bench', last:[[55,8],[55,8],[52.5,8]]},
+        {n:'Pull-up', last:[[0,8],[0,7],[0,6]]},
+        {n:'DB Shoulder Press', last:[[22,10],[22,9]]},
+        {n:'Cable Row', last:[[60,12],[60,12]]},
+        {n:'Lateral Raise', last:[[12,15],[12,15]]},
+        {n:'Triceps Pushdown', last:[[30,12],[30,12]]},
+      ]},
+      {id:'lowerB', name:'Lower B', day:'Cuma', ex:[
+        {n:'Deadlift', last:[[140,5],[140,5]]},
+        {n:'Front Squat', last:[[70,8],[70,8]]},
+        {n:'Bulgarian Split Squat', last:[[20,10],[20,10]]},
+        {n:'Leg Extension', last:[[50,12],[50,12]]},
+        {n:'Calf Raise', last:[[80,15],[80,15]]},
+      ]},
+    ];
+    this.state = {
+      theme:'light', day:'train', tab:'home', stack:[], dialog:null,
+      dlgVal:'', dlgVals:{}, onbStep:0, exported:false, chartSel:6,
+      water:{current:1.4, goal:2.5},
+      goals:{kcal:3200, protein:180, carbs:360, fat:90},
+      height:178, goalWeight:82.0,
+      program:{name:'İleri Upper/Lower', phase:'Faz 3', week:'Hafta 1', deload:'2 Haz'},
+      meals:{
+        kahvalti:[
+          {name:'Yulaf', g:80, kcal:311, p:10, c:53, f:6},
+          {name:'Süt (yarım yağlı)', g:250, kcal:160, p:9, c:13, f:9},
+          {name:'Muz', g:100, kcal:89, p:1, c:23, f:0},
+        ],
+        ogle:[
+          {name:'Tavuk Göğsü', g:200, kcal:330, p:62, c:0, f:8},
+          {name:'Pirinç (haşlanmış)', g:150, kcal:195, p:4, c:42, f:1},
+          {name:'Tam Buğday Ekmek', g:30, kcal:74, p:4, c:12, f:1},
+        ],
+        aksam:[],
+        atistirma:[
+          {name:'Whey Protein', g:30, kcal:120, p:24, c:2, f:2},
+          {name:'Badem', g:15, kcal:87, p:3, c:3, f:8},
+        ],
+      },
+      weight:[['12 May',86.2],['19 May',85.8],['26 May',85.5],['2 Haz',85.3],['9 Haz',85.1],['16 Haz',85.1],['21 Haz',84.7]],
+      measure:{bel:84, gogus:104, kol:38, kalca:99, boyun:39, yag:16},
+      history:[
+        {name:'Lower A', date:'18 Haz', vol:8420, ex:[{n:'Squat', s:'100×6, 100×6, 95×6'},{n:'Romanian Deadlift', s:'90×8, 90×8'},{n:'Leg Press', s:'180×10, 180×10'},{n:'Leg Curl', s:'45×12, 45×12'}]},
+        {name:'Upper B', date:'16 Haz', vol:7150, ex:[{n:'Incline Bench', s:'55×8, 55×8'},{n:'Pull-up', s:'VA×8, VA×7'},{n:'Cable Row', s:'60×12, 60×12'},{n:'Lateral Raise', s:'12×15, 12×15'}]},
+        {name:'Upper A', date:'14 Haz', vol:9240, ex:[{n:'Bench Press', s:'60×8, 60×8, 57.5×8'},{n:'Barbell Row', s:'70×8, 70×8'},{n:'Overhead Press', s:'40×8, 40×7'}]},
+      ],
+      foods:[
+        {n:'Yulaf', kcal:389, p:13, c:66, f:7},
+        {n:'Tavuk Göğsü', kcal:165, p:31, c:0, f:4},
+        {n:'Yumurta', kcal:155, p:13, c:1, f:11},
+        {n:'Pirinç (haşlanmış)', kcal:130, p:3, c:28, f:0},
+        {n:'Tam Buğday Ekmek', kcal:247, p:13, c:41, f:3},
+        {n:'Yoğurt', kcal:61, p:4, c:5, f:3},
+        {n:'Muz', kcal:89, p:1, c:23, f:0},
+        {n:'Badem', kcal:579, p:21, c:22, f:50},
+        {n:'Somon', kcal:208, p:20, c:0, f:13},
+        {n:'Whey Protein', kcal:400, p:80, c:8, f:6, custom:true},
+        {n:'Süt (yarım yağlı)', kcal:64, p:3, c:5, f:4},
+        {n:'Zeytinyağı', kcal:884, p:0, c:0, f:100},
+      ],
+      addCtx:null, foodQ:'',
+      session:null,
+    };
+  }
+
+  theme(){
+    if(this.state.theme==='dark') return {mode:'dark', bg:'#101218', card:'#1B1E27', text:'#E7E9EE', sub:'#9BA1B0', faint:'#6B7080',
+      primary:'#6366F1', primarySoft:'rgba(99,102,241,0.16)', hairline:'rgba(255,255,255,0.06)', track:'rgba(255,255,255,0.08)', chip:'rgba(255,255,255,0.06)',
+      cardShadow:'none', navBg:'rgba(16,18,24,0.86)', navInactive:'#6B7080', overlay:'rgba(0,0,0,0.55)', ringTrack:'rgba(255,255,255,0.07)',
+      g1:'#818CF8', g2:'#5457E6', grad:'linear-gradient(135deg,#7C7FF5 0%,#5457E6 60%,#4F46E5 100%)', restTint:'rgba(255,255,255,0.06)', restRow:'rgba(255,255,255,0.05)',
+      teal:'#14B8A6', tealText:'#2DD4BF', blue:'#38BDF8', blueText:'#7DD3FC', fat:'#FBBF24', sheetHandle:'rgba(255,255,255,0.22)', inputBg:'rgba(255,255,255,0.05)'};
+    return {mode:'light', bg:'#F6F7F9', card:'#FFFFFF', text:'#1A1C22', sub:'#5A6072', faint:'#9499A6',
+      primary:'#4F46E5', primarySoft:'rgba(79,70,229,0.10)', hairline:'rgba(16,18,24,0.06)', track:'rgba(16,18,24,0.06)', chip:'rgba(16,18,24,0.04)',
+      cardShadow:'0 1px 3px rgba(16,18,24,0.04)', navBg:'rgba(246,247,249,0.9)', navInactive:'#9499A6', overlay:'rgba(16,18,24,0.4)', ringTrack:'rgba(79,70,229,0.10)',
+      g1:'#6366F1', g2:'#4F46E5', grad:'linear-gradient(135deg,#6366F1 0%,#4F46E5 100%)', restTint:'rgba(90,96,114,0.10)', restRow:'rgba(90,96,114,0.07)',
+      teal:'#14B8A6', tealText:'#0F9488', blue:'#38BDF8', blueText:'#0C8FCF', fat:'#FBBF24', sheetHandle:'rgba(16,18,24,0.15)', inputBg:'rgba(16,18,24,0.04)'};
+  }
+
+  th(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+  consumed(){ let k=0,p=0,c=0,f=0; Object.values(this.state.meals).forEach(m=>m.forEach(it=>{k+=it.kcal;p+=it.p;c+=it.c;f+=it.f;})); return {k,p,c,f}; }
+
+  go = (tab)=> this.setState({tab, stack:[]});
+  push = (type,data)=> this.setState(s=>({stack:[...s.stack,{type,data:data||{}}]}));
+  pop = ()=> this.setState(s=>({stack:s.stack.slice(0,-1)}));
+  closeDlg = ()=> this.setState({dialog:null});
+  addWater = (l)=> this.setState(s=>({water:{...s.water, current: Math.min(s.water.goal, Math.round((s.water.current+l)*100)/100)}}));
+
+  openNum = (title, value, suffix, onSave)=> this.setState({dialog:{kind:'num', title, suffix, onSave}, dlgVal:String(value)});
+  openChoice = (title, options, onPick)=> this.setState({dialog:{kind:'choice', title, options, onPick}});
+  confirm = (title, msg, label, onYes)=> this.setState({dialog:{kind:'confirm', title, msg, label, onYes}});
+
+  startSession = (wid)=>{
+    const w = this.WORKOUTS.find(x=>x.id===wid);
+    const ex = w.ex.map(e=>({ n:e.n, sets:e.last.map(()=>({kg:'',reps:'',done:false})), last:e.last }));
+    this.setState({session:{wid, name:w.name, ex}, stack:[...this.state.stack,{type:'session',data:{}}]});
+  };
+  setCell = (ei,si,key,val)=> this.setState(s=>{ const ses={...s.session, ex:s.session.ex.map((e,i)=> i!==ei?e:{...e, sets:e.sets.map((st,j)=> j!==si?st:{...st,[key]:val})})}; return {session:ses}; });
+  toggleDone = (ei,si)=> this.setState(s=>{ const ses={...s.session, ex:s.session.ex.map((e,i)=> i!==ei?e:{...e, sets:e.sets.map((st,j)=> j!==si?st:{...st,done:!st.done})})}; return {session:ses}; });
+  addSet = (ei)=> this.setState(s=>{ const ses={...s.session, ex:s.session.ex.map((e,i)=> i!==ei?e:{...e, sets:[...e.sets,{kg:'',reps:'',done:false}]})}; return {session:ses}; });
+  delSet = (ei)=> this.setState(s=>{ const ses={...s.session, ex:s.session.ex.map((e,i)=> i!==ei||e.sets.length<=1?e:{...e, sets:e.sets.slice(0,-1)})}; return {session:ses}; });
+  finishSession = ()=>{
+    const ses=this.state.session; let vol=0; const exs=[];
+    ses.ex.forEach((e)=>{ const parts=[]; e.sets.forEach((st,j)=>{ const kg=parseFloat(st.kg)|| (st.kg===''? (e.last[j]?e.last[j][0]:0):0); const reps=parseInt(st.reps)|| (st.reps===''? (e.last[j]?e.last[j][1]:0):0); vol+=kg*reps; parts.push((kg?kg:'VA')+'×'+reps); }); exs.push({n:e.n, s:parts.join(', ')}); });
+    const entry={name:ses.name, date:'Bugün', vol:Math.round(vol), ex:exs};
+    this.setState(s=>({ history:[entry,...s.history], session:null, stack:[], tab:'home', dialog:null }));
+  };
+
+  addFoodToMeal = (meal, food, g)=>{
+    const k=Math.round(food.kcal*g/100), p=Math.round(food.p*g/100), c=Math.round(food.c*g/100), f=Math.round(food.f*g/100);
+    this.setState(s=>({ meals:{...s.meals, [meal]:[...s.meals[meal], {name:food.n, g, kcal:k, p, c, f}]}, addCtx:null, foodQ:'' }));
+  };
+  delFoodItem = (meal, idx)=> this.setState(s=>({ meals:{...s.meals, [meal]:s.meals[meal].filter((_,i)=>i!==idx)} }));
+  delFood = (idx)=> this.setState(s=>({ foods:s.foods.filter((_,i)=>i!==idx) }));
+
+  addMeasurement = (kg, others)=> this.setState(s=>{
+    const w=[...s.weight]; const last=w[w.length-1];
+    if(last && last[0]==='Bugün'){ w[w.length-1]=['Bugün', kg]; } else { w.push(['Bugün', kg]); }
+    return { weight:w, measure:{...s.measure, ...others}, chartSel:w.length-1, dialog:null };
+  });
+
+  // ---------- small UI helpers ----------
+  ic(name, color, size, sw){
+    const h=this.h; size=size||22; sw=sw||1.9;
+    const M={
+      home:[['p','M3 10.5L12 3l9 7.5'],['p','M5 9.5V20h14V9.5']],
+      dumbbell:[['p','M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10']],
+      bowl:[['p','M3 11h18'],['p','M5 11a7 7 0 0014 0'],['p','M9 4.5c0 1-1 1-1 2.2M12.5 4.5c0 1-1 1-1 2.2']],
+      chart:[['p','M4 19V5M4 19h16'],['p','M8 16l3-4 3 2 4-6']],
+      export:[['p','M12 15V4'],['p','M8 8l4-4 4 4'],['p','M5 13v5a2 2 0 002 2h10a2 2 0 002-2v-5']],
+      settings:[['p','M4 7h9'],['p','M19 7h1'],['p','M4 17h5'],['p','M15 17h5'],['c',15,7,2.4],['c',11,17,2.4]],
+      chevron:[['p','M9 6l6 6-6 6']],
+      back:[['p','M15 5l-7 7 7 7']],
+      arrow:[['p','M5 12h13'],['p','M13 6l6 6-6 6']],
+      drop:[['p','M12 3s6 6.5 6 10.5a6 6 0 11-12 0C6 9.5 12 3 12 3z']],
+      moon:[['p','M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z']],
+      plus:[['p','M12 5v14M5 12h14']],
+      minus:[['p','M5 12h14']],
+      check:[['p','M5 12.5l4.5 4.5L19 7']],
+      x:[['p','M6 6l12 12M18 6L6 18']],
+      walk:[['c',13,4.6,1.6],['p','M11.4 8.2l-1.6 3.6 2.2 1.5v4.7M13.8 13.3l2.6 1M9.8 11.8l-2.6 1.6']],
+      history:[['p','M3.5 12a8.5 8.5 0 108.5-8.5A8.5 8.5 0 005 6.8M3.5 3.5V7h3.5'],['p','M12 8v4.2l3 1.8']],
+      barcode:[['p','M4 7v10M7 7v10M10 7v10M14 7v10M17 7v10M20 7v10']],
+      search:[['c',11,11,7],['p','M21 21l-4-4']],
+      edit:[['p','M12 20h9'],['p','M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z']],
+      trash:[['p','M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6']],
+      flag:[['p','M5 21V4M5 4h13l-2 4 2 4H5']],
+      plate:[['c',12,12,8],['c',12,12,3]],
+      bolt:[['p','M13 2L4 14h7l-1 8 9-12h-7z']],
+    };
+    const specs=M[name]||[];
+    return h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round'},
+      specs.map((s,i)=> s[0]==='p'? h('path',{key:i,d:s[1]}) : h('circle',{key:i,cx:s[1],cy:s[2],r:s[3]})));
+  }
+  card(t, kids, extra){ return this.h('div',{style:Object.assign({background:t.card,border:'1px solid '+t.hairline,borderRadius:20,boxShadow:t.cardShadow},extra||{})}, kids); }
+  eyebrow(t, txt, color){ return this.h('div',{style:{fontSize:11,fontWeight:700,letterSpacing:'0.13em',textTransform:'uppercase',color:color||t.sub}}, txt); }
+
+  ring(t, consumedK, goalK){
+    const h=this.h; const C=552.92; const frac=Math.max(0,Math.min(1, consumedK/goalK)); const off=C*(1-frac);
+    const left=Math.max(0, Math.round(goalK-consumedK));
+    return h('div',{style:{position:'relative',width:204,height:204}},
+      h('svg',{width:204,height:204,viewBox:'0 0 220 220'},
+        h('defs',null, h('linearGradient',{id:'fpring'+t.mode,x1:'0',y1:'0',x2:'1',y2:'1'}, h('stop',{offset:'0',stopColor:t.g1}), h('stop',{offset:'1',stopColor:t.g2}))),
+        h('circle',{cx:110,cy:110,r:88,fill:'none',stroke:t.ringTrack,strokeWidth:14}),
+        h('circle',{cx:110,cy:110,r:88,fill:'none',stroke:'url(#fpring'+t.mode+')',strokeWidth:14,strokeLinecap:'round',strokeDasharray:C,strokeDashoffset:off,transform:'rotate(-90 110 110)',style:{transition:'stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)'}})
+      ),
+      h('div',{style:{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}},
+        h('div',{style:{fontSize:48,fontWeight:800,letterSpacing:'-0.03em',color:t.text,lineHeight:1}}, this.th(left)),
+        h('div',{style:{fontSize:13,fontWeight:500,color:t.sub,marginTop:6}}, 'kcal kaldı')
+      )
+    );
+  }
+  macroBar(t, label, color, val, goal){
+    const h=this.h; const pct=Math.max(2,Math.min(100, val/goal*100));
+    return h('div',null,
+      h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:7}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:8}}, h('span',{style:{width:8,height:8,borderRadius:'50%',background:color}}), h('span',{style:{fontSize:13,fontWeight:600,color:t.text}}, label)),
+        h('div',{style:{fontSize:12.5,fontWeight:500,color:t.sub}}, this.th(val)+' / '+this.th(goal)+' g')
+      ),
+      h('div',{style:{height:7,borderRadius:99,background:t.track}}, h('div',{style:{height:'100%',width:pct+'%',borderRadius:99,background:color,transition:'width .4s ease'}}))
+    );
+  }
+  pillBtn(t, label, onClick, accent){
+    return this.h('button',{onClick, style:{border:'none',cursor:'pointer',flex:1,background:accent?'rgba(56,189,248,0.10)':t.chip, color:accent?t.blueText:t.text, fontSize:12.5,fontWeight:600,padding:'9px 12px',borderRadius:99}}, label);
+  }
+  scroll(t, kids, padTop){ return this.h('div',{style:{flex:1,overflowY:'auto',WebkitOverflowScrolling:'touch'}}, this.h('div',{style:{padding:(padTop==null?76:padTop)+'px 22px 110px',display:'flex',flexDirection:'column',gap:24}}, kids)); }
+
+  // ---------- HEADER ----------
+  homeHeader(t){
+    const h=this.h;
+    return h('div',{style:{display:'flex',alignItems:'flex-start',justifyContent:'space-between'}},
+      h('div',null,
+        h('div',{style:{fontSize:11,fontWeight:700,letterSpacing:'0.18em',color:t.primary}}, 'BUGÜN'),
+        h('div',{style:{fontSize:26,fontWeight:800,letterSpacing:'-0.02em',marginTop:5,color:t.text}}, 'Pazar, 21 Haziran')
+      ),
+      h('div',{style:{display:'flex',gap:10,marginTop:2}},
+        h('button',{onClick:()=>this.push('export'), style:{width:44,height:44,border:'none',background:'transparent',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}, this.ic('export', t.sub, 22, 1.7)),
+        h('button',{onClick:()=>this.push('settings'), style:{width:44,height:44,border:'none',background:'transparent',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}, this.ic('settings', t.sub, 22, 1.7))
+      )
+    );
+  }
+
+  // ---------- HOME ----------
+  home(t){
+    const h=this.h; const cs=this.consumed(); const g=this.state.goals;
+    const phaseRow = h('button',{onClick:()=>this.go('workout'), style:{border:'none',background:'transparent',cursor:'pointer',padding:0,display:'flex',alignItems:'center',gap:13,width:'100%',textAlign:'left'}},
+      h('div',{style:{width:40,height:40,borderRadius:12,background:t.primarySoft,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.ic('dumbbell', t.primary, 19)),
+      h('div',{style:{flex:1,minWidth:0}},
+        h('div',{style:{fontSize:14.5,fontWeight:700,color:t.text}}, this.state.program.name),
+        h('div',{style:{fontSize:12.5,fontWeight:500,color:t.sub,marginTop:2}}, this.state.program.phase+' · '+this.state.program.week)
+      ),
+      this.ic('chevron', t.faint, 17, 2)
+    );
+
+    let primary;
+    if(this.state.day==='train'){
+      primary = h('button',{onClick:()=>this.startSession('upperA'), style:{border:'none',textAlign:'left',cursor:'pointer',background:t.grad,borderRadius:20,padding:'19px 22px',display:'flex',alignItems:'center',gap:14,boxShadow:'0 8px 20px rgba(79,70,229,0.24)'}},
+        h('div',{style:{flex:1}},
+          h('div',{style:{fontSize:20,fontWeight:800,letterSpacing:'-0.01em',color:'#fff'}}, 'Antrenmanı Başlat'),
+          h('div',{style:{fontSize:12.5,fontWeight:500,color:'rgba(255,255,255,0.82)',marginTop:4}}, 'Upper A · 6 hareket · ~52 dk')
+        ),
+        h('div',{style:{width:46,height:46,borderRadius:15,background:'rgba(255,255,255,0.20)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.ic('arrow', '#fff', 22, 2.2))
+      );
+    } else {
+      primary = this.card(t, [
+        h('div',{key:'a',style:{display:'flex',alignItems:'center',gap:14}},
+          h('div',{style:{width:46,height:46,borderRadius:15,background:t.restTint,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.ic('moon', t.sub, 22, 1.8)),
+          h('div',{style:{flex:1}},
+            h('div',{style:{fontSize:18,fontWeight:800,letterSpacing:'-0.01em',color:t.text}}, 'Bugün dinlenme günü'),
+            h('div',{style:{fontSize:12.5,fontWeight:500,color:t.sub,marginTop:4}}, 'Yarın: Lower B')
+          )
+        ),
+        h('button',{key:'b',onClick:()=>this.confirm('Hafif yürüyüş','20 dakikalık bir yürüyüş bugünkü toparlanmana yardımcı olur.','Başlat',()=>this.closeDlg()), style:{width:'100%',border:'none',cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:11,marginTop:15,padding:'12px 14px',borderRadius:14,background:t.restRow}},
+          this.ic('walk', t.sub, 19, 1.8),
+          h('div',{style:{flex:1,fontSize:13,fontWeight:600,color:t.sub}}, 'Hafif yürüyüş ister misin?'),
+          this.ic('chevron', t.faint, 16, 2)
+        )
+      ], {padding:'18px 20px'});
+    }
+
+    const nutrition = this.card(t, [
+      h('div',{key:'h',style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}},
+        h('div',{style:{fontSize:17,fontWeight:700,color:t.text}}, 'Bugünkü Beslenme'),
+        h('button',{onClick:()=>this.go('nutrition'), style:{border:'none',background:'transparent',cursor:'pointer',fontSize:12.5,fontWeight:600,color:t.primary}}, 'Düzenle')
+      ),
+      h('div',{key:'r',style:{display:'flex',justifyContent:'center',margin:'18px 0 26px'}}, this.ring(t, cs.k, g.kcal)),
+      h('div',{key:'m',style:{display:'flex',flexDirection:'column',gap:18}},
+        this.macroBar(t,'Protein',t.teal,cs.p,g.protein),
+        this.macroBar(t,'Karbonhidrat',t.blue,cs.c,g.carbs),
+        this.macroBar(t,'Yağ',t.fat,cs.f,g.fat)
+      )
+    ], {padding:'24px 22px 28px'});
+
+    const w=this.state.water;
+    const water = this.card(t, [
+      h('div',{key:'h',style:{display:'flex',alignItems:'center',gap:11,marginBottom:13}},
+        h('div',{style:{width:34,height:34,borderRadius:11,background:'rgba(56,189,248,0.12)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.ic('drop', t.blueText, 17)),
+        h('div',{style:{fontSize:14,fontWeight:700,color:t.text}}, 'Su'),
+        h('div',{style:{flex:1}}),
+        h('div',{style:{fontSize:14,fontWeight:700,color:t.text}}, w.current.toFixed(1).replace('.',',')+' ', h('span',{style:{color:t.faint,fontWeight:600}}, '/ '+w.goal.toFixed(1).replace('.',',')+' L'))
+      ),
+      h('div',{key:'b',style:{height:6,borderRadius:99,background:t.track,marginBottom:14}}, h('div',{style:{height:'100%',width:Math.min(100,w.current/w.goal*100)+'%',borderRadius:99,background:t.blue,transition:'width .35s ease'}})),
+      h('div',{key:'c',style:{display:'flex',gap:8}},
+        this.pillBtn(t,'+250 ml',()=>this.addWater(0.25),true),
+        this.pillBtn(t,'+1 bardak',()=>this.addWater(0.2),true)
+      )
+    ], {padding:'16px 18px'});
+
+    const lastW=this.state.weight[this.state.weight.length-1][1];
+    const prevW=this.state.weight[this.state.weight.length-2][1];
+    const d=(prevW-lastW);
+    const stats = h('button',{onClick:()=>this.go('progress'), style:{border:'none',background:'transparent',cursor:'pointer',padding:0,display:'flex',gap:14,textAlign:'left'}},
+      h('div',{style:{flex:1,display:'flex',flexDirection:'column',gap:8}},
+        this.eyebrow(t,'Seri'),
+        h('div',{style:{display:'flex',alignItems:'baseline',gap:6}}, h('span',{style:{fontSize:18}},'🔥'), h('span',{style:{fontSize:24,fontWeight:800,color:t.text,letterSpacing:'-0.02em'}},'5'), h('span',{style:{fontSize:13,fontWeight:600,color:t.sub}},'gün'))
+      ),
+      h('div',{style:{width:1,background:t.hairline}}),
+      h('div',{style:{flex:1,display:'flex',flexDirection:'column',gap:8,paddingLeft:2}},
+        this.eyebrow(t,'Son Kilo'),
+        h('div',{style:{display:'flex',alignItems:'baseline',gap:5}}, h('span',{style:{fontSize:24,fontWeight:800,color:t.text,letterSpacing:'-0.02em'}}, lastW.toFixed(1).replace('.',',')), h('span',{style:{fontSize:13,fontWeight:600,color:t.sub}},'kg'), d>0.001?h('span',{style:{fontSize:12,fontWeight:600,color:t.tealText,marginLeft:4}}, '↓ '+d.toFixed(1).replace('.',',')):null)
+      )
+    );
+
+    return this.scroll(t, [
+      h('div',{key:'1'},this.homeHeader(t)), h('div',{key:'2'},phaseRow), h('div',{key:'3'},primary), h('div',{key:'4'},nutrition), h('div',{key:'5'},water), h('div',{key:'6'},stats)
+    ]);
+  }
+
+  // ---------- WORKOUT LIST ----------
+  workout(t){
+    const h=this.h; const today='upperA';
+    const head = h('div',null,
+      this.eyebrow(t,'Program'),
+      h('div',{style:{fontSize:24,fontWeight:800,letterSpacing:'-0.02em',color:t.text,marginTop:5}}, this.state.program.name),
+      h('div',{style:{fontSize:13,fontWeight:500,color:t.sub,marginTop:3}}, this.state.program.phase+' · '+this.state.program.week)
+    );
+    const cards = this.WORKOUTS.map(w=>{
+      const isToday = w.id===today && this.state.day==='train';
+      return h('button',{key:w.id,onClick:()=>this.push('preview',{wid:w.id}), style:{border:'1px solid '+(isToday?t.primary:t.hairline),background:t.card,boxShadow:t.cardShadow,borderRadius:20,padding:'16px 18px',cursor:'pointer',textAlign:'left',display:'block',width:'100%'}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:13}},
+          h('div',{style:{width:42,height:42,borderRadius:13,background:t.primarySoft,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.ic('dumbbell', t.primary, 20)),
+          h('div',{style:{flex:1,minWidth:0}},
+            h('div',{style:{display:'flex',alignItems:'center',gap:8}}, h('span',{style:{fontSize:16,fontWeight:700,color:t.text}}, w.name), isToday?h('span',{style:{fontSize:10,fontWeight:700,letterSpacing:'0.06em',color:t.primary,background:t.primarySoft,padding:'2px 7px',borderRadius:99}},'BUGÜN'):null),
+            h('div',{style:{fontSize:12.5,fontWeight:500,color:t.sub,marginTop:2}}, w.day+' · '+w.ex.length+' hareket')
+          ),
+          this.ic('chevron', t.faint, 18, 2)
+        ),
+        h('div',{style:{display:'flex',flexWrap:'wrap',gap:6,marginTop:13}}, w.ex.slice(0,3).map((e,i)=>h('span',{key:i,style:{fontSize:11.5,fontWeight:600,color:t.sub,background:t.chip,padding:'5px 10px',borderRadius:99}}, e.n)), h('span',{style:{fontSize:11.5,fontWeight:600,color:t.faint,padding:'5px 4px'}}, '+'+(w.ex.length-3)))
+      );
+    });
+    const histBtn = h('button',{onClick:()=>this.push('history'), style:{border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',borderRadius:16,padding:'14px 18px',display:'flex',alignItems:'center',gap:11,width:'100%'}},
+      this.ic('history', t.sub, 20), h('span',{style:{flex:1,textAlign:'left',fontSize:14,fontWeight:600,color:t.text}}, 'Antrenman Geçmişi'), this.ic('chevron', t.faint, 17, 2));
+    return this.scroll(t, [h('div',{key:'h'},head), h('div',{key:'c',style:{display:'flex',flexDirection:'column',gap:12}}, cards), h('div',{key:'b'},histBtn)]);
+  }
+
+  // ---------- OVERLAYS ----------
+  overlayShell(t, title, kids, opts){
+    opts=opts||{};
+    const h=this.h;
+    return h('div',{style:{position:'absolute',inset:0,background:t.bg,display:'flex',flexDirection:'column',zIndex:30,animation:'fpSlide .28s cubic-bezier(.4,0,.2,1)'}},
+      h('div',{style:{flexShrink:0,padding:'62px 16px 12px',display:'flex',alignItems:'center',gap:6,borderBottom:'1px solid '+t.hairline,background:t.bg}},
+        h('button',{onClick:opts.onBack||this.pop, style:{width:40,height:40,border:'none',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}, this.ic('back', t.text, 24, 2)),
+        h('div',{style:{flex:1,fontSize:17,fontWeight:700,color:t.text}}, title),
+        opts.right||null
+      ),
+      h('div',{style:{flex:1,overflowY:'auto'}}, h('div',{style:{padding:'18px 22px 40px',display:'flex',flexDirection:'column',gap:opts.gap==null?16:opts.gap}}, kids))
+    );
+  }
+
+  preview(t, data){
+    const h=this.h; const w=this.WORKOUTS.find(x=>x.id===data.wid);
+    const list = w.ex.map((e,i)=> this.card(t, [
+      h('div',{key:'a',style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
+        h('div',null, h('div',{style:{fontSize:15,fontWeight:700,color:t.text}}, e.n), h('div',{style:{fontSize:12.5,fontWeight:500,color:t.sub,marginTop:3}}, 'Geçen seans: '+e.last.map(s=>(s[0]?s[0]:'VA')+'×'+s[1]).join(', '))),
+        h('div',{style:{fontSize:13,fontWeight:700,color:t.faint}}, e.last.length+' set')
+      )
+    ], {padding:'14px 16px'}, e.n));
+    const start = h('button',{onClick:()=>{ this.pop(); this.startSession(w.id); }, style:{border:'none',cursor:'pointer',background:t.grad,borderRadius:18,padding:'17px',fontSize:16,fontWeight:800,color:'#fff',boxShadow:'0 8px 20px rgba(79,70,229,0.24)'}}, 'Başla');
+    return this.overlayShell(t, w.name+' · '+w.day, [
+      h('div',{key:'s'}, start),
+      h('div',{key:'l',style:{display:'flex',flexDirection:'column',gap:12}}, list)
+    ], {gap:18});
+  }
+
+  session(t){
+    const h=this.h; const ses=this.state.session; if(!ses) return null;
+    const exs = ses.ex.map((e,ei)=> this.card(t, [
+      h('div',{key:'h',style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}},
+        h('div',{style:{fontSize:15,fontWeight:700,color:t.text}}, e.n),
+        h('div',{style:{display:'flex',gap:6}},
+          h('button',{onClick:()=>this.delSet(ei), style:{width:30,height:30,borderRadius:9,border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}, this.ic('minus', t.sub, 15, 2)),
+          h('button',{onClick:()=>this.addSet(ei), style:{width:30,height:30,borderRadius:9,border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}, this.ic('plus', t.sub, 15, 2))
+        )
+      ),
+      h('div',{key:'rows',style:{display:'flex',flexDirection:'column',gap:8}}, e.sets.map((st,si)=>{
+        const ph=e.last[si]||e.last[e.last.length-1]||[0,0];
+        return h('div',{key:si,style:{display:'flex',alignItems:'center',gap:8}},
+          h('div',{style:{width:26,fontSize:13,fontWeight:700,color:t.faint,textAlign:'center'}}, (si+1)),
+          h('input',{type:'text',inputMode:'decimal',value:st.kg,placeholder:(ph[0]?ph[0]:'VA')+'', onChange:(ev)=>this.setCell(ei,si,'kg',ev.target.value), style:{flex:1,height:42,borderRadius:11,border:'1px solid '+t.hairline,background:t.inputBg,color:t.text,textAlign:'center',fontSize:15,fontWeight:600}}),
+          h('span',{style:{fontSize:13,fontWeight:600,color:t.faint}}, 'kg'),
+          h('span',{style:{fontSize:14,color:t.faint}}, '×'),
+          h('input',{type:'text',inputMode:'numeric',value:st.reps,placeholder:ph[1]+'', onChange:(ev)=>this.setCell(ei,si,'reps',ev.target.value), style:{width:64,height:42,borderRadius:11,border:'1px solid '+t.hairline,background:t.inputBg,color:t.text,textAlign:'center',fontSize:15,fontWeight:600}}),
+          h('button',{onClick:()=>this.toggleDone(ei,si), style:{width:42,height:42,borderRadius:11,border:'none',cursor:'pointer',background:st.done?t.teal:t.chip,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.ic('check', st.done?'#fff':t.faint, 18, 2.4))
+        );
+      }))
+    ], {padding:'15px 16px'}, ei));
+    const finish = h('button',{onClick:this.finishSession, style:{border:'none',cursor:'pointer',background:t.teal,borderRadius:18,padding:'17px',fontSize:16,fontWeight:800,color:'#fff',boxShadow:'0 8px 20px rgba(20,184,166,0.28)'}}, 'Antrenmanı Bitir');
+    const back=()=>this.confirm('Antrenmandan çık?','Kaydedilmemiş setler silinecek.','Çık',()=>{ this.setState({session:null, dialog:null}); this.pop(); });
+    return this.overlayShell(t, ses.name, [ h('div',{key:'l',style:{display:'flex',flexDirection:'column',gap:12}}, exs), h('div',{key:'f'}, finish) ], {gap:18, onBack:back});
+  }
+
+  history(t){
+    const h=this.h;
+    const items=this.state.history.map((s,i)=>{
+      const open=this.state['hist'+i];
+      return this.card(t, [
+        h('button',{key:'b',onClick:()=>this.setState({['hist'+i]:!open}), style:{border:'none',background:'transparent',cursor:'pointer',width:'100%',textAlign:'left',display:'flex',alignItems:'center',gap:12,padding:0}},
+          h('div',{style:{width:40,height:40,borderRadius:12,background:t.primarySoft,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.ic('dumbbell', t.primary, 19)),
+          h('div',{style:{flex:1}}, h('div',{style:{fontSize:15,fontWeight:700,color:t.text}}, s.name), h('div',{style:{fontSize:12.5,fontWeight:500,color:t.sub,marginTop:2}}, s.date+' · '+this.th(s.vol)+' kg hacim')),
+          h('div',{style:{transform:open?'rotate(90deg)':'none',transition:'transform .2s'}}, this.ic('chevron', t.faint, 18, 2))
+        ),
+        open? h('div',{key:'d',style:{marginTop:14,paddingTop:14,borderTop:'1px solid '+t.hairline,display:'flex',flexDirection:'column',gap:9}}, s.ex.map((e,j)=>h('div',{key:j,style:{display:'flex',justifyContent:'space-between',gap:12}}, h('span',{style:{fontSize:13,fontWeight:600,color:t.text}}, e.n), h('span',{style:{fontSize:12.5,fontWeight:500,color:t.sub,textAlign:'right'}}, e.s)))) : null
+      ], {padding:'15px 16px'}, i);
+    });
+    return this.overlayShell(t, 'Antrenman Geçmişi', [h('div',{key:'l',style:{display:'flex',flexDirection:'column',gap:12}}, items)], {gap:0});
+  }
+
+  // ---------- NUTRITION ----------
+  nutrition(t){
+    const h=this.h; const cs=this.consumed(); const g=this.state.goals;
+    const totals = this.card(t, [
+      h('div',{key:'t',style:{display:'flex',alignItems:'flex-end',justifyContent:'space-between'}},
+        h('div',null, this.eyebrow(t,'Alınan'), h('div',{style:{display:'flex',alignItems:'baseline',gap:6,marginTop:6}}, h('span',{style:{fontSize:34,fontWeight:800,color:t.text,letterSpacing:'-0.02em'}}, this.th(cs.k)), h('span',{style:{fontSize:14,fontWeight:600,color:t.sub}}, '/ '+this.th(g.kcal)+' kcal'))),
+        h('div',{style:{fontSize:13,fontWeight:700,color:t.primary}}, this.th(Math.max(0,g.kcal-cs.k))+' kaldı')
+      ),
+      h('div',{key:'m',style:{display:'flex',gap:18,marginTop:16}},
+        [['Protein',t.teal,cs.p,g.protein],['Karbonhidrat',t.blue,cs.c,g.carbs],['Yağ',t.fat,cs.f,g.fat]].map((m,i)=>h('div',{key:i,style:{flex:1}},
+          h('div',{style:{display:'flex',alignItems:'center',gap:6,marginBottom:6}}, h('span',{style:{width:7,height:7,borderRadius:'50%',background:m[1]}}), h('span',{style:{fontSize:11.5,fontWeight:600,color:t.sub}}, m[0])),
+          h('div',{style:{fontSize:15,fontWeight:700,color:t.text}}, this.th(m[2]), h('span',{style:{fontSize:11.5,fontWeight:500,color:t.faint}}, ' /'+this.th(m[3])+'g')),
+          h('div',{style:{height:5,borderRadius:99,background:t.track,marginTop:6}}, h('div',{style:{height:'100%',width:Math.min(100,m[2]/m[3]*100)+'%',borderRadius:99,background:m[1]}}))
+        ))
+      )
+    ], {padding:'18px 20px'});
+
+    const labels={kahvalti:'Kahvaltı', ogle:'Öğle', aksam:'Akşam', atistirma:'Atıştırma'};
+    const meals = Object.keys(labels).map(key=>{
+      const items=this.state.meals[key]; const mk=items.reduce((a,b)=>a+b.kcal,0);
+      return h('div',{key},
+        h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10,padding:'0 2px'}},
+          h('div',{style:{display:'flex',alignItems:'baseline',gap:8}}, h('span',{style:{fontSize:15,fontWeight:700,color:t.text}}, labels[key]), h('span',{style:{fontSize:12.5,fontWeight:600,color:t.faint}}, this.th(mk)+' kcal')),
+          h('button',{onClick:()=>this.setState({addCtx:{meal:key, food:null, g:100}, foodQ:'', stack:[...this.state.stack,{type:'addfood',data:{}}]}), style:{border:'none',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',gap:4,fontSize:12.5,fontWeight:700,color:t.primary}}, this.ic('plus', t.primary, 15, 2.2), 'Yemek Ekle')
+        ),
+        items.length? this.card(t, items.map((it,idx)=>h('div',{key:idx,style:{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',borderTop:idx?('1px solid '+t.hairline):'none'}},
+          h('div',{style:{flex:1,minWidth:0}}, h('div',{style:{fontSize:14,fontWeight:600,color:t.text}}, it.name), h('div',{style:{fontSize:12,fontWeight:500,color:t.sub,marginTop:1}}, it.g+' g · P'+this.th(it.p)+' K'+this.th(it.c)+' Y'+this.th(it.f))),
+          h('div',{style:{fontSize:13.5,fontWeight:700,color:t.text}}, this.th(it.kcal)),
+          h('button',{onClick:()=>this.delFoodItem(key,idx), style:{border:'none',background:'transparent',cursor:'pointer',padding:4,display:'flex'}}, this.ic('x', t.faint, 16, 2))
+        )), {padding:0}) : h('button',{onClick:()=>this.setState({addCtx:{meal:key, food:null, g:100}, foodQ:'', stack:[...this.state.stack,{type:'addfood',data:{}}]}), style:{width:'100%',border:'1px dashed '+t.hairline,background:'transparent',cursor:'pointer',borderRadius:16,padding:'16px',fontSize:13,fontWeight:600,color:t.faint}}, 'Henüz yemek yok · ekle')
+      );
+    });
+    const head = h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
+      h('div',null, this.eyebrow(t,'Pazar, 21 Haziran'), h('div',{style:{fontSize:24,fontWeight:800,letterSpacing:'-0.02em',color:t.text,marginTop:5}}, 'Beslenme')),
+      h('button',{onClick:()=>this.push('foods'), style:{border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',borderRadius:12,padding:'9px 13px',fontSize:12.5,fontWeight:600,color:t.text}}, 'Yemekler')
+    );
+    return this.scroll(t, [h('div',{key:'h'},head), h('div',{key:'t'},totals), h('div',{key:'m',style:{display:'flex',flexDirection:'column',gap:22}}, meals)]);
+  }
+
+  addfood(t){
+    const h=this.h; const ctx=this.state.addCtx; if(!ctx) return null;
+    const labels={kahvalti:'Kahvaltı', ogle:'Öğle', aksam:'Akşam', atistirma:'Atıştırma'};
+    const q=this.state.foodQ.toLowerCase();
+    const list=this.state.foods.filter(f=>f.n.toLowerCase().includes(q));
+    const sel=ctx.food;
+    const onSheet = h('div',{style:{position:'absolute',inset:0,zIndex:40,display:'flex',flexDirection:'column',justifyContent:'flex-end'}},
+      h('div',{onClick:()=>this.pop(), style:{position:'absolute',inset:0,background:t.overlay,animation:'fpFade .2s ease'}}),
+      h('div',{style:{position:'relative',background:t.bg,borderTopLeftRadius:26,borderTopRightRadius:26,maxHeight:'88%',display:'flex',flexDirection:'column',animation:'fpSheet .3s cubic-bezier(.4,0,.2,1)',borderTop:'1px solid '+t.hairline}},
+        h('div',{style:{display:'flex',justifyContent:'center',padding:'10px 0 4px'}}, h('div',{style:{width:40,height:5,borderRadius:99,background:t.sheetHandle}})),
+        h('div',{style:{padding:'8px 20px 12px'}},
+          h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}},
+            h('div',{style:{fontSize:17,fontWeight:800,color:t.text}}, labels[ctx.meal]+'’a ekle'),
+            h('button',{onClick:()=>this.pop(), style:{border:'none',background:t.chip,cursor:'pointer',width:32,height:32,borderRadius:99,display:'flex',alignItems:'center',justifyContent:'center'}}, this.ic('x', t.sub, 17, 2))
+          ),
+          h('div',{style:{display:'flex',alignItems:'center',gap:9,background:t.inputBg,borderRadius:13,padding:'10px 13px',marginBottom:12}}, this.ic('search', t.faint, 18), h('input',{value:this.state.foodQ,placeholder:'Yemek ara…',onChange:(e)=>this.setState({foodQ:e.target.value}),style:{flex:1,border:'none',background:'transparent',color:t.text,fontSize:14,fontWeight:500}})),
+          h('div',{style:{display:'flex',gap:8}},
+            h('button',{onClick:()=>{ const f={n:'Protein Bar (barkod)',kcal:350,p:30,c:40,f:9,custom:true}; this.setState(s=>({foods:[f,...s.foods], addCtx:{...ctx,food:f,g:60}})); }, style:{flex:1,border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',borderRadius:12,padding:'10px',display:'flex',alignItems:'center',justifyContent:'center',gap:7,fontSize:12.5,fontWeight:600,color:t.text}}, this.ic('barcode', t.sub, 18), 'Barkod'),
+            h('button',{onClick:()=>this.setState({dialog:{kind:'addcustom'}, dlgVals:{n:'',kcal:'',p:'',c:'',f:''}}), style:{flex:1,border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',borderRadius:12,padding:'10px',display:'flex',alignItems:'center',justifyContent:'center',gap:7,fontSize:12.5,fontWeight:600,color:t.text}}, this.ic('plus', t.sub, 17, 2), 'Özel yiyecek')
+          )
+        ),
+        h('div',{style:{flex:1,overflowY:'auto',padding:'0 20px'}}, list.map((f,i)=>{
+          const active=sel&&sel.n===f.n;
+          return h('button',{key:i,onClick:()=>this.setState({addCtx:{...ctx,food:f,g:ctx.g||100}}), style:{width:'100%',textAlign:'left',border:'none',cursor:'pointer',background:active?t.primarySoft:'transparent',borderRadius:12,padding:'11px 12px',display:'flex',alignItems:'center',gap:10}},
+            h('div',{style:{flex:1}}, h('div',{style:{fontSize:14,fontWeight:600,color:t.text}}, f.n, f.custom?h('span',{style:{fontSize:10,fontWeight:700,color:t.primary,marginLeft:7}},'ÖZEL'):null), h('div',{style:{fontSize:12,fontWeight:500,color:t.sub,marginTop:1}}, '/100g · '+this.th(f.kcal)+' kcal · P'+this.th(f.p)+' K'+this.th(f.c)+' Y'+this.th(f.f))),
+            active?this.ic('check', t.primary, 19, 2.4):this.ic('plus', t.faint, 18, 2)
+          );
+        })),
+        sel? h('div',{style:{flexShrink:0,borderTop:'1px solid '+t.hairline,padding:'14px 20px 24px',display:'flex',alignItems:'center',gap:12,background:t.card}},
+          h('div',{style:{flex:1}}, h('div',{style:{fontSize:14,fontWeight:700,color:t.text}}, sel.n), h('div',{style:{fontSize:12,fontWeight:500,color:t.sub,marginTop:2}}, '1 dilim = 30g · '+this.th(sel.kcal*ctx.g/100)+' kcal')),
+          h('div',{style:{display:'flex',alignItems:'center',gap:6,background:t.inputBg,borderRadius:11,padding:'4px'}},
+            h('button',{onClick:()=>this.setState({addCtx:{...ctx,g:Math.max(10,ctx.g-10)}}), style:{width:32,height:32,border:'none',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}, this.ic('minus', t.sub, 16, 2.2)),
+            h('div',{style:{minWidth:46,textAlign:'center',fontSize:14,fontWeight:700,color:t.text}}, ctx.g+'g'),
+            h('button',{onClick:()=>this.setState({addCtx:{...ctx,g:ctx.g+10}}), style:{width:32,height:32,border:'none',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}, this.ic('plus', t.sub, 16, 2.2))
+          ),
+          h('button',{onClick:()=>this.addFoodToMeal(ctx.meal, sel, ctx.g), style:{border:'none',cursor:'pointer',background:t.primary,color:'#fff',borderRadius:12,padding:'11px 18px',fontSize:14,fontWeight:700}}, 'Ekle')
+        ):null
+      )
+    );
+    return onSheet;
+  }
+
+  foods(t){
+    const h=this.h; const q=(this.state.foodQ||'').toLowerCase();
+    const list=this.state.foods.filter(f=>f.n.toLowerCase().includes(q));
+    return this.overlayShell(t, 'Yemekler', [
+      h('div',{key:'s',style:{display:'flex',alignItems:'center',gap:9,background:t.inputBg,borderRadius:13,padding:'10px 13px'}}, this.ic('search', t.faint, 18), h('input',{value:this.state.foodQ,placeholder:'Yemek ara…',onChange:(e)=>this.setState({foodQ:e.target.value}),style:{flex:1,border:'none',background:'transparent',color:t.text,fontSize:14,fontWeight:500}})),
+      h('div',{key:'b',style:{display:'flex',gap:8}},
+        h('button',{onClick:()=>this.setState({dialog:{kind:'addcustom'}, dlgVals:{n:'',kcal:'',p:'',c:'',f:''}}), style:{flex:1,border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',borderRadius:12,padding:'11px',display:'flex',alignItems:'center',justifyContent:'center',gap:7,fontSize:13,fontWeight:600,color:t.text}}, this.ic('plus', t.sub, 17, 2), 'Özel yiyecek'),
+        h('button',{onClick:()=>{ const f={n:'Barkodlu Ürün',kcal:280,p:12,c:38,f:8,custom:true}; this.setState(s=>({foods:[f,...s.foods]})); }, style:{flex:1,border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',borderRadius:12,padding:'11px',display:'flex',alignItems:'center',justifyContent:'center',gap:7,fontSize:13,fontWeight:600,color:t.text}}, this.ic('barcode', t.sub, 18), 'Barkod ekle')
+      ),
+      h('div',{key:'l',style:{display:'flex',flexDirection:'column',gap:10}}, list.map((f,i)=> this.card(t, h('div',{style:{display:'flex',alignItems:'center',gap:10,padding:'13px 15px'}},
+        h('div',{style:{flex:1}}, h('div',{style:{fontSize:14.5,fontWeight:600,color:t.text}}, f.n, f.custom?h('span',{style:{fontSize:10,fontWeight:700,color:t.primary,marginLeft:7}},'ÖZEL'):null), h('div',{style:{fontSize:12,fontWeight:500,color:t.sub,marginTop:2}}, '/100g · '+this.th(f.kcal)+' kcal · P'+this.th(f.p)+' K'+this.th(f.c)+' Y'+this.th(f.f))),
+        f.custom? h('button',{onClick:()=>this.delFood(this.state.foods.indexOf(f)), style:{border:'none',background:'transparent',cursor:'pointer',padding:5,display:'flex'}}, this.ic('trash', t.faint, 17, 1.8)):null
+      ), {padding:0}, i)))
+    ], {gap:14});
+  }
+
+  // ---------- PROGRESS ----------
+  progress(t){
+    const h=this.h; const data=this.state.weight; const goalW=this.state.goalWeight;
+    const W=312, H=170, padL=8, padR=8, padT=14, padB=26;
+    const kgs=data.map(d=>d[1]); const ymin=Math.min(goalW, Math.min.apply(null,kgs))-0.4; const ymax=Math.max.apply(null,kgs)+0.4;
+    const X=i=> padL + (W-padL-padR)*(i/(data.length-1)); const Y=v=> padT + (H-padT-padB)*(1-(v-ymin)/(ymax-ymin));
+    const pts=data.map((d,i)=>[X(i),Y(d[1])]);
+    const linePath=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const areaPath=linePath+(' L'+X(data.length-1)+' '+(H-padB)+' L'+X(0)+' '+(H-padB)+' Z');
+    const sel=this.state.chartSel;
+    const chart = this.card(t, [
+      h('div',{key:'hd',style:{display:'flex',alignItems:'flex-end',justifyContent:'space-between',marginBottom:6}},
+        h('div',null, this.eyebrow(t,'Güncel Kilo'), h('div',{style:{display:'flex',alignItems:'baseline',gap:6,marginTop:6}}, h('span',{style:{fontSize:32,fontWeight:800,color:t.text,letterSpacing:'-0.02em'}}, data[data.length-1][1].toFixed(1).replace('.',',')), h('span',{style:{fontSize:14,fontWeight:600,color:t.sub}}, 'kg'))),
+        h('div',{style:{textAlign:'right'}}, h('div',{style:{fontSize:11,fontWeight:600,color:t.faint}}, 'Hedef'), h('div',{style:{fontSize:15,fontWeight:700,color:t.tealText,marginTop:2}}, goalW.toFixed(1).replace('.',',')+' kg'))
+      ),
+      h('svg',{key:'svg',width:'100%',viewBox:'0 0 '+W+' '+H,style:{display:'block',marginTop:6,overflow:'visible'}},
+        h('defs',null, h('linearGradient',{id:'fparea',x1:'0',y1:'0',x2:'0',y2:'1'}, h('stop',{offset:'0',stopColor:t.primary,stopOpacity:0.16}), h('stop',{offset:'1',stopColor:t.primary,stopOpacity:0}))),
+        h('line',{x1:padL,y1:Y(goalW),x2:W-padR,y2:Y(goalW),stroke:t.teal,strokeWidth:1.5,strokeDasharray:'5 5',opacity:0.8}),
+        h('path',{d:areaPath,fill:'url(#fparea)'}),
+        h('path',{d:linePath,fill:'none',stroke:t.primary,strokeWidth:2.5,strokeLinecap:'round',strokeLinejoin:'round'}),
+        pts.map((p,i)=>h('circle',{key:i,cx:p[0],cy:p[1],r:i===sel?5:3,fill:i===sel?t.primary:t.card,stroke:t.primary,strokeWidth:2,style:{cursor:'pointer'},onClick:()=>this.setState({chartSel:i})})),
+        data.map((d,i)=> i%2===0? h('text',{key:'x'+i,x:X(i),y:H-8,fill:t.faint,fontSize:9.5,textAnchor:'middle',fontFamily:'Inter'}, d[0]):null),
+        sel!=null? h('g',null, h('rect',{x:Math.min(W-72,Math.max(0,X(sel)-36)),y:Y(data[sel][1])-40,width:72,height:28,rx:8,fill:t.text}), h('text',{x:Math.min(W-36,Math.max(36,X(sel))),y:Y(data[sel][1])-21,fill:t.bg,fontSize:12,fontWeight:'700',textAnchor:'middle',fontFamily:'Inter'}, data[sel][1].toFixed(1).replace('.',',')+' kg')):null
+      )
+    ], {padding:'18px 18px 14px'});
+
+    const oldest=data[0][1], latest=data[data.length-1][1]; const ch=latest-oldest;
+    const summary = h('div',{style:{display:'flex',gap:14}},
+      h('div',{style:{flex:1,display:'flex',flexDirection:'column',gap:8}}, this.eyebrow(t,'Toplam Değişim'), h('div',{style:{fontSize:22,fontWeight:800,color:t.tealText,letterSpacing:'-0.02em'}}, (ch<0?'↓ ':'↑ ')+Math.abs(ch).toFixed(1).replace('.',',')+' kg')),
+      h('div',{style:{width:1,background:t.hairline}}),
+      h('div',{style:{flex:1,display:'flex',flexDirection:'column',gap:8,paddingLeft:2}}, this.eyebrow(t,'Hedefe Kalan'), h('div',{style:{fontSize:22,fontWeight:800,color:t.text,letterSpacing:'-0.02em'}}, Math.max(0,latest-goalW).toFixed(1).replace('.',',')+' kg'))
+    );
+
+    const mLabels=[['kilo','Kilo','kg'],['bel','Bel','cm'],['gogus','Göğüs','cm'],['kol','Kol','cm'],['kalca','Kalça','cm'],['boyun','Boyun','cm'],['yag','Yağ','%']];
+    const meas = h('div',null,
+      h('div',{style:{fontSize:15,fontWeight:700,color:t.text,marginBottom:10,padding:'0 2px'}}, 'Ölçümler'),
+      this.card(t, mLabels.map((m,i)=>{ const v=m[0]==='kilo'?latest:this.state.measure[m[0]]; return h('div',{key:m[0],style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'13px 15px',borderTop:i?('1px solid '+t.hairline):'none'}}, h('span',{style:{fontSize:14,fontWeight:600,color:t.text}}, m[1]), h('span',{style:{fontSize:14,fontWeight:700,color:t.text}}, (typeof v==='number'?v.toFixed(m[0]==='kilo'?1:0).replace('.',','):v)+' '+m[2])); }), {padding:0})
+    );
+    const head = h('div',null, this.eyebrow(t,'Vücut'), h('div',{style:{fontSize:24,fontWeight:800,letterSpacing:'-0.02em',color:t.text,marginTop:5}}, 'İlerleme'));
+    return h('div',{style:{flex:1,position:'relative',overflow:'hidden'}},
+      this.scroll(t, [h('div',{key:'h'},head), h('div',{key:'c'},chart), h('div',{key:'s'},summary), h('div',{key:'m'},meas)]),
+      h('button',{onClick:()=>this.setState({dialog:{kind:'measure'}, dlgVals:{kilo:latest.toFixed(1), bel:this.state.measure.bel, gogus:this.state.measure.gogus, kol:this.state.measure.kol, kalca:this.state.measure.kalca, boyun:this.state.measure.boyun, yag:this.state.measure.yag}}), style:{position:'absolute',right:22,bottom:104,border:'none',cursor:'pointer',background:t.primary,color:'#fff',borderRadius:16,padding:'14px 18px',display:'flex',alignItems:'center',gap:8,fontSize:14,fontWeight:700,boxShadow:'0 8px 22px rgba(79,70,229,0.34)'}}, this.ic('plus','#fff',18,2.4), 'Ölçüm Ekle')
+    );
+  }
+
+  // ---------- SETTINGS ----------
+  settings(t){
+    const h=this.h; const g=this.state.goals; const p=this.state.program;
+    const row=(label,val,onClick,arrow)=>h('button',{key:label,onClick, style:{width:'100%',border:'none',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',gap:10,padding:'14px 16px',textAlign:'left'}},
+      h('span',{style:{flex:1,fontSize:14.5,fontWeight:600,color:t.text}}, label),
+      val!=null?h('span',{style:{fontSize:14,fontWeight:600,color:t.sub}}, val):null,
+      this.ic(arrow?'chevron':'chevron', t.faint, 17, 2)
+    );
+    const sect=(title,rows)=>h('div',{key:title}, this.eyebrow(t,title), h('div',{style:{marginTop:10}}, this.card(t, rows.map((r,i)=>h('div',{key:i,style:{borderTop:i?('1px solid '+t.hairline):'none'}}, r)), {padding:0})));
+    return this.overlayShell(t, 'Ayarlar', [
+      sect('Hedefler',[ row('Kalori', this.th(g.kcal)+' kcal', ()=>this.openNum('Kalori Hedefi', g.kcal, 'kcal', (v)=>this.setState(s=>({goals:{...s.goals,kcal:v}, dialog:null})))), row('Protein', g.protein+' g', ()=>this.openNum('Protein Hedefi', g.protein, 'g', (v)=>this.setState(s=>({goals:{...s.goals,protein:v}, dialog:null})))) ]),
+      sect('Program',[ row('Faz', p.phase, ()=>this.openChoice('Faz Seç',['Faz 1','Faz 2','Faz 3'],(o)=>this.setState(s=>({program:{...s.program,phase:o}, dialog:null})))), row('Hafta', p.week, ()=>this.openChoice('Hafta',['Hafta 1','Hafta 2','Hafta 3','Hafta 4'],(o)=>this.setState(s=>({program:{...s.program,week:o}, dialog:null})))), row('Son Deload', p.deload, ()=>{}) ]),
+      sect('Vücut',[ row('Boy', this.state.height+' cm', ()=>this.openNum('Boy', this.state.height, 'cm', (v)=>this.setState({height:v, dialog:null}))), row('Hedef Kilo', this.state.goalWeight.toFixed(1).replace('.',',')+' kg', ()=>this.openNum('Hedef Kilo', this.state.goalWeight, 'kg', (v)=>this.setState({goalWeight:v, dialog:null}))) ]),
+      sect('Beslenme',[ row('Yemekler', null, ()=>{ this.pop(); this.push('foods'); }) ]),
+      sect('Hakkında',[ row('Sürüm', '1.0.0', ()=>{}), row('Tanıtımı tekrar gör', null, ()=>{ this.pop(); this.push('onboarding'); }) ]),
+      sect('Veri',[ row('Veri Dışa Aktar', null, ()=>{ this.pop(); this.push('export'); }) ]),
+    ], {gap:22});
+  }
+
+  exportScreen(t){
+    const h=this.h; const done=this.state.exported;
+    return this.overlayShell(t, 'Veri Dışa Aktar', [
+      this.card(t, [
+        h('div',{key:'i',style:{width:54,height:54,borderRadius:16,background:t.primarySoft,display:'flex',alignItems:'center',justifyContent:'center',margin:'4px 0 14px'}}, this.ic('export', t.primary, 26, 1.8)),
+        h('div',{key:'t',style:{fontSize:17,fontWeight:700,color:t.text}}, 'Tüm verilerini dışa aktar'),
+        h('div',{key:'d',style:{fontSize:13.5,fontWeight:500,color:t.sub,marginTop:6,lineHeight:1.5}}, 'Antrenman geçmişin, beslenme kayıtların ve ölçümlerin tek bir JSON dosyasına aktarılır.'),
+        h('button',{key:'b',onClick:()=>this.setState({exported:true}), style:{marginTop:18,width:'100%',border:'none',cursor:'pointer',background:done?t.teal:t.primary,color:'#fff',borderRadius:14,padding:'15px',fontSize:15,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',gap:9}}, done?this.ic('check','#fff',19,2.4):null, done?'fitpack-verileri.json hazır':'JSON olarak dışa aktar')
+      ], {padding:'20px'}),
+      done? this.card(t, h('pre',{style:{margin:0,padding:'16px',fontSize:11,lineHeight:1.6,color:t.sub,fontFamily:'ui-monospace,monospace',whiteSpace:'pre-wrap'}}, '{\n  "program": "İleri Upper/Lower",\n  "antrenman": '+this.state.history.length+',\n  "olcum": '+this.state.weight.length+',\n  "kilo": '+this.state.weight[this.state.weight.length-1][1]+'\n}'), {padding:0}):null
+    ], {gap:14});
+  }
+
+  onboarding(t){
+    const h=this.h; const step=this.state.onbStep;
+    const dots=h('div',{style:{display:'flex',gap:7,justifyContent:'center'}}, [0,1,2].map(i=>h('div',{key:i,style:{width:i===step?22:7,height:7,borderRadius:99,background:i===step?t.primary:t.hairline,transition:'all .3s'}})));
+    let body;
+    if(step===0){
+      body=h('div',{style:{flex:1,display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'center',textAlign:'center',gap:18,padding:'0 10px'}},
+        h('div',{style:{width:84,height:84,borderRadius:26,background:t.grad,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 12px 30px rgba(79,70,229,0.3)'}}, this.ic('bolt','#fff',40,1.6)),
+        h('div',{style:{fontSize:30,fontWeight:800,letterSpacing:'-0.02em',color:t.text}}, 'Fit Pack’e\nhoş geldin'.split('\n').map((l,i)=>h('div',{key:i},l))),
+        h('div',{style:{fontSize:15,fontWeight:500,color:t.sub,lineHeight:1.55,maxWidth:280}}, 'Antrenmanlarını, beslenmeni ve ilerlemeni tek bir sakin yerde takip et.')
+      );
+    } else if(step===1){
+      const f=this.state.dlgVals;
+      const field=(key,label,suffix)=>h('div',{key,style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'15px 16px',borderTop:key!=='kilo'?('1px solid '+t.hairline):'none'}}, h('span',{style:{fontSize:14.5,fontWeight:600,color:t.text}}, label), h('div',{style:{display:'flex',alignItems:'center',gap:6}}, h('input',{value:f[key]||'',onChange:(e)=>this.setState({dlgVals:{...f,[key]:e.target.value}}),inputMode:'decimal',style:{width:64,textAlign:'right',border:'none',background:'transparent',color:t.text,fontSize:16,fontWeight:700}}), h('span',{style:{fontSize:13,fontWeight:600,color:t.faint}}, suffix)));
+      body=h('div',{style:{flex:1,display:'flex',flexDirection:'column',gap:20,paddingTop:8}},
+        h('div',null, h('div',{style:{fontSize:24,fontWeight:800,letterSpacing:'-0.02em',color:t.text}}, 'Seni tanıyalım'), h('div',{style:{fontSize:14,fontWeight:500,color:t.sub,marginTop:6}}, 'Hedeflerini buna göre belirleyeceğiz.')),
+        this.card(t,[field('kilo','Mevcut kilo','kg'),field('boy','Boy','cm'),field('hedef','Hedef kilo','kg')],{padding:0}),
+        h('div',null, h('div',{style:{fontSize:12.5,fontWeight:700,letterSpacing:'0.04em',color:t.sub,marginBottom:9}}, 'HEDEFİN'), h('div',{style:{display:'flex',gap:8}}, ['Kilo Ver','Koru','Kütle Al'].map(o=>{ const a=(f.hedefTip||'Kütle Al')===o; return h('button',{key:o,onClick:()=>this.setState({dlgVals:{...f,hedefTip:o}}),style:{flex:1,border:'1px solid '+(a?t.primary:t.hairline),background:a?t.primarySoft:'transparent',color:a?t.primary:t.sub,cursor:'pointer',borderRadius:12,padding:'12px 6px',fontSize:12.5,fontWeight:700}}, o); })))
+      );
+    } else {
+      const f=this.state.dlgVals;
+      const field=(key,label,suffix)=>h('div',{key,style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'15px 16px',borderTop:key!=='kcal'?('1px solid '+t.hairline):'none'}}, h('span',{style:{fontSize:14.5,fontWeight:600,color:t.text}}, label), h('div',{style:{display:'flex',alignItems:'center',gap:6}}, h('input',{value:f[key]!=null?f[key]:'',onChange:(e)=>this.setState({dlgVals:{...f,[key]:e.target.value}}),inputMode:'numeric',style:{width:72,textAlign:'right',border:'none',background:'transparent',color:t.text,fontSize:16,fontWeight:700}}), h('span',{style:{fontSize:13,fontWeight:600,color:t.faint}}, suffix)));
+      body=h('div',{style:{flex:1,display:'flex',flexDirection:'column',gap:20,paddingTop:8}},
+        h('div',null, h('div',{style:{fontSize:24,fontWeight:800,letterSpacing:'-0.02em',color:t.text}}, 'Günlük hedeflerin'), h('div',{style:{fontSize:14,fontWeight:500,color:t.sub,marginTop:6}}, 'Bilgilerine göre önerdik — düzenleyebilirsin.')),
+        this.card(t,[field('kcal','Kalori','kcal'),field('protein','Protein','g')],{padding:0})
+      );
+    }
+    const next=()=>{ if(step===0) this.setState({onbStep:1, dlgVals:{kilo:'84.7', boy:'178', hedef:'82', hedefTip:'Kütle Al'}}); else if(step===1) this.setState(s=>({onbStep:2, dlgVals:{...s.dlgVals, kcal:'3200', protein:'180'}})); else { this.setState({onbStep:0, stack:[], tab:'home', dialog:null}); } };
+    return h('div',{style:{position:'absolute',inset:0,background:t.bg,zIndex:50,display:'flex',flexDirection:'column',animation:'fpFade .25s ease'}},
+      h('div',{style:{flexShrink:0,padding:'58px 22px 8px',display:'flex',alignItems:'center',justifyContent:'space-between'}}, dots, h('button',{onClick:()=>this.setState({onbStep:0,stack:[],tab:'home'}), style:{border:'none',background:'transparent',cursor:'pointer',fontSize:13,fontWeight:600,color:t.faint}}, 'Atla')),
+      h('div',{style:{flex:1,overflowY:'auto',padding:'12px 22px 0',display:'flex'}}, body),
+      h('div',{style:{flexShrink:0,padding:'14px 22px 30px'}}, h('button',{onClick:next, style:{width:'100%',border:'none',cursor:'pointer',background:t.grad,color:'#fff',borderRadius:16,padding:'17px',fontSize:16,fontWeight:800,boxShadow:'0 8px 22px rgba(79,70,229,0.3)'}}, step===2?'Tamamla':'Devam'))
+    );
+  }
+
+  // ---------- DIALOGS ----------
+  dialogEl(d, t){
+    const h=this.h;
+    let inner;
+    if(d.kind==='num'){
+      inner=h('div',null,
+        h('div',{style:{fontSize:17,fontWeight:800,color:t.text,marginBottom:16}}, d.title),
+        h('div',{style:{display:'flex',alignItems:'center',gap:8,background:t.inputBg,borderRadius:13,padding:'12px 15px'}}, h('input',{autoFocus:true,value:this.state.dlgVal,inputMode:'decimal',onChange:(e)=>this.setState({dlgVal:e.target.value}),style:{flex:1,border:'none',background:'transparent',color:t.text,fontSize:22,fontWeight:700}}), h('span',{style:{fontSize:14,fontWeight:600,color:t.faint}}, d.suffix)),
+        this.dlgActions(t, ()=>d.onSave(parseFloat(this.state.dlgVal)||0))
+      );
+    } else if(d.kind==='choice'){
+      inner=h('div',null,
+        h('div',{style:{fontSize:17,fontWeight:800,color:t.text,marginBottom:14}}, d.title),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:8}}, d.options.map(o=>h('button',{key:o,onClick:()=>d.onPick(o), style:{border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',borderRadius:12,padding:'13px 15px',fontSize:14.5,fontWeight:600,color:t.text,textAlign:'left'}}, o))),
+        h('button',{onClick:this.closeDlg, style:{marginTop:12,width:'100%',border:'none',background:'transparent',cursor:'pointer',fontSize:14,fontWeight:600,color:t.faint,padding:'8px'}}, 'İptal')
+      );
+    } else if(d.kind==='confirm'){
+      inner=h('div',null,
+        h('div',{style:{fontSize:17,fontWeight:800,color:t.text}}, d.title),
+        h('div',{style:{fontSize:14,fontWeight:500,color:t.sub,marginTop:8,lineHeight:1.5}}, d.msg),
+        h('div',{style:{display:'flex',gap:10,marginTop:20}}, h('button',{onClick:this.closeDlg, style:{flex:1,border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',borderRadius:12,padding:'13px',fontSize:14.5,fontWeight:700,color:t.text}}, 'İptal'), h('button',{onClick:d.onYes, style:{flex:1,border:'none',cursor:'pointer',background:t.primary,color:'#fff',borderRadius:12,padding:'13px',fontSize:14.5,fontWeight:700}}, d.label))
+      );
+    } else if(d.kind==='measure'){
+      const f=this.state.dlgVals; const fields=[['kilo','Kilo','kg'],['bel','Bel','cm'],['gogus','Göğüs','cm'],['kol','Kol','cm'],['kalca','Kalça','cm'],['boyun','Boyun','cm'],['yag','Yağ','%']];
+      inner=h('div',null,
+        h('div',{style:{fontSize:17,fontWeight:800,color:t.text,marginBottom:14}}, 'Ölçüm Ekle'),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:0,border:'1px solid '+t.hairline,borderRadius:14,overflow:'hidden'}}, fields.map((m,i)=>h('div',{key:m[0],style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',borderTop:i?('1px solid '+t.hairline):'none'}}, h('span',{style:{fontSize:14,fontWeight:600,color:t.text}}, m[1]), h('div',{style:{display:'flex',alignItems:'center',gap:6}}, h('input',{value:f[m[0]]!=null?f[m[0]]:'',inputMode:'decimal',onChange:(e)=>this.setState({dlgVals:{...f,[m[0]]:e.target.value}}),style:{width:60,textAlign:'right',border:'none',background:'transparent',color:t.text,fontSize:15,fontWeight:700}}), h('span',{style:{fontSize:12.5,fontWeight:600,color:t.faint}}, m[2]))))),
+        this.dlgActions(t, ()=>{ const kg=parseFloat(f.kilo)||this.state.weight[this.state.weight.length-1][1]; this.addMeasurement(kg, {bel:parseFloat(f.bel)||this.state.measure.bel, gogus:parseFloat(f.gogus)||this.state.measure.gogus, kol:parseFloat(f.kol)||this.state.measure.kol, kalca:parseFloat(f.kalca)||this.state.measure.kalca, boyun:parseFloat(f.boyun)||this.state.measure.boyun, yag:parseFloat(f.yag)||this.state.measure.yag}); }, 'Kaydet')
+      );
+    } else if(d.kind==='addcustom'){
+      const f=this.state.dlgVals; const fields=[['n','Ad',''],['kcal','Kalori','kcal'],['p','Protein','g'],['c','Karb.','g'],['f','Yağ','g']];
+      inner=h('div',null,
+        h('div',{style:{fontSize:17,fontWeight:800,color:t.text,marginBottom:4}}, 'Özel yiyecek'),
+        h('div',{style:{fontSize:12.5,fontWeight:500,color:t.sub,marginBottom:14}}, '100 gram başına değerler'),
+        h('div',{style:{border:'1px solid '+t.hairline,borderRadius:14,overflow:'hidden'}}, fields.map((m,i)=>h('div',{key:m[0],style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',borderTop:i?('1px solid '+t.hairline):'none'}}, h('span',{style:{fontSize:14,fontWeight:600,color:t.text}}, m[1]), h('div',{style:{display:'flex',alignItems:'center',gap:6}}, h('input',{value:f[m[0]]!=null?f[m[0]]:'',inputMode:m[0]==='n'?'text':'decimal',placeholder:m[0]==='n'?'Yemek adı':'0',onChange:(e)=>this.setState({dlgVals:{...f,[m[0]]:e.target.value}}),style:{width:m[0]==='n'?120:56,textAlign:'right',border:'none',background:'transparent',color:t.text,fontSize:15,fontWeight:700}}), m[2]?h('span',{style:{fontSize:12.5,fontWeight:600,color:t.faint}}, m[2]):null)))),
+        this.dlgActions(t, ()=>{ if(!f.n) { this.closeDlg(); return; } const food={n:f.n,kcal:parseFloat(f.kcal)||0,p:parseFloat(f.p)||0,c:parseFloat(f.c)||0,f:parseFloat(f.f)||0,custom:true}; this.setState(s=>({foods:[food,...s.foods], addCtx:s.addCtx?{...s.addCtx,food,g:s.addCtx.g||100}:null, dialog:null})); }, 'Ekle')
+      );
+    }
+    return h('div',{style:{position:'absolute',inset:0,zIndex:60,display:'flex',alignItems:'center',justifyContent:'center',padding:'24px'}},
+      h('div',{onClick:this.closeDlg, style:{position:'absolute',inset:0,background:t.overlay,animation:'fpFade .2s ease'}}),
+      h('div',{style:{position:'relative',width:'100%',maxWidth:340,background:t.card,borderRadius:22,border:'1px solid '+t.hairline,padding:'20px',boxShadow:'0 24px 60px rgba(0,0,0,0.3)',animation:'fpPop .22s cubic-bezier(.4,0,.2,1)',maxHeight:'80%',overflowY:'auto'}}, inner)
+    );
+  }
+  dlgActions(t, onSave, label){ const h=this.h; return h('div',{style:{display:'flex',gap:10,marginTop:18}}, h('button',{onClick:this.closeDlg, style:{flex:1,border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',borderRadius:12,padding:'13px',fontSize:14.5,fontWeight:700,color:t.text}}, 'İptal'), h('button',{onClick:onSave, style:{flex:1,border:'none',cursor:'pointer',background:t.primary,color:'#fff',borderRadius:12,padding:'13px',fontSize:14.5,fontWeight:700}}, label||'Kaydet')); }
+
+  // ---------- NAV + ROOT ----------
+  bottomNav(t){
+    const h=this.h; const tabs=[['home','Ana Sayfa','home'],['workout','Antrenman','dumbbell'],['nutrition','Beslenme','bowl'],['progress','İlerleme','chart']];
+    return h('nav',{style:{flexShrink:0,borderTop:'1px solid '+t.hairline,background:t.navBg,backdropFilter:'blur(18px)',WebkitBackdropFilter:'blur(18px)',padding:'10px 14px 28px',display:'flex',justifyContent:'space-around'}},
+      tabs.map(tb=>{ const active=this.state.tab===tb[0]; return h('button',{key:tb[0],onClick:()=>this.go(tb[0]), style:{border:'none',background:'transparent',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:5,minWidth:56,paddingTop:3}}, this.ic(tb[2], active?t.primary:t.navInactive, 23, active?2:1.9), h('span',{style:{fontSize:10.5,fontWeight:active?700:600,color:active?t.primary:t.navInactive}}, tb[1])); })
+    );
+  }
+  overlay(top, t){
+    if(top.type==='settings') return this.settings(t);
+    if(top.type==='export') return this.exportScreen(t);
+    if(top.type==='foods') return this.foods(t);
+    if(top.type==='preview') return this.preview(t, top.data);
+    if(top.type==='session') return this.session(t);
+    if(top.type==='history') return this.history(t);
+    if(top.type==='addfood') return this.addfood(t);
+    if(top.type==='onboarding') return this.onboarding(t);
+    return null;
+  }
+  renderApp(t){
+    const h=this.h;
+    const screen = this.state.tab==='home'?this.home(t): this.state.tab==='workout'?this.workout(t): this.state.tab==='nutrition'?this.nutrition(t): this.progress(t);
+    const top=this.state.stack[this.state.stack.length-1];
+    return h('div',{style:{height:'100%',position:'relative',background:t.bg,color:t.text,overflow:'hidden',fontVariantNumeric:'tabular-nums',fontFamily:"'Inter',system-ui,sans-serif"}},
+      h('div',{key:this.state.tab,style:{position:'absolute',inset:0,display:'flex',flexDirection:'column',animation:'fpFade .25s ease'}}, screen, this.bottomNav(t)),
+      top? this.overlay(top, t): null,
+      this.state.dialog? this.dialogEl(this.state.dialog, t): null
+    );
+  }
+
+  seg(active){ return {padding:'7px 14px',borderRadius:99,border:'none',cursor:'pointer',fontSize:12.5,fontWeight:700,background:active?'#fff':'transparent',color:active?'#1A1C22':'#83807a',boxShadow:active?'0 1px 2px rgba(0,0,0,0.12)':'none',transition:'all .15s'}; }
+
+  renderVals(){
+    const t=this.theme();
+    return {
+      dark: this.state.theme==='dark',
+      app: this.renderApp(t),
+      setLight: ()=>this.setState({theme:'light'}),
+      setDark: ()=>this.setState({theme:'dark'}),
+      setTrain: ()=>this.setState({day:'train'}),
+      setRest: ()=>this.setState({day:'rest'}),
+      openOnb: ()=>this.push('onboarding'),
+      segLight: this.seg(this.state.theme==='light'),
+      segDark: this.seg(this.state.theme==='dark'),
+      segTrain: this.seg(this.state.day==='train'),
+      segRest: this.seg(this.state.day==='rest'),
+      onbBtn: {padding:'8px 16px',borderRadius:99,border:'none',cursor:'pointer',fontSize:12.5,fontWeight:700,background:'rgba(16,18,24,0.06)',color:'#5A6072'},
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -25,6 +25,7 @@ part 'app_database.g.dart';
     Foods,
     FoodLogs,
     RecipeItems,
+    WaterIntake,
     BodyMeasurements,
     ProgressPhotos,
     Achievements,
@@ -50,10 +51,17 @@ class AppDatabase extends _$AppDatabase {
   /// v1 → v2 (2026-05-18, Beslenme V2 — docs/07-nutrition-v2.md):
   /// `foods.defaultPortionGrams` + `foods.unitLabel` eklendi (ikisi de
   /// nullable → additive, V1 verisi kayıpsız). İlk gerçek şema değişikliği.
-  /// Aşama 1 (rir, daily_log, supplement) bunun ÜSTÜNE v3+ olarak gelecek;
-  /// migration'lar zincirleme uygulanır.
+  ///
+  /// v2 → v3 (2026-06-20, P-10 Onboarding — docs/03-ux-flows.md §3):
+  /// `user_profile.onboarded` eklendi (BOOL, default 0). Migration mevcut
+  /// profili onboarded=1 yapar → kullanan pilot onboarding görmez, yalnız
+  /// sıfır kurulum görür. Additive, veri kayıpsız (ADR-007).
+  ///
+  /// v3 → v4 (2026-06-21, Home su takibi): `water_intake` tablosu (gün başına
+  /// kümülatif ml) + `user_profile.waterGoalMl` (default 2500) eklendi.
+  /// Tablo ekleme + nullable-default kolon → additive, veri kayıpsız.
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -69,11 +77,29 @@ class AppDatabase extends _$AppDatabase {
         // v1 → v2: Beslenme V2 — adet/birim porsiyon (docs/07-nutrition-v2.md).
         // Sadece kolon EKLEME (nullable) → mevcut veri korunur, satırlar NULL
         // alır = "sadece gram" davranışı. Yıkıcı işlem YOK (ADR-007).
-        if (from < 2) {
+        // Her adım hem `from` hem `to` ile sınırlanır: ara hedefe göç
+        // (örn. v1→v2 göç testi) sonraki adımları çalıştırıp hedefi aşmasın.
+        if (from < 2 && to >= 2) {
           await m.addColumn(foods, foods.defaultPortionGrams);
           await m.addColumn(foods, foods.unitLabel);
         }
-        // Aşama 1'de v3 buraya zincirlenecek (rir, daily_log, supplement...).
+        // v2 → v3: Onboarding (P-10). onboarded kolonu eklenir (default 0).
+        // Mevcut profil = uygulamayı zaten kullanan pilot → onboarded=1 yap,
+        // ilk açılış akışını ona GÖSTERME. Yeni kurulum onCreate'ten geçer
+        // (onboarded=0) → onboarding gösterilir.
+        if (from < 3 && to >= 3) {
+          await m.addColumn(userProfile, userProfile.onboarded);
+          await m.database.customStatement(
+            'UPDATE user_profile SET onboarded = 1',
+          );
+        }
+        // v3 → v4: Home su takibi. Yeni tablo + profile su hedefi kolonu.
+        // İkisi de additive (tablo ekleme + default'lu kolon) → veri korunur.
+        if (from < 4 && to >= 4) {
+          await m.createTable(waterIntake);
+          await m.addColumn(userProfile, userProfile.waterGoalMl);
+        }
+        // Aşama 1'de v5 buraya zincirlenecek (rir, daily_log, supplement...).
       },
 
       // Her DB açılışında çalışır. SQLite'ta yabancı anahtar (foreign key)

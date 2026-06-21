@@ -10,15 +10,24 @@ import 'package:fit_pack/features/nutrition/foods_screen.dart';
 import 'package:fit_pack/features/body_metrics/body_metrics_screen.dart';
 import 'package:fit_pack/features/export/export_screen.dart';
 import 'package:fit_pack/features/settings/settings_screen.dart';
+import 'package:fit_pack/features/onboarding/onboarding_screen.dart';
 import 'package:fit_pack/shared/widgets/app_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
-final appRouter = GoRouter(
+/// Router'ı kurar. Başlangıç konumu, ilk açılış (P-10) durumuna göre seçilir:
+/// onboarding tamamlanmamışsa `/onboarding`, aksi halde `/home`. Tek kullanıcı
+/// pilot için yeterli — onboarding bittiğinde `context.go('/home')` çağrılır.
+GoRouter createAppRouter({required bool onboarded}) => GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/home',
+  initialLocation: onboarded ? '/home' : '/onboarding',
   routes: [
+    GoRoute(
+      path: '/onboarding',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const OnboardingScreen(),
+    ),
     ShellRoute(
       navigatorKey: _shellNavigatorKey,
       builder: (context, state, child) => AppShell(child: child),
@@ -87,3 +96,4 @@ final appRouter = GoRouter(
     ),
   ],
 );
+

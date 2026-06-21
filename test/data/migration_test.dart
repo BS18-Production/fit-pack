@@ -17,23 +17,26 @@ void main() {
     'foods',
     'food_logs',
     'recipe_items',
+    'water_intake',
     'body_measurements',
     'progress_photos',
     'achievements',
     'user_profile',
   };
 
-  group('Schema v2', () {
-    test('schemaVersion 2\'de (artırınca bu test bilinçli kırılır)',
+  group('Schema v4', () {
+    test('schemaVersion 4\'te (artırınca bu test bilinçli kırılır)',
         () async {
       // Bu assertion bir TRIPWIRE'dır: biri schemaVersion'ı artırınca
       // burası kırılır → onUpgrade adımı + yeni göç testi eklemeden
       // commit edemez (Workflow §4 kuralının mekanik bekçisi).
       // v1→v2: Beslenme V2 (foods.default_portion_grams + unit_label).
-      // Lossless göç testi: migrations/migration_v1_to_v2_test.dart.
+      // v2→v3: Onboarding (user_profile.onboarded).
+      // v3→v4: Home su takibi (water_intake + user_profile.waterGoalMl).
+      // Lossless göç testleri: migrations/migration_v*_to_v*_test.dart.
       final db = newTestDatabase();
       addTearDown(db.close);
-      expect(db.schemaVersion, 2);
+      expect(db.schemaVersion, 4);
     });
 
     test('temiz kurulum (onCreate) beklenen 10 tabloyu yaratır', () async {

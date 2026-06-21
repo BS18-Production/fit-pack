@@ -4,11 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../data/database/app_database.dart';
 import '../../data/database/daos/nutrition_dao.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/progress_indicators.dart';
-import '../workout/workout_plan_providers.dart';
+import '../workout/routine_providers.dart';
 import '../nutrition/macro_goals.dart';
 import 'providers/home_providers.dart';
 
@@ -38,20 +39,8 @@ class HomeScreen extends ConsumerWidget {
           children: [
             const _Header(),
             AppSpacing.vGapxl_,
-            // Faz satırı (sessiz bağlam, kartsız)
-            profileAsync.maybeWhen(
-              data: (p) => _PhaseRow(
-                phase: p?.currentPhase ?? 1,
-                week: p?.currentWeek ?? 1,
-              ),
-              orElse: () => const SizedBox.shrink(),
-            ),
-            AppSpacing.vGapxl_,
-            // Birincil aksiyon — durum-duyarlı (antrenman/dinlenme)
-            profileAsync.maybeWhen(
-              data: (p) => _PrimaryActionCard(phase: p?.currentPhase ?? 1),
-              orElse: () => Skeleton.card(height: 84),
-            ),
+            // Birincil aksiyon — durum-duyarlı (bugünkü rutin / dinlenme)
+            const _PrimaryActionCard(),
             AppSpacing.vGapxl_,
             // Beslenme HERO
             ref.watch(todayNutritionProvider).when(
@@ -130,90 +119,34 @@ class _Header extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────── Faz satırı
-
-class _PhaseRow extends StatelessWidget {
-  final int phase;
-  final int week;
-  const _PhaseRow({required this.phase, required this.week});
-
-  String _phaseName() => switch (phase) {
-        1 => 'Full Body',
-        2 => 'Upper/Lower Split',
-        3 => 'İleri Upper/Lower',
-        _ => 'Faz $phase',
-      };
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => context.go('/workout'),
-      borderRadius: AppRadius.brMd,
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: context.colors.primary.withValues(alpha: 0.10),
-              borderRadius: AppRadius.brMd,
-            ),
-            child: Icon(Icons.bar_chart_rounded,
-                color: context.colors.primary, size: AppIconSize.sm + 1),
-          ),
-          AppSpacing.hGapMd,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(_phaseName(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.texts.titleSmall),
-                const SizedBox(height: 2),
-                Text('Faz $phase · Hafta $week',
-                    style: context.texts.bodySmall?.copyWith(
-                        color: context.colors.onSurfaceVariant)),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right_rounded,
-              color: context.colors.outline, size: AppIconSize.sm),
-        ],
-      ),
-    );
-  }
-}
-
 // ──────────────────────────────────────────────── Birincil aksiyon (durum)
 
+/// Bugünkü rutine göre: planlı rutin varsa gradient CTA, yoksa dinlenme/başlat.
 class _PrimaryActionCard extends ConsumerWidget {
-  final int phase;
-  const _PrimaryActionCard({required this.phase});
+  const _PrimaryActionCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ref.watch(todayWorkoutProvider(phase)).when(
+    return ref.watch(todayRoutineProvider).when(
           loading: () => Skeleton.card(height: 84),
-          error: (_, _) => const _RestDayCard(nextName: null),
-          data: (tw) => tw.isRestDay
-              ? _RestDayCard(nextName: tw.next?['name'] as String?)
-              : _TrainingDayCard(workout: tw.today!),
+          error: (_, _) => const _StartWorkoutCard(),
+          data: (tr) {
+            if (tr.today != null) return _TrainingDayCard(routine: tr.today!);
+            if (tr.next == null) return const _StartWorkoutCard();
+            return _RestDayCard(nextName: tr.next!.name);
+          },
         );
   }
 }
 
-class _TrainingDayCard extends StatelessWidget {
-  final Map<String, dynamic> workout;
-  const _TrainingDayCard({required this.workout});
+class _TrainingDayCard extends ConsumerWidget {
+  final Routine routine;
+  const _TrainingDayCard({required this.routine});
 
   @override
-  Widget build(BuildContext context) {
-    final type = workout['type'] as String;
-    final name = workout['name'] as String;
-    final exCount = (workout['exercises'] as List<dynamic>).length;
-    final estMin = exCount * 8; // kaba süre tahmini (~8 dk/hareket)
-
+  Widget build(BuildContext context, WidgetRef ref) {
+    final exCount =
+        ref.watch(routineExercisesProvider(routine.id)).valueOrNull?.length;
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: AppRadius.brXl,
@@ -234,7 +167,7 @@ class _TrainingDayCard extends StatelessWidget {
         color: Colors.transparent,
         borderRadius: AppRadius.brXl,
         child: InkWell(
-          onTap: () => context.push('/workout/preview/$type'),
+          onTap: () => context.push('/workout/routine/${routine.id}/preview'),
           borderRadius: AppRadius.brXl,
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -245,11 +178,14 @@ class _TrainingDayCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Antrenmanı Başlat',
+                      Text('Bugün: ${routine.name}',
                           style: context.texts.titleLarge
                               ?.copyWith(color: Colors.white)),
                       const SizedBox(height: 4),
-                      Text('$name · $exCount hareket · ~$estMin dk',
+                      Text(
+                          exCount != null
+                              ? 'Antrenmanı başlat · $exCount hareket'
+                              : 'Antrenmanı başlat',
                           style: context.texts.bodySmall?.copyWith(
                               color: Colors.white.withValues(alpha: 0.82))),
                     ],
@@ -268,6 +204,52 @@ class _TrainingDayCard extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StartWorkoutCard extends StatelessWidget {
+  const _StartWorkoutCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: InkWell(
+        onTap: () => context.go('/workout'),
+        borderRadius: AppRadius.brLg,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: context.colors.primary.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.brMd,
+                ),
+                child: Icon(Icons.fitness_center_rounded,
+                    color: context.colors.primary),
+              ),
+              AppSpacing.hGapMd,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Antrenmana başla', style: context.texts.titleMedium),
+                    const SizedBox(height: 2),
+                    Text('Rutin oluştur ya da boş antrenman başlat',
+                        style: context.texts.bodySmall?.copyWith(
+                            color: context.colors.onSurfaceVariant)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: context.colors.outline),
+            ],
           ),
         ),
       ),
@@ -308,7 +290,7 @@ class _RestDayCard extends StatelessWidget {
                           style: context.texts.titleMedium),
                       if (nextName != null) ...[
                         const SizedBox(height: 3),
-                        Text('Yarın: $nextName',
+                        Text('Sıradaki: $nextName',
                             style: context.texts.bodySmall
                                 ?.copyWith(color: muted)),
                       ],
@@ -330,17 +312,15 @@ class _RestDayCard extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.directions_walk_rounded,
-                        color: muted, size: AppIconSize.sm),
+                    Icon(Icons.bolt_rounded, color: muted, size: AppIconSize.sm),
                     AppSpacing.hGapMd,
                     Expanded(
-                      child: Text('Hafif yürüyüş ister misin?',
+                      child: Text('Yine de antrenman yap',
                           style: context.texts.labelLarge?.copyWith(
                               color: muted, fontWeight: FontWeight.w600)),
                     ),
                     Icon(Icons.chevron_right_rounded,
-                        color: context.colors.outline,
-                        size: AppIconSize.sm),
+                        color: context.colors.outline, size: AppIconSize.sm),
                   ],
                 ),
               ),

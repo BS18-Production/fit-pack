@@ -14,9 +14,11 @@ Claude Design (Apple Fitness vibe + Indigo/Teal). HTML export: `design/code/`. B
 - [x] **D-03** Ana Sayfa reskin: header (safe-area fix), dinlenme günü zekası, hero ring 196px, su kartı (DB-backed interaktif), Seri+Kilo satırı — emülatörde dark+light doğrulandı
 - [ ] **D-04** Antrenman V2 — Hevy/Strong genişleme. **PRD:** [docs/09-workout-v2.md](docs/09-workout-v2.md). Karar: tam geçiş (sadece rutinler), genel kitle, İngilizce hareketler.
   - [x] **Faz A — Hareket Kütüphanesi** (şema v5, 2026-06-21): exercises +equipment/measurementType/primaryMuscle/isCustom/isArchived; ~100 İngilizce hareket seed (5 kategori); backfill (mevcut kuruluma merge); kütüphane ekranı (`/exercises`, arama+kategori+kas filtre, özel hareket, detay sheet, arşiv); Antrenman app bar girişi. analyze 0 · test 36/36 · emülatörde doğrulandı (migration + arama).
-  - [ ] **Faz B — Rutinler** (şema v6): Routines/RoutineExercises + ana ekran (boş antrenman + rutinlerim, sıfırdan) + rutin oluşturucu + önizleme + Home dinlenme günü rutine bağlama. **Not:** sabit program/faz (workout_plan.json, currentPhase) kaldırılacak.
-  - [ ] **Faz C — Gelişmiş Seans** (şema v7): set tablosu (RPE + set tipi + dinlenme sayacı + ✓) + canlı süre + özet
-  - [ ] **Faz D — Hareket Detayı + PR** (şema v8?): geçmiş/grafik/e1RM/rekorlar
+  - [x] **Faz B — Rutinler** (şema v6, 2026-06-21): Routines/RoutineExercises tabloları; Antrenman ana ekranı yeniden kuruldu (Boş Antrenman Başlat + Rutinlerim + Yeni Rutin + bu hafta istatistik + Geçmiş); rutin oluşturucu (ad/gün/hareket+hedef set×tekrar/sürükle-sırala); rutin önizleme; Home dinlenme günü artık rutin `scheduledWeekday`'e bağlı; sabit program (workout_plan.json/faz) Home'dan kaldırıldı.
+  - [x] **Faz C — Gelişmiş Seans** (şema v6 ortak): aktif seans ekranı (set tablosu KG/tekrar/RPE/✓, set tipleri ısınma/drop/failure, dinlenme sayacı −15/+15/atla, canlı süre, +set/+hareket, PopScope çıkış onayı); antrenman özeti (süre/hacim/set/hareket dökümü).
+  - [x] **Faz D — Hareket Detayı + PR** (2026-06-21): hareket detay ekranı 3 sekme (Geçmiş / Grafik=fl_chart e1RM / Rekorlar=Epley 1RM + en ağır set); kütüphane dokunuşu detaya bağlandı; özel hareket arşivleme detayda.
+  - **Doğrulama:** analyze 0 · test 38/38 (v5→v6 lossless göç + rutin DAO dahil) · emülatörde landing/builder/aktif seans/kütüphane render + filtreler doğrulandı; yoğun set-tablosu logging gerçek cihazda teyit edilecek.
+  - **Migration:** v5→v6 tek adımda (routines + routine_exercises + session routineId/startedAt/endedAt + sets rpe/setType/isComplete/distanceM/durationSec), lossless test geçti.
 - [ ] **D-05** Beslenme ekranı reskin
 - [ ] **D-06** İlerleme ekranı reskin
 - [ ] **D-07** Ayarlar + Onboarding reskin (Onboarding fonksiyon olarak var, görsel reskin gerek)

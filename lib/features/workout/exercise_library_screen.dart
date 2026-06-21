@@ -3,6 +3,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
@@ -65,7 +66,6 @@ IconData _categoryIcon(String c) => switch (c) {
       _ => Icons.fitness_center_rounded,
     };
 
-String _trCat(String c) => kCategoryTr[c] ?? c;
 String _trMuscle(String? m) => m == null ? '' : (kMuscleTr[m] ?? m);
 String _trEquip(String? e) => e == null ? '' : (kEquipmentTr[e] ?? e);
 
@@ -107,7 +107,11 @@ class _ExerciseLibraryScreenState
     final async = ref.watch(libraryExercisesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Hareket Kütüphanesi')),
+      appBar: AppBar(
+        title: Text(widget.selectionMode
+            ? 'Hareket Seç'
+            : 'Hareket Kütüphanesi'),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addCustom,
         icon: const Icon(Icons.add_rounded),
@@ -172,28 +176,15 @@ class _ExerciseLibraryScreenState
                   separatorBuilder: (_, _) => AppSpacing.vGapSm,
                   itemBuilder: (_, i) => _ExerciseTile(
                     exercise: list[i],
-                    onTap: () => _openDetail(list[i]),
+                    onTap: () => widget.selectionMode
+                        ? Navigator.pop(context, list[i])
+                        : context.push('/exercise/${list[i].id}'),
                   ),
                 );
               },
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _openDetail(Exercise e) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: context.colors.surface,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (_) => _ExerciseDetailSheet(
-        exercise: e,
-        onArchived: () {
-          ref.invalidate(libraryExercisesProvider);
-        },
       ),
     );
   }
@@ -376,100 +367,6 @@ class _ExerciseTile extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ───────────────────────────────────────────── Detay sheet
-
-class _ExerciseDetailSheet extends ConsumerWidget {
-  final Exercise exercise;
-  final VoidCallback onArchived;
-  const _ExerciseDetailSheet(
-      {required this.exercise, required this.onArchived});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final muscles = (() {
-      try {
-        return (jsonDecode(exercise.muscleGroups) as List)
-            .map((m) => _trMuscle(m as String))
-            .where((s) => s.isNotEmpty)
-            .join(', ');
-      } catch (_) {
-        return '';
-      }
-    })();
-
-    return Padding(
-      padding: AppSpacing.screen,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SheetHeader(title: exercise.name),
-          AppSpacing.vGapMd,
-          _DetailRow('Kategori', _trCat(exercise.category)),
-          _DetailRow('Ana kas', _trMuscle(exercise.primaryMuscle)),
-          if (muscles.isNotEmpty) _DetailRow('Çalışan kaslar', muscles),
-          _DetailRow('Ekipman', _trEquip(exercise.equipment)),
-          _DetailRow('Ölçüm', kMeasurementTr[exercise.measurementType] ?? '—'),
-          AppSpacing.vGapLg,
-          Text('Geçmiş, ilerleme grafiği ve rekorlar yakında (Antrenman V2 Faz D).',
-              style: context.texts.bodySmall
-                  ?.copyWith(color: context.colors.onSurfaceVariant)),
-          if (exercise.isCustom) ...[
-            AppSpacing.vGapLg,
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () async {
-                  final ok = await confirmAction(
-                    context,
-                    title: 'Hareketi arşivle',
-                    message:
-                        '${exercise.name} kütüphaneden kaldırılsın mı? Geçmiş kayıtlar korunur.',
-                    confirmLabel: 'Arşivle',
-                  );
-                  if (!ok) return;
-                  await ref.read(workoutDaoProvider).archiveExercise(exercise.id);
-                  onArchived();
-                  if (context.mounted) Navigator.pop(context);
-                },
-                icon: const Icon(Icons.archive_outlined),
-                label: const Text('Arşivle'),
-              ),
-            ),
-          ],
-          AppSpacing.vGapMd,
-        ],
-      ),
-    );
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  final String label;
-  final String value;
-  const _DetailRow(this.label, this.value);
-
-  @override
-  Widget build(BuildContext context) {
-    if (value.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(label,
-                style: context.texts.bodyMedium
-                    ?.copyWith(color: context.colors.onSurfaceVariant)),
-          ),
-          Expanded(child: Text(value, style: context.texts.bodyMedium)),
-        ],
       ),
     );
   }

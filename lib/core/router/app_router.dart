@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fit_pack/features/home/home_screen.dart';
 import 'package:fit_pack/features/workout/workout_list_screen.dart';
-import 'package:fit_pack/features/workout/workout_session_screen.dart';
-import 'package:fit_pack/features/workout/workout_preview_screen.dart';
 import 'package:fit_pack/features/workout/workout_history_screen.dart';
 import 'package:fit_pack/features/workout/exercise_library_screen.dart';
+import 'package:fit_pack/features/workout/exercise_detail_screen.dart';
+import 'package:fit_pack/features/workout/routine_builder_screen.dart';
+import 'package:fit_pack/features/workout/routine_preview_screen.dart';
+import 'package:fit_pack/features/workout/active_session_screen.dart';
+import 'package:fit_pack/features/workout/workout_summary_screen.dart';
 import 'package:fit_pack/features/nutrition/nutrition_screen.dart';
 import 'package:fit_pack/features/nutrition/foods_screen.dart';
 import 'package:fit_pack/features/body_metrics/body_metrics_screen.dart';
@@ -60,30 +63,61 @@ GoRouter createAppRouter({required bool onboarded}) => GoRouter(
       ],
     ),
     GoRoute(
-      path: '/workout/session/:workoutType',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) {
-        final workoutType = state.pathParameters['workoutType']!;
-        return WorkoutSessionScreen(workoutType: workoutType);
-      },
-    ),
-    GoRoute(
-      path: '/workout/preview/:workoutType',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) {
-        final workoutType = state.pathParameters['workoutType']!;
-        return WorkoutPreviewScreen(workoutType: workoutType);
-      },
-    ),
-    GoRoute(
       path: '/workout/history',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const WorkoutHistoryScreen(),
+    ),
+    // Antrenman V2 (docs/09-workout-v2.md) — rutinler + aktif seans.
+    GoRoute(
+      path: '/workout/routine/new',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const RoutineBuilderScreen(),
+    ),
+    GoRoute(
+      path: '/workout/routine/:id/edit',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => RoutineBuilderScreen(
+          routineId: int.parse(state.pathParameters['id']!)),
+    ),
+    GoRoute(
+      path: '/workout/routine/:id/preview',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => RoutinePreviewScreen(
+          routineId: int.parse(state.pathParameters['id']!)),
+    ),
+    GoRoute(
+      path: '/workout/active',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const ActiveSessionScreen(),
+    ),
+    GoRoute(
+      path: '/workout/active/:routineId',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => ActiveSessionScreen(
+          routineId: int.parse(state.pathParameters['routineId']!)),
+    ),
+    GoRoute(
+      path: '/workout/summary/:sessionId',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => WorkoutSummaryScreen(
+          sessionId: int.parse(state.pathParameters['sessionId']!)),
     ),
     GoRoute(
       path: '/exercises',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const ExerciseLibraryScreen(),
+    ),
+    GoRoute(
+      path: '/exercises/select',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) =>
+          const ExerciseLibraryScreen(selectionMode: true),
+    ),
+    GoRoute(
+      path: '/exercise/:id',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => ExerciseDetailScreen(
+          exerciseId: int.parse(state.pathParameters['id']!)),
     ),
     GoRoute(
       path: '/foods',

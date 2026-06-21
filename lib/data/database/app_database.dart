@@ -22,6 +22,8 @@ part 'app_database.g.dart';
     Exercises,
     WorkoutSessions,
     WorkoutSets,
+    Routines,
+    RoutineExercises,
     Foods,
     FoodLogs,
     RecipeItems,
@@ -62,11 +64,14 @@ class AppDatabase extends _$AppDatabase {
   ///
   /// v4 → v5 (2026-06-21, Antrenman V2 Faz A — docs/09-workout-v2.md):
   /// `exercises` +primaryMuscle/+equipment/+measurementType/+isCustom/
-  /// +isArchived (hareket kütüphanesi filtreleri). Hepsi nullable/default'lu →
-  /// additive, veri kayıpsız. Backfill: mevcut hareketlere İngilizce seed'den
-  /// ekipman/kas/ölçüm tipi yazılır (SeedManager).
+  /// +isArchived (hareket kütüphanesi filtreleri).
+  ///
+  /// v5 → v6 (2026-06-21, Antrenman V2 Faz B+C): `routines` +
+  /// `routine_exercises` tabloları + `workout_sessions` +routineId/+startedAt/
+  /// +endedAt + `workout_sets` +rpe/+setType/+isComplete/+distanceM/
+  /// +durationSec. Hepsi additive → veri kayıpsız.
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -112,6 +117,19 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(exercises, exercises.measurementType);
           await m.addColumn(exercises, exercises.isCustom);
           await m.addColumn(exercises, exercises.isArchived);
+        }
+        // v5 → v6: Antrenman V2 Faz B+C — rutinler + gelişmiş set takibi.
+        if (from < 6 && to >= 6) {
+          await m.createTable(routines);
+          await m.createTable(routineExercises);
+          await m.addColumn(workoutSessions, workoutSessions.routineId);
+          await m.addColumn(workoutSessions, workoutSessions.startedAt);
+          await m.addColumn(workoutSessions, workoutSessions.endedAt);
+          await m.addColumn(workoutSets, workoutSets.rpe);
+          await m.addColumn(workoutSets, workoutSets.setType);
+          await m.addColumn(workoutSets, workoutSets.isComplete);
+          await m.addColumn(workoutSets, workoutSets.distanceM);
+          await m.addColumn(workoutSets, workoutSets.durationSec);
         }
       },
 

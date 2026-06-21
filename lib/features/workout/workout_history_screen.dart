@@ -92,7 +92,7 @@ class _SessionCard extends ConsumerWidget {
       dateTxt,
       if (session.durationMin != null && session.durationMin! > 0)
         '${session.durationMin} dk',
-      'RPE ${session.rpe}',
+      if (session.rpe != null) 'RPE ${session.rpe}',
     ].join('  ·  ');
 
     return Card(

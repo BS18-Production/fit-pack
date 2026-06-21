@@ -1,0 +1,95 @@
+import 'package:drift/drift.dart' show Value;
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../data/database/app_database.dart';
+import '../../data/providers.dart';
+import 'barcode_scan_screen.dart';
+
+/// Barkod akışı (docs/07-nutrition-v2.md §6.3):
+/// tara → lokal `foods.barcode` eşleşir mi → yoksa OpenFoodFacts → ekle.
+/// Dönen `Food`: çağıran onu seçer/listeler. null = iptal/elle ekle/bulunamadı.
+Future<Food?> scanBarcodeToFood(BuildContext context, WidgetRef ref) async {
+  final code = await Navigator.of(context, rootNavigator: true).push<String>(
+    MaterialPageRoute(
+      builder: (_) => const BarcodeScanScreen(),
+      fullscreenDialog: true,
+    ),
+  );
+  if (code == null || code.isEmpty) return null;
+  if (!context.mounted) return null;
+
+  final dao = ref.read(nutritionDaoProvider);
+
+  // 1) Lokal eşleşme (internetsiz, anında).
+  final existing = await dao.getFoodByBarcode(code);
+  if (existing != null) {
+    if (context.mounted) {
+      _snack(context, '${existing.name} (zaten kayıtlı)');
+    }
+    return existing;
+  }
+
+  // 2) OpenFoodFacts — sorgu sırasında engelleyici ilerleme göstergesi.
+  if (!context.mounted) return null;
+  BuildContext? progressCtx;
+  showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) {
+      progressCtx = ctx;
+      return const PopScope(
+        canPop: false,
+        child: AlertDialog(
+          content: Row(
+            children: [
+              SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2)),
+              SizedBox(width: 16),
+              Expanded(child: Text('OpenFoodFacts sorgulanıyor…')),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+
+  final off =
+      await ref.read(openFoodFactsServiceProvider).fetchByBarcode(code);
+
+  if (progressCtx != null && progressCtx!.mounted) {
+    Navigator.of(progressCtx!).pop();
+  }
+  if (!context.mounted) return null;
+
+  if (off == null) {
+    _snack(context,
+        'Ürün bulunamadı ($code). Elle ekleyebilirsin.');
+    return null;
+  }
+
+  final id = await dao.insertFood(FoodsCompanion(
+    name: Value(off.name),
+    barcode: Value(off.barcode),
+    kcalPer100g: Value(off.kcalPer100g),
+    proteinPer100g: Value(off.proteinPer100g),
+    carbPer100g: Value(off.carbPer100g),
+    fatPer100g: Value(off.fatPer100g),
+    source: const Value('openfoodfacts'),
+    isCustom: const Value(false),
+    isRecipe: const Value(false),
+  ));
+  final food = await dao.getFoodById(id);
+  if (context.mounted && food != null) {
+    _snack(context, '${food.name} eklendi (OpenFoodFacts)');
+  }
+  return food;
+}
+
+void _snack(BuildContext context, String msg) {
+  ScaffoldMessenger.of(context)
+    ..clearSnackBars()
+    ..showSnackBar(SnackBar(content: Text(msg)));
+}

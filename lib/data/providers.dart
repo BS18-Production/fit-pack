@@ -5,6 +5,7 @@ import 'database/daos/nutrition_dao.dart';
 import 'database/daos/body_dao.dart';
 import 'database/daos/achievement_dao.dart';
 import 'database/daos/user_profile_dao.dart';
+import 'services/openfoodfacts_service.dart';
 
 /// Single database instance
 final databaseProvider = Provider<AppDatabase>((ref) {
@@ -32,4 +33,11 @@ final achievementDaoProvider = Provider<AchievementDao>((ref) {
 
 final userProfileDaoProvider = Provider<UserProfileDao>((ref) {
   return ref.watch(databaseProvider).userProfileDao;
+});
+
+/// OpenFoodFacts (barkod → besin). Beslenme V2 (docs/07-nutrition-v2.md).
+final openFoodFactsServiceProvider = Provider<OpenFoodFactsService>((ref) {
+  final svc = OpenFoodFactsService();
+  ref.onDispose(svc.dispose);
+  return svc;
 });

@@ -25,4 +25,29 @@ class UserProfileDao extends DatabaseAccessor<AppDatabase> with _$UserProfileDao
       ));
     }
   }
+
+  /// Reaktif onboarding kontrolü — router redirect'i bunu izler.
+  Stream<UserProfileData?> watchProfile() =>
+      (select(userProfile)..limit(1)).watchSingleOrNull();
+
+  /// P-10 Onboarding tamamlandığında çağrılır: hedefleri yazar + onboarded=1.
+  /// Tek profil satırını günceller (yoksa oluşturur). Boy/hedef kilo opsiyonel.
+  Future<void> completeOnboarding({
+    required int kcalGoal,
+    required int proteinGoal,
+    required int phase,
+    double? heightCm,
+    double? goalWeightKg,
+  }) async {
+    await ensureProfile();
+    final profile = await getProfile();
+    await updateProfile(profile!.copyWith(
+      kcalGoal: kcalGoal,
+      proteinGoal: proteinGoal,
+      currentPhase: phase,
+      heightCm: Value(heightCm),
+      goalWeightKg: Value(goalWeightKg),
+      onboarded: true,
+    ));
+  }
 }

@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    input, button, textarea { font-family: 'Inter', system-ui, sans-serif; }
+    input:focus, textarea:focus { outline: none; }
+    ::-webkit-scrollbar { width: 0; height: 0; }
+    @keyframes fpFade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fpSlide { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fpUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes fpPop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    @keyframes fpBanner { from { transform: translateY(-120%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  </style>
+</helmet>
+
+<div style="min-width:100%; min-height:100vh; box-sizing:border-box; padding:44px 64px 64px; background:#e7e5df; font-family:'Inter',system-ui,sans-serif; display:flex; flex-direction:column; align-items:center; gap:20px;">
+  <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center; align-items:center;">
+    <div style="display:flex; background:rgba(16,18,24,0.06); border-radius:99px; padding:4px; gap:2px;">
+      <button onClick="{{ setLight }}" style="{{ segLight }}">Açık</button>
+      <button onClick="{{ setDark }}" style="{{ segDark }}">Koyu</button>
+    </div>
+    <div style="font-size:12.5px; font-weight:600; color:#83807a;">{{ hint }}</div>
+  </div>
+  <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ dark }}" hint-size="402px,874px">{{ app }}</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.h = React.createElement;
+    // ---------- exercise library ----------
+    const H = (date, sets)=>({date, sets});
+    const HIST = {
+      squat:[H('6 Haz',[[95,6],[95,6],[90,6]]), H('13 Haz',[[100,6],[100,6],[95,6]]), H('20 Haz',[[100,6],[102.5,6],[100,5]])],
+      bench:[H('7 Haz',[[57.5,8],[57.5,8],[55,8]]), H('14 Haz',[[60,8],[60,8],[57.5,8]]), H('18 Haz',[[60,8],[62.5,7],[60,7]])],
+      dead:[H('6 Haz',[[130,5],[130,5]]), H('13 Haz',[[135,5],[135,5]]), H('20 Haz',[[140,5],[140,5]])],
+      bentrow:[H('7 Haz',[[65,8],[65,8]]), H('14 Haz',[[70,8],[70,8],[67.5,8]]), H('18 Haz',[[70,8],[72.5,8],[70,7]])],
+      ohp:[H('7 Haz',[[40,8],[40,7]]), H('14 Haz',[[42.5,8],[42.5,7]]), H('18 Haz',[[42.5,8],[42.5,8],[40,9]])],
+      lat:[H('7 Haz',[[60,10],[60,10]]), H('14 Haz',[[65,10],[65,10],[60,11]]), H('18 Haz',[[65,10],[65,10],[65,9]])],
+      incdb:[H('7 Haz',[[22,10],[22,9]]), H('14 Haz',[[24,10],[24,9]]), H('18 Haz',[[24,10],[24,10],[22,11]])],
+      push:[H('7 Haz',[[25,12],[25,12]]), H('14 Haz',[[30,12],[30,11]]), H('18 Haz',[[30,12],[30,12],[27.5,13]])],
+      legpress:[H('6 Haz',[[170,10],[170,10]]), H('13 Haz',[[180,10],[180,10]]), H('20 Haz',[[185,10],[185,10],[180,11]])],
+      lyingcurl:[H('6 Haz',[[40,12],[40,12]]), H('13 Haz',[[45,12],[45,12]]), H('20 Haz',[[45,12],[45,12],[45,10]])],
+      pullup:[H('10 Haz',[[0,8],[0,7],[0,6]]), H('17 Haz',[[0,9],[0,8],[0,6]])],
+      lateral:[H('7 Haz',[[10,15],[10,15]]), H('14 Haz',[[12,15],[12,14]]), H('18 Haz',[[12,15],[12,15],[12,13]])],
+      curl:[H('7 Haz',[[14,12],[14,11]]), H('14 Haz',[[16,12],[16,10]]), H('18 Haz',[[16,12],[16,11],[14,12]])],
+      pushup:[H('10 Haz',[[0,20],[0,18]]), H('17 Haz',[[0,22],[0,20],[0,16]])],
+      plank:[H('10 Haz',[[0,60],[0,55]]), H('17 Haz',[[0,70],[0,60]])],
+      treadmill:[H('11 Haz',[[3,1200]]), H('18 Haz',[[4,1500]])],
+    };
+    // categories: Compound Movements · Isolation Movements · Calisthenics · Cardio · Flexibility
+    const C='Compound Movements', I='Isolation Movements', K='Calisthenics', R='Cardio', F='Flexibility';
+    const def=(id,name,cat,muscle,equip,type)=>({id,name,category:cat,muscle,equip,type:type||'weight',hist:HIST[id]||[]});
+    this.LIB = [
+      // ---- Compound ----
+      def('squat','Barbell Back Squat',C,'Legs','Barbell'),
+      def('frontsquat','Front Squat',C,'Legs','Barbell'),
+      def('dead','Conventional Deadlift',C,'Back','Barbell'),
+      def('rdl','Romanian Deadlift',C,'Legs','Barbell'),
+      def('sumo','Sumo Deadlift',C,'Back','Barbell'),
+      def('bench','Barbell Bench Press',C,'Chest','Barbell'),
+      def('incbench','Incline Barbell Bench Press',C,'Chest','Barbell'),
+      def('ohp','Overhead Press',C,'Shoulders','Barbell'),
+      def('pushpress','Push Press',C,'Shoulders','Barbell'),
+      def('bentrow','Bent-Over Barbell Row',C,'Back','Barbell'),
+      def('pendlay','Pendlay Row',C,'Back','Barbell'),
+      def('tbar','T-Bar Row',C,'Back','Barbell'),
+      def('dbbench','Dumbbell Bench Press',C,'Chest','Dumbbell'),
+      def('incdb','Incline Dumbbell Press',C,'Chest','Dumbbell'),
+      def('dbshoulder','Dumbbell Shoulder Press',C,'Shoulders','Dumbbell'),
+      def('arnold','Arnold Press',C,'Shoulders','Dumbbell'),
+      def('dbrow','Dumbbell Row',C,'Back','Dumbbell'),
+      def('legpress','Leg Press',C,'Legs','Machine'),
+      def('hacksquat','Hack Squat',C,'Legs','Machine'),
+      def('lat','Lat Pulldown',C,'Back','Machine'),
+      def('cablerow','Seated Cable Row',C,'Back','Cable'),
+      def('chestpress','Chest Press Machine',C,'Chest','Machine'),
+      def('smithsquat','Smith Machine Squat',C,'Legs','Smith Machine'),
+      def('smithbench','Smith Machine Bench Press',C,'Chest','Smith Machine'),
+      def('bulgarian','Bulgarian Split Squat',C,'Legs','Dumbbell'),
+      def('walkinglunge','Walking Lunge',C,'Legs','Dumbbell'),
+      def('goblet','Goblet Squat',C,'Legs','Kettlebell'),
+      def('closebench','Close-Grip Bench Press',C,'Triceps','Barbell'),
+      // ---- Isolation ----
+      def('curl','Dumbbell Bicep Curl',I,'Biceps','Dumbbell'),
+      def('hammer','Hammer Curl',I,'Biceps','Dumbbell'),
+      def('preacher','Preacher Curl',I,'Biceps','Machine'),
+      def('cablecurl','Cable Bicep Curl',I,'Biceps','Cable'),
+      def('push','Pushdown',I,'Triceps','Cable'),
+      def('ohext','Overhead Tricep Extension',I,'Triceps','Dumbbell'),
+      def('skull','Skull Crushers',I,'Triceps','Barbell'),
+      def('kickback','Tricep Kickback',I,'Triceps','Dumbbell'),
+      def('lateral','Dumbbell Lateral Raise',I,'Shoulders','Dumbbell'),
+      def('frontraise','Front Raise',I,'Shoulders','Dumbbell'),
+      def('reardelt','Rear Delt Fly',I,'Shoulders','Dumbbell'),
+      def('cablelat','Cable Lateral Raise',I,'Shoulders','Cable'),
+      def('facepull','Face Pull',I,'Shoulders','Cable'),
+      def('revpecdeck','Reverse Pec Deck',I,'Shoulders','Machine'),
+      def('chestfly','Dumbbell Chest Fly',I,'Chest','Dumbbell'),
+      def('pecdeck','Pec Deck',I,'Chest','Machine'),
+      def('crossover','Cable Crossover',I,'Chest','Cable'),
+      def('legext','Leg Extension',I,'Legs','Machine'),
+      def('lyingcurl','Lying Leg Curl',I,'Legs','Machine'),
+      def('seatedcurl','Seated Leg Curl',I,'Legs','Machine'),
+      def('standcalf','Standing Calf Raise',I,'Calves','Machine'),
+      def('seatedcalf','Seated Calf Raise',I,'Calves','Machine'),
+      def('hipthrust','Hip Thrust',I,'Glutes','Barbell'),
+      def('glutekick','Cable Glute Kickback',I,'Glutes','Cable'),
+      def('shrug','Dumbbell Shrug',I,'Back','Dumbbell'),
+      def('cablepullover','Cable Pullover',I,'Back','Cable'),
+      // ---- Calisthenics ----
+      def('pushup','Push-Up',K,'Chest','Bodyweight','reps'),
+      def('pullup','Pull-Up',K,'Back','Bodyweight','reps'),
+      def('chinup','Chin-Up',K,'Back','Bodyweight','reps'),
+      def('dips','Parallel Bar Dips',K,'Chest','Bodyweight','reps'),
+      def('bwsquat','Bodyweight Squat',K,'Legs','Bodyweight','reps'),
+      def('pistol','Pistol Squat',K,'Legs','Bodyweight','reps'),
+      def('bwlunge','Bodyweight Lunge',K,'Legs','Bodyweight','reps'),
+      def('plank','Plank',K,'Core','Bodyweight','time'),
+      def('sideplank','Side Plank',K,'Core','Bodyweight','time'),
+      def('hangingleg','Hanging Leg Raise',K,'Core','Bodyweight','reps'),
+      def('kneeraise','Knee Raise',K,'Core','Bodyweight','reps'),
+      def('mountain','Mountain Climbers',K,'Core','Bodyweight','reps'),
+      def('burpees','Burpees',K,'Full Body','Bodyweight','reps'),
+      def('muscleup','Muscle-Up',K,'Back','Bodyweight','reps'),
+      def('invrow','Inverted Row',K,'Back','Bodyweight','reps'),
+      def('pikepush','Pike Push-Up',K,'Shoulders','Bodyweight','reps'),
+      def('hspu','Handstand Push-Up',K,'Shoulders','Bodyweight','reps'),
+      def('lsit','L-Sit',K,'Core','Bodyweight','time'),
+      def('crunch','Crunch',K,'Core','Bodyweight','reps'),
+      def('situp','Sit-Up',K,'Core','Bodyweight','reps'),
+      def('russian','Russian Twist',K,'Core','Bodyweight','reps'),
+      def('glutebridge','Glute Bridge',K,'Glutes','Bodyweight','reps'),
+      def('superman','Superman',K,'Back','Bodyweight','reps'),
+      def('nordic','Nordic Hamstring Curl',K,'Legs','Bodyweight','reps'),
+      // ---- Cardio ----
+      def('treadmill','Treadmill Running',R,'Full Body','Cardio Machine','distance'),
+      def('incwalk','Incline Treadmill Walk',R,'Legs','Cardio Machine','time'),
+      def('bike','Stationary Bike',R,'Legs','Cardio Machine','distance'),
+      def('spin','Spin Bike',R,'Legs','Cardio Machine','time'),
+      def('elliptical','Elliptical',R,'Full Body','Cardio Machine','time'),
+      def('rowerg','Rowing Machine',R,'Full Body','Cardio Machine','distance'),
+      def('stair','Stair Climber',R,'Legs','Cardio Machine','time'),
+      def('jumprope','Jump Rope',R,'Full Body','None','time'),
+      def('assault','Assault Bike',R,'Full Body','Cardio Machine','time'),
+      def('outrun','Outdoor Running',R,'Full Body','None','distance'),
+      def('outcycle','Outdoor Cycling',R,'Legs','None','distance'),
+      def('swim','Swimming',R,'Full Body','None','distance'),
+      def('skierg','SkiErg',R,'Full Body','Cardio Machine','distance'),
+      def('hiit','HIIT Intervals',R,'Full Body','None','time'),
+      // ---- Flexibility ----
+      def('hamstretch','Static Hamstring Stretch',F,'Legs','None','time'),
+      def('hipflexor','Hip Flexor Stretch',F,'Legs','None','time'),
+      def('shoulderstretch','Shoulder Stretch',F,'Shoulders','None','time'),
+      def('foamroll','Foam Rolling',F,'Full Body','None','time'),
+      def('catcow','Cat-Cow Stretch',F,'Core','None','time'),
+      def('pigeon','Pigeon Pose',F,'Glutes','None','time'),
+      def('couch','Couch Stretch',F,'Legs','None','time'),
+      def('thoracic','Thoracic Rotation',F,'Back','None','time'),
+      def('dynwarmup','Dynamic Warm-Up',F,'Full Body','None','time'),
+      def('worldgreat',"World's Greatest Stretch",F,'Full Body','None','time'),
+      def('yoga','Yoga Flow',F,'Full Body','None','time'),
+    ];
+    this.ROUTINES = [
+      {id:'upperA', name:'Upper A', exIds:['bench','bentrow','ohp','lat','incdb','push'], targets:{bench:'3×6-8',bentrow:'3×8-10',ohp:'3×8-10',lat:'3×10-12',incdb:'3×10-12',push:'3×12-15'}},
+      {id:'lowerB', name:'Lower B', exIds:['squat','dead','legpress','lyingcurl'], targets:{squat:'4×5-6',dead:'2×5',legpress:'3×10-12',lyingcurl:'3×12-15'}},
+      {id:'full', name:'Full Body', exIds:['squat','bench','pullup','lateral','curl'], targets:{squat:'3×6-8',bench:'3×8-10',pullup:'3×8',lateral:'3×15',curl:'3×12'}},
+    ];
+    this.CATEGORIES = [C, I, K, R, F];
+    this.CATSHORT = {[C]:'Compound', [I]:'Isolation', [K]:'Calisthenics', [R]:'Cardio', [F]:'Flexibility'};
+    this.MUSCLES = ['Chest','Back','Shoulders','Biceps','Triceps','Legs','Glutes','Core','Calves','Full Body'];
+    this.EQUIP = ['Barbell','Dumbbell','Machine','Cable','Bodyweight','Smith Machine','Kettlebell','Cardio Machine','None'];
+    this.SETTYPES = {N:{label:'Normal',short:'',color:null}, W:{label:'Isınma',short:'I'}, D:{label:'Drop Set',short:'D'}, F:{label:'Başarısızlık',short:'F'}};
+
+    this.state = {
+      theme:'light', stack:[], dialog:null, hint:'Antrenman ana ekranı',
+      session:null, rest:null, summary:null,
+      lib:{q:'', category:null, muscle:null, equip:null},
+      builder:null, exDetailTab:'gecmis',
+      swipe:null,
+      menuOpen:null,
+      dlgVals:{},
+      history:[
+        {name:'Lower B', date:'20 Haz', dur:3120, vol:9840, setCount:11, prs:['Barbell Back Squat'], ex:[{n:'Barbell Back Squat', s:'100×6, 102.5×6, 100×5'},{n:'Conventional Deadlift', s:'140×5, 140×5'},{n:'Leg Press', s:'185×10, 185×10, 180×11'},{n:'Lying Leg Curl', s:'45×12, 45×12, 45×10'}]},
+        {name:'Upper A', date:'18 Haz', dur:3540, vol:8420, setCount:15, prs:['Barbell Bench Press'], ex:[{n:'Barbell Bench Press', s:'60×8, 62.5×7, 60×7'},{n:'Bent-Over Barbell Row', s:'70×8, 72.5×8, 70×7'},{n:'Overhead Press', s:'42.5×8, 42.5×8, 40×9'},{n:'Lat Pulldown', s:'65×10, 65×10, 65×9'}]},
+        {name:'Full Body', date:'17 Haz', dur:2880, vol:6180, setCount:13, prs:[], ex:[{n:'Barbell Back Squat', s:'95×8, 95×8'},{n:'Pull-Up', s:'VA×9, VA×8, VA×6'},{n:'Dumbbell Lateral Raise', s:'12×15, 12×15'}]},
+      ],
+      weekWorkouts:3, weekVol:24440,
+      now: Date.now(),
+    };
+  }
+  componentDidMount(){
+    this.timer = setInterval(()=>{
+      const s=this.state;
+      if(s.session){ this.setState({now:Date.now()}); }
+      if(s.rest && s.rest.remaining>0){
+        this.setState(st=>{ if(!st.rest) return {}; const rem=st.rest.remaining-1; return {rest: rem<=0? null : {...st.rest, remaining:rem}}; });
+      }
+    }, 1000);
+  }
+  componentWillUnmount(){ clearInterval(this.timer); }
+
+  // ---------- helpers ----------
+  th(n){ return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+  fmt(n){ const v=Math.round(n*10)/10; return (v%1===0? v.toString() : v.toString().replace('.',',')); }
+  clock(s){ const m=Math.floor(s/60), sec=s%60; return m+':'+(sec<10?'0':'')+sec; }
+  clockH(s){ const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60; return (h>0?h+':'+(m<10?'0':''):'')+m+':'+(sec<10?'0':'')+sec; }
+  ex(id){ return this.LIB.find(e=>e.id===id); }
+  e1rm(kg,reps){ return kg*(1+reps/30); }
+
+  theme(){
+    if(this.state.theme==='dark') return {mode:'dark', bg:'#101218', card:'#1B1E27', card2:'#22262F', text:'#E7E9EE', sub:'#9BA1B0', faint:'#6B7080',
+      primary:'#6366F1', primarySoft:'rgba(99,102,241,0.18)', hairline:'rgba(255,255,255,0.07)', track:'rgba(255,255,255,0.08)', chip:'rgba(255,255,255,0.06)',
+      cardShadow:'none', navBg:'rgba(16,18,24,0.9)', overlay:'rgba(0,0,0,0.6)', inputBg:'rgba(255,255,255,0.06)', inputBorder:'rgba(255,255,255,0.1)',
+      grad:'linear-gradient(135deg,#7C7FF5 0%,#5457E6 60%,#4F46E5 100%)', teal:'#14B8A6', tealText:'#2DD4BF', tealSoft:'rgba(20,184,166,0.18)', tealRow:'rgba(20,184,166,0.12)',
+      amber:'#FBBF24', red:'#F87171', violet:'#A78BFA', blue:'#38BDF8', sheetHandle:'rgba(255,255,255,0.22)', headerBg:'rgba(16,18,24,0.92)'};
+    return {mode:'light', bg:'#F6F7F9', card:'#FFFFFF', card2:'#F1F2F5', text:'#1A1C22', sub:'#5A6072', faint:'#9499A6',
+      primary:'#4F46E5', primarySoft:'rgba(79,70,229,0.10)', hairline:'rgba(16,18,24,0.07)', track:'rgba(16,18,24,0.06)', chip:'rgba(16,18,24,0.05)',
+      cardShadow:'0 1px 3px rgba(16,18,24,0.04)', navBg:'rgba(246,247,249,0.92)', overlay:'rgba(16,18,24,0.4)', inputBg:'#FFFFFF', inputBorder:'rgba(16,18,24,0.12)',
+      grad:'linear-gradient(135deg,#6366F1 0%,#4F46E5 100%)', teal:'#14B8A6', tealText:'#0F9488', tealSoft:'rgba(20,184,166,0.12)', tealRow:'rgba(20,184,166,0.09)',
+      amber:'#D97706', red:'#DC2626', violet:'#7C3AED', blue:'#0C8FCF', sheetHandle:'rgba(16,18,24,0.15)', headerBg:'rgba(246,247,249,0.95)'};
+  }
+
+  ic(name, color, size, sw){
+    const h=this.h; size=size||22; sw=sw||1.9;
+    const M={
+      back:[['p','M15 5l-7 7 7 7']], chevron:[['p','M9 6l6 6-6 6']], chevDown:[['p','M6 9l6 6 6-6']],
+      plus:[['p','M12 5v14M5 12h14']], minus:[['p','M5 12h14']], check:[['p','M5 12.5l4.5 4.5L19 7']], x:[['p','M6 6l12 12M18 6L6 18']],
+      dots:[['c',5,12,1],['c',12,12,1],['c',19,12,1]], search:[['c',11,11,7],['p','M21 21l-4-4']],
+      clock:[['c',12,12,8.5],['p','M12 7.5V12l3 2']], timer:[['p','M10 2h4'],['p','M12 8v5l3 2'],['c',12,14,8]],
+      dumbbell:[['p','M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10']], barbell:[['p','M2 12h2M20 12h2M5 8v8M7 8v8M17 8v8M19 8v8M7 12h10']],
+      machine:[['p','M5 4v16M5 8h6a4 4 0 014 4v0M15 12h4'],['c',5,4,0.4]], cable:[['p','M6 3v5a6 6 0 0012 0V3'],['p','M12 14v7M9 21h6']],
+      body:[['c',12,5,2.4],['p','M12 7.4v7M12 9l-4 2M12 9l4 2M12 14.4L8.5 21M12 14.4L15.5 21']], smith:[['p','M4 4v16M20 4v16M4 9h16M4 14h16']],
+      trophy:[['p','M7 4h10v4a5 5 0 01-10 0z'],['p','M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3'],['p','M12 13v4M9 21h6M10 17h4']],
+      grip:[['c',9,6,0.6],['c',15,6,0.6],['c',9,12,0.6],['c',15,12,0.6],['c',9,18,0.6],['c',15,18,0.6]],
+      trash:[['p','M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6']], edit:[['p','M12 20h9'],['p','M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z']],
+      note:[['p','M5 4h14v16l-4-3H5z'],['p','M9 9h6M9 13h4']], swap:[['p','M7 4l-3 3 3 3'],['p','M4 7h13'],['p','M17 20l3-3-3-3'],['p','M20 17H7']],
+      play:[['p','M7 5l12 7-12 7z']], flag:[['p','M5 21V4M5 4h13l-2 4 2 4H5']], chart:[['p','M4 19V5M4 19h16'],['p','M8 15l3-3 3 1 4-6']],
+      history:[['p','M3.5 12a8.5 8.5 0 108.5-8.5A8.5 8.5 0 005 6.8M3.5 3.5V7h3.5'],['p','M12 8v4.2l3 1.8']],
+      filter:[['p','M3 5h18M6 12h12M10 19h4']], ruler:[['p','M4 8h16v8H4z'],['p','M8 8v3M12 8v4M16 8v3']],
+      fire:[['p','M12 3s5 4 5 9a5 5 0 01-10 0c0-2 1-3 1-3s0 2 2 2c1.5 0 1.5-2 1-4s-0-6 1-6z']], dist:[['c',12,10,3.2],['p','M12 21s7-7 7-11a7 7 0 10-14 0c0 4 7 11 7 11z']],
+      target:[['c',12,12,8.5],['c',12,12,4],['c',12,12,0.6]],
+      kettle:[['p','M8.5 8a3.5 3.5 0 117 0'],['p','M7 8h10l1.5 7a4 4 0 01-4 5H9.5a4 4 0 01-4-5z']],
+      cardio:[['p','M3 12h4l2-5 3 10 2-6 2 3h5']], dot:[['c',12,12,2.4]],
+    };
+    const specs=M[name]||[];
+    return h('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round'},
+      specs.map((s,i)=> s[0]==='p'? h('path',{key:i,d:s[1]}) : h('circle',{key:i,cx:s[1],cy:s[2],r:s[3]})));
+  }
+  equipIcon(equip, color, size){ const m={'Barbell':'barbell','Dumbbell':'dumbbell','Machine':'machine','Cable':'cable','Bodyweight':'body','Smith Machine':'smith','Kettlebell':'kettle','Cardio Machine':'cardio','None':'dot'}; return this.ic(m[equip]||'dumbbell', color, size||16, 1.8); }
+
+  card(t, kids, extra){ return this.h('div',{style:Object.assign({background:t.card,border:'1px solid '+t.hairline,borderRadius:18,boxShadow:t.cardShadow},extra||{})}, kids); }
+  eyebrow(t, txt, color){ return this.h('div',{style:{fontSize:11,fontWeight:700,letterSpacing:'0.13em',textTransform:'uppercase',color:color||t.sub}}, txt); }
+
+  // ---------- nav ----------
+  push = (type,data)=> this.setState(s=>({stack:[...s.stack,{type,data:data||{}}], swipe:null, menuOpen:null}));
+  pop = ()=> this.setState(s=>({stack:s.stack.slice(0,-1), swipe:null, menuOpen:null}));
+  closeDlg = ()=> this.setState({dialog:null});
+  setHint = (h)=> this.setState({hint:h});
+
+  // ---------- session logic ----------
+  newSet(type){ return {kg:'', reps:'', rpe:'', done:false, st:'N'}; }
+  startEmpty = ()=>{ this.setState({session:{name:'Boş Antrenman', startTs:Date.now(), exercises:[]}, stack:[{type:'session',data:{}}], rest:null, now:Date.now()}); };
+  startRoutine = (rid)=>{
+    const r=this.ROUTINES.find(x=>x.id===rid);
+    const exercises = r.exIds.map(id=>{ const e=this.ex(id); const last=e.hist[e.hist.length-1]; const n=last?last.sets.length:3; const sets=[]; for(let i=0;i<n;i++) sets.push(this.newSet(e.type)); return {exId:id, note:'', sets}; });
+    this.setState({session:{name:r.name, startTs:Date.now(), exercises}, stack:[{type:'session',data:{}}], rest:null, now:Date.now()});
+  };
+  prevOf(exId, idx){ const e=this.ex(exId); const last=e.hist[e.hist.length-1]; if(!last||!last.sets[idx]) return null; return last.sets[idx]; }
+  setCell = (ei,si,key,val)=> this.setState(s=>{ const ex=s.session.exercises.map((e,i)=> i!==ei?e:{...e,sets:e.sets.map((st,j)=> j!==si?st:{...st,[key]:val})}); return {session:{...s.session,exercises:ex}}; });
+  cycleType = (ei,si)=>{ const order=['N','W','D','F']; this.setState(s=>{ const ex=s.session.exercises.map((e,i)=> i!==ei?e:{...e,sets:e.sets.map((st,j)=>{ if(j!==si) return st; const ni=(order.indexOf(st.st)+1)%order.length; return {...st,st:order[ni]}; })}); return {session:{...s.session,exercises:ex}}; }); };
+  toggleDone = (ei,si)=>{ this.setState(s=>{ let started=false; const ex=s.session.exercises.map((e,i)=> i!==ei?e:{...e,sets:e.sets.map((st,j)=>{ if(j!==si) return st; const nd=!st.done; if(nd) started=true; return {...st,done:nd}; })}); const rest = started? {remaining:90, total:90} : s.rest; return {session:{...s.session,exercises:ex}, rest}; }); };
+  addSet = (ei)=> this.setState(s=>{ const ex=s.session.exercises.map((e,i)=> i!==ei?e:{...e,sets:[...e.sets,this.newSet(e.type)]}); return {session:{...s.session,exercises:ex}}; });
+  delSet = (ei,si)=> this.setState(s=>{ const ex=s.session.exercises.map((e,i)=> i!==ei?e:{...e,sets:e.sets.filter((_,j)=>j!==si)}); return {session:{...s.session,exercises:ex}, swipe:null}; });
+  setNote = (ei,note)=> this.setState(s=>({session:{...s.session,exercises:s.session.exercises.map((e,i)=>i!==ei?e:{...e,note})}}));
+  removeExercise = (ei)=> this.setState(s=>({session:{...s.session,exercises:s.session.exercises.filter((_,i)=>i!==ei)}, menuOpen:null}));
+  addExerciseToSession = (id)=> this.setState(s=>{ const e=this.ex(id); const sets=[this.newSet(e.type),this.newSet(e.type),this.newSet(e.type)]; return {session:{...s.session,exercises:[...s.session.exercises,{exId:id,note:'',sets}]}, stack:s.stack.filter(x=>x.type!=='library')}; });
+
+  sessionVolume(){ if(!this.state.session) return 0; let v=0; this.state.session.exercises.forEach(e=>{ const ex=this.ex(e.exId); e.sets.forEach((st,j)=>{ const prev=this.prevOf(e.exId,j); if(ex.type==='weight'){ const kg=parseFloat(st.kg)|| (st.done&&prev?prev[0]:0); const reps=parseInt(st.reps)|| (st.done&&prev?prev[1]:0); v+=kg*reps; } else if(ex.type==='reps'){ const reps=parseInt(st.reps)||(st.done&&prev?prev[1]:0); v+=reps*0; } }); }); return Math.round(v); }
+  doneCount(){ if(!this.state.session) return 0; let c=0; this.state.session.exercises.forEach(e=>e.sets.forEach(s=>{ if(s.done) c++; })); return c; }
+
+  finishWorkout = ()=>{
+    const ses=this.state.session; const dur=Math.floor((Date.now()-ses.startTs)/1000);
+    let vol=0, setCount=0; const prs=[]; const recap=[];
+    ses.exercises.forEach(e=>{ const ex=this.ex(e.exId); const parts=[]; let bestKg=0, best1rm=0, exVol=0;
+      e.sets.forEach((st,j)=>{ const prev=this.prevOf(e.exId,j);
+        if(ex.type==='weight'){ const kg=parseFloat(st.kg)||(st.done&&prev?prev[0]:0); const reps=parseInt(st.reps)||(st.done&&prev?prev[1]:0); if(st.done){ setCount++; vol+=kg*reps; exVol+=kg*reps; if(kg>bestKg)bestKg=kg; const r=this.e1rm(kg,reps); if(r>best1rm)best1rm=r; parts.push(kg+'×'+reps); } }
+        else if(ex.type==='reps'){ const reps=parseInt(st.reps)||(st.done&&prev?prev[1]:0); if(st.done){ setCount++; parts.push('VA×'+reps); } }
+        else if(ex.type==='time'){ const sec=parseInt(st.reps)||(st.done&&prev?prev[1]:0); if(st.done){ setCount++; parts.push(this.clock(sec)); } }
+        else if(ex.type==='distance'){ const km=parseFloat(st.kg)||(st.done&&prev?prev[0]:0); if(st.done){ setCount++; parts.push(km+' km'); } }
+      });
+      // PR check vs history best
+      if(ex.type==='weight'){ let hBest1rm=0; ex.hist.forEach(hh=>hh.sets.forEach(s=>{ const r=this.e1rm(s[0],s[1]); if(r>hBest1rm)hBest1rm=r; })); if(best1rm>hBest1rm+0.01 && best1rm>0) prs.push(ex.name); }
+      if(parts.length) recap.push({n:ex.name, s:parts.join(', '), vol:Math.round(exVol)});
+    });
+    const summary={name:ses.name, dur, vol:Math.round(vol), setCount, prs, recap, date:'Bugün'};
+    this.setState({summary, stack:[{type:'summary',data:{}}], rest:null});
+  };
+  saveSummary = ()=>{ const s=this.state.summary; const entry={name:s.name, date:'Bugün', dur:s.dur, vol:s.vol, setCount:s.setCount, prs:s.prs, ex:s.recap.map(r=>({n:r.n,s:r.s}))}; this.setState(st=>({history:[entry,...st.history], weekWorkouts:st.weekWorkouts+1, weekVol:st.weekVol+s.vol, summary:null, session:null, stack:[]})); };
+
+  // ---------- builder ----------
+  openBuilder = (rid)=>{ if(rid){ const r=this.ROUTINES.find(x=>x.id===rid); this.setState({builder:{id:rid, name:r.name, items:r.exIds.map(id=>({exId:id, target:r.targets[id]||'3×8-10'}))}, stack:[...this.state.stack,{type:'builder',data:{}}]}); } else { this.setState({builder:{id:null, name:'', items:[]}, stack:[...this.state.stack,{type:'builder',data:{}}]}); } };
+  builderAdd = (id)=> this.setState(s=>({builder:{...s.builder, items:[...s.builder.items,{exId:id, target:'3×8-10'}]}, stack:s.stack.filter(x=>x.type!=='library')}));
+  builderMove = (i,dir)=> this.setState(s=>{ const items=[...s.builder.items]; const j=i+dir; if(j<0||j>=items.length) return {}; const tmp=items[i]; items[i]=items[j]; items[j]=tmp; return {builder:{...s.builder,items}}; });
+  builderDel = (i)=> this.setState(s=>({builder:{...s.builder, items:s.builder.items.filter((_,k)=>k!==i)}}));
+  builderTarget = (i,v)=> this.setState(s=>({builder:{...s.builder, items:s.builder.items.map((it,k)=>k!==i?it:{...it,target:v})}}));
+  saveBuilder = ()=>{ const b=this.state.builder; if(!b.name.trim()||!b.items.length){ this.pop(); return; } const targets={}; b.items.forEach(it=>targets[it.exId]=it.target); if(b.id){ const r=this.ROUTINES.find(x=>x.id===b.id); r.name=b.name; r.exIds=b.items.map(i=>i.exId); r.targets=targets; } else { this.ROUTINES.push({id:'r'+Date.now(), name:b.name, exIds:b.items.map(i=>i.exId), targets}); } this.setState(s=>({builder:null, stack:s.stack.slice(0,-1)})); };
+
+  // ============================================================ SCREENS
+  scroll(t, kids, padTop, padBottom){ return this.h('div',{style:{flex:1,overflowY:'auto',WebkitOverflowScrolling:'touch'}}, this.h('div',{style:{padding:(padTop==null?62:padTop)+'px 20px '+(padBottom==null?40:padBottom)+'px',display:'flex',flexDirection:'column',gap:22}}, kids)); }
+
+  landing(t){
+    const h=this.h;
+    const head = h('div',{style:{display:'flex',alignItems:'flex-start',justifyContent:'space-between'}},
+      h('div',null, this.eyebrow(t,'Pazar, 21 Haziran', t.primary), h('div',{style:{fontSize:28,fontWeight:800,letterSpacing:'-0.02em',marginTop:5,color:t.text}}, 'Antrenman')),
+      h('button',{onClick:()=>this.push('history'), style:{width:44,height:44,border:'1px solid '+t.hairline,borderRadius:13,background:t.card,boxShadow:t.cardShadow,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}, this.ic('history', t.sub, 21, 1.8))
+    );
+    const stats = this.card(t, h('div',{style:{display:'flex'}},
+      h('div',{style:{flex:1,padding:'16px 18px'}}, this.eyebrow(t,'Bu hafta'), h('div',{style:{display:'flex',alignItems:'baseline',gap:5,marginTop:9}}, h('span',{style:{fontSize:26,fontWeight:800,color:t.text,letterSpacing:'-0.02em'}}, this.state.weekWorkouts), h('span',{style:{fontSize:13,fontWeight:600,color:t.sub}}, 'antrenman'))),
+      h('div',{style:{width:1,background:t.hairline,margin:'14px 0'}}),
+      h('div',{style:{flex:1,padding:'16px 18px'}}, this.eyebrow(t,'Toplam Hacim'), h('div',{style:{display:'flex',alignItems:'baseline',gap:5,marginTop:9}}, h('span',{style:{fontSize:26,fontWeight:800,color:t.text,letterSpacing:'-0.02em'}}, this.th(this.state.weekVol)), h('span',{style:{fontSize:13,fontWeight:600,color:t.sub}}, 'kg')))
+    ), {padding:0});
+    const startBtn = h('button',{onClick:this.startEmpty, style:{border:'none',cursor:'pointer',background:t.grad,borderRadius:18,padding:'18px',display:'flex',alignItems:'center',justifyContent:'center',gap:11,boxShadow:'0 8px 20px rgba(79,70,229,0.26)'}},
+      this.ic('plus','#fff',22,2.4), h('span',{style:{fontSize:16.5,fontWeight:800,color:'#fff'}}, 'Boş Antrenman Başlat'));
+    const routineCards = this.ROUTINES.map(r=>{
+      const muscles=[...new Set(r.exIds.map(id=>this.ex(id).muscle))].slice(0,4);
+      return h('button',{key:r.id,onClick:()=>this.push('preview',{rid:r.id}), style:{border:'1px solid '+t.hairline,background:t.card,boxShadow:t.cardShadow,borderRadius:18,padding:'15px 16px',cursor:'pointer',textAlign:'left',display:'block',width:'100%'}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:12}},
+          h('div',{style:{width:44,height:44,borderRadius:13,background:t.primarySoft,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.ic('dumbbell',t.primary,21)),
+          h('div',{style:{flex:1,minWidth:0}}, h('div',{style:{fontSize:16,fontWeight:700,color:t.text}}, r.name), h('div',{style:{fontSize:12.5,fontWeight:500,color:t.sub,marginTop:2}}, r.exIds.length+' hareket')),
+          h('button',{onClick:(ev)=>{ev.stopPropagation(); this.openBuilder(r.id);}, style:{border:'none',background:'transparent',cursor:'pointer',padding:6,display:'flex'}}, this.ic('edit',t.faint,18,1.8))
+        ),
+        h('div',{style:{display:'flex',flexWrap:'wrap',gap:6,marginTop:12}}, muscles.map((m,i)=>h('span',{key:i,style:{fontSize:11,fontWeight:600,color:t.sub,background:t.chip,padding:'4px 9px',borderRadius:99}}, m)))
+      );
+    });
+    const newRoutine = h('button',{onClick:()=>this.openBuilder(null), style:{border:'1px dashed '+t.inputBorder,background:'transparent',cursor:'pointer',borderRadius:16,padding:'14px',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontSize:14,fontWeight:700,color:t.primary}}, this.ic('plus',t.primary,18,2.2), 'Yeni Rutin Oluştur');
+    return this.scroll(t, [
+      h('div',{key:'h'},head), h('div',{key:'s'},stats), h('div',{key:'b'},startBtn),
+      h('div',{key:'r'}, h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}, h('div',{style:{fontSize:17,fontWeight:700,color:t.text}}, 'Rutinlerim'), h('span',{style:{fontSize:12.5,fontWeight:600,color:t.faint}}, this.ROUTINES.length+' rutin')),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:11}}, routineCards.concat([h('div',{key:'nr'},newRoutine)])))
+    ]);
+  }
+
+  overlayShell(t, title, kids, opts){ opts=opts||{}; const h=this.h;
+    return h('div',{style:{position:'absolute',inset:0,background:t.bg,display:'flex',flexDirection:'column',zIndex:30,animation:'fpSlide .28s cubic-bezier(.4,0,.2,1)'}},
+      h('div',{style:{flexShrink:0,padding:'58px 12px 12px',display:'flex',alignItems:'center',gap:4,borderBottom:'1px solid '+t.hairline,background:t.headerBg,backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)'}},
+        h('button',{onClick:opts.onBack||this.pop, style:{width:40,height:40,border:'none',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}, this.ic('back',t.text,24,2)),
+        h('div',{style:{flex:1,fontSize:17,fontWeight:700,color:t.text}}, title), opts.right||null),
+      h('div',{style:{flex:1,overflowY:'auto'}}, h('div',{style:{padding:'18px 20px 40px',display:'flex',flexDirection:'column',gap:opts.gap==null?16:opts.gap}}, kids)));
+  }
+
+  preview(t, data){
+    const h=this.h; const r=this.ROUTINES.find(x=>x.id===data.rid);
+    const list=r.exIds.map((id,i)=>{ const e=this.ex(id); return this.card(t, h('div',{style:{display:'flex',alignItems:'center',gap:13,padding:'13px 15px'}},
+      h('div',{style:{width:30,fontSize:14,fontWeight:800,color:t.faint,textAlign:'center'}}, i+1),
+      h('div',{style:{width:38,height:38,borderRadius:11,background:t.chip,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.equipIcon(e.equip,t.sub,19)),
+      h('button',{onClick:()=>this.push('exdetail',{id}), style:{flex:1,minWidth:0,border:'none',background:'transparent',cursor:'pointer',textAlign:'left',padding:0}}, h('div',{style:{fontSize:14.5,fontWeight:700,color:t.text}}, e.name), h('div',{style:{fontSize:12,fontWeight:500,color:t.sub,marginTop:2}}, e.muscle+' · '+e.equip)),
+      h('div',{style:{fontSize:13,fontWeight:700,color:t.primary,background:t.primarySoft,padding:'4px 9px',borderRadius:8}}, r.targets[id]||'3×8-10')
+    ), {padding:0}, id); });
+    return this.overlayShell(t, r.name, [
+      h('div',{key:'meta',style:{display:'flex',gap:8}}, [...new Set(r.exIds.map(id=>this.ex(id).muscle))].map((m,i)=>h('span',{key:i,style:{fontSize:11.5,fontWeight:600,color:t.sub,background:t.chip,padding:'5px 11px',borderRadius:99}}, m))),
+      h('div',{key:'l',style:{display:'flex',flexDirection:'column',gap:10}}, list),
+      h('button',{key:'start',onClick:()=>this.startRoutine(r.id), style:{border:'none',cursor:'pointer',background:t.grad,borderRadius:16,padding:'17px',fontSize:16,fontWeight:800,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',gap:9,boxShadow:'0 8px 20px rgba(79,70,229,0.26)'}}, this.ic('play','#fff',20,2.2), 'Antrenmana Başla')
+    ], {gap:16, right: h('button',{onClick:()=>this.openBuilder(r.id), style:{border:'none',background:'transparent',cursor:'pointer',fontSize:14,fontWeight:700,color:t.primary,padding:'8px 12px'}}, 'Düzenle')});
+  }
+
+  // ---------- ACTIVE SESSION ----------
+  session(t){
+    const h=this.h; const ses=this.state.session; if(!ses) return null;
+    const elapsed=Math.floor((this.state.now-ses.startTs)/1000);
+    const vol=this.sessionVolume(); const done=this.doneCount();
+    const header = h('div',{style:{flexShrink:0,background:t.headerBg,backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)',borderBottom:'1px solid '+t.hairline}},
+      h('div',{style:{padding:'56px 16px 0',display:'flex',alignItems:'center',gap:10}},
+        h('button',{onClick:()=>this.confirm('Antrenmandan çık?','Bu seans kaydedilmeyecek.','Çık',()=>{ this.setState({session:null, rest:null, dialog:null, stack:[]}); }), style:{width:38,height:38,border:'none',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}, this.ic('back',t.text,24,2)),
+        h('div',{style:{flex:1,minWidth:0}}, h('div',{style:{fontSize:16,fontWeight:800,color:t.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}, ses.name), h('div',{style:{display:'flex',alignItems:'center',gap:6,marginTop:1}}, this.ic('clock',t.primary,13,2), h('span',{style:{fontSize:13,fontWeight:700,color:t.primary,fontVariantNumeric:'tabular-nums'}}, this.clockH(elapsed)))),
+        h('button',{onClick:this.finishWorkout, style:{border:'none',cursor:'pointer',background:t.teal,color:'#fff',borderRadius:11,padding:'10px 18px',fontSize:14,fontWeight:800}}, 'Bitir')
+      ),
+      h('div',{style:{display:'flex',padding:'10px 18px 12px',gap:18}},
+        h('div',{style:{display:'flex',alignItems:'baseline',gap:5}}, h('span',{style:{fontSize:11,fontWeight:600,color:t.sub}}, 'Hacim'), h('span',{style:{fontSize:14,fontWeight:800,color:t.text,fontVariantNumeric:'tabular-nums'}}, this.th(vol)+' kg')),
+        h('div',{style:{display:'flex',alignItems:'baseline',gap:5}}, h('span',{style:{fontSize:11,fontWeight:600,color:t.sub}}, 'Set'), h('span',{style:{fontSize:14,fontWeight:800,color:t.text,fontVariantNumeric:'tabular-nums'}}, done)),
+        h('div',{style:{display:'flex',alignItems:'baseline',gap:5}}, h('span',{style:{fontSize:11,fontWeight:600,color:t.sub}}, 'Hareket'), h('span',{style:{fontSize:14,fontWeight:800,color:t.text,fontVariantNumeric:'tabular-nums'}}, ses.exercises.length))
+      )
+    );
+    const rest = this.state.rest? h('div',{style:{flexShrink:0,padding:'10px 16px',animation:'fpBanner .3s cubic-bezier(.4,0,.2,1)'}},
+      h('div',{style:{background:t.primary,borderRadius:14,padding:'11px 14px',display:'flex',alignItems:'center',gap:12,boxShadow:'0 6px 18px rgba(79,70,229,0.3)'}},
+        this.ic('timer','#fff',20,2),
+        h('div',{style:{flex:1}}, h('div',{style:{fontSize:11,fontWeight:600,color:'rgba(255,255,255,0.8)'}}, 'Dinlenme'), h('div',{style:{fontSize:20,fontWeight:800,color:'#fff',fontVariantNumeric:'tabular-nums',lineHeight:1.1}}, this.clock(this.state.rest.remaining))),
+        h('button',{onClick:()=>this.setState(s=>({rest:{...s.rest,remaining:Math.max(0,s.rest.remaining-15)}})), style:{border:'none',background:'rgba(255,255,255,0.18)',color:'#fff',borderRadius:9,padding:'7px 10px',fontSize:12.5,fontWeight:700,cursor:'pointer'}}, '−15s'),
+        h('button',{onClick:()=>this.setState(s=>({rest:{...s.rest,remaining:s.rest.remaining+15,total:s.rest.total+15}})), style:{border:'none',background:'rgba(255,255,255,0.18)',color:'#fff',borderRadius:9,padding:'7px 10px',fontSize:12.5,fontWeight:700,cursor:'pointer'}}, '+15s'),
+        h('button',{onClick:()=>this.setState({rest:null}), style:{border:'none',background:'rgba(255,255,255,0.28)',color:'#fff',borderRadius:9,padding:'7px 11px',fontSize:12.5,fontWeight:700,cursor:'pointer'}}, 'Atla')
+      )
+    ) : null;
+    const blocks = ses.exercises.map((e,ei)=> this.exerciseBlock(t,e,ei));
+    const addBtn = h('button',{onClick:()=>this.push('library',{mode:'session'}), style:{border:'1px dashed '+t.inputBorder,background:'transparent',cursor:'pointer',borderRadius:14,padding:'15px',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontSize:14.5,fontWeight:700,color:t.primary,width:'100%'}}, this.ic('plus',t.primary,19,2.2), 'Hareket Ekle');
+    const empty = ses.exercises.length===0? h('div',{style:{textAlign:'center',padding:'40px 20px',color:t.faint}}, h('div',{style:{display:'flex',justifyContent:'center',marginBottom:12}}, this.ic('dumbbell',t.faint,34,1.6)), h('div',{style:{fontSize:14,fontWeight:600}}, 'Hareket ekleyerek başla')) : null;
+    return h('div',{style:{position:'absolute',inset:0,background:t.bg,display:'flex',flexDirection:'column',zIndex:30,animation:'fpSlide .28s cubic-bezier(.4,0,.2,1)'}},
+      header, rest,
+      h('div',{style:{flex:1,overflowY:'auto'}}, h('div',{style:{padding:'16px 16px 60px',display:'flex',flexDirection:'column',gap:14}}, empty, blocks, addBtn))
+    );
+  }
+
+  exerciseBlock(t, e, ei){
+    const h=this.h; const ex=this.ex(e.exId);
+    const head = h('div',{style:{display:'flex',alignItems:'center',gap:11,marginBottom:e.note!=null&&e.note!==''?10:12}},
+      h('div',{style:{width:36,height:36,borderRadius:10,background:t.primarySoft,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.equipIcon(ex.equip,t.primary,18)),
+      h('button',{onClick:()=>this.push('exdetail',{id:e.exId}), style:{flex:1,minWidth:0,border:'none',background:'transparent',cursor:'pointer',textAlign:'left',padding:0}}, h('div',{style:{fontSize:15.5,fontWeight:700,color:t.primary}}, ex.name), h('div',{style:{fontSize:11.5,fontWeight:500,color:t.sub,marginTop:1}}, ex.equip)),
+      h('button',{onClick:()=>this.setState({menuOpen:{ei}}), style:{width:34,height:34,border:'none',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}, this.ic('dots',t.sub,20,2))
+    );
+    const note = (e.note!=null && e.note!=='')? h('div',{style:{display:'flex',alignItems:'center',gap:8,padding:'8px 11px',marginBottom:12,background:t.amber+'1a',borderRadius:10}}, this.ic('note',t.amber,15,1.8), h('input',{value:e.note,onChange:(ev)=>this.setNote(ei,ev.target.value),style:{flex:1,border:'none',background:'transparent',color:t.text,fontSize:12.5,fontWeight:600}})) : null;
+    // columns based on type
+    const type=ex.type;
+    const colHead = h('div',{style:{display:'flex',alignItems:'center',gap:6,padding:'0 4px 8px',fontSize:10.5,fontWeight:700,letterSpacing:'0.04em',color:t.faint}},
+      h('div',{style:{width:30,textAlign:'center'}}, 'SET'),
+      h('div',{style:{flex:1.1,textAlign:'center'}}, 'ÖNCEKİ'),
+      type==='weight'? h('div',{style:{flex:1,textAlign:'center'}}, 'KG') : type==='distance'? h('div',{style:{flex:1,textAlign:'center'}}, 'KM') : null,
+      type==='time'? h('div',{style:{flex:1.2,textAlign:'center'}}, 'SÜRE') : (type==='distance'? h('div',{style:{flex:1,textAlign:'center'}}, 'SÜRE') : h('div',{style:{flex:1,textAlign:'center'}}, 'TEKRAR')),
+      h('div',{style:{width:38,textAlign:'center'}}, '✓')
+    );
+    const rows = e.sets.map((st,si)=> this.setRow(t,e,ei,st,si,type,ex));
+    const addSet = h('button',{onClick:()=>this.addSet(ei), style:{border:'none',background:t.chip,cursor:'pointer',borderRadius:10,padding:'10px',marginTop:8,display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontSize:13,fontWeight:700,color:t.sub,width:'100%'}}, this.ic('plus',t.sub,16,2.2), 'Set Ekle');
+    return this.card(t, [h('div',{key:'h'},head), note, h('div',{key:'ch'},colHead), h('div',{key:'r'}, rows), h('div',{key:'a'},addSet)], {padding:'13px 13px 13px'}, ei);
+  }
+
+  setRow(t, e, ei, st, si, type, ex){
+    const h=this.h; const prev=this.prevOf(e.exId,si);
+    const stInfo=this.SETTYPES[st.st];
+    let badge; const badgeColor = st.st==='W'?t.amber : st.st==='D'?t.violet : st.st==='F'?t.red : t.text;
+    const badgeBg = st.st==='N'? t.chip : (badgeColor+'22');
+    const num = (type==='weight'||type==='reps'||type==='time'||type==='distance')? (e.sets.slice(0,si+1).filter(x=>x.st==='N'||x.st==='D'||x.st==='F').length) : si+1;
+    const badgeText = stInfo.short || num;
+    badge = h('button',{onClick:()=>this.cycleType(ei,si), style:{width:30,height:32,borderRadius:8,border:'none',cursor:'pointer',background:badgeBg,color:st.st==='N'?t.text:badgeColor,fontSize:13,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center'}}, badgeText);
+    const prevText = prev? (type==='weight'? prev[0]+'×'+prev[1] : type==='reps'? 'VA×'+prev[1] : type==='time'? this.clock(prev[1]) : prev[0]+'km') : '—';
+    const inp=(key,ph,flex,wide)=> h('input',{type:'text',inputMode:'decimal',value:st[key],placeholder:ph,onChange:(ev)=>this.setCell(ei,si,key,ev.target.value), style:{flex,minWidth:0,height:34,borderRadius:9,border:'1px solid '+(st.done?'transparent':t.inputBorder),background:st.done?'transparent':t.inputBg,color:t.text,textAlign:'center',fontSize:14.5,fontWeight:700,fontVariantNumeric:'tabular-nums'}});
+    let valCols;
+    if(type==='weight') valCols=[inp('kg',prev?String(prev[0]):'0',1), inp('reps',prev?String(prev[1]):'0',1)];
+    else if(type==='reps') valCols=[h('div',{key:'sp',style:{flex:1}}), inp('reps',prev?String(prev[1]):'0',1)];
+    else if(type==='time') valCols=[h('div',{key:'sp',style:{flex:0.0001}}), inp('reps',prev?String(prev[1]):'sn',1.2)];
+    else valCols=[inp('kg',prev?String(prev[0]):'0',1), inp('reps',prev?String(prev[1]):'sn',1)];
+    const check = h('button',{onClick:()=>this.toggleDone(ei,si), style:{width:38,height:34,borderRadius:9,border:'none',cursor:'pointer',background:st.done?t.teal:t.chip,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.ic('check',st.done?'#fff':t.faint,17,2.6));
+    const sw=this.state.swipe; const open=sw&&sw.ei===ei&&sw.si===si; const dx=open?sw.dx:0;
+    const onDown=(ev)=>{ const x=ev.touches?ev.touches[0].clientX:ev.clientX; this._sw={ei,si,startX:x,dx:0}; };
+    const onMove=(ev)=>{ if(!this._sw||this._sw.ei!==ei||this._sw.si!==si) return; const x=ev.touches?ev.touches[0].clientX:ev.clientX; let d=x-this._sw.startX; if(d>0)d=0; if(d<-84)d=-84; this._sw.dx=d; this.setState({swipe:{ei,si,dx:d}}); };
+    const onUp=()=>{ if(!this._sw) return; const d=this._sw.dx; this.setState({swipe: d<-44? {ei,si,dx:-72} : null}); this._sw=null; };
+    return h('div',{key:si,style:{position:'relative',overflow:'hidden',borderRadius:10,marginBottom:6}},
+      h('button',{onClick:()=>this.delSet(ei,si), style:{position:'absolute',right:0,top:0,bottom:0,width:72,border:'none',background:t.red,color:'#fff',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12.5,fontWeight:700}}, this.ic('trash','#fff',17,1.9)),
+      h('div',{onMouseDown:onDown,onMouseMove:onMove,onMouseUp:onUp,onMouseLeave:onUp,onTouchStart:onDown,onTouchMove:onMove,onTouchEnd:onUp,
+        style:{position:'relative',display:'flex',alignItems:'center',gap:6,padding:'4px',borderRadius:10,background:st.done?t.tealRow:t.card,transform:'translateX('+dx+'px)',transition:this._sw&&this._sw.ei===ei&&this._sw.si===si?'none':'transform .2s',touchAction:'pan-y'}},
+        badge,
+        h('div',{style:{flex:1.1,textAlign:'center',fontSize:12.5,fontWeight:600,color:t.faint,fontVariantNumeric:'tabular-nums'}}, prevText),
+        valCols, check
+      )
+    );
+  }
+
+  // ---------- LIBRARY ----------
+  catColor(t, cat){ const m={'Compound Movements':t.primary,'Isolation Movements':t.tealText,'Calisthenics':t.violet,'Cardio':t.blue,'Flexibility':t.amber}; return m[cat]||t.sub; }
+  library(t, data){
+    const h=this.h; const mode=data.mode; const lib=this.state.lib;
+    const q=lib.q.toLowerCase();
+    const match=(e)=> (!q||e.name.toLowerCase().includes(q)) && (!lib.muscle||e.muscle===lib.muscle) && (!lib.equip||e.equip===lib.equip);
+    const list=this.LIB.filter(e=> match(e) && (!lib.category||e.category===lib.category));
+    const chipRow=(items, sel, onPick, labelFn)=> h('div',{style:{display:'flex',gap:7,overflowX:'auto',paddingBottom:2}}, items.map(m=>{ const a=sel===m; return h('button',{key:m,onClick:()=>onPick(a?null:m), style:{flexShrink:0,border:'1px solid '+(a?t.primary:t.hairline),background:a?t.primarySoft:'transparent',color:a?t.primary:t.sub,cursor:'pointer',borderRadius:99,padding:'7px 13px',fontSize:12.5,fontWeight:700,whiteSpace:'nowrap'}}, labelFn?labelFn(m):m); }));
+    const exRow=(e)=> h('div',{key:e.id,style:{display:'flex',alignItems:'center',gap:12,padding:'11px 4px',borderBottom:'1px solid '+t.hairline}},
+      h('button',{onClick:()=>this.push('exdetail',{id:e.id}), style:{flex:1,minWidth:0,display:'flex',alignItems:'center',gap:12,border:'none',background:'transparent',cursor:'pointer',textAlign:'left',padding:0}},
+        h('div',{style:{width:42,height:42,borderRadius:12,background:t.chip,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.equipIcon(e.equip,t.sub,20)),
+        h('div',{style:{flex:1,minWidth:0}},
+          h('div',{style:{display:'flex',alignItems:'center',gap:7}}, h('span',{style:{fontSize:14.5,fontWeight:700,color:t.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}, e.name), h('span',{style:{flexShrink:0,fontSize:9.5,fontWeight:800,letterSpacing:'0.03em',color:this.catColor(t,e.category),background:this.catColor(t,e.category)+'1e',padding:'2px 6px',borderRadius:6}}, this.CATSHORT[e.category])),
+          h('div',{style:{fontSize:12,fontWeight:500,color:t.sub,marginTop:2}}, e.muscle+' · '+e.equip))),
+      (mode==='session'||mode==='builder')? h('button',{onClick:()=> mode==='session'? this.addExerciseToSession(e.id) : this.builderAdd(e.id), style:{width:36,height:36,borderRadius:10,border:'none',background:t.primary,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.ic('plus','#fff',18,2.4)) : this.ic('chevron',t.faint,18,2)
+    );
+    const groups=[]; this.CATEGORIES.forEach(cat=>{ if(lib.category&&lib.category!==cat) return; const items=this.LIB.filter(e=>e.category===cat && match(e)); if(!items.length) return;
+      groups.push(h('div',{key:cat,style:{marginTop:groups.length?18:4}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:8,padding:'0 2px 9px'}}, h('span',{style:{width:7,height:7,borderRadius:2,background:this.catColor(t,cat)}}), h('span',{style:{fontSize:13,fontWeight:800,color:t.text,letterSpacing:'-0.01em'}}, cat), h('span',{style:{fontSize:12,fontWeight:600,color:t.faint}}, items.length)),
+        items.map(exRow)));
+    });
+    const empty = groups.length===0? h('div',{style:{padding:'50px 20px',textAlign:'center',color:t.faint}}, h('div',{style:{display:'flex',justifyContent:'center',marginBottom:10}}, this.ic('search',t.faint,30,1.6)), h('div',{style:{fontSize:14,fontWeight:600}}, 'Sonuç bulunamadı')) : null;
+    return h('div',{style:{position:'absolute',inset:0,background:t.bg,display:'flex',flexDirection:'column',zIndex:35,animation:'fpSlide .28s cubic-bezier(.4,0,.2,1)'}},
+      h('div',{style:{flexShrink:0,padding:'58px 12px 0',background:t.headerBg,backdropFilter:'blur(12px)',WebkitBackdropFilter:'blur(12px)'}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:4}}, h('button',{onClick:this.pop, style:{width:40,height:40,border:'none',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}, this.ic('back',t.text,24,2)), h('div',{style:{flex:1,fontSize:17,fontWeight:700,color:t.text}}, 'Hareket Kütüphanesi')),
+        h('div',{style:{padding:'8px 8px 0'}}, h('div',{style:{display:'flex',alignItems:'center',gap:9,background:t.inputBg,border:'1px solid '+t.hairline,borderRadius:12,padding:'10px 13px'}}, this.ic('search',t.faint,18), h('input',{value:lib.q,placeholder:'Hareket ara…',onChange:(ev)=>this.setState({lib:{...lib,q:ev.target.value}}),style:{flex:1,border:'none',background:'transparent',color:t.text,fontSize:14,fontWeight:500}}))),
+        h('div',{style:{padding:'10px 8px 0'}}, chipRow(this.CATEGORIES, lib.category, (m)=>this.setState({lib:{...lib,category:m}}), (c)=>this.CATSHORT[c])),
+        h('div',{style:{padding:'8px 8px 6px'}}, chipRow(this.MUSCLES, lib.muscle, (m)=>this.setState({lib:{...lib,muscle:m}}))),
+        h('div',{style:{padding:'6px 10px 10px',borderBottom:'1px solid '+t.hairline,display:'flex',alignItems:'center',justifyContent:'space-between'}}, h('span',{style:{fontSize:12,fontWeight:600,color:t.faint}}, list.length+' hareket'), h('button',{onClick:()=>this.setState({dialog:{kind:'newexercise'}, dlgVals:{n:'',category:'Isolation Movements',muscle:'Chest',equip:'Barbell',type:'weight'}}), style:{border:'none',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',gap:5,fontSize:12.5,fontWeight:700,color:t.primary}}, this.ic('plus',t.primary,15,2.4), 'Yeni Hareket'))
+      ),
+      h('div',{style:{flex:1,overflowY:'auto'}}, h('div',{style:{padding:'4px 16px 40px'}}, empty, groups))
+    );
+  }
+
+  // ---------- EXERCISE DETAIL ----------
+  exdetail(t, data){
+    const h=this.h; const e=this.ex(data.id); const tab=this.state.exDetailTab;
+    const tabs=[['gecmis','Geçmiş'],['grafik','Grafik'],['rekorlar','Rekorlar']];
+    const tabBar=h('div',{style:{display:'flex',background:t.chip,borderRadius:12,padding:4,gap:2}}, tabs.map(tb=>{ const a=tab===tb[0]; return h('button',{key:tb[0],onClick:()=>this.setState({exDetailTab:tb[0]}), style:{flex:1,border:'none',cursor:'pointer',borderRadius:9,padding:'9px',fontSize:13,fontWeight:700,background:a?t.card:'transparent',color:a?t.text:t.sub,boxShadow:a?t.cardShadow:'none'}}, tb[1]); }));
+    let body;
+    if(tab==='gecmis'){
+      body=h('div',{style:{display:'flex',flexDirection:'column',gap:12}}, [...e.hist].reverse().map((hh,i)=> this.card(t, [
+        h('div',{key:'d',style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}, h('span',{style:{fontSize:13,fontWeight:700,color:t.text}}, hh.date), h('span',{style:{fontSize:12,fontWeight:600,color:t.faint}}, hh.sets.length+' set')),
+        h('div',{key:'s',style:{display:'flex',flexDirection:'column',gap:6}}, hh.sets.map((s,j)=>h('div',{key:j,style:{display:'flex',alignItems:'center',gap:10}}, h('span',{style:{width:22,height:22,borderRadius:6,background:t.chip,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:800,color:t.sub}}, j+1), h('span',{style:{fontSize:13.5,fontWeight:600,color:t.text,fontVariantNumeric:'tabular-nums'}}, e.type==='weight'? s[0]+' kg × '+s[1] : e.type==='reps'? 'Vücut Ağırlığı × '+s[1] : e.type==='time'? this.clock(s[1]) : s[0]+' km'))))
+      ], {padding:'13px 15px'}, i)));
+    } else if(tab==='grafik'){
+      body=this.exChart(t,e);
+    } else {
+      // records
+      let best1rm=0,bestKg=0,bestVol=0,bestSet='';
+      e.hist.forEach(hh=>{ let v=0; hh.sets.forEach(s=>{ v+=s[0]*s[1]; const r=this.e1rm(s[0],s[1]); if(r>best1rm){best1rm=r;} if(s[0]>bestKg){bestKg=s[0]; bestSet=s[0]+' kg × '+s[1];} }); if(v>bestVol)bestVol=v; });
+      const recCard=(icon,label,val,sub)=> this.card(t, h('div',{style:{display:'flex',alignItems:'center',gap:13,padding:'15px 16px'}}, h('div',{style:{width:42,height:42,borderRadius:12,background:t.amber+'22',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.ic(icon,t.amber,20,1.9)), h('div',{style:{flex:1}}, h('div',{style:{fontSize:12.5,fontWeight:600,color:t.sub}}, label), h('div',{style:{fontSize:18,fontWeight:800,color:t.text,marginTop:2,fontVariantNumeric:'tabular-nums'}}, val)), sub?h('div',{style:{fontSize:12,fontWeight:600,color:t.faint}}, sub):null), {padding:0});
+      if(e.type==='weight') body=h('div',{style:{display:'flex',flexDirection:'column',gap:11}}, recCard('trophy','En İyi Set', bestSet), recCard('chart','Tahmini 1RM', Math.round(best1rm)+' kg'), recCard('fire','En Yüksek Hacim', this.th(bestVol)+' kg'));
+      else body=h('div',{style:{display:'flex',flexDirection:'column',gap:11}}, recCard('trophy','En İyi', e.type==='time'? this.clock(Math.max(...e.hist.flatMap(hh=>hh.sets.map(s=>s[1])))) : e.type==='distance'? Math.max(...e.hist.flatMap(hh=>hh.sets.map(s=>s[0])))+' km' : 'VA × '+Math.max(...e.hist.flatMap(hh=>hh.sets.map(s=>s[1])))));
+    }
+    return this.overlayShell(t, e.name, [
+      h('div',{key:'meta',style:{display:'flex',alignItems:'center',gap:13}}, h('div',{style:{width:52,height:52,borderRadius:15,background:t.primarySoft,display:'flex',alignItems:'center',justifyContent:'center'}}, this.equipIcon(e.equip,t.primary,26)), h('div',null, h('div',{style:{fontSize:13,fontWeight:700,color:t.text}}, e.muscle), h('div',{style:{fontSize:12.5,fontWeight:500,color:t.sub,marginTop:2}}, e.equip+' · '+(e.type==='weight'?'Ağırlık × Tekrar':e.type==='reps'?'Vücut Ağırlığı':e.type==='time'?'Süre':'Mesafe')))),
+      h('div',{key:'ph',style:{height:96,borderRadius:14,background:t.card2,border:'1px dashed '+t.inputBorder,display:'flex',alignItems:'center',justifyContent:'center',gap:8,color:t.faint}}, this.ic('target',t.faint,20,1.8), h('span',{style:{fontSize:12.5,fontWeight:600}}, 'Form notları / görsel')),
+      h('div',{key:'tb'},tabBar), h('div',{key:'bd'},body)
+    ], {gap:16});
+  }
+  exChart(t,e){
+    const h=this.h; const pts=e.hist.map(hh=>{ let best=0; hh.sets.forEach(s=>{ const m=e.type==='weight'?s[0]:s[1]; if(m>best)best=m; }); let oneRm=0; hh.sets.forEach(s=>{ const r=this.e1rm(s[0],s[1]); if(r>oneRm)oneRm=r; }); return {date:hh.date, w:best, rm:Math.round(oneRm)}; });
+    if(pts.length<2) return this.card(t, h('div',{style:{padding:'30px',textAlign:'center',fontSize:13,fontWeight:600,color:t.faint}}, 'Grafik için yeterli veri yok'), {padding:0});
+    const W=300,Hh=150,pl=6,pr=6,pt=12,pb=24; const ws=pts.map(p=>p.w); const ymin=Math.min(...ws)*0.96; const ymax=Math.max(...ws)*1.04;
+    const X=i=>pl+(W-pl-pr)*(i/(pts.length-1)); const Y=v=>pt+(Hh-pt-pb)*(1-(v-ymin)/(ymax-ymin));
+    const line=pts.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.w).toFixed(1)).join(' ');
+    const area=line+(' L'+X(pts.length-1)+' '+(Hh-pb)+' L'+X(0)+' '+(Hh-pb)+' Z');
+    const showRm=e.type==='weight';
+    const rmline=showRm? pts.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(Math.min(ymax,p.rm)).toFixed(1)).join(' '):'';
+    return this.card(t, [
+      h('div',{key:'lg',style:{display:'flex',gap:16,padding:'14px 16px 0'}}, h('div',{style:{display:'flex',alignItems:'center',gap:6}}, h('span',{style:{width:9,height:9,borderRadius:'50%',background:t.primary}}), h('span',{style:{fontSize:12,fontWeight:600,color:t.sub}}, e.type==='weight'?'Çalışma ağırlığı':'En iyi')), showRm?h('div',{style:{display:'flex',alignItems:'center',gap:6}}, h('span',{style:{width:9,height:2.5,borderRadius:9,background:t.teal}}), h('span',{style:{fontSize:12,fontWeight:600,color:t.sub}}, 'Tahmini 1RM')):null),
+      h('svg',{key:'svg',width:'100%',viewBox:'0 0 '+W+' '+Hh,style:{display:'block',padding:'8px 6px 0'}},
+        h('defs',null, h('linearGradient',{id:'fpea'+t.mode,x1:'0',y1:'0',x2:'0',y2:'1'}, h('stop',{offset:'0',stopColor:t.primary,stopOpacity:0.16}), h('stop',{offset:'1',stopColor:t.primary,stopOpacity:0}))),
+        h('path',{d:area,fill:'url(#fpea'+t.mode+')'}),
+        showRm?h('path',{d:rmline,fill:'none',stroke:t.teal,strokeWidth:2,strokeDasharray:'5 4',strokeLinecap:'round'}):null,
+        h('path',{d:line,fill:'none',stroke:t.primary,strokeWidth:2.5,strokeLinecap:'round',strokeLinejoin:'round'}),
+        pts.map((p,i)=>h('circle',{key:i,cx:X(i),cy:Y(p.w),r:3.5,fill:t.card,stroke:t.primary,strokeWidth:2})),
+        pts.map((p,i)=>h('text',{key:'t'+i,x:X(i),y:Hh-7,fill:t.faint,fontSize:9.5,textAnchor:'middle',fontFamily:'Inter'},p.date))
+      )
+    ], {padding:'0 0 12px'});
+  }
+
+  // ---------- BUILDER ----------
+  builderScreen(t){
+    const h=this.h; const b=this.state.builder; if(!b) return null;
+    const items=b.items.map((it,i)=>{ const e=this.ex(it.exId); return this.card(t, h('div',{style:{display:'flex',alignItems:'center',gap:10,padding:'11px 12px'}},
+      h('div',{style:{display:'flex',flexDirection:'column',gap:2}}, h('button',{onClick:()=>this.builderMove(i,-1), style:{border:'none',background:'transparent',cursor:'pointer',padding:2,opacity:i===0?0.3:1,display:'flex'}}, this.ic('chevron',t.faint,15,2.4).props?this.h('div',{style:{transform:'rotate(-90deg)'}},this.ic('chevron',t.faint,15,2.4)):null), h('button',{onClick:()=>this.builderMove(i,1), style:{border:'none',background:'transparent',cursor:'pointer',padding:2,opacity:i===b.items.length-1?0.3:1,display:'flex'}}, this.h('div',{style:{transform:'rotate(90deg)'}},this.ic('chevron',t.faint,15,2.4)))),
+      h('div',{style:{width:36,height:36,borderRadius:10,background:t.chip,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.equipIcon(e.equip,t.sub,18)),
+      h('div',{style:{flex:1,minWidth:0}}, h('div',{style:{fontSize:14,fontWeight:700,color:t.text}}, e.name), h('div',{style:{fontSize:11.5,fontWeight:500,color:t.sub,marginTop:1}}, e.muscle)),
+      h('input',{value:it.target,onChange:(ev)=>this.builderTarget(i,ev.target.value),style:{width:64,height:32,borderRadius:8,border:'1px solid '+t.inputBorder,background:t.inputBg,color:t.text,textAlign:'center',fontSize:12.5,fontWeight:700}}),
+      h('button',{onClick:()=>this.builderDel(i), style:{border:'none',background:'transparent',cursor:'pointer',padding:5,display:'flex'}}, this.ic('x',t.faint,17,2))
+    ), {padding:0}, it.exId+i); });
+    return this.overlayShell(t, b.id?'Rutini Düzenle':'Yeni Rutin', [
+      h('div',{key:'name'}, this.eyebrow(t,'Rutin Adı'), h('input',{value:b.name,placeholder:'örn. Push Day',onChange:(ev)=>this.setState({builder:{...b,name:ev.target.value}}),style:{marginTop:8,width:'100%',height:46,borderRadius:12,border:'1px solid '+t.inputBorder,background:t.inputBg,color:t.text,fontSize:16,fontWeight:700,padding:'0 14px'}})),
+      h('div',{key:'lbl',style:{display:'flex',alignItems:'center',justifyContent:'space-between'}}, h('span',{style:{fontSize:13,fontWeight:700,color:t.sub}}, b.items.length+' hareket'), h('span',{style:{fontSize:11.5,fontWeight:600,color:t.faint}}, 'hedef set×tekrar')),
+      b.items.length? h('div',{key:'items',style:{display:'flex',flexDirection:'column',gap:9}}, items) : h('div',{key:'empty',style:{padding:'24px',textAlign:'center',fontSize:13,fontWeight:600,color:t.faint,border:'1px dashed '+t.inputBorder,borderRadius:14}}, 'Henüz hareket yok'),
+      h('button',{key:'add',onClick:()=>this.push('library',{mode:'builder'}), style:{border:'1px dashed '+t.inputBorder,background:'transparent',cursor:'pointer',borderRadius:14,padding:'14px',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontSize:14,fontWeight:700,color:t.primary}}, this.ic('plus',t.primary,18,2.2), 'Hareket Ekle'),
+      h('button',{key:'save',onClick:this.saveBuilder, style:{border:'none',cursor:'pointer',background:t.grad,borderRadius:16,padding:'16px',fontSize:15.5,fontWeight:800,color:'#fff',marginTop:4,boxShadow:'0 8px 20px rgba(79,70,229,0.26)'}}, 'Rutini Kaydet')
+    ], {gap:18});
+  }
+
+  // ---------- SUMMARY ----------
+  summaryScreen(t){
+    const h=this.h; const s=this.state.summary; if(!s) return null;
+    const stat=(label,val)=>h('div',{style:{flex:1,textAlign:'center'}}, h('div',{style:{fontSize:24,fontWeight:800,color:t.text,letterSpacing:'-0.02em',fontVariantNumeric:'tabular-nums'}}, val), h('div',{style:{fontSize:11.5,fontWeight:600,color:t.sub,marginTop:3}}, label));
+    const prBanner = s.prs.length? this.card(t, h('div',{style:{padding:'14px 16px'}}, h('div',{style:{display:'flex',alignItems:'center',gap:9,marginBottom:s.prs.length?10:0}}, this.ic('trophy',t.amber,20,1.9), h('span',{style:{fontSize:14,fontWeight:800,color:t.text}}, s.prs.length+' Yeni Rekor!')), h('div',{style:{display:'flex',flexDirection:'column',gap:6}}, s.prs.map((p,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',gap:8}}, h('span',{style:{fontSize:15}},'🏆'), h('span',{style:{fontSize:13.5,fontWeight:700,color:t.text}}, p))))), {padding:0, border:'1px solid '+t.amber+'55', background:t.amber+'14'}) : null;
+    const recap=s.recap.map((r,i)=> this.card(t, h('div',{style:{display:'flex',alignItems:'center',gap:12,padding:'13px 15px'}}, h('div',{style:{flex:1,minWidth:0}}, h('div',{style:{fontSize:14.5,fontWeight:700,color:t.text}}, r.n), h('div',{style:{fontSize:12.5,fontWeight:500,color:t.sub,marginTop:2}}, r.s)), s.prs.includes(r.n)?h('span',{style:{fontSize:16}},'🏆'):null), {padding:0}, i));
+    return h('div',{style:{position:'absolute',inset:0,background:t.bg,display:'flex',flexDirection:'column',zIndex:40,animation:'fpFade .3s ease'}},
+      h('div',{style:{flex:1,overflowY:'auto'}}, h('div',{style:{padding:'70px 20px 30px',display:'flex',flexDirection:'column',gap:20}},
+        h('div',{style:{textAlign:'center'}}, h('div',{style:{display:'flex',justifyContent:'center',marginBottom:14}}, h('div',{style:{width:72,height:72,borderRadius:'50%',background:t.tealSoft,display:'flex',alignItems:'center',justifyContent:'center'}}, this.ic('check',t.teal,38,2.6))),
+          h('div',{style:{fontSize:24,fontWeight:800,letterSpacing:'-0.02em',color:t.text}}, 'Antrenman Tamamlandı'), h('div',{style:{fontSize:14,fontWeight:600,color:t.sub,marginTop:5}}, s.name+' · Bugün')),
+        this.card(t, h('div',{style:{display:'flex',padding:'18px 12px'}}, stat('Süre', this.clockH(s.dur)), h('div',{style:{width:1,background:t.hairline}}), stat('Hacim', this.th(s.vol)+'kg'), h('div',{style:{width:1,background:t.hairline}}), stat('Set', s.setCount)), {padding:0}),
+        prBanner,
+        h('div',null, h('div',{style:{fontSize:15,fontWeight:700,color:t.text,marginBottom:11}}, 'Özet'), h('div',{style:{display:'flex',flexDirection:'column',gap:9}}, recap))
+      )),
+      h('div',{style:{flexShrink:0,padding:'12px 20px 30px',borderTop:'1px solid '+t.hairline,background:t.headerBg}}, h('button',{onClick:this.saveSummary, style:{width:'100%',border:'none',cursor:'pointer',background:t.grad,borderRadius:16,padding:'17px',fontSize:16,fontWeight:800,color:'#fff',boxShadow:'0 8px 20px rgba(79,70,229,0.26)'}}, 'Kaydet'))
+    );
+  }
+
+  history(t){
+    const h=this.h;
+    const items=this.state.history.map((s,i)=>{ const open=this.state['h'+i];
+      return this.card(t, [
+        h('button',{key:'b',onClick:()=>this.setState({['h'+i]:!open}), style:{border:'none',background:'transparent',cursor:'pointer',width:'100%',textAlign:'left',display:'flex',alignItems:'center',gap:12,padding:0}},
+          h('div',{style:{width:42,height:42,borderRadius:12,background:t.primarySoft,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}, this.ic('dumbbell',t.primary,20)),
+          h('div',{style:{flex:1}}, h('div',{style:{display:'flex',alignItems:'center',gap:7}}, h('span',{style:{fontSize:15,fontWeight:700,color:t.text}}, s.name), s.prs&&s.prs.length?h('span',{style:{fontSize:13}},'🏆'):null), h('div',{style:{fontSize:12.5,fontWeight:500,color:t.sub,marginTop:2}}, s.date+' · '+this.clockH(s.dur||0)+' · '+this.th(s.vol)+' kg')),
+          h('div',{style:{transform:open?'rotate(90deg)':'none',transition:'transform .2s'}}, this.ic('chevron',t.faint,18,2))
+        ),
+        open? h('div',{key:'d',style:{marginTop:14,paddingTop:14,borderTop:'1px solid '+t.hairline,display:'flex',flexDirection:'column',gap:9}}, s.ex.map((e,j)=>h('div',{key:j,style:{display:'flex',justifyContent:'space-between',gap:12}}, h('span',{style:{fontSize:13,fontWeight:600,color:t.text}}, e.n), h('span',{style:{fontSize:12.5,fontWeight:500,color:t.sub,textAlign:'right',fontVariantNumeric:'tabular-nums'}}, e.s)))) : null
+      ], {padding:'14px 15px'}, i);
+    });
+    return this.overlayShell(t, 'Antrenman Geçmişi', [h('div',{key:'l',style:{display:'flex',flexDirection:'column',gap:11}}, items)], {gap:0});
+  }
+
+  // ---------- dialogs / menu ----------
+  confirm(title,msg,label,onYes){ this.setState({dialog:{kind:'confirm',title,msg,label,onYes}}); }
+  dialogEl(d,t){
+    const h=this.h; let inner;
+    if(d.kind==='confirm'){
+      inner=h('div',null, h('div',{style:{fontSize:17,fontWeight:800,color:t.text}}, d.title), h('div',{style:{fontSize:14,fontWeight:500,color:t.sub,marginTop:8,lineHeight:1.5}}, d.msg),
+        h('div',{style:{display:'flex',gap:10,marginTop:20}}, h('button',{onClick:this.closeDlg, style:{flex:1,border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',borderRadius:12,padding:'13px',fontSize:14.5,fontWeight:700,color:t.text}}, 'İptal'), h('button',{onClick:d.onYes, style:{flex:1,border:'none',cursor:'pointer',background:t.red,color:'#fff',borderRadius:12,padding:'13px',fontSize:14.5,fontWeight:700}}, d.label)));
+    } else if(d.kind==='newexercise'){
+      const f=this.state.dlgVals;
+      const seg=(key,opts)=>h('div',{style:{display:'flex',flexWrap:'wrap',gap:7,marginTop:8}}, opts.map(o=>{ const a=f[key]===o||(key==='type'&&f.type===o); return h('button',{key:o,onClick:()=>this.setState({dlgVals:{...f,[key]:o}}), style:{border:'1px solid '+(a?t.primary:t.hairline),background:a?t.primarySoft:'transparent',color:a?t.primary:t.sub,cursor:'pointer',borderRadius:99,padding:'7px 12px',fontSize:12.5,fontWeight:700}}, o); }));
+      const typeLabels={weight:'kg × tekrar',reps:'sadece tekrar',time:'süre',distance:'mesafe'};
+      inner=h('div',null,
+        h('div',{style:{fontSize:17,fontWeight:800,color:t.text,marginBottom:14}}, 'Yeni Hareket'),
+        h('input',{value:f.n,placeholder:'Hareket adı',onChange:(ev)=>this.setState({dlgVals:{...f,n:ev.target.value}}),style:{width:'100%',height:46,borderRadius:12,border:'1px solid '+t.inputBorder,background:t.inputBg,color:t.text,fontSize:15,fontWeight:600,padding:'0 14px'}}),
+        h('div',{style:{marginTop:14}}, this.eyebrow(t,'Kategori'), h('div',{style:{display:'flex',flexWrap:'wrap',gap:7,marginTop:8}}, this.CATEGORIES.map(c=>{ const a=f.category===c; return h('button',{key:c,onClick:()=>this.setState({dlgVals:{...f,category:c}}), style:{border:'1px solid '+(a?t.primary:t.hairline),background:a?t.primarySoft:'transparent',color:a?t.primary:t.sub,cursor:'pointer',borderRadius:99,padding:'7px 12px',fontSize:12.5,fontWeight:700}}, this.CATSHORT[c]); }))),
+        h('div',{style:{marginTop:14}}, this.eyebrow(t,'Kas grubu'), seg('muscle', this.MUSCLES)),
+        h('div',{style:{marginTop:14}}, this.eyebrow(t,'Ekipman'), seg('equip', this.EQUIP)),
+        h('div',{style:{marginTop:14}}, this.eyebrow(t,'Ölçüm tipi'), h('div',{style:{display:'flex',flexWrap:'wrap',gap:7,marginTop:8}}, Object.keys(typeLabels).map(k=>{ const a=f.type===k; return h('button',{key:k,onClick:()=>this.setState({dlgVals:{...f,type:k}}), style:{border:'1px solid '+(a?t.primary:t.hairline),background:a?t.primarySoft:'transparent',color:a?t.primary:t.sub,cursor:'pointer',borderRadius:99,padding:'7px 12px',fontSize:12.5,fontWeight:700}}, typeLabels[k]); }))),
+        h('div',{style:{display:'flex',gap:10,marginTop:20}}, h('button',{onClick:this.closeDlg, style:{flex:1,border:'1px solid '+t.hairline,background:'transparent',cursor:'pointer',borderRadius:12,padding:'13px',fontSize:14.5,fontWeight:700,color:t.text}}, 'İptal'), h('button',{onClick:()=>{ if(!f.n.trim()){this.closeDlg();return;} const id='c'+Date.now(); this.LIB.push({id,name:f.n,category:f.category||'Isolation Movements',muscle:f.muscle,equip:f.equip,type:f.type,hist:[],custom:true}); this.closeDlg(); }, style:{flex:1,border:'none',cursor:'pointer',background:t.primary,color:'#fff',borderRadius:12,padding:'13px',fontSize:14.5,fontWeight:700}}, 'Oluştur')));
+    }
+    return h('div',{style:{position:'absolute',inset:0,zIndex:60,display:'flex',alignItems:'center',justifyContent:'center',padding:'24px'}},
+      h('div',{onClick:this.closeDlg, style:{position:'absolute',inset:0,background:t.overlay,animation:'fpFade .2s ease'}}),
+      h('div',{style:{position:'relative',width:'100%',maxWidth:344,background:t.card,borderRadius:22,border:'1px solid '+t.hairline,padding:'20px',boxShadow:'0 24px 60px rgba(0,0,0,0.3)',animation:'fpPop .22s cubic-bezier(.4,0,.2,1)',maxHeight:'82%',overflowY:'auto'}}, inner));
+  }
+  menuEl(t){
+    const h=this.h; const m=this.state.menuOpen; const ei=m.ei;
+    const item=(icon,label,color,onClick)=>h('button',{onClick, style:{border:'none',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',gap:13,padding:'14px 18px',width:'100%',textAlign:'left'}}, this.ic(icon,color||t.sub,20,1.9), h('span',{style:{fontSize:15,fontWeight:600,color:color||t.text}}, label));
+    return h('div',{style:{position:'absolute',inset:0,zIndex:55,display:'flex',flexDirection:'column',justifyContent:'flex-end'}},
+      h('div',{onClick:()=>this.setState({menuOpen:null}), style:{position:'absolute',inset:0,background:t.overlay,animation:'fpFade .2s ease'}}),
+      h('div',{style:{position:'relative',background:t.card,borderTopLeftRadius:24,borderTopRightRadius:24,paddingBottom:24,animation:'fpUp .28s cubic-bezier(.4,0,.2,1)',borderTop:'1px solid '+t.hairline}},
+        h('div',{style:{display:'flex',justifyContent:'center',padding:'10px 0 6px'}}, h('div',{style:{width:40,height:5,borderRadius:99,background:t.sheetHandle}})),
+        h('div',{style:{padding:'4px 0'}},
+          item('note', this.state.session.exercises[ei].note? 'Notu düzenle':'Not ekle', null, ()=>this.setState(s=>({menuOpen:null, session:{...s.session,exercises:s.session.exercises.map((e,i)=>i!==ei?e:{...e,note:e.note||' '})}}))),
+          item('swap','Hareketi değiştir', null, ()=>{ this.setState({menuOpen:null}); this.removeExercise(ei); this.push('library',{mode:'session'}); }),
+          h('div',{style:{height:1,background:t.hairline,margin:'4px 18px'}}),
+          item('trash','Sil', t.red, ()=>this.removeExercise(ei))
+        )
+      )
+    );
+  }
+
+  overlay(top,t){
+    if(top.type==='preview') return this.preview(t,top.data);
+    if(top.type==='session') return this.session(t);
+    if(top.type==='library') return this.library(t,top.data);
+    if(top.type==='exdetail') return this.exdetail(t,top.data);
+    if(top.type==='builder') return this.builderScreen(t);
+    if(top.type==='history') return this.history(t);
+    if(top.type==='summary') return this.summaryScreen(t);
+    return null;
+  }
+
+  renderApp(t){
+    const h=this.h; const top=this.state.stack[this.state.stack.length-1];
+    return h('div',{style:{height:'100%',position:'relative',background:t.bg,color:t.text,overflow:'hidden',fontVariantNumeric:'tabular-nums',fontFamily:"'Inter',system-ui,sans-serif"}},
+      h('div',{style:{position:'absolute',inset:0,display:'flex',flexDirection:'column'}}, this.landing(t)),
+      top? this.overlay(top,t): null,
+      this.state.menuOpen? this.menuEl(t): null,
+      this.state.dialog? this.dialogEl(this.state.dialog,t): null
+    );
+  }
+
+  seg(active){ return {padding:'7px 14px',borderRadius:99,border:'none',cursor:'pointer',fontSize:12.5,fontWeight:700,background:active?'#fff':'transparent',color:active?'#1A1C22':'#83807a',boxShadow:active?'0 1px 2px rgba(0,0,0,0.12)':'none',transition:'all .15s'}; }
+  renderVals(){
+    const t=this.theme();
+    let hint='Antrenman ana ekranı';
+    const top=this.state.stack[this.state.stack.length-1];
+    if(top){ const m={preview:'Rutin önizleme',session:'Aktif seans — set tamamla, dinlenme sayacı',library:'Hareket kütüphanesi',exdetail:'Hareket detayı',builder:'Rutin oluşturucu',history:'Antrenman geçmişi',summary:'Antrenman özeti'}; hint=m[top.type]||hint; }
+    return {
+      dark:this.state.theme==='dark', app:this.renderApp(t), hint,
+      setLight:()=>this.setState({theme:'light'}), setDark:()=>this.setState({theme:'dark'}),
+      segLight:this.seg(this.state.theme==='light'), segDark:this.seg(this.state.theme==='dark'),
+    };
+  }
+}
+</script>
+</body>
+</html>

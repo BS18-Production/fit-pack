@@ -17,4 +17,10 @@ class UserProfile extends Table {
   DateTimeColumn get lastDeload => dateTime().nullable()();
   RealColumn get heightCm => real().nullable()();
   RealColumn get goalWeightKg => real().nullable()();
+  // v3 (P-10 Onboarding): ilk açılış kişiselleştirmesi tamamlandı mı?
+  // default false → sıfır kurulumda onboarding gösterilir. Migration v2→v3
+  // mevcut profili true yapar (zaten kullanan pilot onboarding görmez).
+  BoolColumn get onboarded => boolean().withDefault(const Constant(false))();
+  // v4 (Home su takibi): günlük su hedefi (ml). Varsayılan 2.5 L.
+  IntColumn get waterGoalMl => integer().withDefault(const Constant(2500))();
 }

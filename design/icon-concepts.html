@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fit Pack — Yükseliş Premium İşlemeler</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0e1015; color: #E7E9EE; padding: 32px 20px 64px; line-height: 1.5; }
+  .wrap { max-width: 820px; margin: 0 auto; }
+  h1 { font-size: 25px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+  .sub { color: #9BA1B0; font-size: 15px; margin-bottom: 32px; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: #1B1E27; border: 1px solid #2F3442; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .row { display: flex; align-items: center; gap: 20px; }
+  .label { font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #818CF8; text-transform: uppercase; }
+  .name { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; margin-top: 2px; }
+  .desc { color: #9BA1B0; font-size: 13.5px; }
+  .scales { display: flex; align-items: center; gap: 14px; margin-left: auto; }
+  .scale-cap { font-size: 10px; color: #6b7180; text-align: center; margin-top: 5px; }
+  svg { display: block; }
+  .big { width: 104px; height: 104px; }
+  .mid { width: 48px; height: 48px; }
+  .sml { width: 28px; height: 28px; }
+  .foot { margin-top: 36px; padding: 18px 20px; background: #14171f; border: 1px solid #2F3442; border-radius: 16px; color: #9BA1B0; font-size: 13.5px; }
+  .foot b { color: #E7E9EE; }
+  code { background:#222633; padding:1px 6px; border-radius:5px; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>“Yükseliş” — Premium İşlemeler</h1>
+  <div class="sub">Aynı fikrin 4 premium varyantı. Soldaki büyük, sağdakiler gerçek ikon ölçeği.</div>
+
+  <svg width="0" height="0" style="position:absolute"><defs>
+    <linearGradient id="bgIndigo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366F1"/><stop offset="1" stop-color="#4338CA"/></linearGradient>
+    <linearGradient id="bgRich" x1="0" y1="0" x2="0.8" y2="1"><stop offset="0" stop-color="#7C7FF5"/><stop offset="0.55" stop-color="#4F46E5"/><stop offset="1" stop-color="#3A2FB8"/></linearGradient>
+    <linearGradient id="upGrad" x1="0.5" y1="1" x2="0.5" y2="0"><stop offset="0" stop-color="#4F46E5"/><stop offset="1" stop-color="#2DD4BF"/></linearGradient>
+    <radialGradient id="bgGlow" cx="0.5" cy="0.62" r="0.75"><stop offset="0" stop-color="#202a4d"/><stop offset="1" stop-color="#0c0e15"/></radialGradient>
+    <radialGradient id="sheen" cx="0.3" cy="0.2" r="0.95"><stop offset="0" stop-color="#fff" stop-opacity="0.28"/><stop offset="0.5" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs></svg>
+
+  <!-- A. Işıyan (dark + glow) -->
+  <div class="grid">
+    <div class="card">
+      <div class="row">
+        <svg class="big" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="url(#bgGlow)"/><g fill="none" stroke="url(#upGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"><path d="M32 69 L50 56 L68 69"/><path d="M32 56 L50 43 L68 56"/><path d="M32 43 L50 30 L68 43"/></g><circle cx="50" cy="22" r="3.2" fill="#5EEAD4" filter="url(#glow)"/></svg>
+        <div class="scales">
+          <div><svg class="mid" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="url(#bgGlow)"/><g fill="none" stroke="url(#upGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"><path d="M32 69 L50 56 L68 69"/><path d="M32 56 L50 43 L68 56"/><path d="M32 43 L50 30 L68 43"/></g><circle cx="50" cy="22" r="3.2" fill="#5EEAD4"/></svg><div class="scale-cap">48px</div></div>
+          <div><svg class="sml" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="url(#bgGlow)"/><g fill="none" stroke="url(#upGrad)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M32 67 L50 53 L68 67"/><path d="M32 53 L50 39 L68 53"/><path d="M32 39 L50 25 L68 39"/></g></svg><div class="scale-cap">28px</div></div>
+        </div>
+      </div>
+      <div><div class="label">Varyant A</div><div class="name">Işıyan (Koyu + Glow)</div><div class="desc">Mark ışık yayıyor; zirvede teal spark. Koyu radial zemin = derinlik. En “tech/elegant”, Whoop/Oura ruhu. Koyu duvar kâğıdında biraz erir.</div></div>
+    </div>
+
+    <!-- B. Canlı zemin + beyaz mark + spark -->
+    <div class="card">
+      <div class="row">
+        <svg class="big" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="url(#bgRich)"/><g fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M32 69 L50 56 L68 69"/><path d="M32 56 L50 43 L68 56" opacity="0.82"/><path d="M32 43 L50 30 L68 43" opacity="0.6"/></g><circle cx="50" cy="22.5" r="3.4" fill="#5EEAD4"/><rect width="100" height="100" rx="23" fill="url(#sheen)"/></svg>
+        <div class="scales">
+          <div><svg class="mid" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="url(#bgRich)"/><g fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M32 69 L50 56 L68 69"/><path d="M32 56 L50 43 L68 56" opacity="0.82"/><path d="M32 43 L50 30 L68 43" opacity="0.6"/></g><circle cx="50" cy="22.5" r="3.4" fill="#5EEAD4"/><rect width="100" height="100" rx="23" fill="url(#sheen)"/></svg><div class="scale-cap">48px</div></div>
+          <div><svg class="sml" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="url(#bgRich)"/><g fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M32 67 L50 53 L68 67"/><path d="M32 53 L50 39 L68 53" opacity="0.82"/><path d="M32 39 L50 25 L68 39" opacity="0.6"/></g></svg><div class="scale-cap">28px</div></div>
+        </div>
+      </div>
+      <div><div class="label">Varyant B</div><div class="name">Canlı Zemin + Beyaz Mark</div><div class="desc">Indigo degrade zemin, beyaz chevron’lar soluklaşıyor, zirvede teal spark, üstte cam parıltısı. Ana ekranda <b>en çok pop eden</b>, her duvar kâğıdında net. App Store premium standardı.</div></div>
+    </div>
+
+    <!-- C. Katı şerit (3B kıvrım) -->
+    <div class="card">
+      <div class="row">
+        <svg class="big" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="url(#bgGlow)"/><g><path d="M50 30 L70 44 L62.5 49.2 L50 40.3 L37.5 49.2 L30 44 Z" fill="#2DD4BF"/><path d="M50 45 L70 59 L62.5 64.2 L50 55.3 L37.5 64.2 L30 59 Z" fill="#4F8AE8"/><path d="M50 60 L70 74 L62.5 79.2 L50 70.3 L37.5 79.2 L30 74 Z" fill="#5B54E8"/></g></svg>
+        <div class="scales">
+          <div><svg class="mid" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="url(#bgGlow)"/><g><path d="M50 30 L70 44 L62.5 49.2 L50 40.3 L37.5 49.2 L30 44 Z" fill="#2DD4BF"/><path d="M50 45 L70 59 L62.5 64.2 L50 55.3 L37.5 64.2 L30 59 Z" fill="#4F8AE8"/><path d="M50 60 L70 74 L62.5 79.2 L50 70.3 L37.5 79.2 L30 74 Z" fill="#5B54E8"/></g></svg><div class="scale-cap">48px</div></div>
+          <div><svg class="sml" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="url(#bgGlow)"/><g><path d="M50 28 L72 43 L63.5 49 L50 39.3 L36.5 49 L28 43 Z" fill="#2DD4BF"/><path d="M50 46 L72 61 L63.5 67 L50 57.3 L36.5 67 L28 61 Z" fill="#4F8AE8"/><path d="M50 64 L72 79 L63.5 85 L50 75.3 L36.5 85 L28 79 Z" fill="#5B54E8"/></g></svg><div class="scale-cap">28px</div></div>
+        </div>
+      </div>
+      <div><div class="label">Varyant C</div><div class="name">Katı Şerit (3B)</div><div class="desc">Çizgi yerine <b>katı, kalın</b> chevron dilimleri — teal’den indigo’ya inen katmanlar. Daha hacimli, “madde” hissi. Küçükken çok güçlü okunur, premium ağırlık.</div></div>
+    </div>
+
+    <!-- D. Tek parça ribbon -->
+    <div class="card">
+      <div class="row">
+        <svg class="big" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="url(#bgRich)"/><path d="M28 64 L40 64 L50 40 L60 64 L72 64" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M44 52 L50 38 L56 52" fill="none" stroke="#5EEAD4" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/><rect width="100" height="100" rx="23" fill="url(#sheen)"/></svg>
+        <div class="scales">
+          <div><svg class="mid" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="url(#bgRich)"/><path d="M28 64 L40 64 L50 40 L60 64 L72 64" fill="none" stroke="#fff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M44 52 L50 38 L56 52" fill="none" stroke="#5EEAD4" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/><rect width="100" height="100" rx="23" fill="url(#sheen)"/></svg><div class="scale-cap">48px</div></div>
+          <div><svg class="sml" viewBox="0 0 100 100"><rect width="100" height="100" rx="23" fill="url(#bgRich)"/><path d="M27 63 L40 63 L50 37 L60 63 L73 63" fill="none" stroke="#fff" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="scale-cap">28px</div></div>
+        </div>
+      </div>
+      <div><div class="label">Varyant D</div><div class="name">Tek Parça Zirve</div><div class="desc">Chevron’lar tek bir <b>sivri zirve çizgisine</b> birleşiyor (bir grafik tepesi gibi) — teal uç. Daha özgün, “yükselen grafik / zirve” okuması. Sade ve akılda kalıcı.</div></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <b>Önerim:</b> <b>Varyant B (Canlı Zemin + Beyaz Mark)</b> — ana ekranda diğer ikonların arasında en net görünen, her duvar kâğıdında çalışan, en “premium app” hissi veren bu. Daha hacim/karakter istersen <b>Varyant C (Katı Şerit)</b>. Birini seç (stroke kalınlığı, spark var/yok, zemin tonu gibi ince ayarları da söyle) — 1024px üretip <code>flutter_launcher_icons</code> ile tüm boyutları bağlar, emülatörde ana ekranda gösteririm.
+  </div>
+</div>
+</body>
+</html>

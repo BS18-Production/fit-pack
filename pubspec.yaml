@@ -41,10 +41,17 @@ dependencies:
   share_plus: ^10.1.4
   csv: ^6.0.0
 
+  # Beslenme V2 — OpenFoodFacts (REST) + barkod tarama (docs/07-nutrition-v2.md)
+  http: ^1.2.0
+  mobile_scanner: ^7.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+
+  # Test (Testing §4)
+  mocktail: ^1.0.4
 
   # Drift code generation
   drift_dev: ^2.22.1
@@ -52,6 +59,21 @@ dev_dependencies:
   riverpod_generator: ^2.6.3
   custom_lint: ^0.7.5
   riverpod_lint: ^2.6.3
+
+  # Uygulama ikonu üretimi (P-15 — "Yükseliş" Işıyan ikon)
+  flutter_launcher_icons: ^0.14.3
+
+# P-15: Marka ikonu. Kaynak 1024px PNG'ler assets/icon/ (Claude Design
+# "Yükseliş" varyant A — koyu radial zemin + ışıyan chevron + teal spark).
+# Değiştirmek için: assets/icon/* güncelle → dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon_full.png"
+  remove_alpha_ios: true
+  min_sdk_android: 21
+  adaptive_icon_background: "assets/icon/icon_bg.png"
+  adaptive_icon_foreground: "assets/icon/icon_fg.png"
 
 flutter:
   uses-material-design: true

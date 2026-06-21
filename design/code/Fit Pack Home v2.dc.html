@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+  </style>
+</helmet>
+
+<div style="min-width:100%; width:max-content; min-height:100vh; box-sizing:border-box; padding:56px 64px; background:#e7e5df; font-family:'Manrope',system-ui,sans-serif; display:flex; gap:72px; align-items:flex-start;">
+
+  <!-- ════════════════ LIGHT ════════════════ -->
+  <div style="display:flex; flex-direction:column; gap:18px; align-items:center;">
+    <div style="font-size:13px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:#83807a;">Aydınlık Tema</div>
+    <x-import component="IOSDevice" from="./ios-frame.jsx" dark="{{ false }}" hint-size="402px,874px">
+      <div style="min-height:100%; background:#F6F7F9; display:flex; flex-direction:column; color:#1A1C22;">
+        <div style="flex:1; padding:62px 22px 14px; display:flex; flex-direction:column; gap:26px;">
+
+          <!-- Header -->
+          <div style="display:flex; align-items:flex-start; justify-content:space-between;">
+            <div>
+              <div style="font-size:11px; font-weight:700; letter-spacing:0.18em; color:#4F46E5;">BUGÜN</div>
+              <div style="font-size:26px; font-weight:800; letter-spacing:-0.02em; margin-top:5px; color:#1A1C22;">Pazar, 21 Haziran</div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:2px;">
+              <button style="width:44px; height:44px; border:none; background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5A6072" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M8 8l4-4 4 4"/><path d="M5 13v5a2 2 0 002 2h10a2 2 0 002-2v-5"/></svg>
+              </button>
+              <button style="width:44px; height:44px; border:none; background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5A6072" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h9"/><path d="M19 7h1"/><path d="M4 17h5"/><path d="M15 17h5"/><circle cx="15" cy="7" r="2.4"/><circle cx="11" cy="17" r="2.4"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Phase row (quiet context, no card) -->
+          <div style="display:flex; align-items:center; gap:13px;">
+            <div style="width:40px; height:40px; border-radius:12px; background:rgba(79,70,229,0.10); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"/></svg>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:14.5px; font-weight:700; color:#1A1C22; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">İleri Upper/Lower</div>
+              <div style="font-size:12.5px; font-weight:500; color:#5A6072; margin-top:2px;">Faz 3 · Hafta 1</div>
+            </div>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#B6BAC6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+
+          <!-- CTA (only gradient on screen) -->
+          <button style="border:none; text-align:left; cursor:pointer; background:linear-gradient(135deg,#6366F1 0%,#4F46E5 100%); border-radius:20px; padding:19px 22px; display:flex; align-items:center; gap:14px; box-shadow:0 8px 20px rgba(79,70,229,0.24);">
+            <div style="flex:1;">
+              <div style="font-size:20px; font-weight:800; letter-spacing:-0.01em; color:#fff;">Antrenmanı Başlat</div>
+              <div style="font-size:12.5px; font-weight:500; color:rgba(255,255,255,0.82); margin-top:4px;">Upper A · 6 hareket · ~52 dk</div>
+            </div>
+            <div style="width:46px; height:46px; border-radius:15px; background:rgba(255,255,255,0.20); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="M13 6l6 6-6 6"/></svg>
+            </div>
+          </button>
+
+          <!-- Nutrition HERO -->
+          <div style="background:#FFFFFF; border:1px solid rgba(16,18,24,0.05); border-radius:24px; padding:24px 22px 28px; box-shadow:0 1px 3px rgba(16,18,24,0.04);">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+              <div style="font-size:17px; font-weight:700; color:#1A1C22;">Bugünkü Beslenme</div>
+              <div style="font-size:12.5px; font-weight:600; color:#4F46E5;">Düzenle</div>
+            </div>
+            <div style="display:flex; justify-content:center; margin:18px 0 26px;">
+              <div style="position:relative; width:204px; height:204px;">
+                <svg width="204" height="204" viewBox="0 0 220 220">
+                  <defs><linearGradient id="ringL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366F1"/><stop offset="1" stop-color="#4F46E5"/></linearGradient></defs>
+                  <circle cx="110" cy="110" r="88" fill="none" stroke="rgba(79,70,229,0.10)" stroke-width="14"/>
+                  <circle cx="110" cy="110" r="88" fill="none" stroke="url(#ringL)" stroke-width="14" stroke-linecap="round" stroke-dasharray="552.9" stroke-dashoffset="319.6" transform="rotate(-90 110 110)"/>
+                </svg>
+                <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                  <div style="font-size:48px; font-weight:800; letter-spacing:-0.03em; color:#1A1C22; font-variant-numeric:tabular-nums; line-height:1;">1.850</div>
+                  <div style="font-size:13px; font-weight:500; color:#5A6072; margin-top:6px;">kcal kaldı</div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:18px;">
+              <div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;">
+                  <div style="display:flex; align-items:center; gap:8px;"><span style="width:8px; height:8px; border-radius:50%; background:#14B8A6;"></span><span style="font-size:13px; font-weight:600; color:#1A1C22;">Protein</span></div>
+                  <div style="font-size:12.5px; font-weight:500; color:#5A6072; font-variant-numeric:tabular-nums;">142 / 180 g</div>
+                </div>
+                <div style="height:7px; border-radius:99px; background:rgba(16,18,24,0.06);"><div style="height:100%; width:79%; border-radius:99px; background:#14B8A6;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;">
+                  <div style="display:flex; align-items:center; gap:8px;"><span style="width:8px; height:8px; border-radius:50%; background:#38BDF8;"></span><span style="font-size:13px; font-weight:600; color:#1A1C22;">Karbonhidrat</span></div>
+                  <div style="font-size:12.5px; font-weight:500; color:#5A6072; font-variant-numeric:tabular-nums;">130 / 360 g</div>
+                </div>
+                <div style="height:7px; border-radius:99px; background:rgba(16,18,24,0.06);"><div style="height:100%; width:36%; border-radius:99px; background:#38BDF8;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:7px;">
+                  <div style="display:flex; align-items:center; gap:8px;"><span style="width:8px; height:8px; border-radius:50%; background:#FBBF24;"></span><span style="font-size:13px; font-weight:600; color:#1A1C22;">Yağ</span></div>
+                  <div style="font-size:12.5px; font-weight:500; color:#5A6072; font-variant-numeric:tabular-nums;">40 / 90 g</div>
+                </div>
+                <div style="height:7px; border-radius:99px; background:rgba(16,18,24,0.06);"><div style="height:100%; width:44%; border-radius:99px; background:#FBBF24;"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Streak + Weight (demoted, quiet) -->
+          <div style="display:flex; gap:14px;">
+            <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+              <div style="font-size:11px; font-weight:700; letter-spacing:0.12em; color:#5A6072;">SERİ</div>
+              <div style="display:flex; align-items:baseline; gap:6px;">
+                <span style="font-size:18px;">🔥</span>
+                <span style="font-size:24px; font-weight:800; color:#1A1C22; font-variant-numeric:tabular-nums; letter-spacing:-0.02em;">5</span>
+                <span style="font-size:13px; font-weight:600; color:#5A6072;">gün</span>
+              </div>
+            </div>
+            <div style="width:1px; background:rgba(16,18,24,0.08);"></div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:8px; padding-left:2px;">
+              <div style="font-size:11px; font-weight:700; letter-spacing:0.12em; color:#5A6072;">SON KİLO</div>
+              <div style="display:flex; align-items:baseline; gap:5px;">
+                <span style="font-size:24px; font-weight:800; color:#1A1C22; font-variant-numeric:tabular-nums; letter-spacing:-0.02em;">84.7</span>
+                <span style="font-size:13px; font-weight:600; color:#5A6072;">kg</span>
+                <span style="font-size:12px; font-weight:600; color:#0F9488; margin-left:4px;">↓ 0.4</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bottom nav -->
+        <nav style="position:sticky; bottom:0; background:rgba(246,247,249,0.88); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border-top:1px solid rgba(16,18,24,0.07); padding:10px 14px 28px; display:flex; justify-content:space-around;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:5px; min-width:56px; padding-top:3px;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>
+            <span style="font-size:10.5px; font-weight:700; color:#4F46E5;">Ana Sayfa</span>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:5px; min-width:56px; padding-top:3px;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#9499A6" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"/></svg>
+            <span style="font-size:10.5px; font-weight:600; color:#9499A6;">Antrenman</span>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:5px; min-width:56px; padding-top:3px;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#9499A6" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18"/><path d="M5 11a7 7 0 0014 0"/><path d="M9 4.5c0 1-1 1-1 2.2M12.5 4.5c0 1-1 1-1 2.2"/></svg>
+            <span style="font-size:10.5px; font-weight:600; color:#9499A6;">Beslenme</span>
+          </div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:5px; min-width:56px; padding-top:3px;">
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#9499A6" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 16l3-4 3 2 4-6"/></svg>
+            <span style="font-size:10.5px; font-weight:600; color:#9499A6;">İlerleme</span>
+          </div>
+        </nav>
+      </div>
+    </x-import>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

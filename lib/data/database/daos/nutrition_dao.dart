@@ -118,6 +118,38 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
   Future<int> insertFoodLog(FoodLogsCompanion entry) =>
       into(foodLogs).insert(entry);
 
+  /// Aktivite takvimi (docs/10-activity-calendar.md): tarih aralığındaki
+  /// günlük makro toplamları. Gün başına TEK kayıt (00:00'a normalize) — ay
+  /// görünümü tek sorguyla doldurulur (N+1 yok).
+  Future<Map<DateTime, DailyNutrition>> getDailyTotalsInRange(
+      DateTime start, DateTime end) async {
+    final logs = await getLogsInRange(start, end);
+    final map = <DateTime, DailyNutrition>{};
+    for (final l in logs) {
+      final day = DateTime(l.date.year, l.date.month, l.date.day);
+      final cur = map[day];
+      map[day] = DailyNutrition(
+        kcal: (cur?.kcal ?? 0) + l.computedKcal,
+        protein: (cur?.protein ?? 0) + l.computedProtein,
+        carb: (cur?.carb ?? 0) + l.computedCarb,
+        fat: (cur?.fat ?? 0) + l.computedFat,
+      );
+    }
+    return map;
+  }
+
+  /// Aktivite takvimi: tarih aralığındaki günlük su (ml). Gün → ml.
+  Future<Map<DateTime, int>> getWaterInRange(
+      DateTime start, DateTime end) async {
+    final rows = await (select(waterIntake)
+          ..where((w) => w.date.isBetweenValues(start, end)))
+        .get();
+    return {
+      for (final w in rows)
+        DateTime(w.date.year, w.date.month, w.date.day): w.amountMl
+    };
+  }
+
   /// Son eklenen DISTINCT yemekler — "Son kullanılanlar" hızlı şeridi.
   /// Aynı şeyleri yiyen kullanıcı her gün 111 yemek içinde aramasın.
   Future<List<Food>> getRecentFoods({int limit = 8}) async {

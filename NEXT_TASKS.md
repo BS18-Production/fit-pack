@@ -12,7 +12,11 @@ Claude Design (Apple Fitness vibe + Indigo/Teal). HTML export: `design/code/`. B
 - [x] **D-01** Manrope fontu (`app_theme.dart`), `app_dimens` (vGapxl_/brPill token)
 - [x] **D-02** Şema v4: su takibi (`water_intake` + `waterGoalMl`), migration lossless test 3/3
 - [x] **D-03** Ana Sayfa reskin: header (safe-area fix), dinlenme günü zekası, hero ring 196px, su kartı (DB-backed interaktif), Seri+Kilo satırı — emülatörde dark+light doğrulandı
-- [ ] **D-04** Antrenman V2 — Hevy/Strong genişleme. **PRD HAZIR:** [docs/09-workout-v2.md](docs/09-workout-v2.md). Karar: tam geçiş (sadece rutinler). Fazlar: A(kütüphane v5)→B(rutinler v6)→C(seans v7)→D(PR v8). S-1..S-4 açık soruları Samet onayı bekliyor, sonra Faz A kodu.
+- [ ] **D-04** Antrenman V2 — Hevy/Strong genişleme. **PRD:** [docs/09-workout-v2.md](docs/09-workout-v2.md). Karar: tam geçiş (sadece rutinler), genel kitle, İngilizce hareketler.
+  - [x] **Faz A — Hareket Kütüphanesi** (şema v5, 2026-06-21): exercises +equipment/measurementType/primaryMuscle/isCustom/isArchived; ~100 İngilizce hareket seed (5 kategori); backfill (mevcut kuruluma merge); kütüphane ekranı (`/exercises`, arama+kategori+kas filtre, özel hareket, detay sheet, arşiv); Antrenman app bar girişi. analyze 0 · test 36/36 · emülatörde doğrulandı (migration + arama).
+  - [ ] **Faz B — Rutinler** (şema v6): Routines/RoutineExercises + ana ekran (boş antrenman + rutinlerim, sıfırdan) + rutin oluşturucu + önizleme + Home dinlenme günü rutine bağlama. **Not:** sabit program/faz (workout_plan.json, currentPhase) kaldırılacak.
+  - [ ] **Faz C — Gelişmiş Seans** (şema v7): set tablosu (RPE + set tipi + dinlenme sayacı + ✓) + canlı süre + özet
+  - [ ] **Faz D — Hareket Detayı + PR** (şema v8?): geçmiş/grafik/e1RM/rekorlar
 - [ ] **D-05** Beslenme ekranı reskin
 - [ ] **D-06** İlerleme ekranı reskin
 - [ ] **D-07** Ayarlar + Onboarding reskin (Onboarding fonksiyon olarak var, görsel reskin gerek)

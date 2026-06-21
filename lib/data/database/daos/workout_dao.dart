@@ -24,6 +24,35 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
     await batch((b) => b.insertAll(exercises, entries));
   }
 
+  // === Antrenman V2 — Hareket Kütüphanesi (docs/09-workout-v2.md) ===
+
+  /// Arşivlenmemiş tüm hareketler (kütüphane). Özel olanlar üstte, sonra ada
+  /// göre alfabetik.
+  Future<List<Exercise>> getLibraryExercises() async {
+    final list = await (select(exercises)
+          ..where((e) => e.isArchived.equals(false))
+          ..orderBy([
+            (e) => OrderingTerm.desc(e.isCustom),
+            (e) => OrderingTerm.asc(e.name),
+          ]))
+        .get();
+    return list;
+  }
+
+  Future<int> insertCustomExercise(ExercisesCompanion entry) =>
+      into(exercises).insert(entry);
+
+  /// Hareketi arşivle (silme yerine — geçmiş set'ler FK ile bağlı kalır).
+  Future<bool> archiveExercise(int id) =>
+      (update(exercises)..where((e) => e.id.equals(id)))
+          .write(const ExercisesCompanion(isArchived: Value(true)))
+          .then((n) => n > 0);
+
+  Future<bool> updateExerciseMeta(int id, ExercisesCompanion meta) =>
+      (update(exercises)..where((e) => e.id.equals(id)))
+          .write(meta)
+          .then((n) => n > 0);
+
   // === Workout Sessions ===
   Future<List<WorkoutSession>> getAllSessions() =>
       (select(workoutSessions)..orderBy([(s) => OrderingTerm.desc(s.date)])).get();

@@ -23,6 +23,47 @@ class SeedManager {
       // JSON'dan ada göre doldurur. İlk çalıştırmadan sonra no-op
       // (custom/OpenFoodFacts yemeklere ve loglara dokunmaz).
       await _backfillFoodUnits();
+      // Antrenman V2 (docs/09-workout-v2.md): mevcut kurulumlara yeni
+      // İngilizce hareket kütüphanesini getir (eksikleri ekle + meta doldur).
+      await _backfillExercises();
+    }
+  }
+
+  /// İngilizce hareket kütüphanesini mevcut DB'ye uyarlar (idempotent):
+  /// - Adı seed'de olup DB'de OLMAYAN hareketleri ekler.
+  /// - Var olan ama ekipmanı NULL olan (eski V1) hareketlere meta yazar
+  ///   (ada göre eşleşirse). Custom hareketlere ve loglara dokunmaz.
+  Future<void> _backfillExercises() async {
+    final existing = await db.workoutDao.getAllExercises();
+    final byName = {for (final e in existing) e.name: e};
+
+    final toInsert = <ExercisesCompanion>[];
+    for (final seed in exerciseSeedData) {
+      final current = byName[seed.name];
+      if (current == null) {
+        toInsert.add(ExercisesCompanion(
+          name: Value(seed.name),
+          category: Value(seed.category),
+          muscleGroups: Value(jsonEncode(seed.muscles)),
+          primaryMuscle: Value(seed.primaryMuscle),
+          equipment: Value(seed.equipment),
+          measurementType: Value(seed.measurement),
+          isCustom: const Value(false),
+        ));
+      } else if (current.equipment == null && !current.isCustom) {
+        // Eski V1 hareketi → meta doldur (ekipman/kas/ölçüm tipi).
+        await db.workoutDao.updateExerciseMeta(
+          current.id,
+          ExercisesCompanion(
+            primaryMuscle: Value(seed.primaryMuscle),
+            equipment: Value(seed.equipment),
+            measurementType: Value(seed.measurement),
+          ),
+        );
+      }
+    }
+    if (toInsert.isNotEmpty) {
+      await db.workoutDao.insertExercises(toInsert);
     }
   }
 

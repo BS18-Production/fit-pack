@@ -27,7 +27,16 @@ class WorkoutListScreen extends ConsumerWidget {
         );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Antrenman')),
+      appBar: AppBar(
+        title: const Text('Antrenman'),
+        actions: [
+          IconButton(
+            tooltip: 'Hareket Kütüphanesi',
+            icon: const Icon(Icons.menu_book_rounded),
+            onPressed: () => context.push('/exercises'),
+          ),
+        ],
+      ),
       body: planAsync.when(
         loading: skeleton,
         error: (_, _) => ErrorState(

@@ -64,6 +64,15 @@ class $ExercisesTable extends Exercises
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _isPostureMeta = const VerificationMeta(
     'isPosture',
   );
@@ -92,14 +101,69 @@ class $ExercisesTable extends Exercises
     ),
     defaultValue: const Constant(false),
   );
-  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  static const VerificationMeta _primaryMuscleMeta = const VerificationMeta(
+    'primaryMuscle',
+  );
   @override
-  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
-    'notes',
+  late final GeneratedColumn<String> primaryMuscle = GeneratedColumn<String>(
+    'primary_muscle',
     aliasedName,
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
+  );
+  static const VerificationMeta _equipmentMeta = const VerificationMeta(
+    'equipment',
+  );
+  @override
+  late final GeneratedColumn<String> equipment = GeneratedColumn<String>(
+    'equipment',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _measurementTypeMeta = const VerificationMeta(
+    'measurementType',
+  );
+  @override
+  late final GeneratedColumn<String> measurementType = GeneratedColumn<String>(
+    'measurement_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('weight_reps'),
+  );
+  static const VerificationMeta _isCustomMeta = const VerificationMeta(
+    'isCustom',
+  );
+  @override
+  late final GeneratedColumn<bool> isCustom = GeneratedColumn<bool>(
+    'is_custom',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_custom" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isArchivedMeta = const VerificationMeta(
+    'isArchived',
+  );
+  @override
+  late final GeneratedColumn<bool> isArchived = GeneratedColumn<bool>(
+    'is_archived',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_archived" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -108,9 +172,14 @@ class $ExercisesTable extends Exercises
     category,
     muscleGroups,
     alternatives,
+    notes,
     isPosture,
     isArm,
-    notes,
+    primaryMuscle,
+    equipment,
+    measurementType,
+    isCustom,
+    isArchived,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -163,6 +232,12 @@ class $ExercisesTable extends Exercises
         ),
       );
     }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
     if (data.containsKey('is_posture')) {
       context.handle(
         _isPostureMeta,
@@ -175,10 +250,40 @@ class $ExercisesTable extends Exercises
         isArm.isAcceptableOrUnknown(data['is_arm']!, _isArmMeta),
       );
     }
-    if (data.containsKey('notes')) {
+    if (data.containsKey('primary_muscle')) {
       context.handle(
-        _notesMeta,
-        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+        _primaryMuscleMeta,
+        primaryMuscle.isAcceptableOrUnknown(
+          data['primary_muscle']!,
+          _primaryMuscleMeta,
+        ),
+      );
+    }
+    if (data.containsKey('equipment')) {
+      context.handle(
+        _equipmentMeta,
+        equipment.isAcceptableOrUnknown(data['equipment']!, _equipmentMeta),
+      );
+    }
+    if (data.containsKey('measurement_type')) {
+      context.handle(
+        _measurementTypeMeta,
+        measurementType.isAcceptableOrUnknown(
+          data['measurement_type']!,
+          _measurementTypeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_custom')) {
+      context.handle(
+        _isCustomMeta,
+        isCustom.isAcceptableOrUnknown(data['is_custom']!, _isCustomMeta),
+      );
+    }
+    if (data.containsKey('is_archived')) {
+      context.handle(
+        _isArchivedMeta,
+        isArchived.isAcceptableOrUnknown(data['is_archived']!, _isArchivedMeta),
       );
     }
     return context;
@@ -210,6 +315,10 @@ class $ExercisesTable extends Exercises
         DriftSqlType.string,
         data['${effectivePrefix}alternatives'],
       ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
       isPosture: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_posture'],
@@ -218,10 +327,26 @@ class $ExercisesTable extends Exercises
         DriftSqlType.bool,
         data['${effectivePrefix}is_arm'],
       )!,
-      notes: attachedDatabase.typeMapping.read(
+      primaryMuscle: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}notes'],
+        data['${effectivePrefix}primary_muscle'],
       ),
+      equipment: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}equipment'],
+      ),
+      measurementType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}measurement_type'],
+      )!,
+      isCustom: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_custom'],
+      )!,
+      isArchived: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_archived'],
+      )!,
     );
   }
 
@@ -237,18 +362,28 @@ class Exercise extends DataClass implements Insertable<Exercise> {
   final String category;
   final String muscleGroups;
   final String? alternatives;
+  final String? notes;
   final bool isPosture;
   final bool isArm;
-  final String? notes;
+  final String? primaryMuscle;
+  final String? equipment;
+  final String measurementType;
+  final bool isCustom;
+  final bool isArchived;
   const Exercise({
     required this.id,
     required this.name,
     required this.category,
     required this.muscleGroups,
     this.alternatives,
+    this.notes,
     required this.isPosture,
     required this.isArm,
-    this.notes,
+    this.primaryMuscle,
+    this.equipment,
+    required this.measurementType,
+    required this.isCustom,
+    required this.isArchived,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -260,11 +395,20 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     if (!nullToAbsent || alternatives != null) {
       map['alternatives'] = Variable<String>(alternatives);
     }
-    map['is_posture'] = Variable<bool>(isPosture);
-    map['is_arm'] = Variable<bool>(isArm);
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
+    map['is_posture'] = Variable<bool>(isPosture);
+    map['is_arm'] = Variable<bool>(isArm);
+    if (!nullToAbsent || primaryMuscle != null) {
+      map['primary_muscle'] = Variable<String>(primaryMuscle);
+    }
+    if (!nullToAbsent || equipment != null) {
+      map['equipment'] = Variable<String>(equipment);
+    }
+    map['measurement_type'] = Variable<String>(measurementType);
+    map['is_custom'] = Variable<bool>(isCustom);
+    map['is_archived'] = Variable<bool>(isArchived);
     return map;
   }
 
@@ -277,11 +421,20 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       alternatives: alternatives == null && nullToAbsent
           ? const Value.absent()
           : Value(alternatives),
-      isPosture: Value(isPosture),
-      isArm: Value(isArm),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
+      isPosture: Value(isPosture),
+      isArm: Value(isArm),
+      primaryMuscle: primaryMuscle == null && nullToAbsent
+          ? const Value.absent()
+          : Value(primaryMuscle),
+      equipment: equipment == null && nullToAbsent
+          ? const Value.absent()
+          : Value(equipment),
+      measurementType: Value(measurementType),
+      isCustom: Value(isCustom),
+      isArchived: Value(isArchived),
     );
   }
 
@@ -296,9 +449,14 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       category: serializer.fromJson<String>(json['category']),
       muscleGroups: serializer.fromJson<String>(json['muscleGroups']),
       alternatives: serializer.fromJson<String?>(json['alternatives']),
+      notes: serializer.fromJson<String?>(json['notes']),
       isPosture: serializer.fromJson<bool>(json['isPosture']),
       isArm: serializer.fromJson<bool>(json['isArm']),
-      notes: serializer.fromJson<String?>(json['notes']),
+      primaryMuscle: serializer.fromJson<String?>(json['primaryMuscle']),
+      equipment: serializer.fromJson<String?>(json['equipment']),
+      measurementType: serializer.fromJson<String>(json['measurementType']),
+      isCustom: serializer.fromJson<bool>(json['isCustom']),
+      isArchived: serializer.fromJson<bool>(json['isArchived']),
     );
   }
   @override
@@ -310,9 +468,14 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       'category': serializer.toJson<String>(category),
       'muscleGroups': serializer.toJson<String>(muscleGroups),
       'alternatives': serializer.toJson<String?>(alternatives),
+      'notes': serializer.toJson<String?>(notes),
       'isPosture': serializer.toJson<bool>(isPosture),
       'isArm': serializer.toJson<bool>(isArm),
-      'notes': serializer.toJson<String?>(notes),
+      'primaryMuscle': serializer.toJson<String?>(primaryMuscle),
+      'equipment': serializer.toJson<String?>(equipment),
+      'measurementType': serializer.toJson<String>(measurementType),
+      'isCustom': serializer.toJson<bool>(isCustom),
+      'isArchived': serializer.toJson<bool>(isArchived),
     };
   }
 
@@ -322,18 +485,30 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     String? category,
     String? muscleGroups,
     Value<String?> alternatives = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
     bool? isPosture,
     bool? isArm,
-    Value<String?> notes = const Value.absent(),
+    Value<String?> primaryMuscle = const Value.absent(),
+    Value<String?> equipment = const Value.absent(),
+    String? measurementType,
+    bool? isCustom,
+    bool? isArchived,
   }) => Exercise(
     id: id ?? this.id,
     name: name ?? this.name,
     category: category ?? this.category,
     muscleGroups: muscleGroups ?? this.muscleGroups,
     alternatives: alternatives.present ? alternatives.value : this.alternatives,
+    notes: notes.present ? notes.value : this.notes,
     isPosture: isPosture ?? this.isPosture,
     isArm: isArm ?? this.isArm,
-    notes: notes.present ? notes.value : this.notes,
+    primaryMuscle: primaryMuscle.present
+        ? primaryMuscle.value
+        : this.primaryMuscle,
+    equipment: equipment.present ? equipment.value : this.equipment,
+    measurementType: measurementType ?? this.measurementType,
+    isCustom: isCustom ?? this.isCustom,
+    isArchived: isArchived ?? this.isArchived,
   );
   Exercise copyWithCompanion(ExercisesCompanion data) {
     return Exercise(
@@ -346,9 +521,20 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       alternatives: data.alternatives.present
           ? data.alternatives.value
           : this.alternatives,
+      notes: data.notes.present ? data.notes.value : this.notes,
       isPosture: data.isPosture.present ? data.isPosture.value : this.isPosture,
       isArm: data.isArm.present ? data.isArm.value : this.isArm,
-      notes: data.notes.present ? data.notes.value : this.notes,
+      primaryMuscle: data.primaryMuscle.present
+          ? data.primaryMuscle.value
+          : this.primaryMuscle,
+      equipment: data.equipment.present ? data.equipment.value : this.equipment,
+      measurementType: data.measurementType.present
+          ? data.measurementType.value
+          : this.measurementType,
+      isCustom: data.isCustom.present ? data.isCustom.value : this.isCustom,
+      isArchived: data.isArchived.present
+          ? data.isArchived.value
+          : this.isArchived,
     );
   }
 
@@ -360,9 +546,14 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           ..write('category: $category, ')
           ..write('muscleGroups: $muscleGroups, ')
           ..write('alternatives: $alternatives, ')
+          ..write('notes: $notes, ')
           ..write('isPosture: $isPosture, ')
           ..write('isArm: $isArm, ')
-          ..write('notes: $notes')
+          ..write('primaryMuscle: $primaryMuscle, ')
+          ..write('equipment: $equipment, ')
+          ..write('measurementType: $measurementType, ')
+          ..write('isCustom: $isCustom, ')
+          ..write('isArchived: $isArchived')
           ..write(')'))
         .toString();
   }
@@ -374,9 +565,14 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     category,
     muscleGroups,
     alternatives,
+    notes,
     isPosture,
     isArm,
-    notes,
+    primaryMuscle,
+    equipment,
+    measurementType,
+    isCustom,
+    isArchived,
   );
   @override
   bool operator ==(Object other) =>
@@ -387,9 +583,14 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           other.category == this.category &&
           other.muscleGroups == this.muscleGroups &&
           other.alternatives == this.alternatives &&
+          other.notes == this.notes &&
           other.isPosture == this.isPosture &&
           other.isArm == this.isArm &&
-          other.notes == this.notes);
+          other.primaryMuscle == this.primaryMuscle &&
+          other.equipment == this.equipment &&
+          other.measurementType == this.measurementType &&
+          other.isCustom == this.isCustom &&
+          other.isArchived == this.isArchived);
 }
 
 class ExercisesCompanion extends UpdateCompanion<Exercise> {
@@ -398,18 +599,28 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
   final Value<String> category;
   final Value<String> muscleGroups;
   final Value<String?> alternatives;
+  final Value<String?> notes;
   final Value<bool> isPosture;
   final Value<bool> isArm;
-  final Value<String?> notes;
+  final Value<String?> primaryMuscle;
+  final Value<String?> equipment;
+  final Value<String> measurementType;
+  final Value<bool> isCustom;
+  final Value<bool> isArchived;
   const ExercisesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.category = const Value.absent(),
     this.muscleGroups = const Value.absent(),
     this.alternatives = const Value.absent(),
+    this.notes = const Value.absent(),
     this.isPosture = const Value.absent(),
     this.isArm = const Value.absent(),
-    this.notes = const Value.absent(),
+    this.primaryMuscle = const Value.absent(),
+    this.equipment = const Value.absent(),
+    this.measurementType = const Value.absent(),
+    this.isCustom = const Value.absent(),
+    this.isArchived = const Value.absent(),
   });
   ExercisesCompanion.insert({
     this.id = const Value.absent(),
@@ -417,9 +628,14 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     required String category,
     required String muscleGroups,
     this.alternatives = const Value.absent(),
+    this.notes = const Value.absent(),
     this.isPosture = const Value.absent(),
     this.isArm = const Value.absent(),
-    this.notes = const Value.absent(),
+    this.primaryMuscle = const Value.absent(),
+    this.equipment = const Value.absent(),
+    this.measurementType = const Value.absent(),
+    this.isCustom = const Value.absent(),
+    this.isArchived = const Value.absent(),
   }) : name = Value(name),
        category = Value(category),
        muscleGroups = Value(muscleGroups);
@@ -429,9 +645,14 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     Expression<String>? category,
     Expression<String>? muscleGroups,
     Expression<String>? alternatives,
+    Expression<String>? notes,
     Expression<bool>? isPosture,
     Expression<bool>? isArm,
-    Expression<String>? notes,
+    Expression<String>? primaryMuscle,
+    Expression<String>? equipment,
+    Expression<String>? measurementType,
+    Expression<bool>? isCustom,
+    Expression<bool>? isArchived,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -439,9 +660,14 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
       if (category != null) 'category': category,
       if (muscleGroups != null) 'muscle_groups': muscleGroups,
       if (alternatives != null) 'alternatives': alternatives,
+      if (notes != null) 'notes': notes,
       if (isPosture != null) 'is_posture': isPosture,
       if (isArm != null) 'is_arm': isArm,
-      if (notes != null) 'notes': notes,
+      if (primaryMuscle != null) 'primary_muscle': primaryMuscle,
+      if (equipment != null) 'equipment': equipment,
+      if (measurementType != null) 'measurement_type': measurementType,
+      if (isCustom != null) 'is_custom': isCustom,
+      if (isArchived != null) 'is_archived': isArchived,
     });
   }
 
@@ -451,9 +677,14 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     Value<String>? category,
     Value<String>? muscleGroups,
     Value<String?>? alternatives,
+    Value<String?>? notes,
     Value<bool>? isPosture,
     Value<bool>? isArm,
-    Value<String?>? notes,
+    Value<String?>? primaryMuscle,
+    Value<String?>? equipment,
+    Value<String>? measurementType,
+    Value<bool>? isCustom,
+    Value<bool>? isArchived,
   }) {
     return ExercisesCompanion(
       id: id ?? this.id,
@@ -461,9 +692,14 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
       category: category ?? this.category,
       muscleGroups: muscleGroups ?? this.muscleGroups,
       alternatives: alternatives ?? this.alternatives,
+      notes: notes ?? this.notes,
       isPosture: isPosture ?? this.isPosture,
       isArm: isArm ?? this.isArm,
-      notes: notes ?? this.notes,
+      primaryMuscle: primaryMuscle ?? this.primaryMuscle,
+      equipment: equipment ?? this.equipment,
+      measurementType: measurementType ?? this.measurementType,
+      isCustom: isCustom ?? this.isCustom,
+      isArchived: isArchived ?? this.isArchived,
     );
   }
 
@@ -485,14 +721,29 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     if (alternatives.present) {
       map['alternatives'] = Variable<String>(alternatives.value);
     }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
     if (isPosture.present) {
       map['is_posture'] = Variable<bool>(isPosture.value);
     }
     if (isArm.present) {
       map['is_arm'] = Variable<bool>(isArm.value);
     }
-    if (notes.present) {
-      map['notes'] = Variable<String>(notes.value);
+    if (primaryMuscle.present) {
+      map['primary_muscle'] = Variable<String>(primaryMuscle.value);
+    }
+    if (equipment.present) {
+      map['equipment'] = Variable<String>(equipment.value);
+    }
+    if (measurementType.present) {
+      map['measurement_type'] = Variable<String>(measurementType.value);
+    }
+    if (isCustom.present) {
+      map['is_custom'] = Variable<bool>(isCustom.value);
+    }
+    if (isArchived.present) {
+      map['is_archived'] = Variable<bool>(isArchived.value);
     }
     return map;
   }
@@ -505,9 +756,14 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
           ..write('category: $category, ')
           ..write('muscleGroups: $muscleGroups, ')
           ..write('alternatives: $alternatives, ')
+          ..write('notes: $notes, ')
           ..write('isPosture: $isPosture, ')
           ..write('isArm: $isArm, ')
-          ..write('notes: $notes')
+          ..write('primaryMuscle: $primaryMuscle, ')
+          ..write('equipment: $equipment, ')
+          ..write('measurementType: $measurementType, ')
+          ..write('isCustom: $isCustom, ')
+          ..write('isArchived: $isArchived')
           ..write(')'))
         .toString();
   }
@@ -5337,9 +5593,14 @@ typedef $$ExercisesTableCreateCompanionBuilder =
       required String category,
       required String muscleGroups,
       Value<String?> alternatives,
+      Value<String?> notes,
       Value<bool> isPosture,
       Value<bool> isArm,
-      Value<String?> notes,
+      Value<String?> primaryMuscle,
+      Value<String?> equipment,
+      Value<String> measurementType,
+      Value<bool> isCustom,
+      Value<bool> isArchived,
     });
 typedef $$ExercisesTableUpdateCompanionBuilder =
     ExercisesCompanion Function({
@@ -5348,9 +5609,14 @@ typedef $$ExercisesTableUpdateCompanionBuilder =
       Value<String> category,
       Value<String> muscleGroups,
       Value<String?> alternatives,
+      Value<String?> notes,
       Value<bool> isPosture,
       Value<bool> isArm,
-      Value<String?> notes,
+      Value<String?> primaryMuscle,
+      Value<String?> equipment,
+      Value<String> measurementType,
+      Value<bool> isCustom,
+      Value<bool> isArchived,
     });
 
 final class $$ExercisesTableReferences
@@ -5410,6 +5676,11 @@ class $$ExercisesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<bool> get isPosture => $composableBuilder(
     column: $table.isPosture,
     builder: (column) => ColumnFilters(column),
@@ -5420,8 +5691,28 @@ class $$ExercisesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get notes => $composableBuilder(
-    column: $table.notes,
+  ColumnFilters<String> get primaryMuscle => $composableBuilder(
+    column: $table.primaryMuscle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get equipment => $composableBuilder(
+    column: $table.equipment,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get measurementType => $composableBuilder(
+    column: $table.measurementType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isCustom => $composableBuilder(
+    column: $table.isCustom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5485,6 +5776,11 @@ class $$ExercisesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isPosture => $composableBuilder(
     column: $table.isPosture,
     builder: (column) => ColumnOrderings(column),
@@ -5495,8 +5791,28 @@ class $$ExercisesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get notes => $composableBuilder(
-    column: $table.notes,
+  ColumnOrderings<String> get primaryMuscle => $composableBuilder(
+    column: $table.primaryMuscle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get equipment => $composableBuilder(
+    column: $table.equipment,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get measurementType => $composableBuilder(
+    column: $table.measurementType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isCustom => $composableBuilder(
+    column: $table.isCustom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -5529,14 +5845,35 @@ class $$ExercisesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
   GeneratedColumn<bool> get isPosture =>
       $composableBuilder(column: $table.isPosture, builder: (column) => column);
 
   GeneratedColumn<bool> get isArm =>
       $composableBuilder(column: $table.isArm, builder: (column) => column);
 
-  GeneratedColumn<String> get notes =>
-      $composableBuilder(column: $table.notes, builder: (column) => column);
+  GeneratedColumn<String> get primaryMuscle => $composableBuilder(
+    column: $table.primaryMuscle,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get equipment =>
+      $composableBuilder(column: $table.equipment, builder: (column) => column);
+
+  GeneratedColumn<String> get measurementType => $composableBuilder(
+    column: $table.measurementType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isCustom =>
+      $composableBuilder(column: $table.isCustom, builder: (column) => column);
+
+  GeneratedColumn<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => column,
+  );
 
   Expression<T> workoutSetsRefs<T extends Object>(
     Expression<T> Function($$WorkoutSetsTableAnnotationComposer a) f,
@@ -5597,18 +5934,28 @@ class $$ExercisesTableTableManager
                 Value<String> category = const Value.absent(),
                 Value<String> muscleGroups = const Value.absent(),
                 Value<String?> alternatives = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
                 Value<bool> isPosture = const Value.absent(),
                 Value<bool> isArm = const Value.absent(),
-                Value<String?> notes = const Value.absent(),
+                Value<String?> primaryMuscle = const Value.absent(),
+                Value<String?> equipment = const Value.absent(),
+                Value<String> measurementType = const Value.absent(),
+                Value<bool> isCustom = const Value.absent(),
+                Value<bool> isArchived = const Value.absent(),
               }) => ExercisesCompanion(
                 id: id,
                 name: name,
                 category: category,
                 muscleGroups: muscleGroups,
                 alternatives: alternatives,
+                notes: notes,
                 isPosture: isPosture,
                 isArm: isArm,
-                notes: notes,
+                primaryMuscle: primaryMuscle,
+                equipment: equipment,
+                measurementType: measurementType,
+                isCustom: isCustom,
+                isArchived: isArchived,
               ),
           createCompanionCallback:
               ({
@@ -5617,18 +5964,28 @@ class $$ExercisesTableTableManager
                 required String category,
                 required String muscleGroups,
                 Value<String?> alternatives = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
                 Value<bool> isPosture = const Value.absent(),
                 Value<bool> isArm = const Value.absent(),
-                Value<String?> notes = const Value.absent(),
+                Value<String?> primaryMuscle = const Value.absent(),
+                Value<String?> equipment = const Value.absent(),
+                Value<String> measurementType = const Value.absent(),
+                Value<bool> isCustom = const Value.absent(),
+                Value<bool> isArchived = const Value.absent(),
               }) => ExercisesCompanion.insert(
                 id: id,
                 name: name,
                 category: category,
                 muscleGroups: muscleGroups,
                 alternatives: alternatives,
+                notes: notes,
                 isPosture: isPosture,
                 isArm: isArm,
-                notes: notes,
+                primaryMuscle: primaryMuscle,
+                equipment: equipment,
+                measurementType: measurementType,
+                isCustom: isCustom,
+                isArchived: isArchived,
               ),
           withReferenceMapper: (p0) => p0
               .map(

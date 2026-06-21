@@ -5,6 +5,7 @@ import 'package:fit_pack/features/workout/workout_list_screen.dart';
 import 'package:fit_pack/features/workout/workout_session_screen.dart';
 import 'package:fit_pack/features/workout/workout_preview_screen.dart';
 import 'package:fit_pack/features/workout/workout_history_screen.dart';
+import 'package:fit_pack/features/workout/exercise_library_screen.dart';
 import 'package:fit_pack/features/nutrition/nutrition_screen.dart';
 import 'package:fit_pack/features/nutrition/foods_screen.dart';
 import 'package:fit_pack/features/body_metrics/body_metrics_screen.dart';
@@ -78,6 +79,11 @@ GoRouter createAppRouter({required bool onboarded}) => GoRouter(
       path: '/workout/history',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const WorkoutHistoryScreen(),
+    ),
+    GoRoute(
+      path: '/exercises',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const ExerciseLibraryScreen(),
     ),
     GoRoute(
       path: '/foods',

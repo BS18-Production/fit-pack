@@ -3,12 +3,23 @@ import 'package:drift/drift.dart';
 class Exercises extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
-  TextColumn get category => text()(); // compound, isolation
+  // v1: compound, isolation. v5 (Antrenman V2): + calisthenics, cardio, flexibility.
+  TextColumn get category => text()();
   TextColumn get muscleGroups => text()(); // JSON array: ["chest", "triceps"]
   TextColumn get alternatives => text().nullable()(); // JSON array
+  TextColumn get notes => text().nullable()();
+
+  // v1 — kişisel/V1'e özgü (Antrenman V2'de üründen çıkar, dormant kalır).
   BoolColumn get isPosture => boolean().withDefault(const Constant(false))();
   BoolColumn get isArm => boolean().withDefault(const Constant(false))();
-  TextColumn get notes => text().nullable()();
+
+  // v5 (Antrenman V2 — docs/09-workout-v2.md): kütüphane filtreleri.
+  TextColumn get primaryMuscle => text().nullable()(); // chest, back, legs...
+  TextColumn get equipment => text().nullable()(); // barbell, dumbbell, machine...
+  TextColumn get measurementType =>
+      text().withDefault(const Constant('weight_reps'))(); // weight_reps, reps, time, distance
+  BoolColumn get isCustom => boolean().withDefault(const Constant(false))();
+  BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
 }
 
 class WorkoutSessions extends Table {

@@ -59,9 +59,14 @@ class AppDatabase extends _$AppDatabase {
   ///
   /// v3 → v4 (2026-06-21, Home su takibi): `water_intake` tablosu (gün başına
   /// kümülatif ml) + `user_profile.waterGoalMl` (default 2500) eklendi.
-  /// Tablo ekleme + nullable-default kolon → additive, veri kayıpsız.
+  ///
+  /// v4 → v5 (2026-06-21, Antrenman V2 Faz A — docs/09-workout-v2.md):
+  /// `exercises` +primaryMuscle/+equipment/+measurementType/+isCustom/
+  /// +isArchived (hareket kütüphanesi filtreleri). Hepsi nullable/default'lu →
+  /// additive, veri kayıpsız. Backfill: mevcut hareketlere İngilizce seed'den
+  /// ekipman/kas/ölçüm tipi yazılır (SeedManager).
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -99,7 +104,15 @@ class AppDatabase extends _$AppDatabase {
           await m.createTable(waterIntake);
           await m.addColumn(userProfile, userProfile.waterGoalMl);
         }
-        // Aşama 1'de v5 buraya zincirlenecek (rir, daily_log, supplement...).
+        // v4 → v5: Antrenman V2 hareket kütüphanesi. Hepsi additive kolon.
+        // Backfill (mevcut hareketlere meta yazımı) SeedManager'da.
+        if (from < 5 && to >= 5) {
+          await m.addColumn(exercises, exercises.primaryMuscle);
+          await m.addColumn(exercises, exercises.equipment);
+          await m.addColumn(exercises, exercises.measurementType);
+          await m.addColumn(exercises, exercises.isCustom);
+          await m.addColumn(exercises, exercises.isArchived);
+        }
       },
 
       // Her DB açılışında çalışır. SQLite'ta yabancı anahtar (foreign key)

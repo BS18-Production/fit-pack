@@ -72,64 +72,24 @@ class _SettingsBody extends ConsumerWidget {
     required num max,
     required UserProfileData Function(num value) apply,
   }) async {
-    final controller = TextEditingController(text: initial.toString());
-    try {
-      final result = await showDialog<num>(
-        context: context,
-        builder: (ctx) {
-          String? error;
-          return StatefulBuilder(
-            builder: (ctx, setLocal) => AlertDialog(
-              title: Text(title),
-              content: TextField(
-                controller: controller,
-                autofocus: true,
-                keyboardType:
-                    TextInputType.numberWithOptions(decimal: !isInt),
-                decoration: InputDecoration(
-                  suffixText: unit,
-                  helperText: 'Aralık: $min – $max',
-                  errorText: error,
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('İptal'),
-                ),
-                FilledButton(
-                  onPressed: () {
-                    final v = isInt
-                        ? int.tryParse(controller.text.trim())
-                        : double.tryParse(
-                            controller.text.trim().replaceAll(',', '.'));
-                    if (v == null) {
-                      setLocal(() => error = 'Geçersiz sayı');
-                      return;
-                    }
-                    if (v < min || v > max) {
-                      setLocal(() => error = '$min – $max aralığında olmalı');
-                      return;
-                    }
-                    Navigator.pop(ctx, v);
-                  },
-                  child: const Text('Kaydet'),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-      if (result != null) {
-        await _save(ref, apply(result));
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Kaydedildi')),
-          );
-        }
+    final result = await showDialog<num>(
+      context: context,
+      builder: (_) => _NumberEditDialog(
+        title: title,
+        unit: unit,
+        initial: initial,
+        isInt: isInt,
+        min: min,
+        max: max,
+      ),
+    );
+    if (result != null) {
+      await _save(ref, apply(result));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Kaydedildi')),
+        );
       }
-    } finally {
-      controller.dispose();
     }
   }
 
@@ -337,6 +297,88 @@ class _SectionHeader extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
+    );
+  }
+}
+
+/// Sayı düzenleme dialog'u. Controller'ı kendi State'inde tutar — dialog
+/// kapanış animasyonu sırasında "disposed controller" hatasını önler.
+class _NumberEditDialog extends StatefulWidget {
+  final String title;
+  final String unit;
+  final num initial;
+  final bool isInt;
+  final num min;
+  final num max;
+  const _NumberEditDialog({
+    required this.title,
+    required this.unit,
+    required this.initial,
+    required this.isInt,
+    required this.min,
+    required this.max,
+  });
+
+  @override
+  State<_NumberEditDialog> createState() => _NumberEditDialogState();
+}
+
+class _NumberEditDialogState extends State<_NumberEditDialog> {
+  late final TextEditingController _controller;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initial.toString());
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final v = widget.isInt
+        ? int.tryParse(_controller.text.trim())
+        : double.tryParse(_controller.text.trim().replaceAll(',', '.'));
+    if (v == null) {
+      setState(() => _error = 'Geçersiz sayı');
+      return;
+    }
+    if (v < widget.min || v > widget.max) {
+      setState(() => _error = '${widget.min} – ${widget.max} aralığında olmalı');
+      return;
+    }
+    Navigator.pop(context, v);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        keyboardType: TextInputType.numberWithOptions(decimal: !widget.isInt),
+        onSubmitted: (_) => _submit(),
+        decoration: InputDecoration(
+          suffixText: widget.unit,
+          helperText: 'Aralık: ${widget.min} – ${widget.max}',
+          errorText: _error,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('İptal'),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: const Text('Kaydet'),
+        ),
+      ],
     );
   }
 }

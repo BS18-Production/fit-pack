@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
+import 'workout_ui.dart';
 
 /// Antrenman Özeti (Antrenman V2 Faz C). Süre, toplam hacim, set sayısı,
 /// hareket bazlı döküm. Seans zaten kaydedildi; bu ekran recap.
@@ -30,32 +31,41 @@ class WorkoutSummaryScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (_, _) => const Center(child: Text('Özet yüklenemedi')),
           data: (s) => ListView(
-            padding: AppSpacing.screen,
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, AppSpacing.xxxl),
             children: [
-              AppSpacing.vGapMd,
-              Icon(Icons.check_circle_rounded,
-                  size: AppIconSize.xxl, color: context.semantic.success),
-              AppSpacing.vGapMd,
               Center(
-                child: Text(s.title,
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: context.semantic.success.withValues(alpha: 0.14),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.check_rounded,
+                      size: 38, color: context.semantic.success),
+                ),
+              ),
+              AppSpacing.vGapLg,
+              Center(
+                child: Text('Antrenman Tamamlandı',
                     style: context.texts.headlineSmall,
                     textAlign: TextAlign.center),
               ),
-              AppSpacing.vGapxl_,
-              Row(
-                children: [
-                  Expanded(child: _Metric('Süre', '${s.durationMin} dk')),
-                  AppSpacing.hGapMd,
-                  Expanded(child: _Metric('Toplam Hacim', '${s.volume} kg')),
-                ],
+              const SizedBox(height: 5),
+              Center(
+                child: Text('${s.title} · Bugün',
+                    style: context.texts.bodyMedium?.copyWith(
+                        color: context.colors.onSurfaceVariant),
+                    textAlign: TextAlign.center),
               ),
-              AppSpacing.vGapMd,
-              Row(
-                children: [
-                  Expanded(child: _Metric('Set', '${s.totalSets}')),
-                  AppSpacing.hGapMd,
-                  Expanded(child: _Metric('Hareket', '${s.perExercise.length}')),
-                ],
+              AppSpacing.vGapxl_,
+              _StatsCard(
+                duration: '${s.durationMin} dk',
+                volume: s.volume >= 1000
+                    ? '${(s.volume / 1000).toStringAsFixed(1)}k'
+                    : '${s.volume}',
+                sets: '${s.totalSets}',
               ),
               AppSpacing.vGapxl_,
               Text('Hareketler', style: context.texts.titleMedium),
@@ -63,27 +73,38 @@ class WorkoutSummaryScreen extends ConsumerWidget {
               ...s.perExercise.map((e) => Card(
                     margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                     child: Padding(
-                      padding: AppSpacing.cardCompact,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md + 1,
+                          vertical: AppSpacing.md + 1),
                       child: Row(
                         children: [
                           Expanded(
-                            child: Text(e.name,
-                                style: context.texts.titleSmall,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(e.name,
+                                    style: context.texts.titleSmall,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis),
+                                const SizedBox(height: 2),
+                                Text(
+                                    e.volume > 0
+                                        ? '${e.sets} set · ${e.volume} kg'
+                                        : '${e.sets} set',
+                                    style: context.texts.bodySmall?.copyWith(
+                                        color:
+                                            context.colors.onSurfaceVariant)),
+                              ],
+                            ),
                           ),
-                          Text(
-                              '${e.sets} set · ${e.volume} kg',
-                              style: context.texts.bodySmall?.copyWith(
-                                  color: context.colors.onSurfaceVariant)),
                         ],
                       ),
                     ),
                   )),
               AppSpacing.vGapLg,
-              FilledButton(
-                onPressed: () => context.go('/workout'),
-                child: const Text('Bitti'),
+              GradientButton(
+                label: 'Bitti',
+                onTap: () => context.go('/workout'),
               ),
             ],
           ),
@@ -93,27 +114,52 @@ class WorkoutSummaryScreen extends ConsumerWidget {
   }
 }
 
-class _Metric extends StatelessWidget {
-  final String label, value;
-  const _Metric(this.label, this.value);
+class _StatsCard extends StatelessWidget {
+  final String duration, volume, sets;
+  const _StatsCard(
+      {required this.duration, required this.volume, required this.sets});
+
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: AppSpacing.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label,
-                style: context.texts.labelSmall?.copyWith(
-                    color: context.colors.onSurfaceVariant,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.0)),
-            AppSpacing.vGapSm,
-            Text(value, style: context.texts.headlineSmall),
-          ],
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg + 2),
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              Expanded(child: _Col('Süre', duration)),
+              _div(context),
+              Expanded(child: _Col('Hacim', '$volume kg')),
+              _div(context),
+              Expanded(child: _Col('Set', sets)),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _div(BuildContext context) => VerticalDivider(
+      width: 1, thickness: 1, color: context.colors.outlineVariant);
+}
+
+class _Col extends StatelessWidget {
+  final String label, value;
+  const _Col(this.label, this.value);
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: context.texts.headlineSmall),
+        const SizedBox(height: 3),
+        Text(label,
+            style: context.texts.bodySmall?.copyWith(
+                color: context.colors.onSurfaceVariant,
+                fontWeight: FontWeight.w600)),
+      ],
     );
   }
 }

@@ -9,48 +9,37 @@ import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
+import 'workout_ui.dart';
 
-/// Antrenman V2 — Hareket Kütüphanesi (docs/09-workout-v2.md, Faz A).
-/// İngilizce hareket adları, Türkçe arayüz. Kategori + kas + arama filtreleri,
-/// özel hareket ekleme, hareket detay sayfası.
+/// Antrenman V2 — Hareket Kütüphanesi (Claude Design reskin).
+/// Hareket/ekipman/kas adları İngilizce (salon standardı), arayüz Türkçe.
+/// Kategoriye göre gruplu liste, arama + kategori/kas filtreleri, özel hareket.
 
 final libraryExercisesProvider = FutureProvider<List<Exercise>>((ref) {
   return ref.watch(workoutDaoProvider).getLibraryExercises();
 });
 
-// ───────── İngilizce iç değer → Türkçe etiket eşlemeleri ─────────
+/// Filtre + gruplama için kategori sırası.
+const _categoryOrder = [
+  'compound',
+  'isolation',
+  'calisthenics',
+  'cardio',
+  'flexibility',
+];
 
-const kCategoryTr = {
-  'compound': 'Bileşik',
-  'isolation': 'İzolasyon',
-  'calisthenics': 'Vücut Ağırlığı',
-  'cardio': 'Kardiyo',
-  'flexibility': 'Esneklik',
-};
-
-const kEquipmentTr = {
-  'barbell': 'Halter',
-  'dumbbell': 'Dambıl',
-  'machine': 'Makine',
-  'cable': 'Kablo',
-  'smith': 'Smith',
-  'bodyweight': 'Vücut Ağırlığı',
-  'cardio': 'Kardiyo',
-  'none': 'Ekipmansız',
-};
-
-const kMuscleTr = {
-  'chest': 'Göğüs',
-  'back': 'Sırt',
-  'shoulders': 'Omuz',
-  'biceps': 'Biceps',
-  'triceps': 'Triceps',
-  'legs': 'Bacak',
-  'glutes': 'Kalça',
-  'core': 'Karın',
-  'calves': 'Baldır',
-  'full_body': 'Tüm Vücut',
-};
+const _muscleKeys = [
+  'chest',
+  'back',
+  'shoulders',
+  'biceps',
+  'triceps',
+  'legs',
+  'glutes',
+  'core',
+  'calves',
+  'full_body',
+];
 
 const kMeasurementTr = {
   'weight_reps': 'kg × tekrar',
@@ -59,18 +48,8 @@ const kMeasurementTr = {
   'distance': 'mesafe',
 };
 
-IconData _categoryIcon(String c) => switch (c) {
-      'calisthenics' => Icons.accessibility_new_rounded,
-      'cardio' => Icons.directions_run_rounded,
-      'flexibility' => Icons.self_improvement_rounded,
-      _ => Icons.fitness_center_rounded,
-    };
-
-String _trMuscle(String? m) => m == null ? '' : (kMuscleTr[m] ?? m);
-String _trEquip(String? e) => e == null ? '' : (kEquipmentTr[e] ?? e);
-
 class ExerciseLibraryScreen extends ConsumerStatefulWidget {
-  /// Çoklu seçim modu (rutin oluşturucudan açılınca) — Faz B kullanır.
+  /// Çoklu seçim modu (rutin oluşturucu / aktif seanstan açılınca).
   final bool selectionMode;
   const ExerciseLibraryScreen({super.key, this.selectionMode = false});
 
@@ -83,8 +62,8 @@ class _ExerciseLibraryScreenState
     extends ConsumerState<ExerciseLibraryScreen> {
   final _searchCtrl = TextEditingController();
   String _query = '';
-  String? _category; // null = tümü
-  String? _muscle; // null = tümü
+  String? _category;
+  String? _muscle;
 
   @override
   void dispose() {
@@ -93,13 +72,32 @@ class _ExerciseLibraryScreenState
   }
 
   List<Exercise> _filter(List<Exercise> all) {
-    final q = _query.trim().toLowerCase();
+    final q = _query.trim();
     return all.where((e) {
       if (_category != null && e.category != _category) return false;
       if (_muscle != null && e.primaryMuscle != _muscle) return false;
-      if (q.isNotEmpty && !e.name.toLowerCase().contains(q)) return false;
+      if (q.isNotEmpty) {
+        // İngilizce ad + İngilizce/Türkçe kas + ekipman + kategori üzerinde
+        // ara — kullanıcı "bacak", "arka kol", "makine" ile de bulabilsin.
+        final haystack = WorkoutUi.searchHaystack(
+          name: e.name,
+          category: e.category,
+          primaryMuscle: e.primaryMuscle,
+          equipment: e.equipment,
+          muscles: _parseMuscles(e.muscleGroups),
+        );
+        if (!WorkoutUi.matchesQuery(haystack, q)) return false;
+      }
       return true;
     }).toList();
+  }
+
+  List<String> _parseMuscles(String json) {
+    try {
+      final list = jsonDecode(json);
+      if (list is List) return list.cast<String>();
+    } catch (_) {}
+    return const [];
   }
 
   @override
@@ -108,14 +106,7 @@ class _ExerciseLibraryScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.selectionMode
-            ? 'Hareket Seç'
-            : 'Hareket Kütüphanesi'),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addCustom,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Yeni Hareket'),
+        title: Text(widget.selectionMode ? 'Hareket Seç' : 'Hareket Kütüphanesi'),
       ),
       body: Column(
         children: [
@@ -126,7 +117,7 @@ class _ExerciseLibraryScreenState
               controller: _searchCtrl,
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
-                hintText: 'Hareket ara',
+                hintText: 'Hareket ara…',
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: _query.isEmpty
                     ? null
@@ -139,15 +130,20 @@ class _ExerciseLibraryScreenState
               ),
             ),
           ),
-          _CategoryChips(
+          _FilterRow(
+            keys: _categoryOrder,
             selected: _category,
+            colored: true,
+            labelFn: WorkoutUi.categoryLabel,
             onChanged: (c) => setState(() => _category = c),
           ),
-          _MuscleChips(
+          _FilterRow(
+            keys: _muscleKeys,
             selected: _muscle,
+            small: true,
+            labelFn: WorkoutUi.muscleLabel,
             onChanged: (m) => setState(() => _muscle = m),
           ),
-          AppSpacing.vGapSm,
           Expanded(
             child: async.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -157,29 +153,30 @@ class _ExerciseLibraryScreenState
               ),
               data: (all) {
                 final list = _filter(all);
-                if (list.isEmpty) {
-                  return EmptyState(
-                    icon: Icons.search_off_rounded,
-                    title: _query.isEmpty
-                        ? 'Hareket bulunamadı'
-                        : '"$_query" bulunamadı',
-                    message: 'Filtreyi değiştir ya da yeni hareket ekle',
-                    actionLabel: 'Yeni Hareket',
-                    onAction: _addCustom,
-                    compact: true,
-                  );
-                }
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.lg, 0, AppSpacing.lg, 96),
-                  itemCount: list.length,
-                  separatorBuilder: (_, _) => AppSpacing.vGapSm,
-                  itemBuilder: (_, i) => _ExerciseTile(
-                    exercise: list[i],
-                    onTap: () => widget.selectionMode
-                        ? Navigator.pop(context, list[i])
-                        : context.push('/exercise/${list[i].id}'),
-                  ),
+                return Column(
+                  children: [
+                    _CountRow(count: list.length, onNew: _addCustom),
+                    Expanded(
+                      child: list.isEmpty
+                          ? EmptyState(
+                              icon: Icons.search_off_rounded,
+                              title: _query.isEmpty
+                                  ? 'Hareket bulunamadı'
+                                  : '"$_query" bulunamadı',
+                              message: 'Filtreyi değiştir ya da yeni hareket ekle',
+                              actionLabel: 'Yeni Hareket',
+                              onAction: _addCustom,
+                              compact: true,
+                            )
+                          : _GroupedList(
+                              exercises: list,
+                              onTap: (e) => widget.selectionMode
+                                  ? Navigator.pop(context, e)
+                                  : context.push('/exercise/${e.id}'),
+                              selectionMode: widget.selectionMode,
+                            ),
+                    ),
+                  ],
                 );
               },
             ),
@@ -205,31 +202,197 @@ class _ExerciseLibraryScreenState
   }
 }
 
-// ───────────────────────────────────────────── Filtre çipleri
+// ───────────────────────────────────────────── Sayı + Yeni Hareket satırı
 
-class _CategoryChips extends StatelessWidget {
-  final String? selected;
-  final ValueChanged<String?> onChanged;
-  const _CategoryChips({required this.selected, required this.onChanged});
+class _CountRow extends StatelessWidget {
+  final int count;
+  final VoidCallback onNew;
+  const _CountRow({required this.count, required this.onNew});
 
   @override
   Widget build(BuildContext context) {
-    final entries = kCategoryTr.entries.toList();
+    return Container(
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, AppSpacing.sm, AppSpacing.sm, AppSpacing.sm),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: context.colors.outlineVariant, width: 1),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('$count hareket',
+              style: context.texts.bodySmall?.copyWith(
+                color: context.colors.onSurfaceVariant.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w600,
+              )),
+          TextButton.icon(
+            onPressed: onNew,
+            icon: const Icon(Icons.add_rounded, size: AppIconSize.sm),
+            label: const Text('Yeni Hareket'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ───────────────────────────────────────────── Filtre çipleri (outline)
+
+class _FilterRow extends StatelessWidget {
+  final List<String> keys;
+  final String? selected;
+  final bool small;
+  final bool colored;
+  final String Function(String) labelFn;
+  final ValueChanged<String?> onChanged;
+  const _FilterRow({
+    required this.keys,
+    required this.selected,
+    required this.labelFn,
+    required this.onChanged,
+    this.small = false,
+    this.colored = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
-      height: 40,
+      height: small ? 42 : 46,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        children: [
-          _Chip(
-            label: 'Tümü',
-            selected: selected == null,
-            onTap: () => onChanged(null),
+        children: keys.map((k) {
+          final isSel = selected == k;
+          final accent =
+              colored ? WorkoutUi.categoryColor(context, k) : context.colors.primary;
+          return Padding(
+            padding: const EdgeInsets.only(right: 7),
+            child: _OutlineChip(
+              label: labelFn(k),
+              selected: isSel,
+              accent: accent,
+              onTap: () => onChanged(isSel ? null : k),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _OutlineChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final Color accent;
+  final VoidCallback onTap;
+  const _OutlineChip(
+      {required this.label,
+      required this.selected,
+      required this.accent,
+      required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? accent.withValues(alpha: 0.12) : Colors.transparent,
+      borderRadius: AppRadius.brPill,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.brPill,
+        child: Container(
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 13),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.brPill,
+            border: Border.all(
+              color: selected ? accent : context.colors.outlineVariant,
+              width: 1,
+            ),
           ),
-          ...entries.map((e) => _Chip(
-                label: e.value,
-                selected: selected == e.key,
-                onTap: () => onChanged(selected == e.key ? null : e.key),
+          child: Text(label,
+              style: context.texts.labelMedium?.copyWith(
+                color: selected ? accent : context.colors.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+              )),
+        ),
+      ),
+    );
+  }
+}
+
+// ───────────────────────────────────────────── Gruplu liste
+
+class _GroupedList extends StatelessWidget {
+  final List<Exercise> exercises;
+  final void Function(Exercise) onTap;
+  final bool selectionMode;
+  const _GroupedList({
+    required this.exercises,
+    required this.onTap,
+    required this.selectionMode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Kategoriye göre grupla, sabit sırada.
+    final groups = <String, List<Exercise>>{};
+    for (final e in exercises) {
+      groups.putIfAbsent(e.category, () => []).add(e);
+    }
+    final orderedCats = _categoryOrder.where(groups.containsKey).toList()
+      ..addAll(groups.keys.where((c) => !_categoryOrder.contains(c)));
+
+    final children = <Widget>[];
+    for (final cat in orderedCats) {
+      final items = groups[cat]!;
+      children.add(_CategoryHeader(category: cat, count: items.length));
+      for (final e in items) {
+        children.add(_ExerciseRow(
+          exercise: e,
+          selectionMode: selectionMode,
+          onTap: () => onTap(e),
+        ));
+      }
+    }
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.xxxl),
+      children: children,
+    );
+  }
+}
+
+class _CategoryHeader extends StatelessWidget {
+  final String category;
+  final int count;
+  const _CategoryHeader({required this.category, required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = WorkoutUi.categoryColor(context, category);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, AppSpacing.lg, 2, AppSpacing.sm),
+      child: Row(
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(
+                color: color, borderRadius: BorderRadius.circular(2)),
+          ),
+          AppSpacing.hGapSm,
+          Text(WorkoutUi.categoryLabel(category),
+              style: context.texts.titleSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.1,
+              )),
+          AppSpacing.hGapSm,
+          Text('$count',
+              style: context.texts.bodySmall?.copyWith(
+                color: context.colors.onSurfaceVariant.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w600,
               )),
         ],
       ),
@@ -237,142 +400,154 @@ class _CategoryChips extends StatelessWidget {
   }
 }
 
-class _MuscleChips extends StatelessWidget {
-  final String? selected;
-  final ValueChanged<String?> onChanged;
-  const _MuscleChips({required this.selected, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 38,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        children: kMuscleTr.entries
-            .map((e) => _Chip(
-                  label: e.value,
-                  small: true,
-                  selected: selected == e.key,
-                  onTap: () => onChanged(selected == e.key ? null : e.key),
-                ))
-            .toList(),
-      ),
-    );
-  }
-}
-
-class _Chip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final bool small;
+class _ExerciseRow extends StatelessWidget {
+  final Exercise exercise;
+  final bool selectionMode;
   final VoidCallback onTap;
-  const _Chip(
-      {required this.label,
-      required this.selected,
-      required this.onTap,
-      this.small = false});
+  const _ExerciseRow({
+    required this.exercise,
+    required this.selectionMode,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Padding(
-      padding: const EdgeInsets.only(right: AppSpacing.sm),
-      child: Material(
-        color: selected ? c.primary : c.surfaceContainerHigh,
-        borderRadius: AppRadius.brPill,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadius.brPill,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: small ? AppSpacing.md : AppSpacing.lg,
-                vertical: AppSpacing.sm),
-            child: Text(label,
-                style: (small ? context.texts.labelMedium : context.texts.labelLarge)
-                    ?.copyWith(
-                  color: selected ? c.onPrimary : c.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                )),
+    final catColor = WorkoutUi.categoryColor(context, exercise.category);
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final sub = WorkoutUi.muscleEquip(exercise.primaryMuscle, exercise.equipment);
+
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: AppSpacing.xs),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: c.outlineVariant, width: 1),
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ───────────────────────────────────────────── Liste satırı
-
-class _ExerciseTile extends StatelessWidget {
-  final Exercise exercise;
-  final VoidCallback onTap;
-  const _ExerciseTile({required this.exercise, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    final sub = [
-      _trMuscle(exercise.primaryMuscle),
-      _trEquip(exercise.equipment),
-    ].where((s) => s.isNotEmpty).join(' · ');
-
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.brLg,
-        child: Padding(
-          padding: AppSpacing.cardCompact,
-          child: Row(
-            children: [
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: c.onSurface.withValues(alpha: dark ? 0.06 : 0.05),
+                borderRadius: AppRadius.brMd,
+              ),
+              child: Icon(WorkoutUi.equipmentIcon(exercise.equipment),
+                  color: c.onSurfaceVariant, size: 20),
+            ),
+            AppSpacing.hGapMd,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(exercise.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: context.texts.titleSmall),
+                      ),
+                      AppSpacing.hGapSm,
+                      _CatTag(label: WorkoutUi.categoryLabel(exercise.category),
+                          color: catColor),
+                      if (exercise.isCustom) ...[
+                        AppSpacing.hGapXs,
+                        Icon(Icons.person_rounded,
+                            size: 14, color: c.secondary),
+                      ],
+                    ],
+                  ),
+                  if (sub.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(sub,
+                        style: context.texts.bodySmall
+                            ?.copyWith(color: c.onSurfaceVariant)),
+                  ],
+                ],
+              ),
+            ),
+            AppSpacing.hGapSm,
+            if (selectionMode)
               Container(
-                width: 42,
-                height: 42,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  color: c.primary.withValues(alpha: 0.12),
+                  color: c.primary,
                   borderRadius: AppRadius.brMd,
                 ),
-                child: Icon(_categoryIcon(exercise.category),
-                    color: c.primary, size: AppIconSize.sm + 2),
-              ),
-              AppSpacing.hGapMd,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(exercise.name,
-                              style: context.texts.titleSmall,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
-                        ),
-                        if (exercise.isCustom) ...[
-                          AppSpacing.hGapSm,
-                          Icon(Icons.person_rounded,
-                              size: AppIconSize.sm, color: c.secondary),
-                        ],
-                      ],
-                    ),
-                    if (sub.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(sub,
-                          style: context.texts.bodySmall
-                              ?.copyWith(color: c.onSurfaceVariant)),
-                    ],
-                  ],
-                ),
-              ),
+                child: Icon(Icons.add_rounded, color: c.onPrimary, size: 18),
+              )
+            else
               Icon(Icons.chevron_right_rounded, color: c.outline),
-            ],
-          ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+class _CatTag extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _CatTag({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.13),
+        borderRadius: AppRadius.brSm,
+      ),
+      child: Text(label,
+          style: context.texts.labelSmall?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w800,
+            fontSize: 9.5,
+            letterSpacing: 0.2,
+          )),
     );
   }
 }
 
 // ───────────────────────────────────────────── Özel hareket dialog
+
+const _categoryItemsEn = {
+  'compound': 'Compound',
+  'isolation': 'Isolation',
+  'calisthenics': 'Calisthenics',
+  'cardio': 'Cardio',
+  'flexibility': 'Flexibility',
+};
+
+const _muscleItemsEn = {
+  'chest': 'Chest',
+  'back': 'Back',
+  'shoulders': 'Shoulders',
+  'biceps': 'Biceps',
+  'triceps': 'Triceps',
+  'legs': 'Legs',
+  'glutes': 'Glutes',
+  'core': 'Core',
+  'calves': 'Calves',
+  'full_body': 'Full Body',
+};
+
+const _equipmentItemsEn = {
+  'barbell': 'Barbell',
+  'dumbbell': 'Dumbbell',
+  'machine': 'Machine',
+  'cable': 'Cable',
+  'smith': 'Smith Machine',
+  'kettlebell': 'Kettlebell',
+  'bodyweight': 'Bodyweight',
+  'cardio': 'Cardio Machine',
+  'none': 'None',
+};
 
 class _CustomExerciseDialog extends StatefulWidget {
   const _CustomExerciseDialog();
@@ -434,21 +609,21 @@ class _CustomExerciseDialogState extends State<_CustomExerciseDialog> {
               _Dropdown(
                 label: 'Kategori',
                 value: _category,
-                items: kCategoryTr,
+                items: _categoryItemsEn,
                 onChanged: (v) => setState(() => _category = v),
               ),
               AppSpacing.vGapMd,
               _Dropdown(
                 label: 'Ana kas',
                 value: _muscle,
-                items: kMuscleTr,
+                items: _muscleItemsEn,
                 onChanged: (v) => setState(() => _muscle = v),
               ),
               AppSpacing.vGapMd,
               _Dropdown(
                 label: 'Ekipman',
                 value: _equipment,
-                items: kEquipmentTr,
+                items: _equipmentItemsEn,
                 onChanged: (v) => setState(() => _equipment = v),
               ),
               AppSpacing.vGapMd,

@@ -9,6 +9,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/widgets/app_state_views.dart';
+import '../activity/activity_calendar.dart';
 import '../home/providers/home_providers.dart';
 
 final allMeasurementsProvider = FutureProvider<List<BodyMeasurement>>((ref) {
@@ -29,77 +30,84 @@ class BodyMetricsScreen extends ConsumerWidget {
         icon: const Icon(Icons.add_rounded),
         label: const Text('Ölçüm Ekle'),
       ),
-      body: measurementsAsync.when(
-        loading: () => ListView(
-          padding: AppSpacing.screen,
-          children: [
-            Skeleton.card(height: 120),
-            AppSpacing.vGapLg,
-            Skeleton.card(height: 72),
-            AppSpacing.vGapMd,
-            Skeleton.card(height: 72),
-          ],
-        ),
-        error: (_, _) => ErrorState(
+      body: ListView(
+        padding: AppSpacing.screen,
+        children: [
+          // Aktivite takvimi — ölçüm olsun olmasın her zaman görünür.
+          const ActivityCalendar(),
+          AppSpacing.vGapLg,
+          ..._measurementSection(context, ref, measurementsAsync),
+          const SizedBox(height: 80),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _measurementSection(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<List<BodyMeasurement>> measurementsAsync,
+  ) {
+    return measurementsAsync.when(
+      loading: () => [
+        Skeleton.card(height: 120),
+        AppSpacing.vGapLg,
+        Skeleton.card(height: 72),
+      ],
+      error: (_, _) => [
+        ErrorState(
           message: 'Ölçümler yüklenemedi',
           onRetry: () => ref.invalidate(allMeasurementsProvider),
         ),
-        data: (measurements) {
-          if (measurements.isEmpty) {
-            // Tek CTA: sağ alttaki FAB. İkinci buton kafa karıştırır.
-            return const EmptyState(
+      ],
+      data: (measurements) {
+        if (measurements.isEmpty) {
+          return [
+            const EmptyState(
               icon: Icons.monitor_weight_outlined,
               title: 'Henüz ölçüm yok',
               message: 'İlk vücut ölçümünü ekleyerek ilerlemeni takip et',
-            );
-          }
+              compact: true,
+            ),
+          ];
+        }
 
-          final latest = measurements.first;
-          final oldest = measurements.length > 1 ? measurements.last : null;
-          // Grafik için kilolu ölçümler, eskiden yeniye.
-          final weighted = measurements
-              .where((m) => m.weightKg != null)
-              .toList()
-            ..sort((a, b) => a.date.compareTo(b.date));
-          final goalWeight =
-              ref.watch(userProfileProvider).valueOrNull?.goalWeightKg;
+        final latest = measurements.first;
+        final oldest = measurements.length > 1 ? measurements.last : null;
+        // Grafik için kilolu ölçümler, eskiden yeniye.
+        final weighted = measurements.where((m) => m.weightKg != null).toList()
+          ..sort((a, b) => a.date.compareTo(b.date));
+        final goalWeight =
+            ref.watch(userProfileProvider).valueOrNull?.goalWeightKg;
 
-          return ListView(
-            padding: AppSpacing.screen,
-            children: [
-              _SummaryCard(latest: latest, oldest: oldest),
-              AppSpacing.vGapLg,
-              if (weighted.length >= 2) ...[
-                _WeightChartCard(
-                    measurements: weighted, goalWeight: goalWeight),
-                AppSpacing.vGapLg,
-              ],
-              Text('Geçmiş Ölçümler', style: context.texts.titleMedium),
-              AppSpacing.vGapSm,
-              ...measurements.map((m) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: _MeasurementCard(
-                      measurement: m,
-                      onDelete: () async {
-                        final ok = await confirmAction(
-                          context,
-                          title: 'Ölçümü sil',
-                          message:
-                              '${DateFormat('d MMM yyyy', 'tr_TR').format(m.date)} tarihli ölçüm silinsin mi?',
-                        );
-                        if (!ok) return;
-                        await ref
-                            .read(bodyDaoProvider)
-                            .deleteMeasurement(m.id);
-                        ref.invalidate(allMeasurementsProvider);
-                      },
-                    ),
-                  )),
-              const SizedBox(height: 80),
-            ],
-          );
-        },
-      ),
+        return [
+          _SummaryCard(latest: latest, oldest: oldest),
+          AppSpacing.vGapLg,
+          if (weighted.length >= 2) ...[
+            _WeightChartCard(measurements: weighted, goalWeight: goalWeight),
+            AppSpacing.vGapLg,
+          ],
+          Text('Geçmiş Ölçümler', style: context.texts.titleMedium),
+          AppSpacing.vGapSm,
+          ...measurements.map((m) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: _MeasurementCard(
+                  measurement: m,
+                  onDelete: () async {
+                    final ok = await confirmAction(
+                      context,
+                      title: 'Ölçümü sil',
+                      message:
+                          '${DateFormat('d MMM yyyy', 'tr_TR').format(m.date)} tarihli ölçüm silinsin mi?',
+                    );
+                    if (!ok) return;
+                    await ref.read(bodyDaoProvider).deleteMeasurement(m.id);
+                    ref.invalidate(allMeasurementsProvider);
+                  },
+                ),
+              )),
+        ];
+      },
     );
   }
 

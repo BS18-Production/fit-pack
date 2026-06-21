@@ -7,8 +7,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
-import '../../shared/widgets/app_state_views.dart';
 import 'routine_providers.dart';
+import 'workout_ui.dart';
 
 /// Rutin Oluşturucu (Antrenman V2 Faz B — docs/09-workout-v2.md).
 /// Ad + opsiyonel haftalık gün + hareketler (kütüphaneden) + hedef set×tekrar
@@ -27,8 +27,12 @@ class _BuilderItem {
   int sets;
   int repsMin;
   int repsMax;
+  int restSec; // setler arası dinlenme (saniye) — kullanıcı belirler
   _BuilderItem(this.exercise,
-      {this.sets = 3, this.repsMin = 8, this.repsMax = 12});
+      {this.sets = 3,
+      this.repsMin = 8,
+      this.repsMax = 12,
+      required this.restSec});
 }
 
 class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
@@ -68,6 +72,8 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
               sets: e.routineExercise.targetSets ?? 3,
               repsMin: e.routineExercise.targetRepsMin ?? 8,
               repsMax: e.routineExercise.targetRepsMax ?? 12,
+              restSec: e.routineExercise.targetRestSec ??
+                  WorkoutUi.defaultRestSec(e.exercise.category),
             )));
       _loading = false;
     });
@@ -77,7 +83,10 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
     final ex = await context.push<Exercise>('/exercises/select');
     if (ex == null) return;
     if (_items.any((i) => i.exercise.id == ex.id)) return; // tekrar ekleme
-    setState(() => _items.add(_BuilderItem(ex)));
+    setState(() => _items.add(_BuilderItem(
+          ex,
+          restSec: WorkoutUi.defaultRestSec(ex.category),
+        )));
   }
 
   Future<void> _save() async {
@@ -124,6 +133,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
         targetSets: Value(it.sets),
         targetRepsMin: Value(it.repsMin),
         targetRepsMax: Value(it.repsMax),
+        targetRestSec: Value(it.restSec),
       ));
     }
 
@@ -138,25 +148,24 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEdit ? 'Rutini Düzenle' : 'Yeni Rutin'),
-        actions: [
-          TextButton(
-            onPressed: _saving ? null : _save,
-            child: _saving
-                ? const SizedBox(
-                    width: 18, height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Kaydet'),
-          ),
-        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 Padding(
-                  padding: AppSpacing.screen,
+                  padding: const EdgeInsets.fromLTRB(AppSpacing.lg,
+                      AppSpacing.lg, AppSpacing.lg, AppSpacing.sm),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text('RUTİN ADI',
+                          style: context.texts.labelSmall?.copyWith(
+                            color: context.colors.onSurfaceVariant,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                          )),
+                      AppSpacing.vGapSm,
                       TextField(
                         controller: _nameCtrl,
                         textCapitalization: TextCapitalization.sentences,
@@ -164,7 +173,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                           LengthLimitingTextInputFormatter(40)
                         ],
                         decoration: const InputDecoration(
-                          labelText: 'Rutin adı (örn. Push Day)',
+                          hintText: 'örn. Push Day',
                         ),
                       ),
                       AppSpacing.vGapMd,
@@ -172,24 +181,52 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                         value: _weekday,
                         onChanged: (v) => setState(() => _weekday = v),
                       ),
+                      AppSpacing.vGapLg,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('${_items.length} hareket',
+                              style: context.texts.titleSmall),
+                          Text('hedef set×tekrar',
+                              style: context.texts.bodySmall?.copyWith(
+                                  color: context.colors.onSurfaceVariant
+                                      .withValues(alpha: 0.7))),
+                        ],
+                      ),
                     ],
                   ),
                 ),
                 Expanded(
                   child: _items.isEmpty
-                      ? EmptyState(
-                          icon: Icons.add_task_rounded,
-                          title: 'Hareket ekle',
-                          message:
-                              'Kütüphaneden hareket seçerek rutini doldur',
-                          actionLabel: 'Hareket Ekle',
-                          onAction: _addExercise,
-                          compact: true,
+                      ? ListView(
+                          padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0,
+                              AppSpacing.lg, AppSpacing.lg),
+                          children: [
+                            DottedBorderBox(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: AppSpacing.xxl),
+                                child: Center(
+                                  child: Text('Henüz hareket yok',
+                                      style: context.texts.bodyMedium?.copyWith(
+                                          color: context
+                                              .colors.onSurfaceVariant
+                                              .withValues(alpha: 0.7))),
+                                ),
+                              ),
+                            ),
+                            AppSpacing.vGapMd,
+                            _AddExerciseButton(onTap: _addExercise),
+                          ],
                         )
                       : ReorderableListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg),
+                          padding: const EdgeInsets.fromLTRB(
+                              AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
                           itemCount: _items.length,
+                          footer: Padding(
+                            padding: const EdgeInsets.only(top: AppSpacing.md),
+                            child: _AddExerciseButton(onTap: _addExercise),
+                          ),
                           onReorder: (oldI, newI) {
                             setState(() {
                               if (newI > oldI) newI--;
@@ -208,13 +245,52 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                 ),
               ],
             ),
-      floatingActionButton: _items.isEmpty
+      bottomNavigationBar: _loading
           ? null
-          : FloatingActionButton.extended(
-              onPressed: _addExercise,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Hareket Ekle'),
+          : SafeArea(
+              minimum: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.md),
+              child: GradientButton(
+                label: 'Rutini Kaydet',
+                busy: _saving,
+                onTap: _save,
+              ),
             ),
+    );
+  }
+}
+
+class _AddExerciseButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AddExerciseButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: AppRadius.brLg,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.brLg,
+        child: DottedBorderBox(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.md + 2),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add_rounded,
+                    color: context.colors.primary, size: AppIconSize.sm),
+                AppSpacing.hGapSm,
+                Text('Hareket Ekle',
+                    style: context.texts.labelLarge?.copyWith(
+                      color: context.colors.primary,
+                      fontWeight: FontWeight.w700,
+                    )),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -264,14 +340,38 @@ class _ItemCard extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.drag_handle_rounded,
-                    color: context.colors.onSurfaceVariant,
+                    color: context.colors.onSurfaceVariant
+                        .withValues(alpha: 0.6),
                     size: AppIconSize.sm),
                 AppSpacing.hGapSm,
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: context.colors.onSurface.withValues(
+                        alpha: Theme.of(context).brightness == Brightness.dark
+                            ? 0.06
+                            : 0.05),
+                    borderRadius: AppRadius.brMd,
+                  ),
+                  child: Icon(WorkoutUi.equipmentIcon(item.exercise.equipment),
+                      color: context.colors.onSurfaceVariant, size: 18),
+                ),
+                AppSpacing.hGapMd,
                 Expanded(
-                  child: Text(item.exercise.name,
-                      style: context.texts.titleSmall,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.exercise.name,
+                          style: context.texts.titleSmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                      Text(
+                          WorkoutUi.muscleLabel(item.exercise.primaryMuscle),
+                          style: context.texts.bodySmall?.copyWith(
+                              color: context.colors.onSurfaceVariant)),
+                    ],
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded),
@@ -307,6 +407,82 @@ class _ItemCard extends StatelessWidget {
                 ),
               ],
             ),
+            AppSpacing.vGapSm,
+            _RestRow(
+              restSec: item.restSec,
+              onPick: (v) {
+                item.restSec = v;
+                onChanged();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Hareketin setler arası dinlenme süresi — dokununca süre seçici açılır.
+class _RestRow extends StatelessWidget {
+  final int restSec;
+  final ValueChanged<int> onPick;
+  const _RestRow({required this.restSec, required this.onPick});
+
+  Future<void> _pick(BuildContext context) async {
+    final picked = await showModalBottomSheet<int>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.sm),
+              child: Text('Setler arası dinlenme',
+                  style: ctx.texts.titleMedium),
+            ),
+            ...WorkoutUi.restOptions.map((sec) {
+              final selected = sec == restSec;
+              return ListTile(
+                title: Text(WorkoutUi.restLabel(sec)),
+                trailing: selected
+                    ? Icon(Icons.check_rounded, color: ctx.colors.primary)
+                    : null,
+                onTap: () => Navigator.pop(ctx, sec),
+              );
+            }),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+        ),
+      ),
+    );
+    if (picked != null) onPick(picked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => _pick(context),
+      borderRadius: AppRadius.brSm,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+        child: Row(
+          children: [
+            Icon(Icons.timer_outlined,
+                size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
+            AppSpacing.hGapSm,
+            Text('Dinlenme',
+                style: context.texts.labelLarge?.copyWith(
+                    color: context.colors.onSurfaceVariant)),
+            const Spacer(),
+            Text(WorkoutUi.restLabel(restSec),
+                style: context.texts.labelLarge?.copyWith(
+                    color: context.colors.primary,
+                    fontWeight: FontWeight.w700)),
+            Icon(Icons.expand_more_rounded,
+                size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
           ],
         ),
       ),

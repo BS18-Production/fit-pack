@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
+import '../../core/utils/format.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../home/providers/home_providers.dart';
@@ -60,13 +61,6 @@ class _SessionExercise {
   String get measure => exercise.measurementType;
 }
 
-/// dk:sn biçimi ("12:30", "0:45").
-String mmss(int totalSec) {
-  final m = totalSec ~/ 60;
-  final s = (totalSec % 60).toString().padLeft(2, '0');
-  return '$m:$s';
-}
-
 /// "12:30" / "1.30" / "90" → saniye. Boş/geçersiz → null.
 int? parseDuration(String raw) {
   final t = raw.trim();
@@ -85,19 +79,17 @@ int? parseDuration(String raw) {
 /// Geçen seansın değerini ölçüm tipine göre formatlar ("60×8", "12", "12:30", "5.2 km").
 String? prevLabel(WorkoutSet? s, String measure) {
   if (s == null) return null;
-  String fmt(double v) =>
-      v == v.roundToDouble() ? v.round().toString() : v.toString();
   switch (measure) {
     case 'reps':
       return s.reps != null ? '${s.reps}' : null;
     case 'time':
-      return s.durationSec != null ? mmss(s.durationSec!) : null;
+      return s.durationSec != null ? fmtDuration(s.durationSec!) : null;
     case 'distance':
       if (s.distanceM == null) return null;
-      return '${fmt(s.distanceM! / 1000)} km';
+      return '${fmtNum(s.distanceM! / 1000)} km';
     default:
       return (s.weightKg != null && s.reps != null)
-          ? '${fmt(s.weightKg!)}×${s.reps}'
+          ? '${fmtNum(s.weightKg!)}×${s.reps}'
           : null;
   }
 }
@@ -165,15 +157,6 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
       }
     }
     if (mounted) setState(() => _loading = false);
-  }
-
-  String _fmt(double v) =>
-      v == v.roundToDouble() ? v.round().toString() : v.toString();
-
-  String _clock(Duration d) {
-    final m = d.inMinutes.toString().padLeft(2, '0');
-    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
-    return '$m:$s';
   }
 
   bool get _hasData => _exercises
@@ -344,7 +327,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                   Icon(Icons.schedule_rounded,
                       size: 13, color: context.colors.primary),
                   const SizedBox(width: 4),
-                  Text(_clock(_elapsed),
+                  Text(fmtDuration(_elapsed.inSeconds),
                       style: context.texts.labelMedium?.copyWith(
                           color: context.colors.primary,
                           fontWeight: FontWeight.w700,
@@ -380,7 +363,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                 children: [
                   if (_restRemaining > 0) _RestBanner(
                     remaining: _restRemaining,
-                    clock: _clock(Duration(seconds: _restRemaining)),
+                    clock: fmtDuration(_restRemaining),
                     onMinus: () => _bumpRest(-15),
                     onPlus: () => _bumpRest(15),
                     onSkip: _skipRest,
@@ -394,7 +377,6 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                             children: [
                               ..._exercises.map((e) => _ExerciseBlock(
                                     ex: e,
-                                    fmt: _fmt,
                                     onToggle: (s) => _toggleDone(e, s),
                                     onCycleType: _cycleType,
                                     onAddSet: () => _addSet(e),
@@ -544,13 +526,11 @@ class _MiniBtn extends StatelessWidget {
 
 class _ExerciseBlock extends StatelessWidget {
   final _SessionExercise ex;
-  final String Function(double) fmt;
   final void Function(_SetEntry) onToggle;
   final void Function(_SetEntry) onCycleType;
   final VoidCallback onAddSet, onRemoveSet, onRemoveExercise, onChanged;
   const _ExerciseBlock(
       {required this.ex,
-      required this.fmt,
       required this.onToggle,
       required this.onCycleType,
       required this.onAddSet,
@@ -1034,7 +1014,7 @@ class _TimeCell extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: TextFormField(
-        initialValue: value == null ? null : mmss(value!),
+        initialValue: value == null ? null : fmtDuration(value!),
         textAlign: TextAlign.center,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         inputFormatters: [

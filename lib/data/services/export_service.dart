@@ -143,14 +143,9 @@ class ExportService {
       return;
     }
     for (final s in snap.sessions) {
-      buffer.writeln(
-        '### ${_isoDate.format(s.date)} — ${s.workoutType} (Faz ${s.phase})',
-      );
+      buffer.writeln('### ${_isoDate.format(s.date)} — ${s.workoutType}');
       if (s.durationMin != null) buffer.writeln('- Süre: ${s.durationMin} dk');
-      if (s.energy != null) buffer.writeln('- Enerji: ${s.energy}/10');
       if (s.rpe != null) buffer.writeln('- RPE: ${s.rpe}/10');
-      buffer.writeln('- Diz: ${s.kneeStatus}');
-      if (s.isDeload) buffer.writeln('- **Deload haftası**');
       if (s.notes != null && s.notes!.isNotEmpty) {
         buffer.writeln('- Not: ${s.notes}');
       }
@@ -270,13 +265,9 @@ class ExportService {
         return {
           'id': s.id,
           'date': s.date.toIso8601String(),
-          'phase': s.phase,
           'workoutType': s.workoutType,
           'durationMin': s.durationMin,
-          'kneeStatus': s.kneeStatus,
-          'energy': s.energy,
           'rpe': s.rpe,
-          'isDeload': s.isDeload,
           'notes': s.notes,
           'sets': sets
               .map((set) => {

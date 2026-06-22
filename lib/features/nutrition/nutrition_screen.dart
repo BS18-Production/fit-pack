@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/utils/format.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/nutrition_dao.dart';
@@ -312,9 +313,6 @@ class _SummaryHero extends StatelessWidget {
   }
 }
 
-/// Birim sayısını okunur yaz: 2 → "2", 1.5 → "1.5".
-String _fmtNum(double v) =>
-    v == v.roundToDouble() ? v.round().toString() : v.toString();
 
 String _mealName(String type) => switch (type) {
       'breakfast' => 'Kahvaltı',
@@ -602,7 +600,7 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
     final added = _selected!;
     final addedGrams = _grams;
     final addedLabel = _useUnit && _hasUnit(added)
-        ? '${_fmtNum(_units)} ${added.unitLabel}'
+        ? '${fmtNum(_units)} ${added.unitLabel}'
         : '${addedGrams.round()} g';
     final ratio = addedGrams / 100;
     final date = widget.ref.read(selectedDateProvider);
@@ -1127,7 +1125,7 @@ class _QuantityFooter extends StatelessWidget {
     final unitMode = hasUnit && useUnit;
     final unitLabel = food.unitLabel ?? 'adet';
     final summary = unitMode
-        ? '$kcal kcal · ${_fmtNum(units)} $unitLabel ≈ ${grams.round()} g'
+        ? '$kcal kcal · ${fmtNum(units)} $unitLabel ≈ ${grams.round()} g'
         : '$kcal kcal · ${grams.round()} g';
 
     return Container(

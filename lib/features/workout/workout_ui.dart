@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/utils/format.dart';
 
 /// Antrenman ekranları için paylaşılan görsel yardımcılar (Claude Design
 /// `Fit Pack Antrenman.dc.html` reskin'i — docs/08-design-brief.md).
@@ -130,12 +131,8 @@ class WorkoutUi {
   }
 
   /// Dinlenme süresini etiketler: null/0 → "Yok", aksi halde "dk:sn".
-  static String restLabel(int? sec) {
-    if (sec == null || sec <= 0) return 'Yok';
-    final m = sec ~/ 60;
-    final s = (sec % 60).toString().padLeft(2, '0');
-    return '$m:$s';
-  }
+  static String restLabel(int? sec) =>
+      (sec == null || sec <= 0) ? 'Yok' : fmtDuration(sec);
 
   /// Rutin oluştururken sunulan dinlenme süresi seçenekleri (saniye).
   static const restOptions = <int>[

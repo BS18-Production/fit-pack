@@ -1,16 +1,17 @@
 import 'package:fit_pack/data/database/app_database.dart';
+import 'package:fit_pack/core/utils/format.dart';
 import 'package:fit_pack/features/workout/active_session_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Aktif seansta ölçüm tipine göre süre/mesafe biçimlendirme ve ayrıştırma
 /// (kg×tekrar olmayan hareketler: plank, koşu bandı, yüzme).
 void main() {
-  group('Süre biçimi (mmss)', () {
+  group('Süre biçimi (fmtDuration)', () {
     test('saniyeyi dk:sn yapar', () {
-      expect(mmss(45), '0:45');
-      expect(mmss(90), '1:30');
-      expect(mmss(750), '12:30');
-      expect(mmss(0), '0:00');
+      expect(fmtDuration(45), '0:45');
+      expect(fmtDuration(90), '1:30');
+      expect(fmtDuration(750), '12:30');
+      expect(fmtDuration(0), '0:00');
     });
   });
 

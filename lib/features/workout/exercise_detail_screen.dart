@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/utils/format.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/workout_dao.dart';
 import '../../data/providers.dart';
@@ -108,7 +109,7 @@ class _HistoryTab extends ConsumerWidget {
                                 color: context.colors.onSurfaceVariant)),
                         Text(
                           p.weightKg != null
-                              ? '${_fmt(p.weightKg!)} kg × ${p.reps ?? '-'}'
+                              ? '${fmtNum(p.weightKg!)} kg × ${p.reps ?? '-'}'
                               : '${p.reps ?? '-'} tekrar',
                           style: context.texts.titleSmall,
                         ),
@@ -290,9 +291,9 @@ class _RecordsTab extends ConsumerWidget {
           children: [
             _Record('🏆', 'Tahmini 1RM',
                 '${bestE1rm.e1rm!.round()} kg',
-                '${_fmt(bestE1rm.weightKg!)} kg × ${bestE1rm.reps}'),
+                '${fmtNum(bestE1rm.weightKg!)} kg × ${bestE1rm.reps}'),
             _Record('🏋️', 'En ağır set',
-                '${_fmt(maxWeight.weightKg!)} kg',
+                '${fmtNum(maxWeight.weightKg!)} kg',
                 '${maxWeight.reps} tekrar'),
             _Record('📈', 'Toplam kayıt', '${points.length} set', ''),
           ],
@@ -336,6 +337,3 @@ class _Record extends StatelessWidget {
     );
   }
 }
-
-String _fmt(double v) =>
-    v == v.roundToDouble() ? v.round().toString() : v.toString();

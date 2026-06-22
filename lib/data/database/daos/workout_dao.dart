@@ -91,9 +91,6 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
   Future<List<Exercise>> getExercisesByCategory(String category) =>
       (select(exercises)..where((e) => e.category.equals(category))).get();
 
-  Future<List<Exercise>> getPostureExercises() =>
-      (select(exercises)..where((e) => e.isPosture.equals(true))).get();
-
   Future<Exercise?> getExerciseById(int id) =>
       (select(exercises)..where((e) => e.id.equals(id))).getSingleOrNull();
 
@@ -242,20 +239,6 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
     return result?.readTable(workoutSets);
   }
 
-  /// Weekly posture volume (total sets)
-  Future<int> getWeeklyPostureVolume(DateTime weekStart, DateTime weekEnd) async {
-    final count = countAll();
-    final query = selectOnly(workoutSets).join([
-      innerJoin(exercises, exercises.id.equalsExp(workoutSets.exerciseId)),
-      innerJoin(workoutSessions, workoutSessions.id.equalsExp(workoutSets.sessionId)),
-    ])
-      ..addColumns([count])
-      ..where(exercises.isPosture.equals(true) &
-          workoutSets.isWarmup.equals(false) &
-          workoutSessions.date.isBetweenValues(weekStart, weekEnd));
-    final result = await query.getSingle();
-    return result.read(count) ?? 0;
-  }
 }
 
 /// Rutin hareketi + hareket bilgisi (join sonucu — UI'da ad/ekipman göster).

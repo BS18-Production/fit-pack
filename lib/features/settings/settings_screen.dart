@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' show Value;
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
@@ -52,7 +51,6 @@ class SettingsScreen extends ConsumerWidget {
 
 class _SettingsBody extends ConsumerWidget {
   final UserProfileData profile;
-  static final DateFormat _isoDate = DateFormat('d MMM yyyy', 'tr_TR');
 
   const _SettingsBody({required this.profile});
 
@@ -93,23 +91,6 @@ class _SettingsBody extends ConsumerWidget {
     }
   }
 
-  Future<void> _resetDeload(BuildContext context, WidgetRef ref) async {
-    final ok = await confirmAction(
-      context,
-      title: 'Deload Sıfırla',
-      message: 'Deload tarihi şu ana ayarlanacak. Devam edilsin mi?',
-      confirmLabel: 'Sıfırla',
-      destructive: false,
-    );
-    if (!ok) return;
-    await _save(ref, profile.copyWith(lastDeload: Value(DateTime.now())));
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Deload sıfırlandı')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ListView(
@@ -140,43 +121,6 @@ class _SettingsBody extends ConsumerWidget {
               min: 30,
               max: 400,
               apply: (v) => profile.copyWith(proteinGoal: v.toInt())),
-        ),
-        const _SectionHeader('Program'),
-        _SettingTile(
-          icon: Icons.timeline_rounded,
-          title: 'Faz',
-          value: '${profile.currentPhase}',
-          onTap: () => _editNumber(context, ref,
-              title: 'Faz (1-3)',
-              unit: '',
-              initial: profile.currentPhase,
-              isInt: true,
-              min: 1,
-              max: 3,
-              apply: (v) =>
-                  profile.copyWith(currentPhase: v.toInt().clamp(1, 3))),
-        ),
-        _SettingTile(
-          icon: Icons.calendar_month_rounded,
-          title: 'Hafta',
-          value: '${profile.currentWeek}',
-          onTap: () => _editNumber(context, ref,
-              title: 'Hafta',
-              unit: '',
-              initial: profile.currentWeek,
-              isInt: true,
-              min: 1,
-              max: 52,
-              apply: (v) => profile.copyWith(currentWeek: v.toInt())),
-        ),
-        _SettingTile(
-          icon: Icons.restore_rounded,
-          title: 'Son Deload',
-          subtitle: profile.lastDeload == null
-              ? 'Henüz deload yapılmadı'
-              : _isoDate.format(profile.lastDeload!),
-          trailing: const Icon(Icons.refresh_rounded),
-          onTap: () => _resetDeload(context, ref),
         ),
         const _SectionHeader('Vücut'),
         _SettingTile(

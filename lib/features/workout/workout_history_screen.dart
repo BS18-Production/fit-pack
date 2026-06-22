@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/utils/format.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/widgets/app_state_views.dart';
-import 'workout_plan_providers.dart';
 
 final _allSessionsProvider = FutureProvider<List<WorkoutSession>>((ref) {
   return ref.watch(workoutDaoProvider).getAllSessions();
@@ -31,8 +31,6 @@ class WorkoutHistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionsAsync = ref.watch(_allSessionsProvider);
-    final namesAsync = ref.watch(workoutDisplayNamesProvider);
-    final names = namesAsync.valueOrNull;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Antrenman Geçmişi')),
@@ -65,11 +63,7 @@ class WorkoutHistoryScreen extends ConsumerWidget {
             itemCount: sessions.length,
             itemBuilder: (context, i) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: _SessionCard(
-                session: sessions[i],
-                displayName:
-                    workoutDisplayName(names, sessions[i].workoutType),
-              ),
+              child: _SessionCard(session: sessions[i]),
             ),
           );
         },
@@ -80,9 +74,8 @@ class WorkoutHistoryScreen extends ConsumerWidget {
 
 class _SessionCard extends ConsumerWidget {
   final WorkoutSession session;
-  final String displayName;
 
-  const _SessionCard({required this.session, required this.displayName});
+  const _SessionCard({required this.session});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -112,7 +105,7 @@ class _SessionCard extends ConsumerWidget {
             size: AppIconSize.md,
           ),
         ),
-        title: Text(displayName, style: context.texts.titleSmall),
+        title: Text(session.workoutType, style: context.texts.titleSmall),
         subtitle: Text(meta,
             style: context.texts.bodySmall
                 ?.copyWith(color: context.colors.onSurfaceVariant)),
@@ -127,23 +120,18 @@ class _SessionDetail extends ConsumerWidget {
   const _SessionDetail({required this.sessionId});
 
   String _fmtSet(WorkoutSet s) {
-    String fmt(double v) =>
-        v == v.roundToDouble() ? v.round().toString() : v.toStringAsFixed(1);
     // Ölçüm tipini set'in dolu alanından çıkar (kayıtta tutulmuyor).
     if (s.durationSec != null || s.distanceM != null) {
       final parts = <String>[
-        if (s.distanceM != null) '${fmt(s.distanceM! / 1000)} km',
-        if (s.durationSec != null) _mmss(s.durationSec!),
+        if (s.distanceM != null) '${fmtNum(s.distanceM! / 1000)} km',
+        if (s.durationSec != null) fmtDuration(s.durationSec!),
       ];
       return parts.join(' · ');
     }
     if (s.weightKg == null && s.reps != null) return '${s.reps} tekrar';
-    final wTxt = s.weightKg == null ? '—' : fmt(s.weightKg!);
+    final wTxt = s.weightKg == null ? '—' : fmtNum(s.weightKg!);
     return '$wTxt kg × ${s.reps ?? '—'}';
   }
-
-  String _mmss(int sec) =>
-      '${sec ~/ 60}:${(sec % 60).toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -449,6 +449,20 @@ class _AddMeasurementSheetState extends State<_AddMeasurementSheet> {
   final _neckController = TextEditingController();
   final _fatController = TextEditingController();
   bool _saving = false;
+  DateTime _selectedDate = DateTime.now();
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(now.year - 5),
+      lastDate: now, // gelecek tarih kapalı
+    );
+    if (picked != null) {
+      setState(() => _selectedDate = DateTime(picked.year, picked.month, picked.day));
+    }
+  }
 
   @override
   void dispose() {
@@ -493,7 +507,7 @@ class _AddMeasurementSheetState extends State<_AddMeasurementSheet> {
     try {
       await widget.ref.read(bodyDaoProvider).insertMeasurement(
             BodyMeasurementsCompanion(
-              date: Value(DateTime.now()),
+              date: Value(_selectedDate),
               weightKg: Value(weight),
               waistCm: Value(waist),
               chestCm: Value(chest),
@@ -538,6 +552,11 @@ class _AddMeasurementSheetState extends State<_AddMeasurementSheet> {
                 subtitle: 'Boş bıraktığın alan kaydedilmez',
               ),
               AppSpacing.vGapLg,
+              _DateRow(
+                date: _selectedDate,
+                onTap: _saving ? null : _pickDate,
+              ),
+              AppSpacing.vGapMd,
               _Field(label: 'Kilo (kg)', controller: _weightController, min: 30, max: 300),
               _Field(label: 'Bel (cm)', controller: _waistController, min: 30, max: 250),
               _Field(label: 'Göğüs (cm)', controller: _chestController, min: 30, max: 250),
@@ -601,6 +620,54 @@ class _Field extends StatelessWidget {
           }
           return null;
         },
+      ),
+    );
+  }
+}
+
+/// Ölçümün hangi güne yazılacağını seçer (geçmişe dönük giriş). Varsayılan bugün.
+class _DateRow extends StatelessWidget {
+  final DateTime date;
+  final VoidCallback? onTap;
+
+  const _DateRow({required this.date, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final isToday =
+        date.year == now.year && date.month == now.month && date.day == now.day;
+    final label = isToday
+        ? 'Bugün'
+        : DateFormat('d MMMM yyyy', 'tr_TR').format(date);
+    return Material(
+      color: context.colors.surfaceContainerHighest,
+      borderRadius: AppRadius.brMd,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.brMd,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md, vertical: AppSpacing.md),
+          child: Row(
+            children: [
+              Icon(Icons.event_rounded,
+                  size: AppIconSize.md, color: context.colors.primary),
+              AppSpacing.gapMd,
+              Text('Tarih',
+                  style: Theme.of(context).textTheme.bodyMedium),
+              const Spacer(),
+              Text(label,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: context.colors.primary,
+                      )),
+              AppSpacing.gapXs,
+              Icon(Icons.expand_more_rounded,
+                  size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -74,6 +74,53 @@ class OpenFoodFactsService {
     }
   }
 
+  /// OFF metin araması (docs/11): paketli/markalı ürünü adıyla bulur
+  /// (barkod okutmadan). Offline-first KORUNUR: hata/timeout → boş liste.
+  /// Sadece kalori + barkodu olan ürünleri döndürür (loglanabilir olanlar).
+  Future<List<OffProduct>> searchByName(String query) async {
+    final q = query.trim();
+    if (q.length < 2) return const [];
+    final uri = Uri.parse(
+      'https://world.openfoodfacts.org/cgi/search.pl'
+      '?search_terms=${Uri.encodeQueryComponent(q)}'
+      '&search_simple=1&action=process&json=1&page_size=20'
+      '&fields=code,product_name,product_name_tr,brands,nutriments',
+    );
+    try {
+      final res = await _client
+          .get(uri, headers: {'User-Agent': _ua})
+          .timeout(const Duration(seconds: 8));
+      if (res.statusCode != 200) return const [];
+      final body = json.decode(res.body) as Map<String, dynamic>;
+      final products = (body['products'] as List?) ?? const [];
+      final out = <OffProduct>[];
+      final seen = <String>{};
+      for (final raw in products) {
+        final p = raw as Map<String, dynamic>;
+        final code = (p['code'] as String?)?.trim() ?? '';
+        final name = _firstStr(p, ['product_name_tr', 'product_name', 'brands']);
+        if (name == null || code.isEmpty || seen.contains(code)) continue;
+        final n = (p['nutriments'] as Map<String, dynamic>?) ?? const {};
+        final kcal = _firstNum(n, ['energy-kcal_100g', 'energy-kcal']);
+        if (kcal == null) continue; // kalorisiz ürün loglanamaz
+        seen.add(code);
+        out.add(OffProduct(
+          name: name,
+          barcode: code,
+          kcalPer100g: kcal,
+          proteinPer100g: _firstNum(n, ['proteins_100g', 'proteins']) ?? 0,
+          carbPer100g: _firstNum(n, ['carbohydrates_100g', 'carbohydrates']) ?? 0,
+          fatPer100g: _firstNum(n, ['fat_100g', 'fat']) ?? 0,
+        ));
+      }
+      return out;
+    } on TimeoutException {
+      return const [];
+    } catch (_) {
+      return const [];
+    }
+  }
+
   String? _firstStr(Map<String, dynamic> m, List<String> keys) {
     for (final k in keys) {
       final v = m[k];

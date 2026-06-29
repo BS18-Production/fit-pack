@@ -9,6 +9,7 @@ import '../../core/utils/format.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/nutrition_dao.dart';
+import '../../data/services/openfoodfacts_service.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/progress_indicators.dart';
 import '../home/providers/home_providers.dart';
@@ -495,6 +496,10 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
   bool _saving = false;
   int _sessionCount = 0;
   String? _lastAdded;
+  // OpenFoodFacts metin araması (docs/11): paketli ürünü adıyla bul.
+  bool _offSearching = false;
+  List<OffProduct> _offResults = const [];
+  String _offQuery = '';
 
   bool _hasUnit(Food f) =>
       f.unitLabel != null && (f.defaultPortionGrams ?? 0) > 0;
@@ -647,6 +652,50 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
     }
   }
 
+  /// OpenFoodFacts'te ada göre ara (paketli ürünler — Canga, Ülker...).
+  Future<void> _searchOff() async {
+    final q = _searchController.text.trim();
+    if (q.length < 2 || _offSearching) return;
+    FocusScope.of(context).unfocus();
+    setState(() => _offSearching = true);
+    final results =
+        await widget.ref.read(openFoodFactsServiceProvider).searchByName(q);
+    if (!mounted) return;
+    setState(() {
+      _offSearching = false;
+      _offResults = results;
+      _offQuery = q;
+    });
+    if (results.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('OpenFoodFacts\'te sonuç yok. Elle ekleyebilirsin.')),
+      );
+    }
+  }
+
+  /// OFF sonucunu DB'ye yaz (varsa barkoddan bul) → seç. Tekrar eklemeyi önler.
+  Future<void> _pickOffProduct(OffProduct p) async {
+    final dao = widget.ref.read(nutritionDaoProvider);
+    var food = await dao.getFoodByBarcode(p.barcode);
+    food ??= await dao.getFoodById(await dao.insertFood(FoodsCompanion(
+      name: Value(p.name),
+      barcode: Value(p.barcode),
+      kcalPer100g: Value(p.kcalPer100g),
+      proteinPer100g: Value(p.proteinPer100g),
+      carbPer100g: Value(p.carbPer100g),
+      fatPer100g: Value(p.fatPer100g),
+      source: const Value('openfoodfacts'),
+      isCustom: const Value(false),
+      isRecipe: const Value(false),
+    )));
+    if (food == null || !mounted) return;
+    setState(() {
+      if (!_all.any((f) => f.id == food!.id)) _all = [food!, ..._all];
+      _offResults = const [];
+    });
+    _selectFood(food);
+  }
+
   /// Barkod tara → lokal/OpenFoodFacts çöz → seç.
   Future<void> _scanBarcode() async {
     final food = await scanBarcodeToFood(context, widget.ref);
@@ -741,8 +790,10 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                                 },
                               ),
                       ),
-                      onChanged: (v) =>
-                          setState(() => _applyFilter(v)),
+                      onChanged: (v) => setState(() {
+                        _applyFilter(v);
+                        if (_offResults.isNotEmpty) _offResults = const [];
+                      }),
                     ),
                   ),
                   AppSpacing.hGapSm,
@@ -759,6 +810,26 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                   ),
                 ],
               ),
+              // Paketli ürünü adıyla internette ara (OpenFoodFacts).
+              if (_searchController.text.trim().length >= 2) ...[
+                AppSpacing.vGapSm,
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: _offSearching ? null : _searchOff,
+                    icon: _offSearching
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.travel_explore_rounded,
+                            size: AppIconSize.sm),
+                    label: Text(_offSearching
+                        ? 'OpenFoodFacts aranıyor…'
+                        : 'Paketli ürünü internette ara: "${_searchController.text.trim()}"'),
+                  ),
+                ),
+              ],
               // Son kullanılanlar — arama boşken tek dokunuşla seç.
               if (_recent.isNotEmpty && _searchController.text.isEmpty) ...[
                 AppSpacing.vGapMd,
@@ -783,6 +854,48 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                     },
                   ),
                 ),
+              ],
+              // OpenFoodFacts internet sonuçları (paketli ürünler).
+              if (_offResults.isNotEmpty) ...[
+                AppSpacing.vGapMd,
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'OpenFoodFacts · "$_offQuery" (${_offResults.length})',
+                    style: context.texts.labelMedium
+                        ?.copyWith(color: context.colors.onSurfaceVariant),
+                  ),
+                ),
+                AppSpacing.vGapSm,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 220),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: _offResults.length,
+                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    itemBuilder: (context, i) {
+                      final p = _offResults[i];
+                      return ListTile(
+                        dense: true,
+                        leading: Icon(Icons.public_rounded,
+                            size: AppIconSize.sm,
+                            color: context.colors.primary),
+                        title: Text(p.name,
+                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                        subtitle: MacroInlineText(
+                          protein: p.proteinPer100g,
+                          carb: p.carbPer100g,
+                          fat: p.fatPer100g,
+                          prefix: '${p.kcalPer100g.round()} kcal · ',
+                          suffix: ' /100g',
+                        ),
+                        trailing: const Icon(Icons.add_rounded),
+                        onTap: () => _pickOffProduct(p),
+                      );
+                    },
+                  ),
+                ),
+                const Divider(height: AppSpacing.lg),
               ],
               AppSpacing.vGapMd,
               Expanded(

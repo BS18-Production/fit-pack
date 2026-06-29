@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +8,8 @@ import '../../core/utils/format.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/widgets/app_state_views.dart';
+import '../home/providers/home_providers.dart';
+import 'routine_providers.dart';
 
 final _allSessionsProvider = FutureProvider<List<WorkoutSession>>((ref) {
   return ref.watch(workoutDaoProvider).getAllSessions();
@@ -109,9 +112,76 @@ class _SessionCard extends ConsumerWidget {
         subtitle: Text(meta,
             style: context.texts.bodySmall
                 ?.copyWith(color: context.colors.onSurfaceVariant)),
+        trailing: PopupMenuButton<String>(
+          icon: Icon(Icons.more_vert_rounded,
+              color: context.colors.onSurfaceVariant),
+          onSelected: (v) {
+            if (v == 'date') _editDate(context, ref);
+            if (v == 'delete') _delete(context, ref);
+          },
+          itemBuilder: (_) => const [
+            PopupMenuItem(
+              value: 'date',
+              child: ListTile(
+                  leading: Icon(Icons.event_rounded),
+                  title: Text('Tarihi düzenle'),
+                  contentPadding: EdgeInsets.zero),
+            ),
+            PopupMenuItem(
+              value: 'delete',
+              child: ListTile(
+                  leading: Icon(Icons.delete_outline_rounded),
+                  title: Text('Sil'),
+                  contentPadding: EdgeInsets.zero),
+            ),
+          ],
+        ),
         children: [_SessionDetail(sessionId: session.id)],
       ),
     );
+  }
+
+  Future<void> _editDate(BuildContext context, WidgetRef ref) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: session.date,
+      firstDate: DateTime(now.year - 5),
+      lastDate: now,
+    );
+    if (picked == null) return;
+    // Günü değiştir, mevcut saat dilimini koru → istatistikler doğru güne kayar.
+    final newDate = DateTime(picked.year, picked.month, picked.day,
+        session.date.hour, session.date.minute);
+    final dao = ref.read(workoutDaoProvider);
+    await dao.updateSession(session.copyWith(
+      date: newDate,
+      startedAt: Value(session.startedAt == null
+          ? null
+          : DateTime(picked.year, picked.month, picked.day,
+              session.startedAt!.hour, session.startedAt!.minute)),
+    ));
+    _invalidateAll(ref);
+  }
+
+  Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final ok = await confirmAction(
+      context,
+      title: 'Antrenmanı sil',
+      message: 'Bu seans ve tüm setleri silinecek. Geri alınamaz.',
+      confirmLabel: 'Sil',
+      destructive: true,
+    );
+    if (!ok) return;
+    await ref.read(workoutDaoProvider).deleteSessionWithSets(session.id);
+    _invalidateAll(ref);
+  }
+
+  void _invalidateAll(WidgetRef ref) {
+    ref.invalidate(_allSessionsProvider);
+    ref.invalidate(weekWorkoutStatsProvider);
+    ref.invalidate(workoutStreakProvider);
+    ref.invalidate(lastWorkoutSessionProvider);
   }
 }
 

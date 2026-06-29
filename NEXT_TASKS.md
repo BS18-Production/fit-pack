@@ -15,7 +15,19 @@ Tasarım + uygulama: [docs/10-historical-entry.md](docs/10-historical-entry.md).
 - **Ertelendi:** geçmiş seansta tek tek set düzenleme UI'si (sadece tarih+silme yapıldı).
 - **PR/merge bekliyor:** dal henüz `main`'e merge edilmedi.
 
-### 🔜 Olası sıradaki: Adım sayar (pedometer) — Samet sordu (2026-06-29)
+### 🟡 İçerik Zenginleştirme — DEVAM EDİYOR (`feat/content-enrichment`)
+PRD: [docs/11-content-enrichment.md](docs/11-content-enrichment.md). analyze 0 · test 73/73.
+- [x] **C-1** Şema v7 (exercises +imagePath/instructions/level/force, foods +category) + migration `011d158`
+- [x] **C-2** free-exercise-db → 821 yeni hareket (talimat/meta/görsel yolu), seed merge `4e6e0db`
+- [x] **C-3** Hareket detayı "Nasıl" sekmesi (görsel fallback + talimat + rozet) `4e6e0db`
+  - ✅ Emülatörde doğrulandı: kütüphane 200→**1022 hareket**, talimat render.
+- [ ] **C-2b** Hareket form görselleri (~1600 resim) gömme — **KARAR BEKLİYOR** (repo şişmesi ~onlarca MB). Şu an UI fallback gösteriyor.
+- [ ] **C-4** TÜRKOMP gıdaları — **SOURCING ZOR:** gov sitesi 302+AJAX, resmî API yok, D-3 lisans belirsiz. Alternatif kaynak konuşulmalı.
+- [ ] **C-5** Yemekler grup filtresi (foods.category hazır, UI kaldı)
+- [ ] **C-6** Ayarlar "Açık veri kaynakları" atıf ekranı
+- **Branch henüz push/merge edilmedi.**
+
+### 🔜 Fikir: Adım sayar (pedometer) — Samet sordu (2026-06-29)
 Health Connect (Android) / HealthKit (iOS) `health` paketiyle cihazdan günlük adım okuma → aktivite halkası. Lokal (sunucu yok); merkezi/çoklu-kullanıcı toplama = V3. Doc-first gerekir (yeni sensör+izin+veri tipi+şema). Detay konuşuldu, tasarım yapılmadı.
 
 ---

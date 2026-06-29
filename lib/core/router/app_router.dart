@@ -96,6 +96,13 @@ GoRouter createAppRouter({required bool onboarded}) => GoRouter(
       builder: (context, state) => ActiveSessionScreen(
           routineId: int.parse(state.pathParameters['routineId']!)),
     ),
+    // Geçmiş antrenman ekle (H-B) — kronometresiz, tarih seçilir.
+    GoRoute(
+      path: '/workout/log-past',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) =>
+          ActiveSessionScreen(manualDate: DateTime.now()),
+    ),
     GoRoute(
       path: '/workout/summary/:sessionId',
       parentNavigatorKey: _rootNavigatorKey,

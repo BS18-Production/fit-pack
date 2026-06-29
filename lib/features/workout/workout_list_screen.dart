@@ -132,6 +132,12 @@ class _Header extends StatelessWidget {
               onPressed: () => context.push('/exercises'),
             ),
             IconButton(
+              tooltip: 'Geçmiş Antrenman Ekle',
+              icon: const Icon(Icons.edit_calendar_rounded),
+              color: context.colors.onSurfaceVariant,
+              onPressed: () => context.push('/workout/log-past'),
+            ),
+            IconButton(
               tooltip: 'Antrenman Geçmişi',
               icon: const Icon(Icons.history_rounded),
               color: context.colors.onSurfaceVariant,

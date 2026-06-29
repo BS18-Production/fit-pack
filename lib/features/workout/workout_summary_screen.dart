@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
@@ -54,7 +55,7 @@ class WorkoutSummaryScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 5),
               Center(
-                child: Text('${s.title} · Bugün',
+                child: Text('${s.title} · ${_relativeDateLabel(s.date)}',
                     style: context.texts.bodyMedium?.copyWith(
                         color: context.colors.onSurfaceVariant),
                     textAlign: TextAlign.center),
@@ -175,11 +176,12 @@ class _ExerciseRecap {
 
 class _Summary {
   final String title;
+  final DateTime date;
   final int durationMin;
   final int volume;
   final int totalSets;
   final List<_ExerciseRecap> perExercise;
-  _Summary(this.title, this.durationMin, this.volume, this.totalSets,
+  _Summary(this.title, this.date, this.durationMin, this.volume, this.totalSets,
       this.perExercise);
 }
 
@@ -205,9 +207,21 @@ final _summaryProvider =
 
   return _Summary(
     session.workoutType,
+    session.date,
     session.durationMin ?? 0,
     volume,
     sets.length,
     recaps,
   );
 });
+
+/// Seans tarihini göreceli/okunur etikete çevirir: Bugün / Dün / "20 Haziran".
+String _relativeDateLabel(DateTime date) {
+  final now = DateTime.now();
+  final d = DateTime(date.year, date.month, date.day);
+  final today = DateTime(now.year, now.month, now.day);
+  final diff = today.difference(d).inDays;
+  if (diff == 0) return 'Bugün';
+  if (diff == 1) return 'Dün';
+  return DateFormat('d MMMM', 'tr_TR').format(date);
+}

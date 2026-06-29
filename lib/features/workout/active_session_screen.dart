@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
@@ -96,7 +97,10 @@ String? prevLabel(WorkoutSet? s, String measure) {
 
 class ActiveSessionScreen extends ConsumerStatefulWidget {
   final int? routineId;
-  const ActiveSessionScreen({super.key, this.routineId});
+  // Geçmiş antrenman ekleme modu: dolu ise kronometre çalışmaz, seans bu güne
+  // yazılır (H-B). null ise normal canlı seans (H-A: bitişte tarih düzenlenebilir).
+  final DateTime? manualDate;
+  const ActiveSessionScreen({super.key, this.routineId, this.manualDate});
 
   @override
   ConsumerState<ActiveSessionScreen> createState() =>
@@ -105,10 +109,13 @@ class ActiveSessionScreen extends ConsumerStatefulWidget {
 
 class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
   final List<_SessionExercise> _exercises = [];
-  String _title = 'Boş Antrenman';
+  late String _title;
   late final DateTime _startedAt;
+  late DateTime _sessionDate; // seansın yazılacağı mantıksal gün
   bool _loading = true;
   bool _saving = false;
+
+  bool get _isManual => widget.manualDate != null;
 
   Timer? _ticker; // canlı süre
   Duration _elapsed = Duration.zero;
@@ -119,11 +126,30 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
   @override
   void initState() {
     super.initState();
-    _startedAt = DateTime.now();
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() => _elapsed = DateTime.now().difference(_startedAt));
-    });
+    final now = DateTime.now();
+    _startedAt = widget.manualDate ?? now;
+    _sessionDate = DateTime(_startedAt.year, _startedAt.month, _startedAt.day);
+    _title = _isManual ? 'Geçmiş Antrenman' : 'Boş Antrenman';
+    if (!_isManual) {
+      _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() => _elapsed = DateTime.now().difference(_startedAt));
+      });
+    }
     _load();
+  }
+
+  Future<void> _pickSessionDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _sessionDate,
+      firstDate: DateTime(now.year - 5),
+      lastDate: now, // gelecek tarih kapalı
+    );
+    if (picked != null) {
+      setState(() =>
+          _sessionDate = DateTime(picked.year, picked.month, picked.day));
+    }
   }
 
   @override
@@ -169,7 +195,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
     if (set.done) {
       HapticFeedback.lightImpact();
       // Hareketin kullanıcı tarafından belirlenen dinlenme süresi (0 = yok).
-      if (ex.restSec > 0) _startRest(ex.restSec);
+      // Geçmiş kayıt modunda dinlenme sayacı anlamsız — canlı değil.
+      if (!_isManual && ex.restSec > 0) _startRest(ex.restSec);
     }
   }
 
@@ -245,15 +272,24 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
     }
     setState(() => _saving = true);
     final dao = ref.read(workoutDaoProvider);
-    final ended = DateTime.now();
+    // Mantıksal gün = _sessionDate (bugün ya da geçmişe çekilmiş). Gerçek
+    // başlangıç saatini bu güne taşı; canlı modda süreyi koru, manuel modda yok.
+    final tod = _isManual
+        ? const TimeOfDay(hour: 12, minute: 0)
+        : TimeOfDay.fromDateTime(_startedAt);
+    final started = DateTime(
+        _sessionDate.year, _sessionDate.month, _sessionDate.day, tod.hour, tod.minute);
+    final ended = _isManual ? null : started.add(_elapsed);
     final sessionId = await dao.insertSession(WorkoutSessionsCompanion(
-      date: Value(_startedAt),
+      date: Value(started),
       phase: const Value(0),
       workoutType: Value(_title),
       routineId: Value(widget.routineId),
-      startedAt: Value(_startedAt),
+      startedAt: Value(started),
       endedAt: Value(ended),
-      durationMin: Value(ended.difference(_startedAt).inMinutes),
+      durationMin: _isManual
+          ? const Value(null)
+          : Value(_elapsed.inMinutes),
     ));
 
     for (final ex in _exercises) {
@@ -324,10 +360,10 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                   overflow: TextOverflow.ellipsis),
               Row(
                 children: [
-                  Icon(Icons.schedule_rounded,
+                  Icon(_isManual ? Icons.history_rounded : Icons.schedule_rounded,
                       size: 13, color: context.colors.primary),
                   const SizedBox(width: 4),
-                  Text(fmtDuration(_elapsed.inSeconds),
+                  Text(_isManual ? 'Geçmiş kayıt' : fmtDuration(_elapsed.inSeconds),
                       style: context.texts.labelMedium?.copyWith(
                           color: context.colors.primary,
                           fontWeight: FontWeight.w700,
@@ -368,6 +404,11 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                     onPlus: () => _bumpRest(15),
                     onSkip: _skipRest,
                   ),
+                  _SessionDateBar(
+                    date: _sessionDate,
+                    highlight: _isManual,
+                    onTap: _saving ? null : _pickSessionDate,
+                  ),
                   Expanded(
                     child: _exercises.isEmpty
                         ? _EmptyActive(onAdd: _addExercise)
@@ -396,6 +437,55 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
                   ),
                 ],
               ),
+      ),
+    );
+  }
+}
+
+/// Seansın yazılacağı günü gösterir/değiştirir. Canlı modda ince bir bilgi
+/// satırı (dokununca geçmişe çekilebilir), manuel modda vurgulu.
+class _SessionDateBar extends StatelessWidget {
+  final DateTime date;
+  final bool highlight;
+  final VoidCallback? onTap;
+  const _SessionDateBar(
+      {required this.date, required this.highlight, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final isToday =
+        date.year == now.year && date.month == now.month && date.day == now.day;
+    final label = isToday
+        ? 'Bugün'
+        : DateFormat('EEEE, d MMMM', 'tr_TR').format(date);
+    final bg = highlight
+        ? context.colors.primaryContainer
+        : context.colors.surfaceContainerHighest;
+    final fg = highlight ? context.colors.onPrimaryContainer : context.colors.primary;
+    return Material(
+      color: bg,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+          child: Row(
+            children: [
+              Icon(Icons.event_rounded, size: AppIconSize.sm, color: fg),
+              AppSpacing.gapSm,
+              Text(highlight ? 'Tarih seç' : 'Tarih',
+                  style: context.texts.labelLarge
+                      ?.copyWith(color: context.colors.onSurfaceVariant)),
+              const Spacer(),
+              Text(label,
+                  style: context.texts.labelLarge
+                      ?.copyWith(color: fg, fontWeight: FontWeight.w700)),
+              AppSpacing.gapXs,
+              Icon(Icons.expand_more_rounded, size: AppIconSize.sm, color: fg),
+            ],
+          ),
+        ),
       ),
     );
   }

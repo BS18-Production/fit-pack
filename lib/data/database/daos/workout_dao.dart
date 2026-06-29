@@ -155,6 +155,12 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
   Future<int> deleteSession(int id) =>
       (delete(workoutSessions)..where((s) => s.id.equals(id))).go();
 
+  /// Seansı ve ona bağlı tüm setleri siler (FK sırası: önce setler).
+  Future<void> deleteSessionWithSets(int id) => transaction(() async {
+        await (delete(workoutSets)..where((s) => s.sessionId.equals(id))).go();
+        await (delete(workoutSessions)..where((s) => s.id.equals(id))).go();
+      });
+
   // === Workout Sets ===
   Future<List<WorkoutSet>> getSetsForSession(int sessionId) =>
       (select(workoutSets)

@@ -62,9 +62,43 @@ class SeedManager {
         );
       }
     }
+
+    // İçerik zenginleştirme (docs/11): free-exercise-db genişletilmiş kütüphane.
+    // Adı DB'de OLMAYANları ekler (mevcut/özel hareketlere dokunmaz).
+    for (final ex in await _extendedExerciseCompanions()) {
+      if (!byName.containsKey(ex.name.value)) toInsert.add(ex);
+    }
+
     if (toInsert.isNotEmpty) {
       await db.workoutDao.insertExercises(toInsert);
     }
+  }
+
+  /// free-exercise-db'den türetilen genişletilmiş hareket kütüphanesini
+  /// (public domain — docs/11) ExercisesCompanion listesine çevirir.
+  /// Görsel/talimat/seviye/kuvvet meta dahil. Mevcut küratörlü seed'le
+  /// çakışan adlar üretim aşamasında (import script) zaten çıkarılmıştır.
+  Future<List<ExercisesCompanion>> _extendedExerciseCompanions() async {
+    final jsonStr =
+        await rootBundle.loadString('assets/data/exercises_extended.json');
+    final List<dynamic> list = json.decode(jsonStr);
+    return list.map((e) {
+      final m = e as Map<String, dynamic>;
+      final instr = (m['instructions'] as List?)?.cast<String>() ?? const [];
+      return ExercisesCompanion(
+        name: Value(m['name'] as String),
+        category: Value(m['category'] as String),
+        muscleGroups: Value(jsonEncode(m['muscles'] ?? const [])),
+        primaryMuscle: Value(m['primaryMuscle'] as String?),
+        equipment: Value(m['equipment'] as String?),
+        measurementType: Value(m['measurement'] as String? ?? 'weight_reps'),
+        instructions: Value(instr.isEmpty ? null : jsonEncode(instr)),
+        level: Value(m['level'] as String?),
+        force: Value(m['force'] as String?),
+        imagePath: Value(m['imagePath'] as String?),
+        isCustom: const Value(false),
+      );
+    }).toList();
   }
 
   Future<void> _backfillFoodUnits() async {
@@ -98,7 +132,10 @@ class SeedManager {
   }
 
   Future<void> _seedExercises() async {
+    // Küratörlü çekirdek (TR/MacFit makineleri dahil) + genişletilmiş
+    // free-exercise-db kütüphanesi (docs/11). İkisi ad olarak çakışmaz.
     await db.workoutDao.insertExercises(exercisesSeed);
+    await db.workoutDao.insertExercises(await _extendedExerciseCompanions());
   }
 
   Future<void> _seedTurkishFoods() async {

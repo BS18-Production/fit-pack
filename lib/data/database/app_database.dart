@@ -70,8 +70,13 @@ class AppDatabase extends _$AppDatabase {
   /// `routine_exercises` tabloları + `workout_sessions` +routineId/+startedAt/
   /// +endedAt + `workout_sets` +rpe/+setType/+isComplete/+distanceM/
   /// +durationSec. Hepsi additive → veri kayıpsız.
+  ///
+  /// v6 → v7 (2026-06-29, İçerik Zenginleştirme — docs/11-content-enrichment.md):
+  /// `exercises` +imagePath/+instructions/+level/+force (free-exercise-db form
+  /// görseli + talimat + meta) + `foods.category` (TÜRKOMP gıda grubu). Hepsi
+  /// nullable → additive, veri kayıpsız (ADR-007).
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration {
@@ -130,6 +135,16 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(workoutSets, workoutSets.isComplete);
           await m.addColumn(workoutSets, workoutSets.distanceM);
           await m.addColumn(workoutSets, workoutSets.durationSec);
+        }
+        // v6 → v7: İçerik zenginleştirme (docs/11-content-enrichment.md).
+        // Hareket görseli/talimat/meta + gıda grubu. Hepsi nullable kolon
+        // ekleme → mevcut veri (özel hareket/yemek dahil) korunur.
+        if (from < 7 && to >= 7) {
+          await m.addColumn(exercises, exercises.imagePath);
+          await m.addColumn(exercises, exercises.instructions);
+          await m.addColumn(exercises, exercises.level);
+          await m.addColumn(exercises, exercises.force);
+          await m.addColumn(foods, foods.category);
         }
       },
 

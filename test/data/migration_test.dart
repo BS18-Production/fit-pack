@@ -26,18 +26,19 @@ void main() {
     'user_profile',
   };
 
-  group('Schema v6', () {
-    test('schemaVersion 6\'da (artırınca bu test bilinçli kırılır)',
+  group('Schema v7', () {
+    test('schemaVersion 7\'de (artırınca bu test bilinçli kırılır)',
         () async {
       // Bu assertion bir TRIPWIRE'dır: biri schemaVersion'ı artırınca
       // burası kırılır → onUpgrade adımı + yeni göç testi eklemeden
       // commit edemez (Workflow §4 kuralının mekanik bekçisi).
       // v1→v2: Beslenme V2 · v2→v3: Onboarding · v3→v4: Su · v4→v5: Hareket
-      // kütüphanesi · v5→v6: Rutinler + gelişmiş set (Antrenman V2 B+C).
+      // kütüphanesi · v5→v6: Rutinler + gelişmiş set · v6→v7: İçerik
+      // zenginleştirme (hareket görsel/talimat + gıda grubu).
       // Lossless göç testleri: migrations/migration_v*_to_v*_test.dart.
       final db = newTestDatabase();
       addTearDown(db.close);
-      expect(db.schemaVersion, 6);
+      expect(db.schemaVersion, 7);
     });
 
     test('temiz kurulum (onCreate) beklenen 10 tabloyu yaratır', () async {

@@ -1,10 +1,22 @@
 # Fit Pack — Geçmişe Dönük Veri Girişi (Historical Entry)
 
-> **Versiyon:** 1.0 (taslak)
+> **Versiyon:** 1.1
 > **Tarih:** 2026-06-29
 > **Sahibi:** Samet Orhan
-> **Durum:** Tasarım onaylandı → uygulama başlıyor
+> **Durum:** ✅ TAMAM — 4 özellik (H-A/B/C/D) kodlandı, emülatörde doğrulandı, commit'lendi
 > **Bağlı:** [PROJECT_STATE.md](../PROJECT_STATE.md), [docs/09-workout-v2.md](09-workout-v2.md)
+
+## ✅ Tamamlanma notu (2026-06-29)
+
+`feat/historical-entry` dalı. analyze 0 · test 65/65 (4 yeni backdate regresyon testi).
+- **H-C** kilo/ölçüm tarih seçici → `738c98b`
+- **H-A/H-B** antrenman bitişte tarih + "Geçmiş Antrenman Ekle" akışı + özet etiketi fix → `752c277`
+- **H-D** geçmiş seans düzenle/sil + DAO + testler → `b620bc2`
+- Tasarım dokümanı → `fce8c84`
+
+**Emülatör doğrulaması:** Geçmiş antrenman 20 Haziran'a kaydedildi → DB `date=2026-06-20` (kaydetme anı değil, seçilen gün). Gelecek tarih takvimde devre dışı. Silme onay dialogu çalışıyor. Samet paralel olarak kendi test seansını (2 Haziran) ekledi — bağımsız doğrulama.
+
+**Ertelendi (bilinçli):** Geçmiş seansta tek tek **set düzenleme** UI'si (kg/tekrar değiştirme) yapılmadı — H-D yalnız tarih + silme kapsar. Set düzeltme gerekiyorsa seansı silip yeniden eklemek mevcut yol. İleride istenirse ayrı iş.
 
 ---
 

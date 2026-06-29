@@ -1,7 +1,22 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
-> **Son güncelleme:** 2026-06-21
+> **Son güncelleme:** 2026-06-29
 > **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [docs/04-roadmap.md](docs/04-roadmap.md), [docs/08-design-brief.md](docs/08-design-brief.md)
+
+---
+
+## ✅ Geçmişe Dönük Veri Girişi TAMAM (2026-06-29) — `feat/historical-entry`
+
+Tasarım + uygulama: [docs/10-historical-entry.md](docs/10-historical-entry.md). analyze 0 · test 65/65.
+- [x] **H-C** kilo/ölçüm tarih seçici (`738c98b`)
+- [x] **H-A/H-B** antrenman bitişte tarih + "Geçmiş Antrenman Ekle" akışı + özet etiketi (`752c277`)
+- [x] **H-D** geçmiş seans düzenle (tarih) / sil + regresyon testleri (`b620bc2`)
+- Emülatörde doğrulandı (backdate DB'de teyit, gelecek-tarih engeli, silme onayı).
+- **Ertelendi:** geçmiş seansta tek tek set düzenleme UI'si (sadece tarih+silme yapıldı).
+- **PR/merge bekliyor:** dal henüz `main`'e merge edilmedi.
+
+### 🔜 Olası sıradaki: Adım sayar (pedometer) — Samet sordu (2026-06-29)
+Health Connect (Android) / HealthKit (iOS) `health` paketiyle cihazdan günlük adım okuma → aktivite halkası. Lokal (sunucu yok); merkezi/çoklu-kullanıcı toplama = V3. Doc-first gerekir (yeni sensör+izin+veri tipi+şema). Detay konuşuldu, tasarım yapılmadı.
 
 ---
 

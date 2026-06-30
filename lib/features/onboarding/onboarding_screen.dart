@@ -35,6 +35,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _weightCtrl = TextEditingController();
   final _goalWeightCtrl = TextEditingController();
   OnboardingPhase _phase = OnboardingPhase.cut;
+  String? _gender; // 'male' | 'female' — günlük enerji tahmini için (opsiyonel)
+  DateTime? _birthDate; // yaş — günlük enerji tahmini için (opsiyonel)
 
   // Adım 3 — hedefler
   final _kcalCtrl = TextEditingController();
@@ -120,6 +122,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             phase: _phase.dbValue,
             heightCm: height,
             goalWeightKg: goalWeight,
+            birthDate: _birthDate,
+            gender: _gender,
+            // Günlük enerji tahmini için makul varsayılan; Ayarlar'dan değişir.
+            activityLevel: 'moderate',
           );
 
       // Başlangıç kilosunu ilk ölçüm olarak kaydet → grafik 1. noktasını alır.
@@ -162,6 +168,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     weightCtrl: _weightCtrl,
                     goalWeightCtrl: _goalWeightCtrl,
                     phase: _phase,
+                    gender: _gender,
+                    birthDate: _birthDate,
+                    onGenderChanged: (g) => setState(() => _gender = g),
+                    onBirthDateChanged: (d) => setState(() => _birthDate = d),
                     onPhaseChanged: (p) => setState(() {
                       _phase = p;
                       _refreshSuggestedGoals();
@@ -242,6 +252,10 @@ class _GoalSetupPage extends StatelessWidget {
     required this.weightCtrl,
     required this.goalWeightCtrl,
     required this.phase,
+    required this.gender,
+    required this.birthDate,
+    required this.onGenderChanged,
+    required this.onBirthDateChanged,
     required this.onPhaseChanged,
     required this.onWeightChanged,
   });
@@ -250,8 +264,24 @@ class _GoalSetupPage extends StatelessWidget {
   final TextEditingController weightCtrl;
   final TextEditingController goalWeightCtrl;
   final OnboardingPhase phase;
+  final String? gender;
+  final DateTime? birthDate;
+  final ValueChanged<String?> onGenderChanged;
+  final ValueChanged<DateTime?> onBirthDateChanged;
   final ValueChanged<OnboardingPhase> onPhaseChanged;
   final VoidCallback onWeightChanged;
+
+  Future<void> _pickBirthDate(BuildContext context) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: birthDate ?? DateTime(now.year - 25, 1, 1),
+      firstDate: DateTime(now.year - 100),
+      lastDate: DateTime(now.year - 10, 12, 31),
+      helpText: 'Doğum tarihini seç',
+    );
+    if (picked != null) onBirthDateChanged(picked);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -262,7 +292,8 @@ class _GoalSetupPage extends StatelessWidget {
             style: context.texts.titleLarge
                 ?.copyWith(fontWeight: FontWeight.bold)),
         AppSpacing.vGapMd,
-        Text('Hedef önerisi için kilon yeterli; boy ve hedef kilo opsiyonel.',
+        Text('Hedef önerisi için kilon yeterli; gerisi opsiyonel '
+            '(cinsiyet + doğum tarihi günlük enerji tahmini için).',
             style: context.texts.bodyMedium
                 ?.copyWith(color: context.colors.onSurfaceVariant)),
         AppSpacing.vGapXl,
@@ -291,6 +322,53 @@ class _GoalSetupPage extends StatelessWidget {
           controller: goalWeightCtrl,
           label: 'Hedef kilo (opsiyonel)',
           suffix: 'kg',
+        ),
+        AppSpacing.vGapLg,
+        // Cinsiyet (opsiyonel) — günlük enerji tahmini için.
+        Row(
+          children: [
+            Expanded(
+              child: _ChoiceChipTile(
+                label: 'Erkek',
+                selected: gender == 'male',
+                onTap: () =>
+                    onGenderChanged(gender == 'male' ? null : 'male'),
+              ),
+            ),
+            AppSpacing.hGapMd,
+            Expanded(
+              child: _ChoiceChipTile(
+                label: 'Kadın',
+                selected: gender == 'female',
+                onTap: () =>
+                    onGenderChanged(gender == 'female' ? null : 'female'),
+              ),
+            ),
+          ],
+        ),
+        AppSpacing.vGapLg,
+        // Doğum tarihi (opsiyonel).
+        InkWell(
+          onTap: () => _pickBirthDate(context),
+          borderRadius: AppRadius.brMd,
+          child: InputDecorator(
+            decoration: const InputDecoration(
+              labelText: 'Doğum tarihi (opsiyonel)',
+              border: OutlineInputBorder(borderRadius: AppRadius.brMd),
+              suffixIcon: Icon(Icons.calendar_today_rounded),
+            ),
+            child: Text(
+              birthDate == null
+                  ? 'Seç'
+                  : '${birthDate!.day.toString().padLeft(2, '0')}.'
+                      '${birthDate!.month.toString().padLeft(2, '0')}.'
+                      '${birthDate!.year}',
+              style: context.texts.bodyLarge?.copyWith(
+                  color: birthDate == null
+                      ? context.colors.onSurfaceVariant
+                      : null),
+            ),
+          ),
         ),
         AppSpacing.vGapXl,
         Text('Hedefin', style: context.texts.titleMedium),
@@ -448,6 +526,48 @@ class _NumField extends StatelessWidget {
         labelText: label,
         suffixText: suffix,
         border: const OutlineInputBorder(borderRadius: AppRadius.brMd),
+      ),
+    );
+  }
+}
+
+/// Onboarding'de cinsiyet seçimi için seçilebilir kart (tekrar dokun = bırak).
+class _ChoiceChipTile extends StatelessWidget {
+  const _ChoiceChipTile({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.brMd,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: AppA11y.minTapTarget),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        decoration: BoxDecoration(
+          color: selected
+              ? colors.primaryContainer
+              : colors.surfaceContainerHighest,
+          borderRadius: AppRadius.brMd,
+          border: Border.all(
+            color: selected ? colors.primary : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: Text(label,
+            style: context.texts.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: selected ? colors.onPrimaryContainer : null,
+            )),
       ),
     );
   }

@@ -23,4 +23,10 @@ class UserProfile extends Table {
   BoolColumn get onboarded => boolean().withDefault(const Constant(false))();
   // v4 (Home su takibi): günlük su hedefi (ml). Varsayılan 2.5 L.
   IntColumn get waterGoalMl => integer().withDefault(const Constant(2500))();
+  // v8 (BMR/TDEE — docs/12): tam günlük enerji harcaması tahmini için.
+  // Hepsi nullable → eski profiller boş gelir, kullanıcı Ayarlar'dan doldurur.
+  DateTimeColumn get birthDate => dateTime().nullable()(); // yaş türetimi
+  TextColumn get gender => text().nullable()(); // 'male' | 'female'
+  // Aktiflik düzeyi (TDEE çarpanı): sedentary|light|moderate|active|veryActive.
+  TextColumn get activityLevel => text().nullable()();
 }

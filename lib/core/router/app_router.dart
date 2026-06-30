@@ -13,6 +13,7 @@ import 'package:fit_pack/features/nutrition/nutrition_screen.dart';
 import 'package:fit_pack/features/nutrition/foods_screen.dart';
 import 'package:fit_pack/features/body_metrics/body_metrics_screen.dart';
 import 'package:fit_pack/features/export/export_screen.dart';
+import 'package:fit_pack/features/cloud/cloud_account_screen.dart';
 import 'package:fit_pack/features/settings/settings_screen.dart';
 import 'package:fit_pack/features/onboarding/onboarding_screen.dart';
 import 'package:fit_pack/shared/widgets/app_shell.dart';
@@ -90,6 +91,12 @@ GoRouter createAppRouter({required bool onboarded}) => GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const ActiveSessionScreen(),
     ),
+    // Kaydedilmiş taslaktan devam (docs/12). :routineId'den ÖNCE gelmeli.
+    GoRoute(
+      path: '/workout/active/resume',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const ActiveSessionScreen(resume: true),
+    ),
     GoRoute(
       path: '/workout/active/:routineId',
       parentNavigatorKey: _rootNavigatorKey,
@@ -135,6 +142,11 @@ GoRouter createAppRouter({required bool onboarded}) => GoRouter(
       path: '/export',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const ExportScreen(),
+    ),
+    GoRoute(
+      path: '/cloud',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const CloudAccountScreen(),
     ),
     GoRoute(
       path: '/settings',

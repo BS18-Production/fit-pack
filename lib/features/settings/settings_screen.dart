@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drift/drift.dart' show Value;
+import 'package:file_picker/file_picker.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
@@ -9,6 +12,9 @@ import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../home/providers/home_providers.dart';
+import '../workout/calorie_estimate.dart';
+import '../cloud/auth_service.dart';
+import 'backup_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -57,6 +63,134 @@ class _SettingsBody extends ConsumerWidget {
   Future<void> _save(WidgetRef ref, UserProfileData updated) async {
     await ref.read(userProfileDaoProvider).updateProfile(updated);
     ref.invalidate(userProfileProvider);
+  }
+
+  static String _fmtDate(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+
+  Future<void> _editGender(BuildContext context, WidgetRef ref) async {
+    final picked = await _pickOption(
+      context,
+      title: 'Cinsiyet',
+      options: const [('male', 'Erkek'), ('female', 'Kadın')],
+      current: profile.gender,
+    );
+    if (picked != null) {
+      await _save(ref, profile.copyWith(gender: Value(picked)));
+    }
+  }
+
+  Future<void> _editActivity(BuildContext context, WidgetRef ref) async {
+    final picked = await _pickOption(
+      context,
+      title: 'Aktiflik Düzeyi',
+      options: activityLabelsTr.entries.map((e) => (e.key, e.value)).toList(),
+      current: profile.activityLevel,
+    );
+    if (picked != null) {
+      await _save(ref, profile.copyWith(activityLevel: Value(picked)));
+    }
+  }
+
+  Future<void> _editBirthDate(BuildContext context, WidgetRef ref) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: profile.birthDate ?? DateTime(now.year - 25, 1, 1),
+      firstDate: DateTime(now.year - 100),
+      lastDate: DateTime(now.year - 10, 12, 31), // en az 10 yaş
+      helpText: 'Doğum tarihini seç',
+    );
+    if (picked != null) {
+      await _save(ref, profile.copyWith(birthDate: Value(picked)));
+    }
+  }
+
+  /// Basit tek-seçim listesi dialog'u.
+  Future<String?> _pickOption(
+    BuildContext context, {
+    required String title,
+    required List<(String, String)> options,
+    required String? current,
+  }) {
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(title),
+        children: [
+          for (final (value, label) in options)
+            ListTile(
+              title: Text(label),
+              trailing: value == current
+                  ? Icon(Icons.check_rounded, color: ctx.colors.primary)
+                  : null,
+              onTap: () => Navigator.pop(ctx, value),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Tüm veritabanını (.sqlite) paylaşım sayfasıyla dışa aktar — Drive/Dosyalar/
+  /// e-postaya kaydet. Geri yüklenebilir tam yedek (rapor dışa aktarımından farklı).
+  Future<void> _backup(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(backupServiceProvider).shareBackup();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Yedek oluşturulamadı: $e')),
+        );
+      }
+    }
+  }
+
+  /// Bir yedek dosyası seç → onay → canlı DB'nin üstüne yaz → uygulamayı kapat.
+  Future<void> _restore(BuildContext context, WidgetRef ref) async {
+    final picked = await FilePicker.platform.pickFiles(type: FileType.any);
+    if (picked == null || picked.files.single.path == null) return;
+    final file = File(picked.files.single.path!);
+
+    if (!context.mounted) return;
+    final ok = await confirmAction(
+      context,
+      title: 'Yedekten geri yükle',
+      message:
+          'Şu anki tüm verinin yerine bu yedek yüklenecek. Bu işlem geri alınamaz. '
+          'Devam edilsin mi?',
+      confirmLabel: 'Geri Yükle',
+      destructive: true,
+    );
+    if (!ok) return;
+
+    try {
+      await ref.read(backupServiceProvider).restoreFromFile(file);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Geri yükleme başarısız: $e')),
+        );
+      }
+      return;
+    }
+
+    if (!context.mounted) return;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Geri yüklendi'),
+        content: const Text(
+            'Veriler geri yüklendi. Değişikliklerin görünmesi için uygulama '
+            'kapanacak — tekrar açman yeterli.'),
+        actions: [
+          FilledButton(
+            onPressed: () => SystemNavigator.pop(),
+            child: const Text('Uygulamayı Kapat'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _editNumber(
@@ -153,6 +287,32 @@ class _SettingsBody extends ConsumerWidget {
               apply: (v) =>
                   profile.copyWith(goalWeightKg: Value(v.toDouble()))),
         ),
+        // ── BMR/TDEE girdileri (docs/12) ──
+        _SettingTile(
+          icon: Icons.wc_rounded,
+          title: 'Cinsiyet',
+          value: switch (profile.gender) {
+            'male' => 'Erkek',
+            'female' => 'Kadın',
+            _ => '—',
+          },
+          onTap: () => _editGender(context, ref),
+        ),
+        _SettingTile(
+          icon: Icons.cake_outlined,
+          title: 'Doğum Tarihi',
+          value: profile.birthDate != null
+              ? '${_fmtDate(profile.birthDate!)} · ${ageFromBirthDate(profile.birthDate)} yaş'
+              : '—',
+          onTap: () => _editBirthDate(context, ref),
+        ),
+        _SettingTile(
+          icon: Icons.directions_walk_rounded,
+          title: 'Aktiflik Düzeyi',
+          value: activityLabelsTr[profile.activityLevel] ?? '—',
+          onTap: () => _editActivity(context, ref),
+        ),
+        _DailyEnergyTile(profile: profile),
         const _SectionHeader('Beslenme'),
         _SettingTile(
           icon: Icons.restaurant_menu_rounded,
@@ -161,6 +321,29 @@ class _SettingsBody extends ConsumerWidget {
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => context.push('/foods'),
         ),
+        const _SectionHeader('Verilerim'),
+        _CloudAccountTile(),
+        _SettingTile(
+          icon: Icons.backup_rounded,
+          title: 'Cihaza Yedekle',
+          subtitle: 'Verini dosya olarak kaydet (Drive/Dosyalar) — geri yüklenebilir',
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => _backup(context, ref),
+        ),
+        _SettingTile(
+          icon: Icons.restore_rounded,
+          title: 'Yedekten Geri Yükle',
+          subtitle: 'Daha önce aldığın yedek dosyasını geri yükle',
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => _restore(context, ref),
+        ),
+        _SettingTile(
+          icon: Icons.ios_share_rounded,
+          title: 'Veri Dışa Aktar (rapor)',
+          subtitle: 'Okunabilir rapor — Markdown / JSON / CSV',
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => context.push('/export'),
+        ),
         const _SectionHeader('Hakkında'),
         _SettingTile(
           icon: Icons.info_outline_rounded,
@@ -168,14 +351,97 @@ class _SettingsBody extends ConsumerWidget {
           subtitle:
               'Sürüm ${AppConstants.appVersion} · Kişisel fitness takibi',
         ),
-        _SettingTile(
-          icon: Icons.ios_share_rounded,
-          title: 'Veri Dışa Aktar',
-          trailing: const Icon(Icons.chevron_right_rounded),
-          onTap: () => context.push('/export'),
-        ),
         const SizedBox(height: AppSpacing.xxl),
       ],
+    );
+  }
+}
+
+/// Tahmini Günlük Harcama (TDEE) — profil + en güncel kilodan hesaplar.
+/// Eksik veri varsa neyin gerektiğini söyler (tıklanınca açıklama).
+class _DailyEnergyTile extends ConsumerWidget {
+  final UserProfileData profile;
+  const _DailyEnergyTile({required this.profile});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final weight = ref.watch(latestWeightProvider).valueOrNull?.weightKg;
+    final age = ageFromBirthDate(profile.birthDate);
+    final bmr = mifflinStJeorBmr(
+      weightKg: weight,
+      heightCm: profile.heightCm,
+      age: age,
+      gender: profile.gender,
+    );
+    final total = tdee(bmr: bmr, activityLevel: profile.activityLevel);
+
+    final c = context.colors;
+    final ready = total != null;
+    final missing = <String>[
+      if (weight == null) 'kilo',
+      if (profile.heightCm == null) 'boy',
+      if (age == null) 'doğum tarihi',
+      if (profile.gender != 'male' && profile.gender != 'female') 'cinsiyet',
+    ];
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: c.primaryContainer.withValues(alpha: ready ? 1 : 0.5),
+        borderRadius: AppRadius.brMd,
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.local_fire_department_rounded,
+              color: c.onPrimaryContainer, size: AppIconSize.lg),
+          AppSpacing.hGapMd,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Tahmini Günlük Harcama',
+                    style: context.texts.labelLarge?.copyWith(
+                        color: c.onPrimaryContainer,
+                        fontWeight: FontWeight.w700)),
+                AppSpacing.vGapXs,
+                if (ready)
+                  Text(
+                    '~${total.round()} kcal/gün'
+                    '  ·  dinlenme ${bmr!.round()}',
+                    style: context.texts.bodyMedium?.copyWith(
+                        color: c.onPrimaryContainer.withValues(alpha: 0.85)),
+                  )
+                else
+                  Text(
+                    'Hesaplamak için gir: ${missing.join(", ")}',
+                    style: context.texts.bodySmall?.copyWith(
+                        color: c.onPrimaryContainer.withValues(alpha: 0.85)),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bulut hesabı satırı — oturum durumuna göre e-posta ya da "Giriş yap" gösterir.
+class _CloudAccountTile extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider);
+    final signedIn = user != null;
+    return _SettingTile(
+      icon: signedIn ? Icons.cloud_done_rounded : Icons.cloud_outlined,
+      title: 'Bulut Hesabı',
+      subtitle: signedIn
+          ? '${user.email ?? "Giriş yapıldı"} · buluta yedekle / geri yükle'
+          : 'Giriş yap → verini buluta yedekle, yeni cihazda geri yükle',
+      trailing: const Icon(Icons.chevron_right_rounded),
+      onTap: () => context.push('/cloud'),
     );
   }
 }

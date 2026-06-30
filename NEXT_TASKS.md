@@ -1,7 +1,23 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
-> **Son güncelleme:** 2026-06-29
+> **Son güncelleme:** 2026-06-30
 > **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [docs/04-roadmap.md](docs/04-roadmap.md), [docs/08-design-brief.md](docs/08-design-brief.md)
+
+---
+
+## 🔧 Cihaz Geri Bildirimi Düzeltmeleri (2026-06-30) — `fix/active-session-persistence`
+
+Samet Push day'i telefonda yaptı, genel beğendi + bulgular verdi. analyze 0 · test 83/83.
+Tasarım notu: [docs/12-session-resilience.md](docs/12-session-resilience.md).
+
+- [x] **#3 (KRİTİK) Aktif seans kalıcılığı** — arka plana alıp dönünce seans sıfırlanıyordu (process kill). Çözüm: seans `shared_preferences`'e canlı taslak olarak yazılır (paused + yapısal değişiklikte), Antrenman ana ekranında **"Devam eden antrenman" banner'ı** ile kaldığın yerden devam (`/workout/active/resume`). Bitir/çıkış taslağı siler. `workout_draft.dart` + `activeDraftProvider`.
+- [x] **#3b Ekran uyanık** — `wakelock_plus` ile canlı seansta ekran kapanmıyor.
+- [x] **Geçmiş ekranı layout** — hareket adı/setler sıkışıyordu (Samet ekran görüntüsü). Yeniden kuruldu: ad üstte tam genişlik + **numaralı set satırları** (hizalı) + üst **istatistik şeridi** (süre/hacim/set/~kcal).
+- [x] **Kalori tahmini** — seans detayında ACSM `MET×3.5×kilo/200×süre` (RPE'ye göre MET 3.5–6.0, kardiyo 7.0). `calorie_estimate.dart`.
+- [x] **Tam günlük harcama BMR/TDEE (şema v8)** — Samet onayladı. `user_profile` +birthDate/+gender/+activityLevel (nullable, migration v7→v8 lossless, tripwire 8). Mifflin-St Jeor BMR + aktiflik çarpanı (TDEE). Ayarlar→Vücut'a cinsiyet/doğum tarihi/aktiflik + "Tahmini Günlük Harcama" kartı; onboarding adım 2'ye cinsiyet+doğum tarihi. **Emülatörde gerçek v7→v8 migration + TDEE doğrulandı** (~2871 kcal/gün, kilo 84.7'den). Minor: aktiflik "—" iken TDEE orta (1.55) varsayılanı kullanır.
+- [ ] **#2 Aktif seansta "nasıl yapılır"** — talimat/kas haritası/foto şu an sadece kütüphanede. Seans hareket kartına info erişimi eklenecek (veri hazır). **YAPILMADI.**
+- [ ] **#1 Duplike hareketler** — free-exercise-db merge'ünde isim çakışması olabilir; dedupe migration. **YAPILMADI** (önce teşhis).
+- **Doğrulama:** analyze 0 · test **90/90** · emülatörde release APK: yedekleme (paylaşım sayfası), v7→v8 migration (veri kaybı yok), Settings BMR/TDEE doğrulandı. **Henüz commit edilmedi** (dal `fix/active-session-persistence`, Samet test edip onaylayınca commit). Geçmiş layout fix görseli emülatörde seans verisi olmadığı için yapılamadı → Samet telefonda teyit edecek.
 
 ---
 

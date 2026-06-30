@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
@@ -12,7 +13,9 @@ import '../../core/utils/format.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../home/providers/home_providers.dart';
+import 'exercise_detail_screen.dart';
 import 'routine_providers.dart';
+import 'workout_draft.dart';
 import 'workout_ui.dart';
 
 /// Aktif Antrenman Seansı (Antrenman V2 Faz C — docs/09-workout-v2.md).
@@ -100,22 +103,29 @@ class ActiveSessionScreen extends ConsumerStatefulWidget {
   // Geçmiş antrenman ekleme modu: dolu ise kronometre çalışmaz, seans bu güne
   // yazılır (H-B). null ise normal canlı seans (H-A: bitişte tarih düzenlenebilir).
   final DateTime? manualDate;
-  const ActiveSessionScreen({super.key, this.routineId, this.manualDate});
+  // Kaydedilmiş taslaktan devam (docs/12). true ise routine yerine taslak yüklenir.
+  final bool resume;
+  const ActiveSessionScreen(
+      {super.key, this.routineId, this.manualDate, this.resume = false});
 
   @override
   ConsumerState<ActiveSessionScreen> createState() =>
       _ActiveSessionScreenState();
 }
 
-class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
+class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
+    with WidgetsBindingObserver {
   final List<_SessionExercise> _exercises = [];
   late String _title;
-  late final DateTime _startedAt;
+  late DateTime _startedAt;
   late DateTime _sessionDate; // seansın yazılacağı mantıksal gün
   bool _loading = true;
   bool _saving = false;
+  bool _draftCleared = false; // bitir/çıkış sonrası taslak yazımını durdur
 
   bool get _isManual => widget.manualDate != null;
+  // Yalnızca canlı seans taslaklanır (geçmiş kayıt hızlı + tarihli, gerek yok).
+  bool get _draftable => !_isManual;
 
   Timer? _ticker; // canlı süre
   Duration _elapsed = Duration.zero;
@@ -131,11 +141,90 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
     _sessionDate = DateTime(_startedAt.year, _startedAt.month, _startedAt.day);
     _title = _isManual ? 'Geçmiş Antrenman' : 'Boş Antrenman';
     if (!_isManual) {
+      WakelockPlus.enable(); // antrenman boyunca ekran uyanık kalsın (docs/12)
+      WidgetsBinding.instance.addObserver(this);
       _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() => _elapsed = DateTime.now().difference(_startedAt));
       });
     }
     _load();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Arka plana alınınca taslağı diske yaz — process öldürülse de kaybolmasın.
+    // Yazım bitince banner provider'ını tazele (alttaki liste güncellensin).
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      _saveDraft().then((_) {
+        if (mounted) ref.invalidate(activeDraftProvider);
+      });
+    }
+  }
+
+  // ───────── taslak (draft) ─────────
+
+  WorkoutDraft _buildDraft() => WorkoutDraft(
+        title: _title,
+        routineId: widget.routineId,
+        startedAtMs: _startedAt.millisecondsSinceEpoch,
+        sessionDateMs: _sessionDate.millisecondsSinceEpoch,
+        exercises: _exercises
+            .map((e) => DraftExercise(
+                  exerciseId: e.exercise.id,
+                  restSec: e.restSec,
+                  previous: e.previous,
+                  sets: e.sets
+                      .map((s) => DraftSet(
+                            weight: s.weight,
+                            reps: s.reps,
+                            rpe: s.rpe,
+                            durationSec: s.durationSec,
+                            distanceM: s.distanceM,
+                            type: s.type,
+                            done: s.done,
+                          ))
+                      .toList(),
+                ))
+            .toList(),
+      );
+
+  Future<void> _saveDraft() async {
+    if (!_draftable || _draftCleared || _loading) return;
+    await ref.read(workoutDraftServiceProvider).save(_buildDraft());
+  }
+
+  void _clearDraft() {
+    _draftCleared = true;
+    ref.read(workoutDraftServiceProvider).clear();
+    ref.invalidate(activeDraftProvider); // banner kalksın
+  }
+
+  /// Taslaktan hareketleri yeniden kurar (resume modu).
+  Future<void> _restoreFromDraft(WorkoutDraft d) async {
+    final dao = ref.read(workoutDaoProvider);
+    _title = d.title;
+    _startedAt = d.startedAt;
+    _sessionDate = d.sessionDate;
+    for (final de in d.exercises) {
+      final ex = await dao.getExerciseById(de.exerciseId);
+      if (ex == null) continue; // silinmiş/arşivlenmiş hareketi atla
+      _exercises.add(_SessionExercise(
+        ex,
+        de.previous,
+        de.sets
+            .map((s) => _SetEntry()
+              ..weight = s.weight
+              ..reps = s.reps
+              ..rpe = s.rpe
+              ..durationSec = s.durationSec
+              ..distanceM = s.distanceM
+              ..type = s.type
+              ..done = s.done)
+            .toList(),
+        restSec: de.restSec,
+      ));
+    }
   }
 
   Future<void> _pickSessionDate() async {
@@ -156,11 +245,22 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
   void dispose() {
     _ticker?.cancel();
     _restTimer?.cancel();
+    if (!_isManual) {
+      WidgetsBinding.instance.removeObserver(this);
+      WakelockPlus.disable();
+    }
     super.dispose();
   }
 
   Future<void> _load() async {
     final dao = ref.read(workoutDaoProvider);
+    // Resume modu: routine yerine kaydedilmiş taslaktan kur.
+    if (widget.resume) {
+      final draft = await ref.read(workoutDraftServiceProvider).load();
+      if (draft != null) await _restoreFromDraft(draft);
+      if (mounted) setState(() => _loading = false);
+      return;
+    }
     if (widget.routineId != null) {
       final routine = await dao.getRoutine(widget.routineId!);
       final exs = await dao.getRoutineExercises(widget.routineId!);
@@ -183,6 +283,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
       }
     }
     if (mounted) setState(() => _loading = false);
+    _saveDraft(); // başlangıç taslağını yaz (boş bile olsa resume hedefi olur)
   }
 
   bool get _hasData => _exercises
@@ -198,16 +299,25 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
       // Geçmiş kayıt modunda dinlenme sayacı anlamsız — canlı değil.
       if (!_isManual && ex.restSec > 0) _startRest(ex.restSec);
     }
+    _saveDraft();
   }
 
   void _cycleType(_SetEntry set) {
     final i = _setTypes.indexOf(set.type);
     setState(() => set.type = _setTypes[(i + 1) % _setTypes.length]);
+    _saveDraft();
   }
 
-  void _addSet(_SessionExercise ex) => setState(() => ex.sets.add(_SetEntry()));
+  void _addSet(_SessionExercise ex) {
+    setState(() => ex.sets.add(_SetEntry()));
+    _saveDraft();
+  }
+
   void _removeSet(_SessionExercise ex) {
-    if (ex.sets.length > 1) setState(() => ex.sets.removeLast());
+    if (ex.sets.length > 1) {
+      setState(() => ex.sets.removeLast());
+      _saveDraft();
+    }
   }
 
   /// Hareketi seanstan kaldır. Veri girilmişse önce onay sor.
@@ -224,6 +334,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
       if (!ok) return;
     }
     setState(() => _exercises.remove(ex));
+    _saveDraft();
   }
 
   Future<void> _addExercise() async {
@@ -237,6 +348,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
           List.generate(1, (_) => _SetEntry()),
           restSec: WorkoutUi.defaultRestSec(ex.category),
         )));
+    _saveDraft();
   }
 
   // ───────── dinlenme sayacı ─────────
@@ -312,6 +424,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
       }
     }
 
+    _clearDraft(); // seans DB'ye yazıldı — taslağı sil
     ref.invalidate(weekWorkoutStatsProvider);
     ref.invalidate(lastWorkoutSessionProvider);
     ref.invalidate(workoutStreakProvider);
@@ -345,7 +458,10 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen> {
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         final go = GoRouter.of(context);
-        if (await _confirmExit() && mounted) go.pop();
+        if (await _confirmExit() && mounted) {
+          _clearDraft(); // kullanıcı setleri atmayı onayladı — taslağı sil
+          go.pop();
+        }
       },
       child: Scaffold(
         appBar: AppBar(
@@ -691,6 +807,16 @@ class _ExerciseBlock extends StatelessWidget {
                               ?.copyWith(color: c.onSurfaceVariant)),
                     ],
                   ),
+                ),
+                // Nasıl yapılır (#2): talimat + kas haritası + demo görseli,
+                // seanstan çıkmadan modal sheet'te.
+                IconButton(
+                  icon: Icon(Icons.help_outline_rounded,
+                      color: c.onSurfaceVariant, size: AppIconSize.md),
+                  tooltip: 'Nasıl yapılır',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () =>
+                      showExerciseHowToSheet(context, ex.exercise),
                 ),
                 PopupMenuButton<String>(
                   icon: Icon(Icons.more_vert_rounded,

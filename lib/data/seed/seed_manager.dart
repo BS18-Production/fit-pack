@@ -26,6 +26,41 @@ class SeedManager {
       // Antrenman V2 (docs/09-workout-v2.md): mevcut kurulumlara yeni
       // İngilizce hareket kütüphanesini getir (eksikleri ekle + meta doldur).
       await _backfillExercises();
+      // #1 duplike temizliği: free-exercise-db'den gelen, küratörlü hareketle
+      // sadece kelime sırası/noktalama farkıyla aynı olan varyantları birleştir.
+      await _dedupeExercises();
+    }
+  }
+
+  /// Küratörlü seed ile free-exercise-db'nin aynı hareketi farklı yazdığı 7
+  /// duplike (#1). Anahtar = silinecek extended varyant, değer = korunacak
+  /// küratörlü ad. Referanslar korunana taşınıp varyant silinir (idempotent:
+  /// varyant yoksa no-op). Yeni kurulumlarda zaten JSON'dan çıkarıldı.
+  static const _duplicateVariants = <String, String>{
+    'Bent Over Barbell Row': 'Bent-Over Barbell Row',
+    'Front Cable Raise': 'Cable Front Raise',
+    'Upright Barbell Row': 'Barbell Upright Row',
+    'Upright Cable Row': 'Cable Upright Row',
+    'Muscle Up': 'Muscle-Up',
+    'Running, Treadmill': 'Treadmill Running',
+    'Walking, Treadmill': 'Treadmill Walking',
+  };
+
+  Future<void> _dedupeExercises() async {
+    final all = await db.workoutDao.getAllExercises();
+    final byName = <String, Exercise>{};
+    for (final e in all) {
+      if (!e.isCustom) byName[e.name] = e; // özel hareketlere dokunma
+    }
+    for (final pair in _duplicateVariants.entries) {
+      final dup = byName[pair.key];
+      final keep = byName[pair.value];
+      if (dup == null || keep == null || dup.id == keep.id) continue;
+      try {
+        await db.workoutDao.mergeExercise(fromId: dup.id, toId: keep.id);
+      } catch (_) {
+        // Nadir referans çakışması → bu varyantı atla, seed bozulmasın.
+      }
     }
   }
 

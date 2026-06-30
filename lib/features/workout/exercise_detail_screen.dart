@@ -66,7 +66,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
           ]),
         ),
         body: TabBarView(children: [
-          _HowToTab(exercise: ex),
+          ExerciseHowToContent(exercise: ex),
           _HistoryTab(exerciseId: exerciseId, exercise: ex),
           _ChartTab(exerciseId: exerciseId),
           _RecordsTab(exerciseId: exerciseId),
@@ -76,11 +76,48 @@ class ExerciseDetailScreen extends ConsumerWidget {
   }
 }
 
-/// "Nasıl Yapılır" sekmesi (İçerik Zenginleştirme — docs/11): form görseli +
-/// adım adım talimat + meta (kas/ekipman/seviye). free-exercise-db verisi.
-class _HowToTab extends StatelessWidget {
+/// Aktif seans sırasında hareketin "nasıl yapılır" bilgisini modal sheet'te
+/// gösterir (#2 — talimat + kas haritası + demo görseli). Detay ekranına gitmeye
+/// gerek kalmadan seans akışı bozulmaz.
+void showExerciseHowToSheet(BuildContext context, Exercise exercise) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (ctx) => DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.75,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      builder: (_, scrollController) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.sm),
+            child: Text(exercise.name,
+                style: ctx.texts.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w800),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
+          ),
+          Expanded(
+            child: ExerciseHowToContent(
+                exercise: exercise, scrollController: scrollController),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Hareketin "Nasıl Yapılır" içeriği (İçerik Zenginleştirme — docs/11): form
+/// görseli + adım adım talimat + meta (kas/ekipman/seviye). free-exercise-db.
+/// Hem hareket detayı sekmesinde hem aktif seans sheet'inde kullanılır (#2).
+class ExerciseHowToContent extends StatelessWidget {
   final Exercise? exercise;
-  const _HowToTab({this.exercise});
+  final ScrollController? scrollController; // sheet içinde kaydırma için
+  const ExerciseHowToContent({super.key, this.exercise, this.scrollController});
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +136,7 @@ class _HowToTab extends StatelessWidget {
       } catch (_) {}
     }
     return ListView(
+      controller: scrollController,
       padding: AppSpacing.screen,
       children: [
         // Demo fotoğrafı (free-exercise-db, public domain) — CDN'den lazy-load

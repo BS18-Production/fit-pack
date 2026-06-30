@@ -6690,6 +6690,37 @@ class $UserProfileTable extends UserProfile
     requiredDuringInsert: false,
     defaultValue: const Constant(2500),
   );
+  static const VerificationMeta _birthDateMeta = const VerificationMeta(
+    'birthDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> birthDate = GeneratedColumn<DateTime>(
+    'birth_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _genderMeta = const VerificationMeta('gender');
+  @override
+  late final GeneratedColumn<String> gender = GeneratedColumn<String>(
+    'gender',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _activityLevelMeta = const VerificationMeta(
+    'activityLevel',
+  );
+  @override
+  late final GeneratedColumn<String> activityLevel = GeneratedColumn<String>(
+    'activity_level',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -6703,6 +6734,9 @@ class $UserProfileTable extends UserProfile
     goalWeightKg,
     onboarded,
     waterGoalMl,
+    birthDate,
+    gender,
+    activityLevel,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -6796,6 +6830,27 @@ class $UserProfileTable extends UserProfile
         ),
       );
     }
+    if (data.containsKey('birth_date')) {
+      context.handle(
+        _birthDateMeta,
+        birthDate.isAcceptableOrUnknown(data['birth_date']!, _birthDateMeta),
+      );
+    }
+    if (data.containsKey('gender')) {
+      context.handle(
+        _genderMeta,
+        gender.isAcceptableOrUnknown(data['gender']!, _genderMeta),
+      );
+    }
+    if (data.containsKey('activity_level')) {
+      context.handle(
+        _activityLevelMeta,
+        activityLevel.isAcceptableOrUnknown(
+          data['activity_level']!,
+          _activityLevelMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -6849,6 +6904,18 @@ class $UserProfileTable extends UserProfile
         DriftSqlType.int,
         data['${effectivePrefix}water_goal_ml'],
       )!,
+      birthDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}birth_date'],
+      ),
+      gender: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gender'],
+      ),
+      activityLevel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}activity_level'],
+      ),
     );
   }
 
@@ -6870,6 +6937,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
   final double? goalWeightKg;
   final bool onboarded;
   final int waterGoalMl;
+  final DateTime? birthDate;
+  final String? gender;
+  final String? activityLevel;
   const UserProfileData({
     required this.id,
     required this.currentPhase,
@@ -6882,6 +6952,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     this.goalWeightKg,
     required this.onboarded,
     required this.waterGoalMl,
+    this.birthDate,
+    this.gender,
+    this.activityLevel,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -6903,6 +6976,15 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     }
     map['onboarded'] = Variable<bool>(onboarded);
     map['water_goal_ml'] = Variable<int>(waterGoalMl);
+    if (!nullToAbsent || birthDate != null) {
+      map['birth_date'] = Variable<DateTime>(birthDate);
+    }
+    if (!nullToAbsent || gender != null) {
+      map['gender'] = Variable<String>(gender);
+    }
+    if (!nullToAbsent || activityLevel != null) {
+      map['activity_level'] = Variable<String>(activityLevel);
+    }
     return map;
   }
 
@@ -6925,6 +7007,15 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           : Value(goalWeightKg),
       onboarded: Value(onboarded),
       waterGoalMl: Value(waterGoalMl),
+      birthDate: birthDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(birthDate),
+      gender: gender == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gender),
+      activityLevel: activityLevel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(activityLevel),
     );
   }
 
@@ -6945,6 +7036,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       goalWeightKg: serializer.fromJson<double?>(json['goalWeightKg']),
       onboarded: serializer.fromJson<bool>(json['onboarded']),
       waterGoalMl: serializer.fromJson<int>(json['waterGoalMl']),
+      birthDate: serializer.fromJson<DateTime?>(json['birthDate']),
+      gender: serializer.fromJson<String?>(json['gender']),
+      activityLevel: serializer.fromJson<String?>(json['activityLevel']),
     );
   }
   @override
@@ -6962,6 +7056,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       'goalWeightKg': serializer.toJson<double?>(goalWeightKg),
       'onboarded': serializer.toJson<bool>(onboarded),
       'waterGoalMl': serializer.toJson<int>(waterGoalMl),
+      'birthDate': serializer.toJson<DateTime?>(birthDate),
+      'gender': serializer.toJson<String?>(gender),
+      'activityLevel': serializer.toJson<String?>(activityLevel),
     };
   }
 
@@ -6977,6 +7074,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     Value<double?> goalWeightKg = const Value.absent(),
     bool? onboarded,
     int? waterGoalMl,
+    Value<DateTime?> birthDate = const Value.absent(),
+    Value<String?> gender = const Value.absent(),
+    Value<String?> activityLevel = const Value.absent(),
   }) => UserProfileData(
     id: id ?? this.id,
     currentPhase: currentPhase ?? this.currentPhase,
@@ -6989,6 +7089,11 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     goalWeightKg: goalWeightKg.present ? goalWeightKg.value : this.goalWeightKg,
     onboarded: onboarded ?? this.onboarded,
     waterGoalMl: waterGoalMl ?? this.waterGoalMl,
+    birthDate: birthDate.present ? birthDate.value : this.birthDate,
+    gender: gender.present ? gender.value : this.gender,
+    activityLevel: activityLevel.present
+        ? activityLevel.value
+        : this.activityLevel,
   );
   UserProfileData copyWithCompanion(UserProfileCompanion data) {
     return UserProfileData(
@@ -7015,6 +7120,11 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       waterGoalMl: data.waterGoalMl.present
           ? data.waterGoalMl.value
           : this.waterGoalMl,
+      birthDate: data.birthDate.present ? data.birthDate.value : this.birthDate,
+      gender: data.gender.present ? data.gender.value : this.gender,
+      activityLevel: data.activityLevel.present
+          ? data.activityLevel.value
+          : this.activityLevel,
     );
   }
 
@@ -7031,7 +7141,10 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           ..write('heightCm: $heightCm, ')
           ..write('goalWeightKg: $goalWeightKg, ')
           ..write('onboarded: $onboarded, ')
-          ..write('waterGoalMl: $waterGoalMl')
+          ..write('waterGoalMl: $waterGoalMl, ')
+          ..write('birthDate: $birthDate, ')
+          ..write('gender: $gender, ')
+          ..write('activityLevel: $activityLevel')
           ..write(')'))
         .toString();
   }
@@ -7049,6 +7162,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     goalWeightKg,
     onboarded,
     waterGoalMl,
+    birthDate,
+    gender,
+    activityLevel,
   );
   @override
   bool operator ==(Object other) =>
@@ -7064,7 +7180,10 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           other.heightCm == this.heightCm &&
           other.goalWeightKg == this.goalWeightKg &&
           other.onboarded == this.onboarded &&
-          other.waterGoalMl == this.waterGoalMl);
+          other.waterGoalMl == this.waterGoalMl &&
+          other.birthDate == this.birthDate &&
+          other.gender == this.gender &&
+          other.activityLevel == this.activityLevel);
 }
 
 class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
@@ -7079,6 +7198,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
   final Value<double?> goalWeightKg;
   final Value<bool> onboarded;
   final Value<int> waterGoalMl;
+  final Value<DateTime?> birthDate;
+  final Value<String?> gender;
+  final Value<String?> activityLevel;
   const UserProfileCompanion({
     this.id = const Value.absent(),
     this.currentPhase = const Value.absent(),
@@ -7091,6 +7213,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     this.goalWeightKg = const Value.absent(),
     this.onboarded = const Value.absent(),
     this.waterGoalMl = const Value.absent(),
+    this.birthDate = const Value.absent(),
+    this.gender = const Value.absent(),
+    this.activityLevel = const Value.absent(),
   });
   UserProfileCompanion.insert({
     this.id = const Value.absent(),
@@ -7104,6 +7229,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     this.goalWeightKg = const Value.absent(),
     this.onboarded = const Value.absent(),
     this.waterGoalMl = const Value.absent(),
+    this.birthDate = const Value.absent(),
+    this.gender = const Value.absent(),
+    this.activityLevel = const Value.absent(),
   }) : startDate = Value(startDate);
   static Insertable<UserProfileData> custom({
     Expression<int>? id,
@@ -7117,6 +7245,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     Expression<double>? goalWeightKg,
     Expression<bool>? onboarded,
     Expression<int>? waterGoalMl,
+    Expression<DateTime>? birthDate,
+    Expression<String>? gender,
+    Expression<String>? activityLevel,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -7130,6 +7261,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
       if (goalWeightKg != null) 'goal_weight_kg': goalWeightKg,
       if (onboarded != null) 'onboarded': onboarded,
       if (waterGoalMl != null) 'water_goal_ml': waterGoalMl,
+      if (birthDate != null) 'birth_date': birthDate,
+      if (gender != null) 'gender': gender,
+      if (activityLevel != null) 'activity_level': activityLevel,
     });
   }
 
@@ -7145,6 +7279,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     Value<double?>? goalWeightKg,
     Value<bool>? onboarded,
     Value<int>? waterGoalMl,
+    Value<DateTime?>? birthDate,
+    Value<String?>? gender,
+    Value<String?>? activityLevel,
   }) {
     return UserProfileCompanion(
       id: id ?? this.id,
@@ -7158,6 +7295,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
       goalWeightKg: goalWeightKg ?? this.goalWeightKg,
       onboarded: onboarded ?? this.onboarded,
       waterGoalMl: waterGoalMl ?? this.waterGoalMl,
+      birthDate: birthDate ?? this.birthDate,
+      gender: gender ?? this.gender,
+      activityLevel: activityLevel ?? this.activityLevel,
     );
   }
 
@@ -7197,6 +7337,15 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     if (waterGoalMl.present) {
       map['water_goal_ml'] = Variable<int>(waterGoalMl.value);
     }
+    if (birthDate.present) {
+      map['birth_date'] = Variable<DateTime>(birthDate.value);
+    }
+    if (gender.present) {
+      map['gender'] = Variable<String>(gender.value);
+    }
+    if (activityLevel.present) {
+      map['activity_level'] = Variable<String>(activityLevel.value);
+    }
     return map;
   }
 
@@ -7213,7 +7362,10 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
           ..write('heightCm: $heightCm, ')
           ..write('goalWeightKg: $goalWeightKg, ')
           ..write('onboarded: $onboarded, ')
-          ..write('waterGoalMl: $waterGoalMl')
+          ..write('waterGoalMl: $waterGoalMl, ')
+          ..write('birthDate: $birthDate, ')
+          ..write('gender: $gender, ')
+          ..write('activityLevel: $activityLevel')
           ..write(')'))
         .toString();
   }
@@ -11984,6 +12136,9 @@ typedef $$UserProfileTableCreateCompanionBuilder =
       Value<double?> goalWeightKg,
       Value<bool> onboarded,
       Value<int> waterGoalMl,
+      Value<DateTime?> birthDate,
+      Value<String?> gender,
+      Value<String?> activityLevel,
     });
 typedef $$UserProfileTableUpdateCompanionBuilder =
     UserProfileCompanion Function({
@@ -11998,6 +12153,9 @@ typedef $$UserProfileTableUpdateCompanionBuilder =
       Value<double?> goalWeightKg,
       Value<bool> onboarded,
       Value<int> waterGoalMl,
+      Value<DateTime?> birthDate,
+      Value<String?> gender,
+      Value<String?> activityLevel,
     });
 
 class $$UserProfileTableFilterComposer
@@ -12061,6 +12219,21 @@ class $$UserProfileTableFilterComposer
 
   ColumnFilters<int> get waterGoalMl => $composableBuilder(
     column: $table.waterGoalMl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get birthDate => $composableBuilder(
+    column: $table.birthDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gender => $composableBuilder(
+    column: $table.gender,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get activityLevel => $composableBuilder(
+    column: $table.activityLevel,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -12128,6 +12301,21 @@ class $$UserProfileTableOrderingComposer
     column: $table.waterGoalMl,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get birthDate => $composableBuilder(
+    column: $table.birthDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get gender => $composableBuilder(
+    column: $table.gender,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get activityLevel => $composableBuilder(
+    column: $table.activityLevel,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UserProfileTableAnnotationComposer
@@ -12183,6 +12371,17 @@ class $$UserProfileTableAnnotationComposer
     column: $table.waterGoalMl,
     builder: (column) => column,
   );
+
+  GeneratedColumn<DateTime> get birthDate =>
+      $composableBuilder(column: $table.birthDate, builder: (column) => column);
+
+  GeneratedColumn<String> get gender =>
+      $composableBuilder(column: $table.gender, builder: (column) => column);
+
+  GeneratedColumn<String> get activityLevel => $composableBuilder(
+    column: $table.activityLevel,
+    builder: (column) => column,
+  );
 }
 
 class $$UserProfileTableTableManager
@@ -12227,6 +12426,9 @@ class $$UserProfileTableTableManager
                 Value<double?> goalWeightKg = const Value.absent(),
                 Value<bool> onboarded = const Value.absent(),
                 Value<int> waterGoalMl = const Value.absent(),
+                Value<DateTime?> birthDate = const Value.absent(),
+                Value<String?> gender = const Value.absent(),
+                Value<String?> activityLevel = const Value.absent(),
               }) => UserProfileCompanion(
                 id: id,
                 currentPhase: currentPhase,
@@ -12239,6 +12441,9 @@ class $$UserProfileTableTableManager
                 goalWeightKg: goalWeightKg,
                 onboarded: onboarded,
                 waterGoalMl: waterGoalMl,
+                birthDate: birthDate,
+                gender: gender,
+                activityLevel: activityLevel,
               ),
           createCompanionCallback:
               ({
@@ -12253,6 +12458,9 @@ class $$UserProfileTableTableManager
                 Value<double?> goalWeightKg = const Value.absent(),
                 Value<bool> onboarded = const Value.absent(),
                 Value<int> waterGoalMl = const Value.absent(),
+                Value<DateTime?> birthDate = const Value.absent(),
+                Value<String?> gender = const Value.absent(),
+                Value<String?> activityLevel = const Value.absent(),
               }) => UserProfileCompanion.insert(
                 id: id,
                 currentPhase: currentPhase,
@@ -12265,6 +12473,9 @@ class $$UserProfileTableTableManager
                 goalWeightKg: goalWeightKg,
                 onboarded: onboarded,
                 waterGoalMl: waterGoalMl,
+                birthDate: birthDate,
+                gender: gender,
+                activityLevel: activityLevel,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

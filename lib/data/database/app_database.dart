@@ -76,7 +76,7 @@ class AppDatabase extends _$AppDatabase {
   /// görseli + talimat + meta) + `foods.category` (TÜRKOMP gıda grubu). Hepsi
   /// nullable → additive, veri kayıpsız (ADR-007).
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration {
@@ -145,6 +145,14 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(exercises, exercises.level);
           await m.addColumn(exercises, exercises.force);
           await m.addColumn(foods, foods.category);
+        }
+        // v7 → v8: BMR/TDEE — tam günlük enerji harcaması (docs/12).
+        // user_profile +birthDate +gender +activityLevel. Hepsi nullable
+        // kolon ekleme → mevcut profil + tüm veri korunur (boş gelir).
+        if (from < 8 && to >= 8) {
+          await m.addColumn(userProfile, userProfile.birthDate);
+          await m.addColumn(userProfile, userProfile.gender);
+          await m.addColumn(userProfile, userProfile.activityLevel);
         }
       },
 

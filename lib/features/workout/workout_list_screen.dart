@@ -7,6 +7,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'routine_providers.dart';
+import 'workout_draft.dart';
 import 'workout_ui.dart';
 
 /// Antrenman ana ekranı (Antrenman V2 — Claude Design reskin).
@@ -31,6 +32,7 @@ class WorkoutListScreen extends ConsumerWidget {
           children: [
             const _Header(),
             AppSpacing.vGapLg,
+            const _ResumeBanner(),
             const _WeekStatsCard(),
             AppSpacing.vGapLg,
             _EmptyWorkoutButton(),
@@ -446,3 +448,93 @@ const _weekdayShort = {
   6: 'Cmt',
   7: 'Paz',
 };
+
+/// "Devam eden antrenman" banner'ı (docs/12). Kaydedilmiş canlı seans taslağı
+/// varsa en üstte gösterilir; arka planda öldürülmüş seansa kaldığı yerden döner.
+class _ResumeBanner extends ConsumerWidget {
+  const _ResumeBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final draftAsync = ref.watch(activeDraftProvider);
+    final draft = draftAsync.valueOrNull;
+    if (draft == null) return const SizedBox.shrink();
+
+    final c = context.colors;
+    final setCount = draft.exercises
+        .fold<int>(0, (n, e) => n + e.sets.where((s) => s.done).length);
+    final mins = DateTime.now().difference(draft.startedAt).inMinutes;
+    final sub = '${draft.exercises.length} hareket · $setCount set'
+        '${mins > 0 && mins < 600 ? ' · $mins dk' : ''}';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      child: Material(
+        color: c.primaryContainer,
+        borderRadius: AppRadius.brLg,
+        child: InkWell(
+          borderRadius: AppRadius.brLg,
+          onTap: () => context
+              .push('/workout/active/resume')
+              .then((_) => ref.invalidate(activeDraftProvider)),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: c.primary,
+                    borderRadius: AppRadius.brMd,
+                  ),
+                  child: Icon(Icons.play_arrow_rounded,
+                      color: c.onPrimary, size: 26),
+                ),
+                AppSpacing.hGapMd,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Devam eden antrenman',
+                          style: context.texts.titleSmall?.copyWith(
+                              color: c.onPrimaryContainer,
+                              fontWeight: FontWeight.w800)),
+                      Text('${draft.title} · $sub',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.texts.bodySmall?.copyWith(
+                              color: c.onPrimaryContainer
+                                  .withValues(alpha: 0.75))),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.close_rounded,
+                      color:
+                          c.onPrimaryContainer.withValues(alpha: 0.7),
+                      size: AppIconSize.md),
+                  tooltip: 'Taslağı sil',
+                  onPressed: () async {
+                    final ok = await confirmAction(
+                      context,
+                      title: 'Taslağı sil',
+                      message:
+                          'Devam eden antrenman taslağı silinsin mi? Girdiğin setler kaydedilmeyecek.',
+                      confirmLabel: 'Sil',
+                      destructive: true,
+                    );
+                    if (ok) {
+                      await ref.read(workoutDraftServiceProvider).clear();
+                      ref.invalidate(activeDraftProvider);
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

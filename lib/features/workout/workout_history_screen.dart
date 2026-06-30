@@ -9,6 +9,7 @@ import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../home/providers/home_providers.dart';
+import 'calorie_estimate.dart';
 import 'routine_providers.dart';
 
 final _allSessionsProvider = FutureProvider<List<WorkoutSession>>((ref) {
@@ -136,7 +137,7 @@ class _SessionCard extends ConsumerWidget {
             ),
           ],
         ),
-        children: [_SessionDetail(sessionId: session.id)],
+        children: [_SessionDetail(session: session)],
       ),
     );
   }
@@ -186,11 +187,11 @@ class _SessionCard extends ConsumerWidget {
 }
 
 class _SessionDetail extends ConsumerWidget {
-  final int sessionId;
-  const _SessionDetail({required this.sessionId});
+  final WorkoutSession session;
+  const _SessionDetail({required this.session});
 
+  /// Bir set'in değer metni — ölçüm tipini dolu alandan çıkarır (kayıtta yok).
   String _fmtSet(WorkoutSet s) {
-    // Ölçüm tipini set'in dolu alanından çıkar (kayıtta tutulmuyor).
     if (s.durationSec != null || s.distanceM != null) {
       final parts = <String>[
         if (s.distanceM != null) '${fmtNum(s.distanceM! / 1000)} km',
@@ -205,7 +206,8 @@ class _SessionDetail extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final setsAsync = ref.watch(_sessionSetsProvider(sessionId));
+    final setsAsync = ref.watch(_sessionSetsProvider(session.id));
+    final bodyWeight = ref.watch(latestWeightProvider).valueOrNull?.weightKg;
     return setsAsync.when(
       loading: () => const Padding(
         padding: EdgeInsets.all(AppSpacing.lg),
@@ -228,48 +230,172 @@ class _SessionDetail extends ConsumerWidget {
                     ?.copyWith(color: context.colors.onSurfaceVariant)),
           );
         }
-        // Toplam hacim = Σ kg × tekrar — seansın "iş" özeti.
+        // Seans özeti: toplam hacim, set sayısı, yoğunluk → kalori tahmini.
         double volume = 0;
+        var setCount = 0;
+        final allSets = <WorkoutSet>[];
         for (final sets in grouped.values) {
           for (final s in sets) {
             volume += (s.weightKg ?? 0) * (s.reps ?? 0);
+            setCount++;
+            allSets.add(s);
           }
         }
+        final intensity = sessionIntensity(allSets);
+        final kcal = estimateWorkoutKcal(
+          bodyWeightKg: bodyWeight,
+          durationMin: session.durationMin,
+          avgRpe: intensity.avgRpe,
+          isCardio:
+              intensity.isCardio || session.workoutType == 'Cardio',
+        );
+
         return Padding(
           padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (volume > 0) ...[
-                Text('Toplam hacim: ${volume.round()} kg',
-                    style: context.texts.labelMedium?.copyWith(
-                        color: context.colors.primary,
-                        fontWeight: FontWeight.w700)),
-                AppSpacing.vGapMd,
-              ],
-              ...grouped.entries.map((e) => Padding(
-                    padding:
-                        const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                            child: Text(e.key,
-                                style: context.texts.bodyMedium)),
-                        AppSpacing.hGapMd,
-                        Text(
-                          e.value.map(_fmtSet).join('  ·  '),
-                          style: context.texts.bodySmall?.copyWith(
-                              color: context.colors.onSurfaceVariant),
+              // ── üst istatistik şeridi ──
+              _StatStrip(
+                duration: session.durationMin,
+                volumeKg: volume > 0 ? volume.round() : null,
+                setCount: setCount,
+                kcal: kcal?.round(),
+              ),
+              AppSpacing.vGapMd,
+              const Divider(height: 1),
+              AppSpacing.vGapMd,
+              // ── hareket blokları (ad üstte, setler altında numaralı) ──
+              ...grouped.entries.map((e) => _ExerciseLog(
+                    name: e.key,
+                    lines: [
+                      for (var i = 0; i < e.value.length; i++)
+                        (
+                          no: i + 1,
+                          type: e.value[i].setType,
+                          value: _fmtSet(e.value[i]),
                         ),
-                      ],
-                    ),
+                    ],
                   )),
+              if (kcal != null) ...[
+                AppSpacing.vGapSm,
+                Text(
+                  'Kalori tahminidir — kilo, süre ve yoğunluğa (RPE) dayanır.',
+                  style: context.texts.bodySmall?.copyWith(
+                      color: context.colors.onSurfaceVariant
+                          .withValues(alpha: 0.7)),
+                ),
+              ],
             ],
           ),
         );
       },
+    );
+  }
+}
+
+/// Seans üst istatistik şeridi: süre · hacim · set · ~kcal.
+class _StatStrip extends StatelessWidget {
+  final int? duration;
+  final int? volumeKg;
+  final int setCount;
+  final int? kcal;
+  const _StatStrip(
+      {required this.duration,
+      required this.volumeKg,
+      required this.setCount,
+      required this.kcal});
+
+  @override
+  Widget build(BuildContext context) {
+    final items = <(IconData, String, String)>[
+      if (duration != null && duration! > 0)
+        (Icons.schedule_rounded, '$duration dk', 'Süre'),
+      if (volumeKg != null)
+        (Icons.fitness_center_rounded, '$volumeKg kg', 'Hacim'),
+      (Icons.format_list_numbered_rounded, '$setCount', 'Set'),
+      if (kcal != null)
+        (Icons.local_fire_department_rounded, '~$kcal', 'kcal'),
+    ];
+    return Row(
+      children: [
+        for (final it in items)
+          Expanded(
+            child: Column(
+              children: [
+                Icon(it.$1, size: AppIconSize.sm, color: context.colors.primary),
+                const SizedBox(height: 4),
+                Text(it.$2,
+                    style: context.texts.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontFeatures: const [FontFeature.tabularFigures()])),
+                Text(it.$3,
+                    style: context.texts.labelSmall?.copyWith(
+                        color: context.colors.onSurfaceVariant)),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Tek hareketin günlüğü: ad (tam genişlik başlık) + altında numaralı set
+/// satırları. Sıkışma yok — her set kendi satırında, değer hizalı.
+class _ExerciseLog extends StatelessWidget {
+  final String name;
+  final List<({int no, String type, String value})> lines;
+  const _ExerciseLog({required this.name, required this.lines});
+
+  static const _typeBadge = {'warmup': 'I', 'drop': 'D', 'failure': 'F'};
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(name,
+              style: context.texts.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w700)),
+          AppSpacing.vGapXs,
+          ...lines.map((l) {
+            final badge = _typeBadge[l.type];
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                children: [
+                  // set numarası / tip rozeti
+                  Container(
+                    width: 26,
+                    height: 24,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: c.onSurface.withValues(alpha: 0.06),
+                      borderRadius: AppRadius.brSm,
+                    ),
+                    child: Text(badge ?? '${l.no}',
+                        style: context.texts.labelMedium?.copyWith(
+                            color: badge != null
+                                ? c.primary
+                                : c.onSurfaceVariant,
+                            fontWeight: FontWeight.w700)),
+                  ),
+                  AppSpacing.hGapMd,
+                  Text(l.value,
+                      style: context.texts.bodyMedium?.copyWith(
+                          fontFeatures: const [
+                            FontFeature.tabularFigures()
+                          ])),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 }

@@ -38,6 +38,9 @@ class UserProfileDao extends DatabaseAccessor<AppDatabase> with _$UserProfileDao
     required int phase,
     double? heightCm,
     double? goalWeightKg,
+    DateTime? birthDate,
+    String? gender,
+    String? activityLevel,
   }) async {
     await ensureProfile();
     final profile = await getProfile();
@@ -47,6 +50,9 @@ class UserProfileDao extends DatabaseAccessor<AppDatabase> with _$UserProfileDao
       currentPhase: phase,
       heightCm: Value(heightCm),
       goalWeightKg: Value(goalWeightKg),
+      birthDate: Value(birthDate),
+      gender: Value(gender),
+      activityLevel: Value(activityLevel),
       onboarded: true,
     ));
   }

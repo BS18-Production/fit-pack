@@ -25,6 +25,15 @@ dependencies:
   # Storage
   shared_preferences: ^2.3.4
 
+  # Antrenman ekranını uyanık tut (docs/12)
+  wakelock_plus: ^1.2.8
+
+  # Yedek geri yükleme dosya seçimi (docs/12 veri güvenliği)
+  file_picker: ^8.1.6
+
+  # Bulut yedek + hesap (docs/13 — Supabase)
+  supabase_flutter: ^2.8.0
+
   # Routing
   go_router: ^14.8.1
 

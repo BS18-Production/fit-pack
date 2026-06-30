@@ -97,6 +97,25 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
   Future<void> insertExercise(ExercisesCompanion entry) =>
       into(exercises).insert(entry);
 
+  /// İki hareketi birleştir (#1 duplike temizliği): [fromId]'e bağlı tüm
+  /// set ve rutin referanslarını [toId]'e taşır, sonra [fromId]'i siler.
+  /// Kayıpsız — kullanıcının girdiği setler korunur, sadece doğru harekete bağlanır.
+  Future<void> mergeExercise({required int fromId, required int toId}) async {
+    await transaction(() async {
+      await customUpdate(
+        'UPDATE workout_sets SET exercise_id = ? WHERE exercise_id = ?',
+        variables: [Variable.withInt(toId), Variable.withInt(fromId)],
+        updates: {workoutSets},
+      );
+      await customUpdate(
+        'UPDATE routine_exercises SET exercise_id = ? WHERE exercise_id = ?',
+        variables: [Variable.withInt(toId), Variable.withInt(fromId)],
+        updates: {routineExercises},
+      );
+      await (delete(exercises)..where((e) => e.id.equals(fromId))).go();
+    });
+  }
+
   Future<void> insertExercises(List<ExercisesCompanion> entries) async {
     await batch((b) => b.insertAll(exercises, entries));
   }

@@ -15,17 +15,19 @@ Tasarım + uygulama: [docs/10-historical-entry.md](docs/10-historical-entry.md).
 - **Ertelendi:** geçmiş seansta tek tek set düzenleme UI'si (sadece tarih+silme yapıldı).
 - **PR/merge bekliyor:** dal henüz `main`'e merge edilmedi.
 
-### 🟡 İçerik Zenginleştirme — DEVAM EDİYOR (`feat/content-enrichment`)
-PRD: [docs/11-content-enrichment.md](docs/11-content-enrichment.md). analyze 0 · test 73/73.
+### 🟢 İçerik Zenginleştirme — büyük kısmı TAMAM, `main`'de (2026-06-30)
+PRD: [docs/11-content-enrichment.md](docs/11-content-enrichment.md). analyze 0 · test 76/76. Tüm aşağıdakiler `main`'de + GitHub'da.
 - [x] **C-1** Şema v7 (exercises +imagePath/instructions/level/force, foods +category) + migration `011d158`
-- [x] **C-2** free-exercise-db → 821 yeni hareket (talimat/meta/görsel yolu), seed merge `4e6e0db`
-- [x] **C-3** Hareket detayı "Nasıl" sekmesi (görsel fallback + talimat + rozet) `4e6e0db`
-  - ✅ Emülatörde doğrulandı: kütüphane 200→**1022 hareket**, talimat render.
-- [ ] **C-2b** Hareket form görselleri (~1600 resim) gömme — **KARAR BEKLİYOR** (repo şişmesi ~onlarca MB). Şu an UI fallback gösteriyor.
-- [ ] **C-4** TÜRKOMP gıdaları — **SOURCING ZOR:** gov sitesi 302+AJAX, resmî API yok, D-3 lisans belirsiz. Alternatif kaynak konuşulmalı.
-- [ ] **C-5** Yemekler grup filtresi (foods.category hazır, UI kaldı)
-- [ ] **C-6** Ayarlar "Açık veri kaynakları" atıf ekranı
-- **Branch henüz push/merge edilmedi.**
+- [x] **C-2** free-exercise-db → 821 yeni hareket → kütüphane **1022 hareket** `4e6e0db`
+- [x] **C-3** "Nasıl" sekmesi (talimat + seviye/kuvvet rozeti) `4e6e0db`
+- [x] **C-2b çözüldü** Demo fotoğrafı: free-exercise-db (public domain) jsDelivr CDN'den **lazy-load + cache** (gömmedik → APK küçük). 821 harekette. `31f6bd5`
+- [x] **Kas haritası** (yeni): MIT `muscle_selector` human_body.svg, kas verisinden renklenir (birincil koyu/ikincil açık), tüm 1022 harekette. `31f6bd5`
+- [x] **C-4 (OFF yönü)** Yemek Ekle'de **OpenFoodFacts metin araması** — "Canga" yaz→internetten paketli ürün makrolarıyla. `699004c` (TÜRKOMP scrape'ten vazgeçildi — gov sitesi zor + lisans belirsiz)
+- [x] **perf** JSON minify + arm64 obfuscate release APK **27MB** kuruldu (Samet'in telefonu) `76b8dc3`
+- [ ] **C-5** Yemekler grup filtresi (foods.category kolonu hazır, UI kaldı)
+- [ ] **C-6** Ayarlar "Açık veri kaynakları" atıf ekranı (OFF=ODbL, free-exercise-db=public domain, muscle_selector=MIT)
+- [ ] **Açık karar:** barkod kamera tarayıcısını çıkar → ~5MB küçülür (OFF metin araması yedeklediği için). Samet'e soruldu, beklemede.
+- **Doğrulama notu:** kas haritası emülatörde doğrulandı; demo fotoğrafı emülatör DNS'i yüzünden yüklenmedi (CDN host'tan 200, gerçek cihazda çalışır) → Samet telefonunda teyit edecek.
 
 ### 🔜 Fikir: Adım sayar (pedometer) — Samet sordu (2026-06-29)
 Health Connect (Android) / HealthKit (iOS) `health` paketiyle cihazdan günlük adım okuma → aktivite halkası. Lokal (sunucu yok); merkezi/çoklu-kullanıcı toplama = V3. Doc-first gerekir (yeni sensör+izin+veri tipi+şema). Detay konuşuldu, tasarım yapılmadı.

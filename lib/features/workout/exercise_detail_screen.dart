@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +13,7 @@ import '../../data/database/daos/workout_dao.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'exercise_library_screen.dart' show libraryExercisesProvider;
+import 'muscle_map.dart';
 import 'workout_ui.dart';
 
 /// Hareket Detayı (Antrenman V2 Faz D). Geçmiş / Grafik (e1RM) / Rekorlar.
@@ -90,19 +92,34 @@ class _HowToTab extends StatelessWidget {
         steps.addAll((jsonDecode(ex.instructions!) as List).cast<String>());
       } catch (_) {}
     }
+    final muscles = <String>[];
+    if (ex.muscleGroups.isNotEmpty) {
+      try {
+        muscles.addAll((jsonDecode(ex.muscleGroups) as List).cast<String>());
+      } catch (_) {}
+    }
     return ListView(
       padding: AppSpacing.screen,
       children: [
-        if (ex.imagePath != null)
+        // Demo fotoğrafı (free-exercise-db, public domain) — CDN'den lazy-load
+        // + cache. Yoksa/internetsizse ekipman ikonu yer tutucu.
+        if (_demoImageUrl(ex.imagePath) != null)
           ClipRRect(
             borderRadius: AppRadius.brLg,
             child: AspectRatio(
               aspectRatio: 4 / 3,
-              child: Image.asset(
-                ex.imagePath!,
+              child: CachedNetworkImage(
+                imageUrl: _demoImageUrl(ex.imagePath)!,
                 fit: BoxFit.cover,
-                // Görseller henüz gömülü değilse (C-2b) zarif yer tutucu.
-                errorBuilder: (_, _, _) => Container(
+                placeholder: (_, _) => Container(
+                  color: context.colors.surfaceContainerHighest,
+                  child: const Center(
+                      child: SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2))),
+                ),
+                errorWidget: (_, _, _) => Container(
                   color: context.colors.surfaceContainerHighest,
                   child: Icon(WorkoutUi.equipmentIcon(ex.equipment),
                       size: AppIconSize.xxl,
@@ -111,6 +128,22 @@ class _HowToTab extends StatelessWidget {
               ),
             ),
           ),
+        // Çalışan kaslar — vücut diyagramı (veriden renklenir).
+        if (ex.primaryMuscle != null || muscles.isNotEmpty) ...[
+          AppSpacing.vGapLg,
+          Text('Çalışan Kaslar', style: context.texts.titleSmall),
+          AppSpacing.vGapSm,
+          Center(
+              child: MuscleMap(
+                  primaryMuscle: ex.primaryMuscle, muscles: muscles)),
+          AppSpacing.vGapXs,
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            _legendDot(context, context.colors.primary, 'Birincil'),
+            AppSpacing.hGapLg,
+            _legendDot(context,
+                context.colors.primary.withValues(alpha: 0.4), 'İkincil'),
+          ]),
+        ],
         AppSpacing.vGapLg,
         _InfoCard(ex),
         if (ex.level != null) ...[
@@ -159,6 +192,28 @@ class _HowToTab extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  /// imagePath 'assets/exercise_img/...' → free-exercise-db jsDelivr CDN URL'i
+  /// (public domain). Sadece bu önekli yollar için; değilse null.
+  static String? _demoImageUrl(String? imagePath) {
+    const prefix = 'assets/exercise_img/';
+    if (imagePath == null || !imagePath.startsWith(prefix)) return null;
+    final rel = imagePath.substring(prefix.length);
+    return 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/$rel';
+  }
+
+  Widget _legendDot(BuildContext context, Color color, String label) {
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+      AppSpacing.hGapXs,
+      Text(label,
+          style: context.texts.labelMedium
+              ?.copyWith(color: context.colors.onSurfaceVariant)),
+    ]);
   }
 
   static String _levelTr(String l) => switch (l) {

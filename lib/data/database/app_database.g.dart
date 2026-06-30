@@ -165,6 +165,46 @@ class $ExercisesTable extends Exercises
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _imagePathMeta = const VerificationMeta(
+    'imagePath',
+  );
+  @override
+  late final GeneratedColumn<String> imagePath = GeneratedColumn<String>(
+    'image_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _instructionsMeta = const VerificationMeta(
+    'instructions',
+  );
+  @override
+  late final GeneratedColumn<String> instructions = GeneratedColumn<String>(
+    'instructions',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _levelMeta = const VerificationMeta('level');
+  @override
+  late final GeneratedColumn<String> level = GeneratedColumn<String>(
+    'level',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _forceMeta = const VerificationMeta('force');
+  @override
+  late final GeneratedColumn<String> force = GeneratedColumn<String>(
+    'force',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -180,6 +220,10 @@ class $ExercisesTable extends Exercises
     measurementType,
     isCustom,
     isArchived,
+    imagePath,
+    instructions,
+    level,
+    force,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -286,6 +330,33 @@ class $ExercisesTable extends Exercises
         isArchived.isAcceptableOrUnknown(data['is_archived']!, _isArchivedMeta),
       );
     }
+    if (data.containsKey('image_path')) {
+      context.handle(
+        _imagePathMeta,
+        imagePath.isAcceptableOrUnknown(data['image_path']!, _imagePathMeta),
+      );
+    }
+    if (data.containsKey('instructions')) {
+      context.handle(
+        _instructionsMeta,
+        instructions.isAcceptableOrUnknown(
+          data['instructions']!,
+          _instructionsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('level')) {
+      context.handle(
+        _levelMeta,
+        level.isAcceptableOrUnknown(data['level']!, _levelMeta),
+      );
+    }
+    if (data.containsKey('force')) {
+      context.handle(
+        _forceMeta,
+        force.isAcceptableOrUnknown(data['force']!, _forceMeta),
+      );
+    }
     return context;
   }
 
@@ -347,6 +418,22 @@ class $ExercisesTable extends Exercises
         DriftSqlType.bool,
         data['${effectivePrefix}is_archived'],
       )!,
+      imagePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_path'],
+      ),
+      instructions: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}instructions'],
+      ),
+      level: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}level'],
+      ),
+      force: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}force'],
+      ),
     );
   }
 
@@ -370,6 +457,10 @@ class Exercise extends DataClass implements Insertable<Exercise> {
   final String measurementType;
   final bool isCustom;
   final bool isArchived;
+  final String? imagePath;
+  final String? instructions;
+  final String? level;
+  final String? force;
   const Exercise({
     required this.id,
     required this.name,
@@ -384,6 +475,10 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     required this.measurementType,
     required this.isCustom,
     required this.isArchived,
+    this.imagePath,
+    this.instructions,
+    this.level,
+    this.force,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -409,6 +504,18 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     map['measurement_type'] = Variable<String>(measurementType);
     map['is_custom'] = Variable<bool>(isCustom);
     map['is_archived'] = Variable<bool>(isArchived);
+    if (!nullToAbsent || imagePath != null) {
+      map['image_path'] = Variable<String>(imagePath);
+    }
+    if (!nullToAbsent || instructions != null) {
+      map['instructions'] = Variable<String>(instructions);
+    }
+    if (!nullToAbsent || level != null) {
+      map['level'] = Variable<String>(level);
+    }
+    if (!nullToAbsent || force != null) {
+      map['force'] = Variable<String>(force);
+    }
     return map;
   }
 
@@ -435,6 +542,18 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       measurementType: Value(measurementType),
       isCustom: Value(isCustom),
       isArchived: Value(isArchived),
+      imagePath: imagePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imagePath),
+      instructions: instructions == null && nullToAbsent
+          ? const Value.absent()
+          : Value(instructions),
+      level: level == null && nullToAbsent
+          ? const Value.absent()
+          : Value(level),
+      force: force == null && nullToAbsent
+          ? const Value.absent()
+          : Value(force),
     );
   }
 
@@ -457,6 +576,10 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       measurementType: serializer.fromJson<String>(json['measurementType']),
       isCustom: serializer.fromJson<bool>(json['isCustom']),
       isArchived: serializer.fromJson<bool>(json['isArchived']),
+      imagePath: serializer.fromJson<String?>(json['imagePath']),
+      instructions: serializer.fromJson<String?>(json['instructions']),
+      level: serializer.fromJson<String?>(json['level']),
+      force: serializer.fromJson<String?>(json['force']),
     );
   }
   @override
@@ -476,6 +599,10 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       'measurementType': serializer.toJson<String>(measurementType),
       'isCustom': serializer.toJson<bool>(isCustom),
       'isArchived': serializer.toJson<bool>(isArchived),
+      'imagePath': serializer.toJson<String?>(imagePath),
+      'instructions': serializer.toJson<String?>(instructions),
+      'level': serializer.toJson<String?>(level),
+      'force': serializer.toJson<String?>(force),
     };
   }
 
@@ -493,6 +620,10 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     String? measurementType,
     bool? isCustom,
     bool? isArchived,
+    Value<String?> imagePath = const Value.absent(),
+    Value<String?> instructions = const Value.absent(),
+    Value<String?> level = const Value.absent(),
+    Value<String?> force = const Value.absent(),
   }) => Exercise(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -509,6 +640,10 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     measurementType: measurementType ?? this.measurementType,
     isCustom: isCustom ?? this.isCustom,
     isArchived: isArchived ?? this.isArchived,
+    imagePath: imagePath.present ? imagePath.value : this.imagePath,
+    instructions: instructions.present ? instructions.value : this.instructions,
+    level: level.present ? level.value : this.level,
+    force: force.present ? force.value : this.force,
   );
   Exercise copyWithCompanion(ExercisesCompanion data) {
     return Exercise(
@@ -535,6 +670,12 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       isArchived: data.isArchived.present
           ? data.isArchived.value
           : this.isArchived,
+      imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
+      instructions: data.instructions.present
+          ? data.instructions.value
+          : this.instructions,
+      level: data.level.present ? data.level.value : this.level,
+      force: data.force.present ? data.force.value : this.force,
     );
   }
 
@@ -553,7 +694,11 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           ..write('equipment: $equipment, ')
           ..write('measurementType: $measurementType, ')
           ..write('isCustom: $isCustom, ')
-          ..write('isArchived: $isArchived')
+          ..write('isArchived: $isArchived, ')
+          ..write('imagePath: $imagePath, ')
+          ..write('instructions: $instructions, ')
+          ..write('level: $level, ')
+          ..write('force: $force')
           ..write(')'))
         .toString();
   }
@@ -573,6 +718,10 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     measurementType,
     isCustom,
     isArchived,
+    imagePath,
+    instructions,
+    level,
+    force,
   );
   @override
   bool operator ==(Object other) =>
@@ -590,7 +739,11 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           other.equipment == this.equipment &&
           other.measurementType == this.measurementType &&
           other.isCustom == this.isCustom &&
-          other.isArchived == this.isArchived);
+          other.isArchived == this.isArchived &&
+          other.imagePath == this.imagePath &&
+          other.instructions == this.instructions &&
+          other.level == this.level &&
+          other.force == this.force);
 }
 
 class ExercisesCompanion extends UpdateCompanion<Exercise> {
@@ -607,6 +760,10 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
   final Value<String> measurementType;
   final Value<bool> isCustom;
   final Value<bool> isArchived;
+  final Value<String?> imagePath;
+  final Value<String?> instructions;
+  final Value<String?> level;
+  final Value<String?> force;
   const ExercisesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -621,6 +778,10 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     this.measurementType = const Value.absent(),
     this.isCustom = const Value.absent(),
     this.isArchived = const Value.absent(),
+    this.imagePath = const Value.absent(),
+    this.instructions = const Value.absent(),
+    this.level = const Value.absent(),
+    this.force = const Value.absent(),
   });
   ExercisesCompanion.insert({
     this.id = const Value.absent(),
@@ -636,6 +797,10 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     this.measurementType = const Value.absent(),
     this.isCustom = const Value.absent(),
     this.isArchived = const Value.absent(),
+    this.imagePath = const Value.absent(),
+    this.instructions = const Value.absent(),
+    this.level = const Value.absent(),
+    this.force = const Value.absent(),
   }) : name = Value(name),
        category = Value(category),
        muscleGroups = Value(muscleGroups);
@@ -653,6 +818,10 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     Expression<String>? measurementType,
     Expression<bool>? isCustom,
     Expression<bool>? isArchived,
+    Expression<String>? imagePath,
+    Expression<String>? instructions,
+    Expression<String>? level,
+    Expression<String>? force,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -668,6 +837,10 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
       if (measurementType != null) 'measurement_type': measurementType,
       if (isCustom != null) 'is_custom': isCustom,
       if (isArchived != null) 'is_archived': isArchived,
+      if (imagePath != null) 'image_path': imagePath,
+      if (instructions != null) 'instructions': instructions,
+      if (level != null) 'level': level,
+      if (force != null) 'force': force,
     });
   }
 
@@ -685,6 +858,10 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     Value<String>? measurementType,
     Value<bool>? isCustom,
     Value<bool>? isArchived,
+    Value<String?>? imagePath,
+    Value<String?>? instructions,
+    Value<String?>? level,
+    Value<String?>? force,
   }) {
     return ExercisesCompanion(
       id: id ?? this.id,
@@ -700,6 +877,10 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
       measurementType: measurementType ?? this.measurementType,
       isCustom: isCustom ?? this.isCustom,
       isArchived: isArchived ?? this.isArchived,
+      imagePath: imagePath ?? this.imagePath,
+      instructions: instructions ?? this.instructions,
+      level: level ?? this.level,
+      force: force ?? this.force,
     );
   }
 
@@ -745,6 +926,18 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     if (isArchived.present) {
       map['is_archived'] = Variable<bool>(isArchived.value);
     }
+    if (imagePath.present) {
+      map['image_path'] = Variable<String>(imagePath.value);
+    }
+    if (instructions.present) {
+      map['instructions'] = Variable<String>(instructions.value);
+    }
+    if (level.present) {
+      map['level'] = Variable<String>(level.value);
+    }
+    if (force.present) {
+      map['force'] = Variable<String>(force.value);
+    }
     return map;
   }
 
@@ -763,7 +956,11 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
           ..write('equipment: $equipment, ')
           ..write('measurementType: $measurementType, ')
           ..write('isCustom: $isCustom, ')
-          ..write('isArchived: $isArchived')
+          ..write('isArchived: $isArchived, ')
+          ..write('imagePath: $imagePath, ')
+          ..write('instructions: $instructions, ')
+          ..write('level: $level, ')
+          ..write('force: $force')
           ..write(')'))
         .toString();
   }
@@ -3462,6 +3659,17 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3476,6 +3684,7 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
     isRecipe,
     defaultPortionGrams,
     unitLabel,
+    category,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3580,6 +3789,12 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
         unitLabel.isAcceptableOrUnknown(data['unit_label']!, _unitLabelMeta),
       );
     }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    }
     return context;
   }
 
@@ -3637,6 +3852,10 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
         DriftSqlType.string,
         data['${effectivePrefix}unit_label'],
       ),
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      ),
     );
   }
 
@@ -3659,6 +3878,7 @@ class Food extends DataClass implements Insertable<Food> {
   final bool isRecipe;
   final double? defaultPortionGrams;
   final String? unitLabel;
+  final String? category;
   const Food({
     required this.id,
     required this.name,
@@ -3672,6 +3892,7 @@ class Food extends DataClass implements Insertable<Food> {
     required this.isRecipe,
     this.defaultPortionGrams,
     this.unitLabel,
+    this.category,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3693,6 +3914,9 @@ class Food extends DataClass implements Insertable<Food> {
     }
     if (!nullToAbsent || unitLabel != null) {
       map['unit_label'] = Variable<String>(unitLabel);
+    }
+    if (!nullToAbsent || category != null) {
+      map['category'] = Variable<String>(category);
     }
     return map;
   }
@@ -3717,6 +3941,9 @@ class Food extends DataClass implements Insertable<Food> {
       unitLabel: unitLabel == null && nullToAbsent
           ? const Value.absent()
           : Value(unitLabel),
+      category: category == null && nullToAbsent
+          ? const Value.absent()
+          : Value(category),
     );
   }
 
@@ -3740,6 +3967,7 @@ class Food extends DataClass implements Insertable<Food> {
         json['defaultPortionGrams'],
       ),
       unitLabel: serializer.fromJson<String?>(json['unitLabel']),
+      category: serializer.fromJson<String?>(json['category']),
     );
   }
   @override
@@ -3758,6 +3986,7 @@ class Food extends DataClass implements Insertable<Food> {
       'isRecipe': serializer.toJson<bool>(isRecipe),
       'defaultPortionGrams': serializer.toJson<double?>(defaultPortionGrams),
       'unitLabel': serializer.toJson<String?>(unitLabel),
+      'category': serializer.toJson<String?>(category),
     };
   }
 
@@ -3774,6 +4003,7 @@ class Food extends DataClass implements Insertable<Food> {
     bool? isRecipe,
     Value<double?> defaultPortionGrams = const Value.absent(),
     Value<String?> unitLabel = const Value.absent(),
+    Value<String?> category = const Value.absent(),
   }) => Food(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -3789,6 +4019,7 @@ class Food extends DataClass implements Insertable<Food> {
         ? defaultPortionGrams.value
         : this.defaultPortionGrams,
     unitLabel: unitLabel.present ? unitLabel.value : this.unitLabel,
+    category: category.present ? category.value : this.category,
   );
   Food copyWithCompanion(FoodsCompanion data) {
     return Food(
@@ -3814,6 +4045,7 @@ class Food extends DataClass implements Insertable<Food> {
           ? data.defaultPortionGrams.value
           : this.defaultPortionGrams,
       unitLabel: data.unitLabel.present ? data.unitLabel.value : this.unitLabel,
+      category: data.category.present ? data.category.value : this.category,
     );
   }
 
@@ -3831,7 +4063,8 @@ class Food extends DataClass implements Insertable<Food> {
           ..write('isCustom: $isCustom, ')
           ..write('isRecipe: $isRecipe, ')
           ..write('defaultPortionGrams: $defaultPortionGrams, ')
-          ..write('unitLabel: $unitLabel')
+          ..write('unitLabel: $unitLabel, ')
+          ..write('category: $category')
           ..write(')'))
         .toString();
   }
@@ -3850,6 +4083,7 @@ class Food extends DataClass implements Insertable<Food> {
     isRecipe,
     defaultPortionGrams,
     unitLabel,
+    category,
   );
   @override
   bool operator ==(Object other) =>
@@ -3866,7 +4100,8 @@ class Food extends DataClass implements Insertable<Food> {
           other.isCustom == this.isCustom &&
           other.isRecipe == this.isRecipe &&
           other.defaultPortionGrams == this.defaultPortionGrams &&
-          other.unitLabel == this.unitLabel);
+          other.unitLabel == this.unitLabel &&
+          other.category == this.category);
 }
 
 class FoodsCompanion extends UpdateCompanion<Food> {
@@ -3882,6 +4117,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
   final Value<bool> isRecipe;
   final Value<double?> defaultPortionGrams;
   final Value<String?> unitLabel;
+  final Value<String?> category;
   const FoodsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -3895,6 +4131,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     this.isRecipe = const Value.absent(),
     this.defaultPortionGrams = const Value.absent(),
     this.unitLabel = const Value.absent(),
+    this.category = const Value.absent(),
   });
   FoodsCompanion.insert({
     this.id = const Value.absent(),
@@ -3909,6 +4146,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     this.isRecipe = const Value.absent(),
     this.defaultPortionGrams = const Value.absent(),
     this.unitLabel = const Value.absent(),
+    this.category = const Value.absent(),
   }) : name = Value(name),
        kcalPer100g = Value(kcalPer100g),
        proteinPer100g = Value(proteinPer100g),
@@ -3927,6 +4165,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     Expression<bool>? isRecipe,
     Expression<double>? defaultPortionGrams,
     Expression<String>? unitLabel,
+    Expression<String>? category,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3942,6 +4181,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
       if (defaultPortionGrams != null)
         'default_portion_grams': defaultPortionGrams,
       if (unitLabel != null) 'unit_label': unitLabel,
+      if (category != null) 'category': category,
     });
   }
 
@@ -3958,6 +4198,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     Value<bool>? isRecipe,
     Value<double?>? defaultPortionGrams,
     Value<String?>? unitLabel,
+    Value<String?>? category,
   }) {
     return FoodsCompanion(
       id: id ?? this.id,
@@ -3972,6 +4213,7 @@ class FoodsCompanion extends UpdateCompanion<Food> {
       isRecipe: isRecipe ?? this.isRecipe,
       defaultPortionGrams: defaultPortionGrams ?? this.defaultPortionGrams,
       unitLabel: unitLabel ?? this.unitLabel,
+      category: category ?? this.category,
     );
   }
 
@@ -4016,6 +4258,9 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     if (unitLabel.present) {
       map['unit_label'] = Variable<String>(unitLabel.value);
     }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
     return map;
   }
 
@@ -4033,7 +4278,8 @@ class FoodsCompanion extends UpdateCompanion<Food> {
           ..write('isCustom: $isCustom, ')
           ..write('isRecipe: $isRecipe, ')
           ..write('defaultPortionGrams: $defaultPortionGrams, ')
-          ..write('unitLabel: $unitLabel')
+          ..write('unitLabel: $unitLabel, ')
+          ..write('category: $category')
           ..write(')'))
         .toString();
   }
@@ -7040,6 +7286,10 @@ typedef $$ExercisesTableCreateCompanionBuilder =
       Value<String> measurementType,
       Value<bool> isCustom,
       Value<bool> isArchived,
+      Value<String?> imagePath,
+      Value<String?> instructions,
+      Value<String?> level,
+      Value<String?> force,
     });
 typedef $$ExercisesTableUpdateCompanionBuilder =
     ExercisesCompanion Function({
@@ -7056,6 +7306,10 @@ typedef $$ExercisesTableUpdateCompanionBuilder =
       Value<String> measurementType,
       Value<bool> isCustom,
       Value<bool> isArchived,
+      Value<String?> imagePath,
+      Value<String?> instructions,
+      Value<String?> level,
+      Value<String?> force,
     });
 
 final class $$ExercisesTableReferences
@@ -7175,6 +7429,26 @@ class $$ExercisesTableFilterComposer
 
   ColumnFilters<bool> get isArchived => $composableBuilder(
     column: $table.isArchived,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get imagePath => $composableBuilder(
+    column: $table.imagePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get instructions => $composableBuilder(
+    column: $table.instructions,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get level => $composableBuilder(
+    column: $table.level,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get force => $composableBuilder(
+    column: $table.force,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7302,6 +7576,26 @@ class $$ExercisesTableOrderingComposer
     column: $table.isArchived,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get imagePath => $composableBuilder(
+    column: $table.imagePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get instructions => $composableBuilder(
+    column: $table.instructions,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get level => $composableBuilder(
+    column: $table.level,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get force => $composableBuilder(
+    column: $table.force,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ExercisesTableAnnotationComposer
@@ -7361,6 +7655,20 @@ class $$ExercisesTableAnnotationComposer
     column: $table.isArchived,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get imagePath =>
+      $composableBuilder(column: $table.imagePath, builder: (column) => column);
+
+  GeneratedColumn<String> get instructions => $composableBuilder(
+    column: $table.instructions,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get level =>
+      $composableBuilder(column: $table.level, builder: (column) => column);
+
+  GeneratedColumn<String> get force =>
+      $composableBuilder(column: $table.force, builder: (column) => column);
 
   Expression<T> workoutSetsRefs<T extends Object>(
     Expression<T> Function($$WorkoutSetsTableAnnotationComposer a) f,
@@ -7457,6 +7765,10 @@ class $$ExercisesTableTableManager
                 Value<String> measurementType = const Value.absent(),
                 Value<bool> isCustom = const Value.absent(),
                 Value<bool> isArchived = const Value.absent(),
+                Value<String?> imagePath = const Value.absent(),
+                Value<String?> instructions = const Value.absent(),
+                Value<String?> level = const Value.absent(),
+                Value<String?> force = const Value.absent(),
               }) => ExercisesCompanion(
                 id: id,
                 name: name,
@@ -7471,6 +7783,10 @@ class $$ExercisesTableTableManager
                 measurementType: measurementType,
                 isCustom: isCustom,
                 isArchived: isArchived,
+                imagePath: imagePath,
+                instructions: instructions,
+                level: level,
+                force: force,
               ),
           createCompanionCallback:
               ({
@@ -7487,6 +7803,10 @@ class $$ExercisesTableTableManager
                 Value<String> measurementType = const Value.absent(),
                 Value<bool> isCustom = const Value.absent(),
                 Value<bool> isArchived = const Value.absent(),
+                Value<String?> imagePath = const Value.absent(),
+                Value<String?> instructions = const Value.absent(),
+                Value<String?> level = const Value.absent(),
+                Value<String?> force = const Value.absent(),
               }) => ExercisesCompanion.insert(
                 id: id,
                 name: name,
@@ -7501,6 +7821,10 @@ class $$ExercisesTableTableManager
                 measurementType: measurementType,
                 isCustom: isCustom,
                 isArchived: isArchived,
+                imagePath: imagePath,
+                instructions: instructions,
+                level: level,
+                force: force,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -9464,6 +9788,7 @@ typedef $$FoodsTableCreateCompanionBuilder =
       Value<bool> isRecipe,
       Value<double?> defaultPortionGrams,
       Value<String?> unitLabel,
+      Value<String?> category,
     });
 typedef $$FoodsTableUpdateCompanionBuilder =
     FoodsCompanion Function({
@@ -9479,6 +9804,7 @@ typedef $$FoodsTableUpdateCompanionBuilder =
       Value<bool> isRecipe,
       Value<double?> defaultPortionGrams,
       Value<String?> unitLabel,
+      Value<String?> category,
     });
 
 final class $$FoodsTableReferences
@@ -9607,6 +9933,11 @@ class $$FoodsTableFilterComposer extends Composer<_$AppDatabase, $FoodsTable> {
 
   ColumnFilters<String> get unitLabel => $composableBuilder(
     column: $table.unitLabel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9754,6 +10085,11 @@ class $$FoodsTableOrderingComposer
     column: $table.unitLabel,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$FoodsTableAnnotationComposer
@@ -9810,6 +10146,9 @@ class $$FoodsTableAnnotationComposer
 
   GeneratedColumn<String> get unitLabel =>
       $composableBuilder(column: $table.unitLabel, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
 
   Expression<T> foodLogsRefs<T extends Object>(
     Expression<T> Function($$FoodLogsTableAnnotationComposer a) f,
@@ -9931,6 +10270,7 @@ class $$FoodsTableTableManager
                 Value<bool> isRecipe = const Value.absent(),
                 Value<double?> defaultPortionGrams = const Value.absent(),
                 Value<String?> unitLabel = const Value.absent(),
+                Value<String?> category = const Value.absent(),
               }) => FoodsCompanion(
                 id: id,
                 name: name,
@@ -9944,6 +10284,7 @@ class $$FoodsTableTableManager
                 isRecipe: isRecipe,
                 defaultPortionGrams: defaultPortionGrams,
                 unitLabel: unitLabel,
+                category: category,
               ),
           createCompanionCallback:
               ({
@@ -9959,6 +10300,7 @@ class $$FoodsTableTableManager
                 Value<bool> isRecipe = const Value.absent(),
                 Value<double?> defaultPortionGrams = const Value.absent(),
                 Value<String?> unitLabel = const Value.absent(),
+                Value<String?> category = const Value.absent(),
               }) => FoodsCompanion.insert(
                 id: id,
                 name: name,
@@ -9972,6 +10314,7 @@ class $$FoodsTableTableManager
                 isRecipe: isRecipe,
                 defaultPortionGrams: defaultPortionGrams,
                 unitLabel: unitLabel,
+                category: category,
               ),
           withReferenceMapper: (p0) => p0
               .map(

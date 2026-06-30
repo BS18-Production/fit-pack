@@ -59,4 +59,47 @@ void main() {
     expect(await s.fetchByBarcode('  '), isNull);
     expect(called, isFalse);
   });
+
+  // searchByName — paketli ürünü adıyla bulma (docs/11).
+  group('searchByName', () {
+    test('sonuçları eşler, kalorisiz/barkodsuz/tekrarı eler', () async {
+      final s = svc(MockClient((req) async {
+        expect(req.url.path, contains('search'));
+        expect(req.url.query, contains('canga'));
+        return http.Response(
+          '{"products":['
+          '{"code":"111","product_name":"Canga","nutriments":'
+          '{"energy-kcal_100g":529,"proteins_100g":13,"carbohydrates_100g":46,"fat_100g":32,"sugars_100g":37}},'
+          '{"code":"111","product_name":"Canga (kopya)","nutriments":{"energy-kcal_100g":529}},'
+          '{"code":"222","product_name":"Kalorisiz","nutriments":{}},'
+          '{"code":"","product_name":"Barkodsuz","nutriments":{"energy-kcal_100g":100}},'
+          '{"code":"333","product_name":"Canga Cookie","nutriments":{"energy-kcal_100g":511,"carbohydrates_100g":62}}'
+          ']}',
+          200,
+        );
+      }));
+      final r = await s.searchByName('canga');
+      expect(r, hasLength(2)); // 111 (tekil) + 333; 222 kalorisiz, "" barkodsuz elendi
+      expect(r.first.name, 'Canga');
+      expect(r.first.barcode, '111');
+      expect(r.first.kcalPer100g, 529);
+      expect(r.first.carbPer100g, 46);
+      expect(r[1].name, 'Canga Cookie');
+    });
+
+    test('2 karakterden kısa sorgu → ağ çağrısı yok', () async {
+      var called = false;
+      final s = svc(MockClient((_) async {
+        called = true;
+        return http.Response('{}', 200);
+      }));
+      expect(await s.searchByName('c'), isEmpty);
+      expect(called, isFalse);
+    });
+
+    test('ağ hatası → boş liste (offline-first)', () async {
+      final s = svc(MockClient((_) async => http.Response('oops', 500)));
+      expect(await s.searchByName('canga'), isEmpty);
+    });
+  });
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,7 +32,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ex = ref.watch(_exerciseProvider(exerciseId)).valueOrNull;
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           title: Text(ex?.name ?? 'Hareket'),
@@ -55,18 +56,140 @@ class ExerciseDetailScreen extends ConsumerWidget {
                 },
               ),
           ],
-          bottom: const TabBar(tabs: [
+          bottom: const TabBar(isScrollable: true, tabs: [
+            Tab(text: 'Nasıl'),
             Tab(text: 'Geçmiş'),
             Tab(text: 'Grafik'),
             Tab(text: 'Rekorlar'),
           ]),
         ),
         body: TabBarView(children: [
+          _HowToTab(exercise: ex),
           _HistoryTab(exerciseId: exerciseId, exercise: ex),
           _ChartTab(exerciseId: exerciseId),
           _RecordsTab(exerciseId: exerciseId),
         ]),
       ),
+    );
+  }
+}
+
+/// "Nasıl Yapılır" sekmesi (İçerik Zenginleştirme — docs/11): form görseli +
+/// adım adım talimat + meta (kas/ekipman/seviye). free-exercise-db verisi.
+class _HowToTab extends StatelessWidget {
+  final Exercise? exercise;
+  const _HowToTab({this.exercise});
+
+  @override
+  Widget build(BuildContext context) {
+    final ex = exercise;
+    if (ex == null) return const SizedBox.shrink();
+    final steps = <String>[];
+    if (ex.instructions != null && ex.instructions!.isNotEmpty) {
+      try {
+        steps.addAll((jsonDecode(ex.instructions!) as List).cast<String>());
+      } catch (_) {}
+    }
+    return ListView(
+      padding: AppSpacing.screen,
+      children: [
+        if (ex.imagePath != null)
+          ClipRRect(
+            borderRadius: AppRadius.brLg,
+            child: AspectRatio(
+              aspectRatio: 4 / 3,
+              child: Image.asset(
+                ex.imagePath!,
+                fit: BoxFit.cover,
+                // Görseller henüz gömülü değilse (C-2b) zarif yer tutucu.
+                errorBuilder: (_, _, _) => Container(
+                  color: context.colors.surfaceContainerHighest,
+                  child: Icon(WorkoutUi.equipmentIcon(ex.equipment),
+                      size: AppIconSize.xxl,
+                      color: context.colors.onSurfaceVariant),
+                ),
+              ),
+            ),
+          ),
+        AppSpacing.vGapLg,
+        _InfoCard(ex),
+        if (ex.level != null) ...[
+          AppSpacing.vGapMd,
+          Wrap(spacing: AppSpacing.sm, children: [
+            _Chip(_levelTr(ex.level!)),
+            if (ex.force != null) _Chip(_forceTr(ex.force!)),
+          ]),
+        ],
+        AppSpacing.vGapLg,
+        if (steps.isEmpty)
+          const EmptyState(
+            icon: Icons.menu_book_rounded,
+            title: 'Talimat yok',
+            message: 'Bu hareket için adım adım açıklama bulunmuyor',
+            compact: true,
+          )
+        else ...[
+          Text('Nasıl Yapılır', style: context.texts.titleSmall),
+          AppSpacing.vGapMd,
+          ...steps.asMap().entries.map((e) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: context.colors.primary.withValues(alpha: 0.14),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text('${e.key + 1}',
+                          style: context.texts.labelMedium?.copyWith(
+                              color: context.colors.primary,
+                              fontWeight: FontWeight.w700)),
+                    ),
+                    AppSpacing.hGapMd,
+                    Expanded(
+                        child: Text(e.value,
+                            style: context.texts.bodyMedium)),
+                  ],
+                ),
+              )),
+        ],
+      ],
+    );
+  }
+
+  static String _levelTr(String l) => switch (l) {
+        'beginner' => 'Başlangıç',
+        'intermediate' => 'Orta',
+        'expert' => 'İleri',
+        _ => l,
+      };
+  static String _forceTr(String f) => switch (f) {
+        'push' => 'İtme',
+        'pull' => 'Çekme',
+        'static' => 'Statik',
+        _ => f,
+      };
+}
+
+class _Chip extends StatelessWidget {
+  final String label;
+  const _Chip(this.label);
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      decoration: BoxDecoration(
+        color: context.colors.surfaceContainerHighest,
+        borderRadius: AppRadius.brPill,
+      ),
+      child: Text(label,
+          style: context.texts.labelMedium
+              ?.copyWith(color: context.colors.onSurfaceVariant)),
     );
   }
 }

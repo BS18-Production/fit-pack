@@ -20,6 +20,13 @@ class Exercises extends Table {
       text().withDefault(const Constant('weight_reps'))(); // weight_reps, reps, time, distance
   BoolColumn get isCustom => boolean().withDefault(const Constant(false))();
   BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
+
+  // v7 (İçerik Zenginleştirme — docs/11-content-enrichment.md): free-exercise-db
+  // ile form görseli + adım adım talimat + seviye/kuvvet metası.
+  TextColumn get imagePath => text().nullable()(); // gömülü asset yolu (D-1)
+  TextColumn get instructions => text().nullable()(); // JSON array: adımlar
+  TextColumn get level => text().nullable()(); // beginner, intermediate, expert
+  TextColumn get force => text().nullable()(); // push, pull, static
 }
 
 class WorkoutSessions extends Table {

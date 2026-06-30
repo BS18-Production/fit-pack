@@ -17,6 +17,10 @@ class Foods extends Table {
   // gram = adet × defaultPortionGrams. FoodLogs.grams tek doğruluk kaynağı kalır.
   RealColumn get defaultPortionGrams => real().nullable()(); // 1 birim kaç gram
   TextColumn get unitLabel => text().nullable()(); // adet, dilim, porsiyon...
+
+  // v7 (İçerik Zenginleştirme — docs/11-content-enrichment.md): TÜRKOMP gıda
+  // grubu → Yemekler ekranında grup filtresi (D-4). Nullable → additive.
+  TextColumn get category => text().nullable()(); // et, sebze, tahıl, süt...
 }
 
 class FoodLogs extends Table {

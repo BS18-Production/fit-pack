@@ -2,29 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
-import '../../data/database/daos/nutrition_dao.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/progress_indicators.dart';
 import '../workout/routine_providers.dart';
 import '../nutrition/macro_goals.dart';
+import 'providers/dashboard_providers.dart';
 import 'providers/home_providers.dart';
-import '../../core/router/app_routes.dart';
 
-/// Ana Sayfa — Claude Design (2026-06-21) tasarımına göre yeniden kuruldu.
-/// Özel header (BUGÜN + tarih + ikonlar), durum-duyarlı birincil kart
-/// (antrenman günü gradient CTA / dinlenme günü sakin kart), beslenme hero
-/// halkası, su takibi, sessiz seri+kilo satırı.
+/// Ana Sayfa — dashboard reskin (2026-07-04). Momentum hero (seri + son 30 gün),
+/// durum-duyarlı antrenman CTA, "Bu Hafta" metrik grid, kompakt beslenme,
+/// en çok gelişen hareket içgörüsü, Su + Kilo mini kartları. Tüm sayılar
+/// gerçek veriden gelir (sahte veri yok — kaynak yoksa öğe gizlenir).
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profileAsync = ref.watch(userProfileProvider);
-
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () async {
@@ -34,35 +32,26 @@ class HomeScreen extends ConsumerWidget {
           ref.invalidate(workoutStreakProvider);
           ref.invalidate(todayWaterProvider);
           ref.invalidate(todayRoutineProvider);
+          ref.invalidate(last30WorkoutStatsProvider);
+          ref.invalidate(weekDashboardProvider);
+          ref.invalidate(topProgressProvider);
         },
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
               AppSpacing.xl, AppSpacing.sm, AppSpacing.xl, AppSpacing.xxxl),
-          children: [
-            const _Header(),
-            AppSpacing.vGapxl_,
-            // Birincil aksiyon — durum-duyarlı (bugünkü rutin / dinlenme)
-            const _PrimaryActionCard(),
-            AppSpacing.vGapxl_,
-            // Beslenme HERO
-            ref.watch(todayNutritionProvider).when(
-                  data: (nutrition) => profileAsync.maybeWhen(
-                    data: (profile) => _NutritionHeroCard(
-                      nutrition: nutrition,
-                      kcalGoal: profile?.kcalGoal ?? 2200,
-                      proteinGoal: profile?.proteinGoal ?? 180,
-                    ),
-                    orElse: () => Skeleton.card(height: 360),
-                  ),
-                  loading: () => Skeleton.card(height: 360),
-                  error: (_, _) => const SizedBox.shrink(),
-                ),
-            AppSpacing.vGapxl_,
-            // Su takibi
-            const _WaterCard(),
-            AppSpacing.vGapxl_,
-            // Seri + Kilo (sessiz)
-            const _StatRow(),
+          children: const [
+            _Header(),
+            SizedBox(height: 26),
+            _MomentumHero(),
+            SizedBox(height: 26),
+            _PrimaryActionCard(),
+            SizedBox(height: 26),
+            _WeekDashboard(),
+            SizedBox(height: 26),
+            _CompactNutrition(),
+            SizedBox(height: 26),
+            _InsightCard(),
+            _CompactHealthRow(),
           ],
         ),
       ),
@@ -114,6 +103,105 @@ class _Header extends StatelessWidget {
               color: context.colors.onSurfaceVariant,
               onPressed: () => context.push(AppRoutes.settings),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────── Momentum hero
+
+/// Seri + son 30 günün özeti (antrenman / hacim / kcal). Seri verisi
+/// [workoutStreakProvider], özet [last30WorkoutStatsProvider].
+class _MomentumHero extends ConsumerWidget {
+  const _MomentumHero();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final streak = ref.watch(workoutStreakProvider).valueOrNull ?? 0;
+    final month = ref.watch(last30WorkoutStatsProvider).valueOrNull;
+    final c = context.colors;
+    final fmt = NumberFormat.decimalPattern('tr_TR');
+
+    final kicker = streak > 0 ? 'Seri korunuyor' : 'Yeni hafta, yeni ritim';
+    final title =
+        streak > 0 ? '$streak gündür\nritimdesin 🔥' : 'Serini başlat 💪';
+
+    return _Card(
+      child: Stack(
+        children: [
+          Positioned(
+            right: -54,
+            top: -48,
+            child: Container(
+              width: 132,
+              height: 132,
+              decoration: BoxDecoration(
+                color: c.primary.withValues(alpha: 0.14),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(kicker,
+                  style: context.texts.bodySmall
+                      ?.copyWith(color: c.onSurfaceVariant)),
+              const SizedBox(height: 3),
+              Text(title,
+                  style: context.texts.displaySmall?.copyWith(height: 1.05)),
+              AppSpacing.vGapLg,
+              Row(
+                children: [
+                  _MomentumStat(
+                      value: '${month?.sessions ?? 0}', label: 'antrenman'),
+                  AppSpacing.hGapSm,
+                  _MomentumStat(
+                      value: fmt.format(month?.volumeKg ?? 0),
+                      label: 'kg hacim'),
+                  AppSpacing.hGapSm,
+                  _MomentumStat(
+                      value: fmt.format(month?.kcalBurned ?? 0), label: 'kcal'),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MomentumStat extends StatelessWidget {
+  final String value;
+  final String label;
+  const _MomentumStat({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md - 2),
+        decoration: BoxDecoration(
+          color: c.surfaceContainerHighest,
+          borderRadius: AppRadius.brMd,
+          border: Border.all(color: c.outlineVariant),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.texts.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 2),
+            Text(label,
+                style: context.texts.labelSmall
+                    ?.copyWith(color: c.onSurfaceVariant)),
           ],
         ),
       ),
@@ -189,7 +277,8 @@ class _TrainingDayCard extends ConsumerWidget {
                               ? 'Antrenmanı başlat · $exCount hareket'
                               : 'Antrenmanı başlat',
                           style: context.texts.bodySmall?.copyWith(
-                              color: AppColors.onGradient.withValues(alpha: 0.82))),
+                              color: AppColors.onGradient
+                                  .withValues(alpha: 0.82))),
                     ],
                   ),
                 ),
@@ -218,7 +307,8 @@ class _StartWorkoutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return _Card(
+      padding: EdgeInsets.zero,
       child: InkWell(
         onTap: () => context.go(AppRoutes.workout),
         borderRadius: AppRadius.brLg,
@@ -266,105 +356,264 @@ class _RestDayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final muted = context.colors.onSurfaceVariant;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: muted.withValues(alpha: 0.10),
-                    borderRadius: AppRadius.brMd,
-                  ),
-                  child: Icon(Icons.bedtime_outlined, color: muted),
-                ),
-                AppSpacing.hGapMd,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Bugün dinlenme günü',
-                          style: context.texts.titleMedium),
-                      if (nextName != null) ...[
-                        const SizedBox(height: 3),
-                        Text('Sıradaki: $nextName',
-                            style: context.texts.bodySmall
-                                ?.copyWith(color: muted)),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            AppSpacing.vGapMd,
-            InkWell(
-              onTap: () => context.go(AppRoutes.workout),
-              borderRadius: AppRadius.brMd,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md, vertical: AppSpacing.md),
+    return _Card(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
-                  color: muted.withValues(alpha: 0.07),
+                  color: muted.withValues(alpha: 0.10),
                   borderRadius: AppRadius.brMd,
                 ),
-                child: Row(
+                child: Icon(Icons.bedtime_outlined, color: muted),
+              ),
+              AppSpacing.hGapMd,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.bolt_rounded, color: muted, size: AppIconSize.sm),
-                    AppSpacing.hGapMd,
-                    Expanded(
-                      child: Text('Yine de antrenman yap',
-                          style: context.texts.labelLarge?.copyWith(
-                              color: muted, fontWeight: FontWeight.w600)),
-                    ),
-                    Icon(Icons.chevron_right_rounded,
-                        color: context.colors.outline, size: AppIconSize.sm),
+                    Text('Bugün dinlenme günü',
+                        style: context.texts.titleMedium),
+                    if (nextName != null) ...[
+                      const SizedBox(height: 3),
+                      Text('Sıradaki: $nextName',
+                          style: context.texts.bodySmall
+                              ?.copyWith(color: muted)),
+                    ],
                   ],
                 ),
               ),
+            ],
+          ),
+          AppSpacing.vGapMd,
+          InkWell(
+            onTap: () => context.go(AppRoutes.workout),
+            borderRadius: AppRadius.brMd,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md, vertical: AppSpacing.md),
+              decoration: BoxDecoration(
+                color: muted.withValues(alpha: 0.07),
+                borderRadius: AppRadius.brMd,
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.bolt_rounded, color: muted, size: AppIconSize.sm),
+                  AppSpacing.hGapMd,
+                  Expanded(
+                    child: Text('Yine de antrenman yap',
+                        style: context.texts.labelLarge?.copyWith(
+                            color: muted, fontWeight: FontWeight.w600)),
+                  ),
+                  Icon(Icons.chevron_right_rounded,
+                      color: context.colors.outline, size: AppIconSize.sm),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-// ──────────────────────────────────────────────────────── Beslenme HERO
+// ─────────────────────────────────────────────────────── Bu Hafta grid
 
-class _NutritionHeroCard extends StatelessWidget {
-  final DailyNutrition nutrition;
-  final int kcalGoal;
-  final int proteinGoal;
+class _WeekDashboard extends ConsumerWidget {
+  const _WeekDashboard();
 
-  const _NutritionHeroCard({
-    required this.nutrition,
-    required this.kcalGoal,
-    required this.proteinGoal,
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(weekDashboardProvider);
+    final data = async.valueOrNull;
+    final fmt = NumberFormat.decimalPattern('tr_TR');
+
+    final goalText = data == null
+        ? ''
+        : (data.scheduledDays != null
+            ? '${data.workouts}/${data.scheduledDays} antrenman tamam'
+            : '${data.workouts} antrenman');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Bu Hafta', style: context.texts.headlineSmall),
+            if (goalText.isNotEmpty)
+              Flexible(
+                child: Text(goalText,
+                    textAlign: TextAlign.end,
+                    style: context.texts.bodySmall
+                        ?.copyWith(color: context.colors.onSurfaceVariant)),
+              ),
+          ],
+        ),
+        AppSpacing.vGapMd,
+        if (async.isLoading && data == null)
+          Skeleton.card(height: 260)
+        else
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: AppSpacing.md,
+            crossAxisSpacing: AppSpacing.md,
+            childAspectRatio: 1.35,
+            children: [
+              _MetricCard(
+                icon: Icons.fitness_center_rounded,
+                value: '${fmt.format(data?.volumeKg ?? 0)} kg',
+                caption: 'kaldırılan hacim',
+                change: data?.volumeDeltaPct == null
+                    ? null
+                    : '${data!.volumeDeltaPct! >= 0 ? '+' : ''}${data.volumeDeltaPct}%',
+                changePositive: (data?.volumeDeltaPct ?? 0) >= 0,
+              ),
+              _MetricCard(
+                icon: Icons.local_fire_department_rounded,
+                tint: context.semantic.warning,
+                value: fmt.format(data?.kcalBurned ?? 0),
+                caption: 'kcal yakıldı',
+              ),
+              _MetricCard(
+                icon: Icons.event_available_rounded,
+                tint: context.semantic.info,
+                value: data?.scheduledDays != null
+                    ? '${data?.workouts ?? 0}/${data!.scheduledDays}'
+                    : '${data?.workouts ?? 0}',
+                caption: 'antrenman tamamlandı',
+              ),
+              _MetricCard(
+                icon: Icons.egg_alt_outlined,
+                tint: context.semantic.macroProtein,
+                value: data?.proteinAvgPct != null
+                    ? '%${data!.proteinAvgPct}'
+                    : '—',
+                caption: 'protein hedefi ort.',
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+class _MetricCard extends StatelessWidget {
+  final IconData icon;
+  final Color? tint;
+  final String value;
+  final String caption;
+  final String? change;
+  final bool changePositive;
+
+  const _MetricCard({
+    required this.icon,
+    required this.value,
+    required this.caption,
+    this.tint,
+    this.change,
+    this.changePositive = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final c = context.colors;
+    final accent = tint ?? c.primary;
+    return _Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.16),
+                  borderRadius: AppRadius.brMd,
+                ),
+                child: Icon(icon, color: accent, size: 20),
+              ),
+              if (change != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: (changePositive
+                            ? context.semantic.success
+                            : c.onSurfaceVariant)
+                        .withValues(alpha: 0.16),
+                    borderRadius: AppRadius.brPill,
+                  ),
+                  child: Text(change!,
+                      style: context.texts.labelMedium?.copyWith(
+                        color: changePositive
+                            ? context.semantic.success
+                            : c.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                      )),
+                ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.texts.headlineSmall
+                      ?.copyWith(letterSpacing: -0.5)),
+              const SizedBox(height: 2),
+              Text(caption,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.texts.bodySmall
+                      ?.copyWith(color: c.onSurfaceVariant)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────── Kompakt beslenme
+
+class _CompactNutrition extends ConsumerWidget {
+  const _CompactNutrition();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nutrition = ref.watch(todayNutritionProvider).valueOrNull;
+    final profile = ref.watch(userProfileProvider).valueOrNull;
+    if (nutrition == null) return Skeleton.card(height: 190);
+
+    final kcalGoal = profile?.kcalGoal ?? 2200;
+    final proteinGoal = profile?.proteinGoal ?? 180;
     final derived =
         deriveMacroGoals(kcalGoal: kcalGoal, proteinGoal: proteinGoal);
-    return Card(
+
+    return _Card(
+      padding: EdgeInsets.zero,
       child: InkWell(
         onTap: () => context.go(AppRoutes.nutrition),
         borderRadius: AppRadius.brLg,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl,
-              AppSpacing.xl, AppSpacing.xxl),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Bugünkü Beslenme', style: context.texts.titleMedium),
+                  Text('Bugünkü Beslenme', style: context.texts.titleLarge),
                   Text('Düzenle',
                       style: context.texts.labelMedium?.copyWith(
                           color: context.colors.primary,
@@ -372,36 +621,41 @@ class _NutritionHeroCard extends StatelessWidget {
                 ],
               ),
               AppSpacing.vGapLg,
-              Center(
-                child: CalorieRing(
-                  consumed: nutrition.kcal,
-                  goal: kcalGoal,
-                  size: 196,
-                ),
-              ),
-              AppSpacing.vGapxl_,
-              MacroBar(
-                label: 'Protein',
-                current: nutrition.protein,
-                goal: proteinGoal,
-                unit: 'g',
-                color: context.semantic.macroProtein,
-              ),
-              AppSpacing.vGapLg,
-              MacroBar(
-                label: 'Karbonhidrat',
-                current: nutrition.carb,
-                goal: derived.carb,
-                unit: 'g',
-                color: context.semantic.macroCarbs,
-              ),
-              AppSpacing.vGapLg,
-              MacroBar(
-                label: 'Yağ',
-                current: nutrition.fat,
-                goal: derived.fat,
-                unit: 'g',
-                color: context.semantic.macroFat,
+              Row(
+                children: [
+                  CalorieRing(
+                      consumed: nutrition.kcal, goal: kcalGoal, size: 118),
+                  AppSpacing.hGapLg,
+                  Expanded(
+                    child: Column(
+                      children: [
+                        MacroBar(
+                          label: 'Protein',
+                          current: nutrition.protein,
+                          goal: proteinGoal,
+                          unit: 'g',
+                          color: context.semantic.macroProtein,
+                        ),
+                        AppSpacing.vGapMd,
+                        MacroBar(
+                          label: 'Karbonhidrat',
+                          current: nutrition.carb,
+                          goal: derived.carb,
+                          unit: 'g',
+                          color: context.semantic.macroCarbs,
+                        ),
+                        AppSpacing.vGapMd,
+                        MacroBar(
+                          label: 'Yağ',
+                          current: nutrition.fat,
+                          goal: derived.fat,
+                          unit: 'g',
+                          color: context.semantic.macroFat,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -411,10 +665,89 @@ class _NutritionHeroCard extends StatelessWidget {
   }
 }
 
-// ──────────────────────────────────────────────────────────── Su takibi
+// ─────────────────────────────────────────────────────────── İçgörü kartı
 
-class _WaterCard extends ConsumerWidget {
-  const _WaterCard();
+/// En çok gelişen hareket (e1RM artışı). Yeterli veri yoksa hiç gösterilmez.
+class _InsightCard extends ConsumerWidget {
+  const _InsightCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final top = ref.watch(topProgressProvider).valueOrNull;
+    if (top == null) return const SizedBox.shrink();
+    final c = context.colors;
+    final success = context.semantic.success;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 26),
+      child: _Card(
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: success.withValues(alpha: 0.16),
+                borderRadius: AppRadius.brMd,
+              ),
+              child: Icon(Icons.trending_up_rounded, color: success),
+            ),
+            AppSpacing.hGapMd,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('İÇGÖRÜ',
+                      style: context.texts.labelSmall?.copyWith(
+                        color: success,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.4,
+                      )),
+                  const SizedBox(height: 2),
+                  Text('En çok gelişen: ${top.name}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.texts.titleSmall),
+                  const SizedBox(height: 2),
+                  Text('Son 6 haftada tahmini 1RM\'in arttı',
+                      style: context.texts.bodySmall
+                          ?.copyWith(color: c.onSurfaceVariant)),
+                ],
+              ),
+            ),
+            AppSpacing.hGapSm,
+            Text('+${top.deltaE1rm.round()} kg',
+                style: context.texts.titleMedium?.copyWith(
+                    color: success, fontWeight: FontWeight.w800)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────── Su + Kilo mini satır
+
+class _CompactHealthRow extends ConsumerWidget {
+  const _CompactHealthRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return const IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: _WaterMini()),
+          SizedBox(width: AppSpacing.md),
+          Expanded(child: _WeightMini()),
+        ],
+      ),
+    );
+  }
+}
+
+class _WaterMini extends ConsumerWidget {
+  const _WaterMini();
 
   Future<void> _add(WidgetRef ref, int ml) async {
     await ref.read(nutritionDaoProvider).addWater(DateTime.now(), ml);
@@ -436,102 +769,87 @@ class _WaterCard extends ConsumerWidget {
     final liters = (ml / 1000).toStringAsFixed(1);
     final goalL = (goalMl / 1000).toStringAsFixed(1);
 
-    return Card(
-      child: InkWell(
+    return _Card(
+      child: GestureDetector(
         onLongPress: () => _reset(ref),
-        borderRadius: AppRadius.brLg,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg, vertical: AppSpacing.lg),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.12),
-                      borderRadius: AppRadius.brSm,
-                    ),
-                    child: Icon(Icons.water_drop_outlined,
-                        color: accent, size: AppIconSize.sm),
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.16),
+                    borderRadius: AppRadius.brSm,
                   ),
-                  AppSpacing.hGapMd,
-                  Text('Su', style: context.texts.titleSmall),
-                  const Spacer(),
-                  Text.rich(TextSpan(children: [
-                    TextSpan(
-                        text: '$liters ',
-                        style: context.texts.titleSmall),
-                    TextSpan(
-                        text: '/ $goalL L',
-                        style: context.texts.labelMedium?.copyWith(
-                            color: context.colors.onSurfaceVariant,
-                            fontWeight: FontWeight.w600)),
-                  ])),
-                ],
-              ),
-              AppSpacing.vGapMd,
-              ClipRRect(
-                borderRadius: AppRadius.brSm,
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: pct),
-                  duration: AppDuration.normal,
-                  curve: Curves.easeOutCubic,
-                  builder: (_, v, _) => LinearProgressIndicator(
-                    value: v,
-                    minHeight: 6,
-                    backgroundColor: context.colors.surfaceContainerHighest,
-                    valueColor: AlwaysStoppedAnimation<Color>(accent),
+                  child: Icon(Icons.water_drop_outlined,
+                      color: accent, size: AppIconSize.sm),
+                ),
+                AppSpacing.hGapSm,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Su', style: context.texts.titleSmall),
+                      Text('$liters / $goalL L',
+                          style: context.texts.bodySmall?.copyWith(
+                              color: context.colors.onSurfaceVariant)),
+                    ],
                   ),
                 ),
+              ],
+            ),
+            AppSpacing.vGapMd,
+            ClipRRect(
+              borderRadius: AppRadius.brSm,
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: pct),
+                duration: AppDuration.normal,
+                curve: Curves.easeOutCubic,
+                builder: (_, v, _) => LinearProgressIndicator(
+                  value: v,
+                  minHeight: 6,
+                  backgroundColor: context.colors.surfaceContainerHighest,
+                  valueColor: AlwaysStoppedAnimation<Color>(accent),
+                ),
               ),
-              AppSpacing.vGapMd,
-              Row(
-                children: [
-                  Expanded(
-                    child: _WaterChip(
-                      label: '+250 ml',
-                      accent: accent,
-                      onTap: () => _add(ref, 250),
-                    ),
-                  ),
-                  AppSpacing.hGapSm,
-                  Expanded(
-                    child: _WaterChip(
-                      label: '+1 bardak',
-                      accent: accent,
-                      onTap: () => _add(ref, 200),
-                    ),
-                  ),
-                ],
+            ),
+            AppSpacing.vGapMd,
+            SizedBox(
+              width: double.infinity,
+              child: _MiniAction(
+                label: '+250 ml',
+                accent: accent,
+                onTap: () => _add(ref, 250),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _WaterChip extends StatelessWidget {
+class _MiniAction extends StatelessWidget {
   final String label;
   final Color accent;
   final VoidCallback onTap;
-  const _WaterChip(
+  const _MiniAction(
       {required this.label, required this.accent, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: accent.withValues(alpha: 0.10),
+      color: accent.withValues(alpha: 0.12),
       borderRadius: AppRadius.brPill,
       child: InkWell(
         onTap: onTap,
         borderRadius: AppRadius.brPill,
         child: Container(
-          height: AppA11y.minTapTarget - 8,
+          height: 34,
           alignment: Alignment.center,
           child: Text(label,
               style: context.texts.labelMedium
@@ -542,105 +860,68 @@ class _WaterChip extends StatelessWidget {
   }
 }
 
-// ──────────────────────────────────────────────────────── Seri + Kilo
-
-class _StatRow extends ConsumerWidget {
-  const _StatRow();
+class _WeightMini extends ConsumerWidget {
+  const _WeightMini();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final streak = ref.watch(workoutStreakProvider).valueOrNull ?? 0;
     final trend = ref.watch(weightTrendProvider).valueOrNull;
+    final c = context.colors;
+    final success = context.semantic.success;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: _StatColumn(
-                label: 'SERİ',
-                onTap: streak > 0 ? null : () => context.go(AppRoutes.workout),
-                child: Row(
+    return _Card(
+      padding: EdgeInsets.zero,
+      child: InkWell(
+        onTap: () => context.go(AppRoutes.progress),
+        borderRadius: AppRadius.brLg,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: success.withValues(alpha: 0.16),
+                      borderRadius: AppRadius.brSm,
+                    ),
+                    child: Icon(Icons.monitor_weight_outlined,
+                        color: success, size: AppIconSize.sm),
+                  ),
+                  AppSpacing.hGapSm,
+                  Expanded(
+                    child: Text('Son kilo', style: context.texts.titleSmall),
+                  ),
+                ],
+              ),
+              AppSpacing.vGapMd,
+              if (trend?.latest == null)
+                Text('İlk kilonu gir',
+                    style:
+                        context.texts.titleSmall?.copyWith(color: c.primary))
+              else ...[
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    const Text('🔥', style: TextStyle(fontSize: 18)),
-                    AppSpacing.hGapSm,
-                    Text(streak > 0 ? '$streak' : '0',
+                    Text(trend!.latest!.toStringAsFixed(1),
                         style: context.texts.headlineSmall),
                     AppSpacing.hGapXs,
-                    Text('gün',
-                        style: context.texts.bodySmall?.copyWith(
-                            color: context.colors.onSurfaceVariant)),
+                    Text('kg',
+                        style: context.texts.bodySmall
+                            ?.copyWith(color: c.onSurfaceVariant)),
                   ],
                 ),
-              ),
-            ),
-            VerticalDivider(
-                width: 1, color: context.colors.outlineVariant),
-            Expanded(
-              child: _StatColumn(
-                label: 'SON KİLO',
-                onTap: () => context.go(AppRoutes.progress),
-                child: trend?.latest == null
-                    ? Text('İlk kilonu gir',
-                        style: context.texts.titleSmall?.copyWith(
-                            color: context.colors.primary))
-                    : Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(trend!.latest!.toStringAsFixed(1),
-                              style: context.texts.headlineSmall),
-                          AppSpacing.hGapXs,
-                          Text('kg',
-                              style: context.texts.bodySmall?.copyWith(
-                                  color: context.colors.onSurfaceVariant)),
-                          if (trend.delta != null && trend.delta != 0) ...[
-                            AppSpacing.hGapSm,
-                            _DeltaChip(delta: trend.delta!),
-                          ],
-                        ],
-                      ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StatColumn extends StatelessWidget {
-  final String label;
-  final Widget child;
-  final VoidCallback? onTap;
-  const _StatColumn(
-      {required this.label, required this.child, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: AppRadius.brMd,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(label,
-                style: context.texts.labelSmall?.copyWith(
-                  color: context.colors.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.2,
-                )),
-            AppSpacing.vGapSm,
-            child,
-          ],
+                if (trend.delta != null && trend.delta != 0) ...[
+                  const SizedBox(height: 4),
+                  _DeltaChip(delta: trend.delta!),
+                ],
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -653,14 +934,50 @@ class _DeltaChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Cut bağlamı: kilo düşüşü olumlu (yeşil). Artış nötr/uyarı tonu.
+    // Cut bağlamı: kilo düşüşü olumlu (yeşil). Artış nötr ton.
     final down = delta < 0;
     final color =
         down ? context.semantic.success : context.colors.onSurfaceVariant;
-    return Text(
-      '${down ? '↓' : '↑'} ${delta.abs().toStringAsFixed(1)}',
-      style: context.texts.labelMedium
-          ?.copyWith(color: color, fontWeight: FontWeight.w700),
+    return Container(
+      padding:
+          const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.16),
+        borderRadius: AppRadius.brPill,
+      ),
+      child: Text(
+        '${down ? '↓' : '↑'} ${delta.abs().toStringAsFixed(1)} kg',
+        style: context.texts.labelMedium
+            ?.copyWith(color: color, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+}
+
+// ────────────────────────────────────────────────────────── Ortak kart
+
+/// Uygulama kartı: yüzey + ince kenarlık + 16 köşe, gölgesiz (tasarım dili).
+/// Dashboard bölümlerinde tutarlı kutu — bazıları InkWell için sıfır padding.
+class _Card extends StatelessWidget {
+  final Widget child;
+  final EdgeInsets padding;
+  const _Card(
+      {required this.child,
+      this.padding = const EdgeInsets.all(AppSpacing.lg)});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: padding,
+      // Kırpma: momentum hero'nun dekoratif dairesi gibi taşan çocuklar
+      // kartın yuvarlak köşesinde kalsın (ekran genişliğinden bağımsız).
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        borderRadius: AppRadius.brLg,
+        border: Border.all(color: context.colors.outlineVariant),
+      ),
+      child: child,
     );
   }
 }

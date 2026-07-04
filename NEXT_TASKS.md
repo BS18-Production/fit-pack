@@ -5,6 +5,21 @@
 
 ---
 
+## 🎨 Ana Sayfa Dashboard Reskin (2026-07-04) — `feat/home-dashboard`
+
+ChatGPT'de üretilen dashboard tasarımı (`design/current-ui-spec.md` + `fit-pack-ui(1).html`) → farkı bizim tasarım diline (gerçek token + veri) geçirildi. analyze 0 · test 110/110.
+
+- [x] **Momentum hero** — seri ("X gündür ritimdesin 🔥") + son 30 gün özeti (antrenman/hacim/kcal). Provider `last30WorkoutStatsProvider` (takvim ayı yerine kayan pencere — ayın 1'inde de dolu).
+- [x] **"Bu Hafta" 2×2 metrik grid** — hacim + geçen haftaya göre % değişim, yakılan kcal, antrenman (planlı güne göre X/Y), protein hedefi ort. Provider `weekDashboardProvider`.
+- [x] **Kompakt beslenme** — küçük halka + yan makro barları (tam ekran hero yerine).
+- [x] **İçgörü motoru** — `topProgressExercise`: son 6 haftadaki tüm hareketlerin e1RM artışını tarar, en çok gelişeni gösterir; veri yoksa kart gizlenir (sahte içgörü yok). DAO: `getWeightedSetPointsInRange`.
+- [x] **Su + Kilo mini kartları** — yan yana; su +250 ml + uzun bas sıfırla, kilo son değer + trend.
+- Saf hesap katmanı: `lib/features/home/dashboard_stats.dart` (test: `dashboard_stats_test.dart`).
+- **Emülatörde 10 günlük dummy veriyle** görsel doğrulandı (tüm ekranlar dolu). Dummy veri repoda değil (yalnız cihaz DB'sinde).
+- **Çıkarılanlar:** mock'taki uydurma "%uyum" rozeti + sabit "~58 dk / +7.5 kg" değerleri (dürüst veri kaynağı yok).
+
+---
+
 ## 🔍 Kod İncelemesi & Tutarlılık Refactor'u (2026-07-04) — `fix/code-review`
 
 Tam kod denetimi yapıldı → [CODE_REVIEW.md](CODE_REVIEW.md) (bulgular + batch planı orada).

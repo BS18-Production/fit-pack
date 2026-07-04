@@ -302,6 +302,37 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
     return (session, sets);
   }
 
+  /// Ana Sayfa "en çok gelişen hareket" içgörüsü (dashboard): [start, end)
+  /// aralığındaki ağırlıklı set noktaları + hareket adı. Isınma hariç; yalnız
+  /// kg ve tekrarı DOLU olanlar (e1RM hesaplanabilsin). Tek sorgu (N+1 yok).
+  Future<List<ExerciseProgressPoint>> getWeightedSetPointsInRange(
+      DateTime start, DateTime end) async {
+    final q = select(workoutSets).join([
+      innerJoin(
+          workoutSessions, workoutSessions.id.equalsExp(workoutSets.sessionId)),
+      innerJoin(exercises, exercises.id.equalsExp(workoutSets.exerciseId)),
+    ])
+      ..where(workoutSets.isWarmup.equals(false) &
+          workoutSets.weightKg.isNotNull() &
+          workoutSets.reps.isNotNull() &
+          workoutSessions.date.isBiggerOrEqualValue(start) &
+          workoutSessions.date.isSmallerThanValue(end))
+      ..orderBy([OrderingTerm.asc(workoutSessions.date)]);
+    final rows = await q.get();
+    return rows.map((r) {
+      final s = r.readTable(workoutSets);
+      final sess = r.readTable(workoutSessions);
+      final ex = r.readTable(exercises);
+      return ExerciseProgressPoint(
+        exerciseId: ex.id,
+        name: ex.name,
+        date: sess.date,
+        weightKg: s.weightKg!,
+        reps: s.reps!,
+      );
+    }).toList();
+  }
+
   /// Get the last recorded weight for an exercise
   Future<WorkoutSet?> getLastSetForExercise(int exerciseId) async {
     final query = select(workoutSets).join([
@@ -321,6 +352,28 @@ class RoutineExerciseWithExercise {
   final RoutineExercise routineExercise;
   final Exercise exercise;
   const RoutineExerciseWithExercise(this.routineExercise, this.exercise);
+}
+
+/// Dashboard içgörüsü için set noktası: hareket kimliği/adı + tarih + kg×tekrar.
+/// [ExerciseSetPoint]'ten farkı: hareket kimliği/adını taşır (çok-hareketli
+/// tarama için) ve kg/tekrar zorunlu (e1RM hep hesaplanır).
+class ExerciseProgressPoint {
+  final int exerciseId;
+  final String name;
+  final DateTime date;
+  final double weightKg;
+  final int reps;
+  const ExerciseProgressPoint({
+    required this.exerciseId,
+    required this.name,
+    required this.date,
+    required this.weightKg,
+    required this.reps,
+  });
+
+  /// Tahmini 1RM (Epley): kg × (1 + tekrar/30). kg/tekrar > 0 değilse null.
+  double? get e1rm =>
+      (weightKg > 0 && reps > 0) ? weightKg * (1 + reps / 30) : null;
 }
 
 /// Hareket geçmişinde tek set noktası (tarih + kg + tekrar).

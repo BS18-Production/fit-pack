@@ -8,6 +8,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
+import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/progress_indicators.dart';
 import '../workout/routine_providers.dart';
 import '../nutrition/macro_goals.dart';
@@ -24,7 +25,9 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      body: RefreshIndicator(
+      backgroundColor: Colors.transparent,
+      body: GlassBackground(
+        child: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(userProfileProvider);
           ref.invalidate(todayNutritionProvider);
@@ -54,6 +57,7 @@ class HomeScreen extends ConsumerWidget {
             _CompactHealthRow(),
           ],
         ),
+      ),
       ),
     );
   }
@@ -956,8 +960,9 @@ class _DeltaChip extends StatelessWidget {
 
 // ────────────────────────────────────────────────────────── Ortak kart
 
-/// Uygulama kartı: yüzey + ince kenarlık + 16 köşe, gölgesiz (tasarım dili).
-/// Dashboard bölümlerinde tutarlı kutu — bazıları InkWell için sıfır padding.
+/// Dashboard kartı — artık "liquid glass" (yarı saydam + arka bulanıklık).
+/// Tek yerden [GlassCard]'a delege eder; böylece tüm Ana Sayfa kartları
+/// tutarlı cam yüzey alır (açık/koyu temaya göre otomatik).
 class _Card extends StatelessWidget {
   final Widget child;
   final EdgeInsets padding;
@@ -967,17 +972,6 @@ class _Card extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      // Kırpma: momentum hero'nun dekoratif dairesi gibi taşan çocuklar
-      // kartın yuvarlak köşesinde kalsın (ekran genişliğinden bağımsız).
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        borderRadius: AppRadius.brLg,
-        border: Border.all(color: context.colors.outlineVariant),
-      ),
-      child: child,
-    );
+    return GlassCard(radius: AppRadius.lg, padding: padding, child: child);
   }
 }

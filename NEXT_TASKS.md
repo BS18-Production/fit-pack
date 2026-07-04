@@ -1,7 +1,72 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
-> **Son güncelleme:** 2026-07-04
+> **Son güncelleme:** 2026-07-05
 > **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [CODE_REVIEW.md](CODE_REVIEW.md), [docs/04-roadmap.md](docs/04-roadmap.md)
+
+---
+
+## 🌐 Çok Dilli (EN/TR) — Faz A başladı (2026-07-05) — `feat/glass-redesign`
+
+Tasarım: [docs/14-localization.md](docs/14-localization.md). Yaklaşım: Flutter
+`gen-l10n` + ARB. Varsayılan **cihaz dilini takip et**, `en` fallback (İngilizce
+öncelik). Ayarlar → Görünüm → **Dil** (Sistem/English/Türkçe), kalıcı. Tarih/sayı
+biçimi artık locale-duyarlı (`tr_TR` sabiti kaldırıldı). analyze 0 · test 110/110.
+
+**Altyapı (bitti):** `flutter_localizations` + `generate: true`, `l10n.yaml`,
+`lib/l10n/app_en.arb` + `app_tr.arb`, `AppL10n`, `core/i18n/locale_provider.dart`,
+`core/i18n/formatting.dart` (`context.dateFmt/numFmt/localeName`),
+`core/i18n/enum_labels.dart` (aktiflik/cinsiyet/tema/dil etiketleri). `main.dart`
+en+tr tarih verisi yükler; `app.dart` locale + delegates bağlı.
+
+**Migrate edildi (EN/TR emülatörde doğrulandı):**
+- [x] Alt navigasyon (`app_shell.dart`)
+- [x] Ana Sayfa (`home_screen.dart`) — ICU çoğul (streak), locale sayı/tarih
+- [x] Ayarlar (`settings_screen.dart`) + **Dil seçici** eklendi
+- [x] `CalorieRing` "kcal kaldı/fazla" (`progress_indicators.dart`)
+- [x] Ölü kod temizliği: `themeModeLabelTr`, `activityLabelsTr` kaldırıldı
+
+**Kalan UI (görünürlük sırasına göre batch'ler — HER BİRİ ayrı):**
+- [ ] **Beslenme** (`nutrition_screen.dart` — büyük; tarih çubuğu okları zaten
+      cam-uyumlu, metinler kaldı) + `barcode_flow.dart`
+- [ ] **Onboarding** (`onboarding_screen.dart` + `onboarding_calc.dart` — hedef
+      adları/açıklamaları)
+- [ ] **Antrenman kümesi (EN BÜYÜK):** `workout_list_screen`, `routine_builder`,
+      `active_session_screen`, `workout_preview`, `workout_history_screen`,
+      egzersiz kütüphanesi/detay, `calorie_estimate` etiketleri
+- [ ] **İlerleme/Vücut/Aktivite:** `body_metrics_screen`, `activity_calendar`
+- [ ] **Dışa Aktar/Bulut:** `export_screen`, `cloud/*` (auth ekranları)
+- [ ] **Ortak widget + dialog'lar:** `app_state_views` (Empty/Error/confirm/
+      restart), `foods` ekranı, snackbar/exception mesajları
+- [ ] Kalan `DateFormat(...,'tr_TR')` / `NumberFormat(...'tr_TR')` → `context.*`
+      (grep: `grep -rn "tr_TR" lib`)
+
+**Faz B (içerik i18n — ertelendi, çok turlu):** şema v9 + çift dilli seed
+(egzersiz/besin adları). Detay docs/14 §Faz B. Ayrı PRD gerekir.
+
+---
+
+## ✅ Onboarding V2 TAMAM (2026-07-05) — `feat/glass-redesign`
+
+Tasarım + uygulama aynı gün: **[docs/15-onboarding.md](docs/15-onboarding.md)**.
+analyze 0 · test **123/123** · sıfır kurulum emülatörde **EN + TR** uçtan uca
+doğrulandı (per-app locale ile TR; ekran görüntüleri alındı).
+
+- [x] **O-1:** A1+A2 glass reskin — Karşılama (gradient marka rozeti) +
+      "Seni tanıyalım" (GlassCard grupları), tamamen ARB'li
+- [x] **O-2:** A3 "Planın hazır ✨" — kalori/protein + **değer projeksiyonu**
+      (`projectWeeks` — kullanıcının girdiği kaloriden; 85→78 kg = 14 hafta
+      doğrulandı). `onboarding_calc` görünen metinlerden arındırıldı, 9 birim test
+- [x] **O-3:** A4 "İçeride ne var" — 4 sekme haritası, 4 sayfa navigasyon
+- [x] **O-4:** Coach mark altyapısı (`core/onboarding/first_run_hints.dart`,
+      paketsiz OverlayEntry+CustomPaint spotlight) + 3 ipucu (Antrenman/Beslenme/
+      İlerleme FAB-CTA'ları) + **mevcut kullanıcı koruması** (`initialize()` —
+      marker'lı, idempotent; 3 test). Balon hedefin boş tarafına yerleşir;
+      scrim/Anladım kapatır; tekrar gösterilmez (emülatörde teyit).
+      **Düzeltilen bug:** Riverpod lazy provider → ilk okuma "hepsi görüldü"
+      varsayılanına takılıyordu; karar artık doğrudan prefs'ten (`isUnseen`).
+- [x] **O-5:** Boş hal denetimi — Antrenman "Rutin oluştur" + İlerleme "İlk
+      ölçümünü ekle" aksiyonları bağlandı (ikisi aksiyonsuzdu); diğerleri zaten
+      uyumluydu. (Bu iki metin ekranlarıyla birlikte i18n batch'inde ARB'ye taşınacak.)
 
 ---
 

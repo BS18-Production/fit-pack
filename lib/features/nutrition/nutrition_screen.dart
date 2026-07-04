@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../core/onboarding/first_run_hints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/utils/format.dart';
@@ -105,10 +106,16 @@ class NutritionScreen extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddFoodSheet(context, ref),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Yemek Ekle'),
+      // İlk-kullanım ipucu (docs/15 §B): sekmeye ilk girişte öğün eklemeyi
+      // işaret eder; bir kez gösterilir.
+      floatingActionButton: CoachMark(
+        hint: FirstRunHint.nutrition,
+        message: (l) => l.hintNutrition,
+        child: FloatingActionButton.extended(
+          onPressed: () => _showAddFoodSheet(context, ref),
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('Yemek Ekle'),
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: () async => _invalidateAll(ref),
@@ -240,9 +247,9 @@ class _DateBar extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        IconButton.filledTonal(
+        _DateNavButton(
           tooltip: 'Önceki gün',
-          icon: const Icon(Icons.chevron_left_rounded),
+          icon: Icons.chevron_left_rounded,
           onPressed: onPrev,
         ),
         Column(
@@ -254,12 +261,63 @@ class _DateBar extends StatelessWidget {
                     ?.copyWith(color: context.colors.onSurfaceVariant)),
           ],
         ),
-        IconButton.filledTonal(
+        _DateNavButton(
           tooltip: 'Sonraki gün',
-          icon: const Icon(Icons.chevron_right_rounded),
+          icon: Icons.chevron_right_rounded,
           onPressed: onNext,
         ),
       ],
+    );
+  }
+}
+
+/// Tarih gezinme oku — tasarım diline uyumlu yumuşak indigo yuvarlak buton
+/// (hafif gradient geçiş + ince kenar). Pasifken (bugüne gelince "sonraki")
+/// soluk gri tona düşer. `filledTonal`'ın getirdiği baskın secondaryContainer
+/// (açık temada mint yeşili) yerine gelir.
+class _DateNavButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+  const _DateNavButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    final tint = enabled ? context.colors.primary : context.colors.outline;
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onPressed,
+          child: Ink(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  tint.withValues(alpha: enabled ? 0.20 : 0.08),
+                  tint.withValues(alpha: enabled ? 0.10 : 0.04),
+                ],
+              ),
+              border: Border.all(color: tint.withValues(alpha: 0.14)),
+            ),
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: Center(child: Icon(icon, color: tint, size: 22)),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

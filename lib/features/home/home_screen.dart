@@ -32,6 +32,7 @@ class HomeScreen extends ConsumerWidget {
           ref.invalidate(weightTrendProvider);
           ref.invalidate(workoutStreakProvider);
           ref.invalidate(todayWaterProvider);
+          ref.invalidate(todayRoutineProvider);
         },
         child: ListView(
           padding: const EdgeInsets.fromLTRB(

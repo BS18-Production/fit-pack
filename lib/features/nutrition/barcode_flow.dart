@@ -33,11 +33,18 @@ Future<Food?> scanBarcodeToFood(BuildContext context, WidgetRef ref) async {
   // 2) OpenFoodFacts — sorgu sırasında engelleyici ilerleme göstergesi.
   if (!context.mounted) return null;
   BuildContext? progressCtx;
+  var progressDone = false; // sorgu bitti mi (diyalog kurulumundan hızlıysa)
   showDialog<void>(
     context: context,
     barrierDismissible: false,
     builder: (ctx) {
       progressCtx = ctx;
+      // Yarış koruması (L-04): sorgu, diyalog daha kurulmadan bittiyse
+      // diyalog kendini ilk karede kapatır — açık kalamaz.
+      if (progressDone) {
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => Navigator.of(ctx).pop());
+      }
       return const PopScope(
         canPop: false,
         child: AlertDialog(
@@ -59,6 +66,7 @@ Future<Food?> scanBarcodeToFood(BuildContext context, WidgetRef ref) async {
   final off =
       await ref.read(openFoodFactsServiceProvider).fetchByBarcode(code);
 
+  progressDone = true;
   if (progressCtx != null && progressCtx!.mounted) {
     Navigator.of(progressCtx!).pop();
   }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../database/app_database.dart';
 import 'exercises_seed.dart';
 
@@ -9,7 +10,18 @@ class SeedManager {
 
   SeedManager(this.db);
 
+  /// Seed/backfill içeriği değişince ARTIR (M-04). Sürüm eşleşiyorsa açılışta
+  /// tablo taramaları + 1022 kayıtlık JSON parse tamamen atlanır (runApp'ten
+  /// önce koştuğu için ilk kareyi geciktiriyordu). Yedekten geri yükleme bu
+  /// bayrağı siler ([BackupService.restoreFromFile]) → eski yedeğe backfill
+  /// yeniden uygulanır.
+  static const seedVersion = 1;
+  static const seedVersionKey = 'seed_version';
+
   Future<void> seedIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getInt(seedVersionKey) == seedVersion) return; // hızlı çıkış
+
     // Check if exercises already exist
     final existingExercises = await db.workoutDao.getAllExercises();
     if (existingExercises.isEmpty) {
@@ -30,6 +42,8 @@ class SeedManager {
       // sadece kelime sırası/noktalama farkıyla aynı olan varyantları birleştir.
       await _dedupeExercises();
     }
+
+    await prefs.setInt(seedVersionKey, seedVersion);
   }
 
   /// Küratörlü seed ile free-exercise-db'nin aynı hareketi farklı yazdığı 7

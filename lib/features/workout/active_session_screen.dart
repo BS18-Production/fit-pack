@@ -134,7 +134,11 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   Duration _elapsed = Duration.zero;
 
   Timer? _restTimer;
-  int _restRemaining = 0;
+  // Sayaç duvar saatine bağlı (M-03): uygulama arka plana alınınca Dart
+  // timer'ları donar; tık saymak yerine hedef bitiş anı saklanır, her tikte
+  // kalan süre gerçek zamandan hesaplanır — dönüşte doğru kalır.
+  DateTime? _restDeadline;
+  int _restRemaining = 0; // yalnız görüntü için (deadline'dan türetilir)
 
   @override
   void initState() {
@@ -360,21 +364,35 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   void _startRest(int seconds) {
     _restTimer?.cancel();
-    setState(() => _restRemaining = seconds);
-    _restTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) return;
-      setState(() => _restRemaining--);
-      if (_restRemaining <= 0) {
-        t.cancel();
-        HapticFeedback.mediumImpact();
-      }
-    });
+    _restDeadline = DateTime.now().add(Duration(seconds: seconds));
+    _tickRest();
+    _restTimer =
+        Timer.periodic(const Duration(seconds: 1), (_) => _tickRest());
   }
 
-  void _bumpRest(int delta) =>
-      setState(() => _restRemaining = (_restRemaining + delta).clamp(0, 999));
+  void _tickRest() {
+    if (!mounted) return;
+    final deadline = _restDeadline;
+    if (deadline == null) return;
+    final leftMs = deadline.difference(DateTime.now()).inMilliseconds;
+    final left = (leftMs / 1000).ceil();
+    setState(() => _restRemaining = left > 0 ? left : 0);
+    if (left <= 0) {
+      _restTimer?.cancel();
+      _restDeadline = null;
+      HapticFeedback.mediumImpact();
+    }
+  }
+
+  void _bumpRest(int delta) {
+    if (_restDeadline == null) return;
+    _restDeadline = _restDeadline!.add(Duration(seconds: delta));
+    _tickRest();
+  }
+
   void _skipRest() {
     _restTimer?.cancel();
+    _restDeadline = null;
     setState(() => _restRemaining = 0);
   }
 

@@ -119,7 +119,7 @@ class BodyMetricsScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => _AddMeasurementSheet(ref: ref),
+      builder: (ctx) => const _AddMeasurementSheet(),
     );
   }
 }
@@ -435,15 +435,16 @@ class _MeasurementCard extends StatelessWidget {
   }
 }
 
-class _AddMeasurementSheet extends StatefulWidget {
-  final WidgetRef ref;
-  const _AddMeasurementSheet({required this.ref});
+// ConsumerStatefulWidget (M-06): ref parametreyle taşınmaz, sheet kendisi alır.
+class _AddMeasurementSheet extends ConsumerStatefulWidget {
+  const _AddMeasurementSheet();
 
   @override
-  State<_AddMeasurementSheet> createState() => _AddMeasurementSheetState();
+  ConsumerState<_AddMeasurementSheet> createState() =>
+      _AddMeasurementSheetState();
 }
 
-class _AddMeasurementSheetState extends State<_AddMeasurementSheet> {
+class _AddMeasurementSheetState extends ConsumerState<_AddMeasurementSheet> {
   final _formKey = GlobalKey<FormState>();
   final _weightController = TextEditingController();
   final _waistController = TextEditingController();
@@ -509,7 +510,7 @@ class _AddMeasurementSheetState extends State<_AddMeasurementSheet> {
 
     setState(() => _saving = true);
     try {
-      await widget.ref.read(bodyDaoProvider).insertMeasurement(
+      await ref.read(bodyDaoProvider).insertMeasurement(
             BodyMeasurementsCompanion(
               date: Value(_selectedDate),
               weightKg: Value(weight),
@@ -522,9 +523,9 @@ class _AddMeasurementSheetState extends State<_AddMeasurementSheet> {
             ),
           );
       // Kilo verisini okuyan TÜM provider'lar tazelenir (H-05).
-      widget.ref.invalidate(allMeasurementsProvider);
-      widget.ref.invalidate(weightTrendProvider);
-      widget.ref.invalidate(latestWeightProvider);
+      ref.invalidate(allMeasurementsProvider);
+      ref.invalidate(weightTrendProvider);
+      ref.invalidate(latestWeightProvider);
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {

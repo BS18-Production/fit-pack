@@ -41,7 +41,12 @@ class NutritionScreen extends ConsumerWidget {
 
   Future<void> _delete(
       BuildContext context, WidgetRef ref, FoodLogWithFood item) async {
-    await ref.read(nutritionDaoProvider).deleteFoodLog(item.log.id);
+    // SnackBar ekrandan uzun yaşar (M-06): kullanıcı sekme değiştirdikten
+    // sonra "Geri al"a basarsa ekranın ref'i ölmüş olur. DAO ve kök container
+    // önceden yakalanır — ikisi de ekranın yaşam döngüsünden bağımsız.
+    final dao = ref.read(nutritionDaoProvider);
+    final container = ProviderScope.containerOf(context, listen: false);
+    await dao.deleteFoodLog(item.log.id);
     _invalidateAll(ref);
     if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
@@ -51,19 +56,21 @@ class NutritionScreen extends ConsumerWidget {
       action: SnackBarAction(
         label: 'Geri al',
         onPressed: () async {
-          await ref.read(nutritionDaoProvider).insertFoodLog(
-                FoodLogsCompanion(
-                  date: Value(item.log.date),
-                  mealType: Value(item.log.mealType),
-                  foodId: Value(item.log.foodId),
-                  grams: Value(item.log.grams),
-                  computedKcal: Value(item.log.computedKcal),
-                  computedProtein: Value(item.log.computedProtein),
-                  computedCarb: Value(item.log.computedCarb),
-                  computedFat: Value(item.log.computedFat),
-                ),
-              );
-          _invalidateAll(ref);
+          await dao.insertFoodLog(
+            FoodLogsCompanion(
+              date: Value(item.log.date),
+              mealType: Value(item.log.mealType),
+              foodId: Value(item.log.foodId),
+              grams: Value(item.log.grams),
+              computedKcal: Value(item.log.computedKcal),
+              computedProtein: Value(item.log.computedProtein),
+              computedCarb: Value(item.log.computedCarb),
+              computedFat: Value(item.log.computedFat),
+            ),
+          );
+          container.invalidate(logsWithFoodProvider);
+          container.invalidate(nutritionTotalsProvider);
+          container.invalidate(todayNutritionProvider);
         },
       ),
     ));
@@ -210,7 +217,7 @@ class NutritionScreen extends ConsumerWidget {
       useSafeArea: true,
       backgroundColor: context.colors.surface,
       builder: (ctx) =>
-          _AddFoodSheet(mealType: mealType ?? 'lunch', ref: ref),
+          _AddFoodSheet(mealType: mealType ?? 'lunch'),
     );
   }
 }
@@ -469,17 +476,18 @@ class _FoodLogRow extends StatelessWidget {
   }
 }
 
-class _AddFoodSheet extends StatefulWidget {
+// ConsumerStatefulWidget (M-06): WidgetRef'i parametre olarak taşımak
+// anti-pattern — üst ekran dispose olursa ref ölür. Sheet kendi ref'ini alır.
+class _AddFoodSheet extends ConsumerStatefulWidget {
   final String mealType;
-  final WidgetRef ref;
 
-  const _AddFoodSheet({required this.mealType, required this.ref});
+  const _AddFoodSheet({required this.mealType});
 
   @override
-  State<_AddFoodSheet> createState() => _AddFoodSheetState();
+  ConsumerState<_AddFoodSheet> createState() => _AddFoodSheetState();
 }
 
-class _AddFoodSheetState extends State<_AddFoodSheet> {
+class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
   final _searchController = TextEditingController();
   final _gramsController = TextEditingController(text: '100');
   final _unitController = TextEditingController(text: '1');
@@ -571,7 +579,7 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
   /// TÜM yemekleri yükler (artık 30 ile sınırlı DEĞİL). Özel (custom)
   /// yemekler en üstte, sonra alfabetik.
   Future<void> _loadAllFoods() async {
-    final dao = widget.ref.read(nutritionDaoProvider);
+    final dao = ref.read(nutritionDaoProvider);
     final foods = await dao.getAllFoods();
     final recent = await dao.getRecentFoods();
     foods.sort((a, b) {
@@ -608,9 +616,9 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
         ? '${fmtNum(_units)} ${added.unitLabel}'
         : '${addedGrams.round()} g';
     final ratio = addedGrams / 100;
-    final date = widget.ref.read(selectedDateProvider);
+    final date = ref.read(selectedDateProvider);
     try {
-      await widget.ref
+      await ref
           .read(nutritionDaoProvider)
           .insertFoodLog(FoodLogsCompanion(
             date: Value(date),
@@ -622,9 +630,9 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
             computedCarb: Value(added.carbPer100g * ratio),
             computedFat: Value(added.fatPer100g * ratio),
           ));
-      widget.ref.invalidate(logsWithFoodProvider);
-      widget.ref.invalidate(nutritionTotalsProvider);
-      widget.ref.invalidate(todayNutritionProvider);
+      ref.invalidate(logsWithFoodProvider);
+      ref.invalidate(nutritionTotalsProvider);
+      ref.invalidate(todayNutritionProvider);
       HapticFeedback.lightImpact();
       if (mounted) {
         setState(() {
@@ -659,7 +667,7 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
     FocusScope.of(context).unfocus();
     setState(() => _offSearching = true);
     final results =
-        await widget.ref.read(openFoodFactsServiceProvider).searchByName(q);
+        await ref.read(openFoodFactsServiceProvider).searchByName(q);
     if (!mounted) return;
     setState(() {
       _offSearching = false;
@@ -675,7 +683,7 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
 
   /// OFF sonucunu DB'ye yaz (varsa barkoddan bul) → seç. Tekrar eklemeyi önler.
   Future<void> _pickOffProduct(OffProduct p) async {
-    final dao = widget.ref.read(nutritionDaoProvider);
+    final dao = ref.read(nutritionDaoProvider);
     var food = await dao.getFoodByBarcode(p.barcode);
     food ??= await dao.getFoodById(await dao.insertFood(FoodsCompanion(
       name: Value(p.name),
@@ -698,7 +706,7 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
 
   /// Barkod tara → lokal/OpenFoodFacts çöz → seç.
   Future<void> _scanBarcode() async {
-    final food = await scanBarcodeToFood(context, widget.ref);
+    final food = await scanBarcodeToFood(context, ref);
     if (food == null || !mounted) return;
     setState(() {
       if (!_all.any((f) => f.id == food.id)) _all = [food, ..._all];
@@ -714,7 +722,7 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
       builder: (_) => const _CustomFoodDialog(),
     );
     if (result == null || !mounted) return;
-    final dao = widget.ref.read(nutritionDaoProvider);
+    final dao = ref.read(nutritionDaoProvider);
     final id = await dao.insertFood(FoodsCompanion(
       name: Value(result.name),
       kcalPer100g: Value(result.kcalPer100g),

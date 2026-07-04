@@ -11,7 +11,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/providers.dart';
+import '../../data/seed/seed_manager.dart';
 
 /// Geri yükleme, canlı bağlantı KAPANDIKTAN sonra başarısız oldu. Mevcut veri
 /// emniyet kopyasından geri kondu ama bağlantı kapalı — uygulamanın yeniden
@@ -107,6 +109,11 @@ class BackupService {
       if (await safety.exists()) await safety.copy(dest.path);
       throw RestoreNeedsRestartException(e);
     }
+
+    // Seed bayrağını sıfırla: geri yüklenen (muhtemelen eski) DB, sonraki
+    // açılışta birim/hareket backfill'lerinden yeniden geçsin (M-04).
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(SeedManager.seedVersionKey);
   }
 
   /// SQLite dosya imzası: ilk 16 bayt "SQLite format 3" + NUL.

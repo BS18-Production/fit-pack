@@ -12,7 +12,7 @@ Tam kod denetimi yapıldı → [CODE_REVIEW.md](CODE_REVIEW.md) (bulgular + batc
 - [x] **Faz 1 — Denetim:** 1 CRITICAL + 6 HIGH + 11 MEDIUM + 9 LOW bulgu, rapor yazıldı
 - [x] **Batch 1 — Veri güvenliği:** güvenli geri yükleme (emniyet kopyası + atomik değişim + sürüm kontrolü), kapatılamaz yeniden-başlat diyaloğu, seans/rutin yazımları transaction'lı. analyze 0 · test 96/96
 - [x] **Batch 2 — Doğruluk:** H-01 gün sınırı çift sayım, H-02 seans listesi key'leri, H-05 kilo invalidate, M-01 resume routineId, M-10 onboarding, M-11 getSessionById. analyze 0 · test 99/99
-- [ ] **Batch 3 — Tazelik & dayanıklılık:** M-02 gece yarısı, M-03 dinlenme sayacı, M-04 açılış seed guard, M-06 ref anti-pattern, L-04
+- [x] **Batch 3 — Tazelik & dayanıklılık:** M-02 gece yarısı bekçisi, M-03 dinlenme sayacı duvar saati, M-04 açılış seed guard (seedVersion), M-06 ConsumerStatefulWidget + container yakalama, L-04. analyze 0 · test 99/99
 - [ ] **Batch 4 — Temizlik:** M-07 export V2, M-09 ölü kod, L-01/02/03/05/06/08/09
 - [ ] **Faz 3 — CONVENTIONS.md + CLAUDE.md güncellemesi**
 - [ ] **Samet kararı bekleyen:** H-04 yayın imzası (keystore + targetSdk; telefondaki kurulumu etkiler), M-08 Google girişi (tamamla ya da düğmeyi gizle)

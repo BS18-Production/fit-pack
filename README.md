@@ -6,6 +6,8 @@ Sportif gelişimini tek yerde toplayan, AI destekli kişisel fitness asistanı u
 
 ## Hızlı Bağlantılar
 
+- **⭐ Geliştirme kuralları (kod yazmadan önce oku):** [CONVENTIONS.md](CONVENTIONS.md)
+- **Kod incelemesi raporu:** [CODE_REVIEW.md](CODE_REVIEW.md)
 - **Bekleyen iş ve günlük durum:** [PROJECT_STATE.md](PROJECT_STATE.md)
 - **Sıradaki görevler:** [NEXT_TASKS.md](NEXT_TASKS.md)
 - **Ürün spec (PRD):** [docs/01-product-spec.md](docs/01-product-spec.md)

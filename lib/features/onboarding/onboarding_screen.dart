@@ -3,23 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/i18n/formatting.dart';
+import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
+import '../../l10n/app_l10n.dart';
+import '../../shared/widgets/glass.dart';
 import '../home/providers/home_providers.dart';
 import 'onboarding_calc.dart';
-import '../../core/router/app_routes.dart';
 
-/// İlk açılış akışı (P-10 — docs/03-ux-flows.md §3).
+/// İlk açılış akışı V2 (docs/15 — glass tema + değer + öğretme).
 ///
-/// 3 adım: Hoş geldin → Hedef (boy/kilo/hedef kilo/faz) → Hedefler
-/// (kalori/protein, fazdan ön-dolu). Tamamla → profil yazılır, başlangıç
-/// kilosu ölçüm olarak kaydedilir, onboarded=1, Home'a geçilir.
-///
-/// Bilinçli erteleme (altyapı bekliyor): AI key girişi (flutter_secure_storage,
-/// Aşama 0 T-005) + bildirim izni (P-11). Doküman bu kısımları "daha sonra
-/// ekle" diyor; çekirdek hedef kişiselleştirmeye odaklanıldı.
+/// 4 sayfa: Karşılama → Seni tanıyalım (vücut + faz) → Planın hazır
+/// (kalori/protein + değer projeksiyonu) → İçeride ne var (4 sekme haritası).
+/// Tamamla → profil yazılır, başlangıç kilosu ölçüm olarak kaydedilir,
+/// onboarded=1, Home'a geçilir. Sekme başına ilk-kullanım ipuçları
+/// (coach mark) ayrı: `core/onboarding/first_run_hints.dart`.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -27,11 +28,24 @@ class OnboardingScreen extends ConsumerStatefulWidget {
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
+/// Faz etiketi — lokalize (docs/14; enum görünen metin taşımaz).
+String phaseLabel(AppL10n l, OnboardingPhase p) => switch (p) {
+      OnboardingPhase.cut => l.phaseCut,
+      OnboardingPhase.maintenance => l.phaseMaintain,
+      OnboardingPhase.bulk => l.phaseBulk,
+    };
+
+String phaseDescription(AppL10n l, OnboardingPhase p) => switch (p) {
+      OnboardingPhase.cut => l.phaseCutDesc,
+      OnboardingPhase.maintenance => l.phaseMaintainDesc,
+      OnboardingPhase.bulk => l.phaseBulkDesc,
+    };
+
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
   int _page = 0;
 
-  // Adım 2 — vücut bilgileri
+  // Sayfa 2 — vücut bilgileri
   final _heightCtrl = TextEditingController();
   final _weightCtrl = TextEditingController();
   final _goalWeightCtrl = TextEditingController();
@@ -39,14 +53,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String? _gender; // 'male' | 'female' — günlük enerji tahmini için (opsiyonel)
   DateTime? _birthDate; // yaş — günlük enerji tahmini için (opsiyonel)
 
-  // Adım 3 — hedefler
+  // Sayfa 3 — hedefler
   final _kcalCtrl = TextEditingController();
   final _proteinCtrl = TextEditingController();
   bool _goalsEdited = false; // kullanıcı elle değiştirdiyse üzerine yazma
 
   bool _saving = false;
 
-  static const _lastPage = 2;
+  static const _lastPage = 3;
 
   @override
   void dispose() {
@@ -60,6 +74,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   double? get _weight => double.tryParse(_weightCtrl.text.replaceAll(',', '.'));
+  double? get _goalWeight =>
+      double.tryParse(_goalWeightCtrl.text.replaceAll(',', '.'));
 
   /// Faz/kilo değişince hedefleri yeniden öner (kullanıcı elle dokunmadıysa).
   void _refreshSuggestedGoals() {
@@ -109,20 +125,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _finish() async {
     if (_saving) return;
+    final l = AppL10n.of(context);
     // Hedefler sayı olarak okunamıyorsa kaydetmeye hiç girme — kullanıcıya
     // söyle (M-10: eski int.parse boş alanda sessizce çöküyordu).
     final kcal = int.tryParse(_kcalCtrl.text);
     final protein = int.tryParse(_proteinCtrl.text);
     if (kcal == null || protein == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Kalori ve protein hedefini sayı olarak gir')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l.onbGoalsNumberError)));
       return;
     }
     setState(() => _saving = true);
     try {
       final height = double.tryParse(_heightCtrl.text.replaceAll(',', '.'));
-      final goalWeight =
-          double.tryParse(_goalWeightCtrl.text.replaceAll(',', '.'));
+      final goalWeight = _goalWeight;
 
       await ref.read(userProfileDaoProvider).completeOnboarding(
             kcalGoal: kcal,
@@ -158,8 +174,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       // Kayıt başarısız — kullanıcı bilsin ve tekrar deneyebilsin (M-10:
       // eskiden hata sessizce yutulup düğme takılı kalıyordu).
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Kaydedilemedi — tekrar dene')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l.onbSaveError)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -169,91 +185,116 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            _ProgressDots(current: _page, total: _lastPage + 1),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (i) => setState(() => _page = i),
-                children: [
-                  const _WelcomePage(),
-                  _GoalSetupPage(
-                    heightCtrl: _heightCtrl,
-                    weightCtrl: _weightCtrl,
-                    goalWeightCtrl: _goalWeightCtrl,
-                    phase: _phase,
-                    gender: _gender,
-                    birthDate: _birthDate,
-                    onGenderChanged: (g) => setState(() => _gender = g),
-                    onBirthDateChanged: (d) => setState(() => _birthDate = d),
-                    onPhaseChanged: (p) => setState(() {
-                      _phase = p;
-                      _refreshSuggestedGoals();
-                    }),
-                    onWeightChanged: () => setState(() {}),
-                  ),
-                  _GoalsPage(
-                    kcalCtrl: _kcalCtrl,
-                    proteinCtrl: _proteinCtrl,
-                    onEdited: () => setState(() => _goalsEdited = true),
-                  ),
-                ],
+      backgroundColor: Colors.transparent,
+      body: GlassBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              _ProgressDots(current: _page, total: _lastPage + 1),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  onPageChanged: (i) => setState(() => _page = i),
+                  children: [
+                    const _WelcomePage(),
+                    _AboutYouPage(
+                      heightCtrl: _heightCtrl,
+                      weightCtrl: _weightCtrl,
+                      goalWeightCtrl: _goalWeightCtrl,
+                      phase: _phase,
+                      gender: _gender,
+                      birthDate: _birthDate,
+                      onGenderChanged: (g) => setState(() => _gender = g),
+                      onBirthDateChanged: (d) =>
+                          setState(() => _birthDate = d),
+                      onPhaseChanged: (p) => setState(() {
+                        _phase = p;
+                        _refreshSuggestedGoals();
+                      }),
+                      onWeightChanged: () => setState(() {}),
+                    ),
+                    _PlanPage(
+                      kcalCtrl: _kcalCtrl,
+                      proteinCtrl: _proteinCtrl,
+                      weightKg: _weight,
+                      goalWeightKg: _goalWeight,
+                      phase: _phase,
+                      onEdited: () => setState(() => _goalsEdited = true),
+                    ),
+                    const _TourPage(),
+                  ],
+                ),
               ),
-            ),
-            _NavBar(
-              page: _page,
-              lastPage: _lastPage,
-              canAdvance: _canAdvance && !_saving,
-              saving: _saving,
-              onBack: _back,
-              onNext: _next,
-            ),
-          ],
+              _NavBar(
+                page: _page,
+                lastPage: _lastPage,
+                canAdvance: _canAdvance && !_saving,
+                saving: _saving,
+                onBack: _back,
+                onNext: _next,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────── Sayfa 1: Hoş geldin
+// ─────────────────────────────────────────────────────── Sayfa 1: Karşılama
 
 class _WelcomePage extends StatelessWidget {
   const _WelcomePage();
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    final muted = context.colors.onSurfaceVariant;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.xxl),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Marka rozeti — Ana Sayfa CTA'sıyla aynı gradient dil.
           Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            width: 84,
+            height: 84,
             decoration: BoxDecoration(
-              color: context.colors.primaryContainer,
-              borderRadius: AppRadius.brLg,
+              borderRadius: AppRadius.brXl,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.indigo, AppColors.indigoDeep],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.indigoDeep.withValues(alpha: 0.30),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-            child: Icon(
-              Icons.fitness_center_rounded,
-              size: AppIconSize.xl,
-              color: context.colors.onPrimaryContainer,
-            ),
+            child: const Icon(Icons.fitness_center_rounded,
+                size: 40, color: AppColors.onGradient),
           ),
           AppSpacing.vGapXl,
-          Text('Fit Pack’e hoş geldin',
-              style: context.texts.headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.bold)),
+          Text(l.onbWelcomeTitle,
+              style: context.texts.displaySmall?.copyWith(height: 1.1)),
           AppSpacing.vGapMd,
-          Text(
-            'Antrenman, beslenme ve gelişimini tek yerde topla. '
-            'Birkaç soruyla hedeflerini ayarlayalım — hepsini sonra '
-            'değiştirebilirsin.',
-            style: context.texts.bodyLarge
-                ?.copyWith(color: context.colors.onSurfaceVariant),
+          Text(l.onbWelcomeTagline,
+              style: context.texts.bodyLarge?.copyWith(color: muted)),
+          AppSpacing.vGapXl,
+          Row(
+            children: [
+              Icon(Icons.timer_outlined, size: AppIconSize.sm, color: muted),
+              AppSpacing.hGapSm,
+              Expanded(
+                child: Text(l.onbWelcomeHint,
+                    style: context.texts.bodySmall?.copyWith(color: muted)),
+              ),
+            ],
           ),
         ],
       ),
@@ -261,10 +302,10 @@ class _WelcomePage extends StatelessWidget {
   }
 }
 
-// ────────────────────────────────────────────────── Sayfa 2: Vücut + faz
+// ────────────────────────────────────────────── Sayfa 2: Seni tanıyalım
 
-class _GoalSetupPage extends StatelessWidget {
-  const _GoalSetupPage({
+class _AboutYouPage extends StatelessWidget {
+  const _AboutYouPage({
     required this.heightCtrl,
     required this.weightCtrl,
     required this.goalWeightCtrl,
@@ -295,100 +336,108 @@ class _GoalSetupPage extends StatelessWidget {
       initialDate: birthDate ?? DateTime(now.year - 25, 1, 1),
       firstDate: DateTime(now.year - 100),
       lastDate: DateTime(now.year - 10, 12, 31),
-      helpText: 'Doğum tarihini seç',
+      helpText: AppL10n.of(context).settingsPickBirthDate,
     );
     if (picked != null) onBirthDateChanged(picked);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xxl),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
       children: [
-        Text('Seni tanıyalım',
-            style: context.texts.titleLarge
-                ?.copyWith(fontWeight: FontWeight.bold)),
-        AppSpacing.vGapMd,
-        Text('Hedef önerisi için kilon yeterli; gerisi opsiyonel '
-            '(cinsiyet + doğum tarihi günlük enerji tahmini için).',
+        Text(l.onbAboutYouTitle, style: context.texts.headlineSmall),
+        AppSpacing.vGapSm,
+        Text(l.onbAboutYouSubtitle,
             style: context.texts.bodyMedium
                 ?.copyWith(color: context.colors.onSurfaceVariant)),
-        AppSpacing.vGapXl,
-        Row(
-          children: [
-            Expanded(
-              child: _NumField(
-                controller: weightCtrl,
-                label: 'Mevcut kilo',
+        AppSpacing.vGapLg,
+        GlassCard(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _NumField(
+                      controller: weightCtrl,
+                      label: l.onbCurrentWeight,
+                      suffix: 'kg',
+                      onChanged: (_) => onWeightChanged(),
+                    ),
+                  ),
+                  AppSpacing.hGapMd,
+                  Expanded(
+                    child: _NumField(
+                      controller: heightCtrl,
+                      label: l.settingsHeight,
+                      suffix: 'cm',
+                    ),
+                  ),
+                ],
+              ),
+              AppSpacing.vGapLg,
+              _NumField(
+                controller: goalWeightCtrl,
+                label: l.onbGoalWeightOptional,
                 suffix: 'kg',
-                onChanged: (_) => onWeightChanged(),
               ),
-            ),
-            AppSpacing.hGapMd,
-            Expanded(
-              child: _NumField(
-                controller: heightCtrl,
-                label: 'Boy',
-                suffix: 'cm',
-              ),
-            ),
-          ],
-        ),
-        AppSpacing.vGapLg,
-        _NumField(
-          controller: goalWeightCtrl,
-          label: 'Hedef kilo (opsiyonel)',
-          suffix: 'kg',
-        ),
-        AppSpacing.vGapLg,
-        // Cinsiyet (opsiyonel) — günlük enerji tahmini için.
-        Row(
-          children: [
-            Expanded(
-              child: _ChoiceChipTile(
-                label: 'Erkek',
-                selected: gender == 'male',
-                onTap: () =>
-                    onGenderChanged(gender == 'male' ? null : 'male'),
-              ),
-            ),
-            AppSpacing.hGapMd,
-            Expanded(
-              child: _ChoiceChipTile(
-                label: 'Kadın',
-                selected: gender == 'female',
-                onTap: () =>
-                    onGenderChanged(gender == 'female' ? null : 'female'),
-              ),
-            ),
-          ],
-        ),
-        AppSpacing.vGapLg,
-        // Doğum tarihi (opsiyonel).
-        InkWell(
-          onTap: () => _pickBirthDate(context),
-          borderRadius: AppRadius.brMd,
-          child: InputDecorator(
-            decoration: const InputDecoration(
-              labelText: 'Doğum tarihi (opsiyonel)',
-              border: OutlineInputBorder(borderRadius: AppRadius.brMd),
-              suffixIcon: Icon(Icons.calendar_today_rounded),
-            ),
-            child: Text(
-              birthDate == null
-                  ? 'Seç'
-                  : '${birthDate!.day.toString().padLeft(2, '0')}.'
-                      '${birthDate!.month.toString().padLeft(2, '0')}.'
-                      '${birthDate!.year}',
-              style: context.texts.bodyLarge?.copyWith(
-                  color: birthDate == null
-                      ? context.colors.onSurfaceVariant
-                      : null),
-            ),
+            ],
           ),
         ),
-        AppSpacing.vGapXl,
-        Text('Hedefin', style: context.texts.titleMedium),
+        AppSpacing.vGapMd,
+        GlassCard(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _ChoiceChipTile(
+                      label: l.settingsGenderMale,
+                      selected: gender == 'male',
+                      onTap: () =>
+                          onGenderChanged(gender == 'male' ? null : 'male'),
+                    ),
+                  ),
+                  AppSpacing.hGapMd,
+                  Expanded(
+                    child: _ChoiceChipTile(
+                      label: l.settingsGenderFemale,
+                      selected: gender == 'female',
+                      onTap: () => onGenderChanged(
+                          gender == 'female' ? null : 'female'),
+                    ),
+                  ),
+                ],
+              ),
+              AppSpacing.vGapLg,
+              InkWell(
+                onTap: () => _pickBirthDate(context),
+                borderRadius: AppRadius.brMd,
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: l.onbBirthDateOptional,
+                    border:
+                        const OutlineInputBorder(borderRadius: AppRadius.brMd),
+                    suffixIcon: const Icon(Icons.calendar_today_rounded),
+                  ),
+                  child: Text(
+                    birthDate == null
+                        ? l.commonSelect
+                        : context.dateFmt('d MMMM y').format(birthDate!),
+                    style: context.texts.bodyLarge?.copyWith(
+                        color: birthDate == null
+                            ? context.colors.onSurfaceVariant
+                            : null),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        AppSpacing.vGapLg,
+        Text(l.onbYourGoal, style: context.texts.titleMedium),
         AppSpacing.vGapSm,
         ...OnboardingPhase.values.map((p) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -416,6 +465,7 @@ class _PhaseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     final colors = context.colors;
     return InkWell(
       onTap: onTap,
@@ -424,11 +474,13 @@ class _PhaseTile extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: AppA11y.minTapTarget),
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: selected ? colors.primaryContainer : colors.surfaceContainerHighest,
+          color: selected
+              ? colors.primaryContainer
+              : colors.surfaceContainerHighest,
           borderRadius: AppRadius.brMd,
           border: Border.all(
-            color: selected ? colors.primary : Colors.transparent,
-            width: 2,
+            color: selected ? colors.primary : colors.outlineVariant,
+            width: selected ? 2 : 1,
           ),
         ),
         child: Row(
@@ -444,12 +496,12 @@ class _PhaseTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(phase.label,
+                  Text(phaseLabel(l, phase),
                       style: context.texts.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: selected ? colors.onPrimaryContainer : null,
                       )),
-                  Text(phase.description,
+                  Text(phaseDescription(l, phase),
                       style: context.texts.bodySmall?.copyWith(
                         color: selected
                             ? colors.onPrimaryContainer
@@ -465,54 +517,215 @@ class _PhaseTile extends StatelessWidget {
   }
 }
 
-// ──────────────────────────────────────────────────────── Sayfa 3: Hedefler
+// ─────────────────────────────────────────────── Sayfa 3: Planın hazır
 
-class _GoalsPage extends StatelessWidget {
-  const _GoalsPage({
+class _PlanPage extends StatelessWidget {
+  const _PlanPage({
     required this.kcalCtrl,
     required this.proteinCtrl,
+    required this.weightKg,
+    required this.goalWeightKg,
+    required this.phase,
     required this.onEdited,
   });
 
   final TextEditingController kcalCtrl;
   final TextEditingController proteinCtrl;
+  final double? weightKg;
+  final double? goalWeightKg;
+  final OnboardingPhase phase;
   final VoidCallback onEdited;
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    final muted = context.colors.onSurfaceVariant;
+
+    // Projeksiyon — kullanıcının GİRDİĞİ kaloriyle hesaplanır (düzenledikçe
+    // dürüstçe güncellenir). Veri tutarsızsa hiç gösterilmez (docs/15 §A3).
+    final weeks = weightKg == null
+        ? null
+        : projectWeeks(
+            weightKg: weightKg!,
+            goalWeightKg: goalWeightKg,
+            phase: phase,
+            kcalGoal: int.tryParse(kcalCtrl.text),
+          );
+    final goalStr = goalWeightKg == null
+        ? ''
+        : goalWeightKg!.toStringAsFixed(
+            goalWeightKg!.truncateToDouble() == goalWeightKg! ? 0 : 1);
+
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xxl),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
       children: [
-        Text('Günlük hedeflerin',
-            style: context.texts.titleLarge
-                ?.copyWith(fontWeight: FontWeight.bold)),
-        AppSpacing.vGapMd,
-        Text('Hedefine göre önerildi. İstersen değiştir — sonra Ayarlar’dan '
-            'da güncelleyebilirsin.',
-            style: context.texts.bodyMedium
-                ?.copyWith(color: context.colors.onSurfaceVariant)),
-        AppSpacing.vGapXl,
-        _NumField(
-          controller: kcalCtrl,
-          label: 'Günlük kalori hedefi',
-          suffix: 'kcal',
-          decimal: false,
-          onChanged: (_) => onEdited(),
-        ),
+        Text(l.onbPlanReadyTitle, style: context.texts.headlineSmall),
+        AppSpacing.vGapSm,
+        Text(l.onbPlanReadySubtitle,
+            style: context.texts.bodyMedium?.copyWith(color: muted)),
         AppSpacing.vGapLg,
-        _NumField(
-          controller: proteinCtrl,
-          label: 'Günlük protein hedefi',
-          suffix: 'g',
-          decimal: false,
-          onChanged: (_) => onEdited(),
+        GlassCard(
+          child: Column(
+            children: [
+              _NumField(
+                controller: kcalCtrl,
+                label: l.onbDailyKcal,
+                suffix: 'kcal',
+                decimal: false,
+                onChanged: (_) => onEdited(),
+              ),
+              AppSpacing.vGapLg,
+              _NumField(
+                controller: proteinCtrl,
+                label: l.onbDailyProtein,
+                suffix: 'g',
+                decimal: false,
+                onChanged: (_) => onEdited(),
+              ),
+            ],
+          ),
         ),
+        if (weeks != null) ...[
+          AppSpacing.vGapMd,
+          GlassCard(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: context.semantic.success.withValues(alpha: 0.16),
+                    borderRadius: AppRadius.brMd,
+                  ),
+                  child: Icon(Icons.trending_up_rounded,
+                      color: context.semantic.success),
+                ),
+                AppSpacing.hGapMd,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        phase == OnboardingPhase.bulk
+                            ? l.onbProjectionBulk(goalStr, weeks)
+                            : l.onbProjectionCut(goalStr, weeks),
+                        style: context.texts.titleSmall,
+                      ),
+                      AppSpacing.vGapXs,
+                      Text(l.onbProjectionNote,
+                          style: context.texts.bodySmall
+                              ?.copyWith(color: muted)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
 }
 
-// ───────────────────────────────────────────────────────────── Ortak parçalar
+// ─────────────────────────────────────────── Sayfa 4: İçeride ne var
+
+class _TourPage extends StatelessWidget {
+  const _TourPage();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    final s = context.semantic;
+    final c = context.colors;
+    return ListView(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
+      children: [
+        Text(l.onbWhatsInsideTitle, style: context.texts.headlineSmall),
+        AppSpacing.vGapSm,
+        Text(l.onbWhatsInsideSubtitle,
+            style: context.texts.bodyMedium
+                ?.copyWith(color: c.onSurfaceVariant)),
+        AppSpacing.vGapLg,
+        _TourRow(
+            icon: Icons.home_rounded,
+            tint: c.primary,
+            title: l.navHome,
+            description: l.onbTourHomeDesc),
+        AppSpacing.vGapMd,
+        _TourRow(
+            icon: Icons.fitness_center_rounded,
+            tint: c.tertiary,
+            title: l.navWorkout,
+            description: l.onbTourWorkoutDesc),
+        AppSpacing.vGapMd,
+        _TourRow(
+            icon: Icons.restaurant_rounded,
+            tint: c.secondary,
+            title: l.navNutrition,
+            description: l.onbTourNutritionDesc),
+        AppSpacing.vGapMd,
+        _TourRow(
+            icon: Icons.trending_up_rounded,
+            tint: s.success,
+            title: l.navProgress,
+            description: l.onbTourProgressDesc),
+      ],
+    );
+  }
+}
+
+class _TourRow extends StatelessWidget {
+  const _TourRow({
+    required this.icon,
+    required this.tint,
+    required this.title,
+    required this.description,
+  });
+
+  final IconData icon;
+  final Color tint;
+  final String title;
+  final String description;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: tint.withValues(alpha: 0.16),
+              borderRadius: AppRadius.brMd,
+            ),
+            child: Icon(icon, color: tint),
+          ),
+          AppSpacing.hGapMd,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: context.texts.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text(description,
+                    style: context.texts.bodySmall?.copyWith(
+                        color: context.colors.onSurfaceVariant)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ───────────────────────────────────────────────────────── Ortak parçalar
 
 class _NumField extends StatelessWidget {
   const _NumField({
@@ -576,8 +789,8 @@ class _ChoiceChipTile extends StatelessWidget {
               : colors.surfaceContainerHighest,
           borderRadius: AppRadius.brMd,
           border: Border.all(
-            color: selected ? colors.primary : Colors.transparent,
-            width: 2,
+            color: selected ? colors.primary : colors.outlineVariant,
+            width: selected ? 2 : 1,
           ),
         ),
         child: Text(label,
@@ -642,15 +855,16 @@ class _NavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     final isLast = page == lastPage;
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.xxl),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       child: Row(
         children: [
           if (page > 0)
             TextButton(
               onPressed: saving ? null : onBack,
-              child: const Text('Geri'),
+              child: Text(l.commonBack),
             ),
           const Spacer(),
           FilledButton(
@@ -661,7 +875,7 @@ class _NavBar extends StatelessWidget {
                     height: 18,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : Text(isLast ? 'Tamamla' : 'İleri'),
+                : Text(isLast ? l.onbStart : l.commonNext),
           ),
         ],
       ),

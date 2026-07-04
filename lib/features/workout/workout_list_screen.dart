@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../core/onboarding/first_run_hints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
@@ -36,7 +37,13 @@ class WorkoutListScreen extends ConsumerWidget {
             const _ResumeBanner(),
             const _WeekStatsCard(),
             AppSpacing.vGapLg,
-            _EmptyWorkoutButton(),
+            // İlk-kullanım ipucu (docs/15 §B): sekmeye ilk girişte birincil
+            // aksiyonu işaret eder; bir kez gösterilir.
+            CoachMark(
+              hint: FirstRunHint.workout,
+              message: (l) => l.hintWorkout,
+              child: _EmptyWorkoutButton(),
+            ),
             AppSpacing.vGapxl_,
             routinesAsync.when(
               loading: () => Column(children: [
@@ -328,11 +335,15 @@ class _NoRoutines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Boş hal = öğretmen (docs/15 §C): onCreate zaten geliyordu ama
+    // kullanılmıyordu — tek net aksiyon bağlandı.
     return EmptyState(
       icon: Icons.list_alt_rounded,
       title: 'Henüz rutin yok',
       message: 'Kendi antrenman rutinini oluştur — hareketleri seç, '
           'hedef set ve tekrarları belirle.',
+      actionLabel: 'Rutin oluştur',
+      onAction: onCreate,
       compact: true,
     );
   }

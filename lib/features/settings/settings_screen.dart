@@ -5,9 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:file_picker/file_picker.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/i18n/enum_labels.dart';
+import '../../core/i18n/locale_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/theme/theme_mode_provider.dart';
 import '../../data/providers.dart';
+import '../../l10n/app_l10n.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../home/providers/home_providers.dart';
@@ -21,17 +25,18 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
     final profileAsync = ref.watch(userProfileProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ayarlar')),
+      appBar: AppBar(title: Text(l.settingsTitle)),
       body: profileAsync.when(
         data: (profile) {
           if (profile == null) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.person_off_outlined,
-              title: 'Profil bulunamadı',
-              message: 'Uygulamayı yeniden başlatmayı dene',
+              title: l.settingsProfileNotFound,
+              message: l.settingsProfileNotFoundHint,
             );
           }
           return _SettingsBody(profile: profile);
@@ -47,7 +52,7 @@ class SettingsScreen extends ConsumerWidget {
           ],
         ),
         error: (_, _) => ErrorState(
-          message: 'Ayarlar yüklenemedi',
+          message: l.settingsLoadError,
           onRetry: () => ref.invalidate(userProfileProvider),
         ),
       ),
@@ -69,10 +74,14 @@ class _SettingsBody extends ConsumerWidget {
       '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
 
   Future<void> _editGender(BuildContext context, WidgetRef ref) async {
+    final l = AppL10n.of(context);
     final picked = await _pickOption(
       context,
-      title: 'Cinsiyet',
-      options: const [('male', 'Erkek'), ('female', 'Kadın')],
+      title: l.settingsGender,
+      options: [
+        ('male', l.settingsGenderMale),
+        ('female', l.settingsGenderFemale),
+      ],
       current: profile.gender,
     );
     if (picked != null) {
@@ -81,14 +90,50 @@ class _SettingsBody extends ConsumerWidget {
   }
 
   Future<void> _editActivity(BuildContext context, WidgetRef ref) async {
+    final l = AppL10n.of(context);
     final picked = await _pickOption(
       context,
-      title: 'Aktiflik Düzeyi',
-      options: activityLabelsTr.entries.map((e) => (e.key, e.value)).toList(),
+      title: l.settingsActivityLevel,
+      options: [for (final k in activityLevelKeys) (k, activityLabel(l, k))],
       current: profile.activityLevel,
     );
     if (picked != null) {
       await _save(ref, profile.copyWith(activityLevel: Value(picked)));
+    }
+  }
+
+  Future<void> _editTheme(BuildContext context, WidgetRef ref) async {
+    final l = AppL10n.of(context);
+    final picked = await _pickOption(
+      context,
+      title: l.settingsTheme,
+      options: ThemeMode.values.map((m) => (m.name, themeModeLabel(l, m))).toList(),
+      current: ref.read(themeModeProvider).name,
+    );
+    if (picked != null) {
+      final mode = ThemeMode.values
+          .firstWhere((m) => m.name == picked, orElse: () => ThemeMode.system);
+      await ref.read(themeModeProvider.notifier).setMode(mode);
+    }
+  }
+
+  Future<void> _editLanguage(BuildContext context, WidgetRef ref) async {
+    final l = AppL10n.of(context);
+    // 'system' | 'en' | 'tr' — 'system' cihaz dilini takip eder.
+    final current = ref.read(localeProvider)?.languageCode ?? 'system';
+    final picked = await _pickOption(
+      context,
+      title: l.settingsLanguage,
+      options: [
+        ('system', l.languageSystem),
+        ('en', l.languageEnglish),
+        ('tr', l.languageTurkish),
+      ],
+      current: current,
+    );
+    if (picked != null) {
+      final locale = picked == 'system' ? null : Locale(picked);
+      await ref.read(localeProvider.notifier).setLocale(locale);
     }
   }
 
@@ -99,7 +144,7 @@ class _SettingsBody extends ConsumerWidget {
       initialDate: profile.birthDate ?? DateTime(now.year - 25, 1, 1),
       firstDate: DateTime(now.year - 100),
       lastDate: DateTime(now.year - 10, 12, 31), // en az 10 yaş
-      helpText: 'Doğum tarihini seç',
+      helpText: AppL10n.of(context).settingsPickBirthDate,
     );
     if (picked != null) {
       await _save(ref, profile.copyWith(birthDate: Value(picked)));
@@ -139,7 +184,9 @@ class _SettingsBody extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Yedek oluşturulamadı: $e')),
+          SnackBar(
+              content:
+                  Text(AppL10n.of(context).settingsBackupFailed(e.toString()))),
         );
       }
     }
@@ -147,6 +194,7 @@ class _SettingsBody extends ConsumerWidget {
 
   /// Bir yedek dosyası seç → onay → canlı DB'nin üstüne yaz → uygulamayı kapat.
   Future<void> _restore(BuildContext context, WidgetRef ref) async {
+    final l = AppL10n.of(context);
     final picked = await FilePicker.platform.pickFiles(type: FileType.any);
     if (picked == null || picked.files.single.path == null) return;
     final file = File(picked.files.single.path!);
@@ -154,11 +202,9 @@ class _SettingsBody extends ConsumerWidget {
     if (!context.mounted) return;
     final ok = await confirmAction(
       context,
-      title: 'Yedekten geri yükle',
-      message:
-          'Şu anki tüm verinin yerine bu yedek yüklenecek. Bu işlem geri alınamaz. '
-          'Devam edilsin mi?',
-      confirmLabel: 'Geri Yükle',
+      title: l.settingsRestoreConfirmTitle,
+      message: l.settingsRestoreConfirmMessage,
+      confirmLabel: l.settingsRestoreConfirmAction,
       destructive: true,
     );
     if (!ok) return;
@@ -178,16 +224,15 @@ class _SettingsBody extends ConsumerWidget {
       if (context.mounted) {
         await showRestartDialog(
           context,
-          title: 'Geri yükleme başarısız',
-          message: 'Bir sorun oluştu, mevcut verin korundu. Uygulama '
-              'kapanacak — tekrar açman yeterli.',
+          title: l.settingsRestoreFailedTitle,
+          message: l.settingsRestoreFailedMessage,
         );
       }
       return;
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Geri yükleme başarısız: $e')),
+          SnackBar(content: Text(l.settingsRestoreFailed(e.toString()))),
         );
       }
       return;
@@ -196,9 +241,8 @@ class _SettingsBody extends ConsumerWidget {
     if (!context.mounted) return;
     await showRestartDialog(
       context,
-      title: 'Geri yüklendi',
-      message: 'Veriler geri yüklendi. Değişikliklerin görünmesi için '
-          'uygulama kapanacak — tekrar açman yeterli.',
+      title: l.settingsRestoredTitle,
+      message: l.settingsRestoredMessage,
     );
   }
 
@@ -228,7 +272,7 @@ class _SettingsBody extends ConsumerWidget {
       await _save(ref, apply(result));
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Kaydedildi')),
+          SnackBar(content: Text(AppL10n.of(context).commonSaved)),
         );
       }
     }
@@ -236,15 +280,16 @@ class _SettingsBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
     return ListView(
       children: [
-        const _SectionHeader('Hedefler'),
+        _SectionHeader(l.settingsSectionGoals),
         _SettingTile(
           icon: Icons.local_fire_department_rounded,
-          title: 'Kalori Hedefi',
+          title: l.settingsKcalGoal,
           value: '${profile.kcalGoal} kcal',
           onTap: () => _editNumber(context, ref,
-              title: 'Kalori Hedefi',
+              title: l.settingsKcalGoal,
               unit: 'kcal',
               initial: profile.kcalGoal,
               isInt: true,
@@ -254,10 +299,10 @@ class _SettingsBody extends ConsumerWidget {
         ),
         _SettingTile(
           icon: Icons.egg_alt_outlined,
-          title: 'Protein Hedefi',
+          title: l.settingsProteinGoal,
           value: '${profile.proteinGoal} g',
           onTap: () => _editNumber(context, ref,
-              title: 'Protein Hedefi',
+              title: l.settingsProteinGoal,
               unit: 'g',
               initial: profile.proteinGoal,
               isInt: true,
@@ -265,13 +310,13 @@ class _SettingsBody extends ConsumerWidget {
               max: 400,
               apply: (v) => profile.copyWith(proteinGoal: v.toInt())),
         ),
-        const _SectionHeader('Vücut'),
+        _SectionHeader(l.settingsSectionBody),
         _SettingTile(
           icon: Icons.height_rounded,
-          title: 'Boy',
+          title: l.settingsHeight,
           value: profile.heightCm != null ? '${profile.heightCm} cm' : '—',
           onTap: () => _editNumber(context, ref,
-              title: 'Boy',
+              title: l.settingsHeight,
               unit: 'cm',
               initial: profile.heightCm ?? 175,
               isInt: false,
@@ -282,12 +327,12 @@ class _SettingsBody extends ConsumerWidget {
         ),
         _SettingTile(
           icon: Icons.flag_outlined,
-          title: 'Hedef Kilo',
+          title: l.settingsGoalWeight,
           value: profile.goalWeightKg != null
               ? '${profile.goalWeightKg} kg'
               : '—',
           onTap: () => _editNumber(context, ref,
-              title: 'Hedef Kilo',
+              title: l.settingsGoalWeight,
               unit: 'kg',
               initial: profile.goalWeightKg ?? 80,
               isInt: false,
@@ -299,66 +344,75 @@ class _SettingsBody extends ConsumerWidget {
         // ── BMR/TDEE girdileri (docs/12) ──
         _SettingTile(
           icon: Icons.wc_rounded,
-          title: 'Cinsiyet',
-          value: switch (profile.gender) {
-            'male' => 'Erkek',
-            'female' => 'Kadın',
-            _ => '—',
-          },
+          title: l.settingsGender,
+          value: genderLabel(l, profile.gender),
           onTap: () => _editGender(context, ref),
         ),
         _SettingTile(
           icon: Icons.cake_outlined,
-          title: 'Doğum Tarihi',
+          title: l.settingsBirthDate,
           value: profile.birthDate != null
-              ? '${_fmtDate(profile.birthDate!)} · ${ageFromBirthDate(profile.birthDate)} yaş'
+              ? l.settingsBirthDateValue(_fmtDate(profile.birthDate!),
+                  ageFromBirthDate(profile.birthDate) ?? 0)
               : '—',
           onTap: () => _editBirthDate(context, ref),
         ),
         _SettingTile(
           icon: Icons.directions_walk_rounded,
-          title: 'Aktiflik Düzeyi',
-          value: activityLabelsTr[profile.activityLevel] ?? '—',
+          title: l.settingsActivityLevel,
+          value: activityLabel(l, profile.activityLevel),
           onTap: () => _editActivity(context, ref),
         ),
         _DailyEnergyTile(profile: profile),
-        const _SectionHeader('Beslenme'),
+        _SectionHeader(l.settingsSectionAppearance),
+        _SettingTile(
+          icon: Icons.brightness_6_rounded,
+          title: l.settingsTheme,
+          value: themeModeLabel(l, ref.watch(themeModeProvider)),
+          onTap: () => _editTheme(context, ref),
+        ),
+        _SettingTile(
+          icon: Icons.language_rounded,
+          title: l.settingsLanguage,
+          value: localeLabel(l, ref.watch(localeProvider)),
+          onTap: () => _editLanguage(context, ref),
+        ),
+        _SectionHeader(l.settingsSectionNutrition),
         _SettingTile(
           icon: Icons.restaurant_menu_rounded,
-          title: 'Yemekler',
-          subtitle: 'Besin veritabanı — değerleri gör, düzenle, ekle',
+          title: l.settingsFoods,
+          subtitle: l.settingsFoodsSubtitle,
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => context.push(AppRoutes.foods),
         ),
-        const _SectionHeader('Verilerim'),
+        _SectionHeader(l.settingsSectionMyData),
         _CloudAccountTile(),
         _SettingTile(
           icon: Icons.backup_rounded,
-          title: 'Cihaza Yedekle',
-          subtitle: 'Verini dosya olarak kaydet (Drive/Dosyalar) — geri yüklenebilir',
+          title: l.settingsBackup,
+          subtitle: l.settingsBackupSubtitle,
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => _backup(context, ref),
         ),
         _SettingTile(
           icon: Icons.restore_rounded,
-          title: 'Yedekten Geri Yükle',
-          subtitle: 'Daha önce aldığın yedek dosyasını geri yükle',
+          title: l.settingsRestore,
+          subtitle: l.settingsRestoreSubtitle,
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => _restore(context, ref),
         ),
         _SettingTile(
           icon: Icons.ios_share_rounded,
-          title: 'Veri Dışa Aktar (rapor)',
-          subtitle: 'Okunabilir rapor — Markdown / JSON / CSV',
+          title: l.settingsExport,
+          subtitle: l.settingsExportSubtitle,
           trailing: const Icon(Icons.chevron_right_rounded),
           onTap: () => context.push(AppRoutes.export),
         ),
-        const _SectionHeader('Hakkında'),
+        _SectionHeader(l.settingsSectionAbout),
         _SettingTile(
           icon: Icons.info_outline_rounded,
           title: AppConstants.appName,
-          subtitle:
-              'Sürüm ${AppConstants.appVersion} · Kişisel fitness takibi',
+          subtitle: l.settingsAboutSubtitle(AppConstants.appVersion),
         ),
         const SizedBox(height: AppSpacing.xxl),
       ],
@@ -384,13 +438,15 @@ class _DailyEnergyTile extends ConsumerWidget {
     );
     final total = tdee(bmr: bmr, activityLevel: profile.activityLevel);
 
+    final l = AppL10n.of(context);
     final c = context.colors;
     final ready = total != null;
     final missing = <String>[
-      if (weight == null) 'kilo',
-      if (profile.heightCm == null) 'boy',
-      if (age == null) 'doğum tarihi',
-      if (profile.gender != 'male' && profile.gender != 'female') 'cinsiyet',
+      if (weight == null) l.settingsMissingWeight,
+      if (profile.heightCm == null) l.settingsMissingHeight,
+      if (age == null) l.settingsMissingBirthDate,
+      if (profile.gender != 'male' && profile.gender != 'female')
+        l.settingsMissingGender,
     ];
 
     return Container(
@@ -410,21 +466,20 @@ class _DailyEnergyTile extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Tahmini Günlük Harcama',
+                Text(l.settingsDailyEnergyTitle,
                     style: context.texts.labelLarge?.copyWith(
                         color: c.onPrimaryContainer,
                         fontWeight: FontWeight.w700)),
                 AppSpacing.vGapXs,
                 if (ready)
                   Text(
-                    '~${total.round()} kcal/gün'
-                    '  ·  dinlenme ${bmr!.round()}',
+                    l.settingsDailyEnergyValue(total.round(), bmr!.round()),
                     style: context.texts.bodyMedium?.copyWith(
                         color: c.onPrimaryContainer.withValues(alpha: 0.85)),
                   )
                 else
                   Text(
-                    'Hesaplamak için gir: ${missing.join(", ")}',
+                    l.settingsDailyEnergyMissing(missing.join(", ")),
                     style: context.texts.bodySmall?.copyWith(
                         color: c.onPrimaryContainer.withValues(alpha: 0.85)),
                   ),
@@ -441,14 +496,15 @@ class _DailyEnergyTile extends ConsumerWidget {
 class _CloudAccountTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
     final user = ref.watch(currentUserProvider);
     final signedIn = user != null;
     return _SettingTile(
       icon: signedIn ? Icons.cloud_done_rounded : Icons.cloud_outlined,
-      title: 'Bulut Hesabı',
+      title: l.settingsCloudAccount,
       subtitle: signedIn
-          ? '${user.email ?? "Giriş yapıldı"} · buluta yedekle / geri yükle'
-          : 'Giriş yap → verini buluta yedekle, yeni cihazda geri yükle',
+          ? l.settingsCloudSignedIn(user.email ?? l.settingsCloudSignedInFallback)
+          : l.settingsCloudSignedOut,
       trailing: const Icon(Icons.chevron_right_rounded),
       onTap: () => context.push(AppRoutes.cloud),
     );
@@ -559,15 +615,17 @@ class _NumberEditDialogState extends State<_NumberEditDialog> {
   }
 
   void _submit() {
+    final l = AppL10n.of(context);
     final v = widget.isInt
         ? int.tryParse(_controller.text.trim())
         : double.tryParse(_controller.text.trim().replaceAll(',', '.'));
     if (v == null) {
-      setState(() => _error = 'Geçersiz sayı');
+      setState(() => _error = l.commonInvalidNumber);
       return;
     }
     if (v < widget.min || v > widget.max) {
-      setState(() => _error = '${widget.min} – ${widget.max} aralığında olmalı');
+      setState(() => _error =
+          l.commonRangeError('${widget.min}', '${widget.max}'));
       return;
     }
     Navigator.pop(context, v);
@@ -575,6 +633,7 @@ class _NumberEditDialogState extends State<_NumberEditDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     return AlertDialog(
       title: Text(widget.title),
       content: TextField(
@@ -584,18 +643,18 @@ class _NumberEditDialogState extends State<_NumberEditDialog> {
         onSubmitted: (_) => _submit(),
         decoration: InputDecoration(
           suffixText: widget.unit,
-          helperText: 'Aralık: ${widget.min} – ${widget.max}',
+          helperText: l.commonRangeHint('${widget.min}', '${widget.max}'),
           errorText: _error,
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('İptal'),
+          child: Text(l.commonCancel),
         ),
         FilledButton(
           onPressed: _submit,
-          child: const Text('Kaydet'),
+          child: Text(l.commonSave),
         ),
       ],
     );

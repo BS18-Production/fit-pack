@@ -1,8 +1,21 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-06-21
-> **Faz:** V2 Geliştirme — **Sprint D: Tasarım Reskin (Ana Sayfa)** tamam
+> **Son güncelleme:** 2026-07-05
+> **Faz:** V2 Geliştirme — **Çok Dilli (EN/TR) Faz A** başladı
 > **Sahibi:** Samet Orhan
+
+## 🌐 Çok Dilli (EN/TR) — Faz A (2026-07-05)
+
+Uygulama iki dilli yapılıyor (İngilizce öncelik, cihaz dilini takip et). Altyapı
+(`gen-l10n`+ARB, dil seçici, locale-duyarlı biçim) + ilk dilim (nav, Ana Sayfa,
+Ayarlar, CalorieRing) tamam, EN/TR emülatörde doğrulandı. Kalan ekranlar +
+Faz B (içerik) → **[NEXT_TASKS.md](NEXT_TASKS.md)** ve
+**[docs/14-localization.md](docs/14-localization.md)**. analyze 0 · test 110/110.
+
+Ayrıca **Onboarding V2 UYGULANDI** (glass 4-sayfa kurulum + değer projeksiyonu
++ "İçeride ne var" + sekme başına coach mark + boş hal aksiyonları):
+[docs/15-onboarding.md](docs/15-onboarding.md). analyze 0 · test 123/123 ·
+sıfır kurulumda EN+TR uçtan uca doğrulandı. Detay NEXT_TASKS §Onboarding V2.
 
 ## 🆕 Sprint D — Claude Design Reskin: Ana Sayfa (2026-06-21)
 

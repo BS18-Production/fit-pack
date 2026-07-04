@@ -178,7 +178,21 @@ Kalıcı/kapatılamaz akış (geri yükleme sonrası restart) `PopScope(canPop:f
   ekranı, doğası gereği siyah — kodda belgelenmiş).
 - **Ölçü/boşluk/köşe:** `AppSpacing.*`, `AppRadius.*`, `AppIconSize.*`
   (`core/theme/app_dimens.dart`). Ham `EdgeInsets.all(16)` yerine token.
-- **Metin:** `context.texts.*` (TextTheme).
+- **Metin stili:** `context.texts.*` (TextTheme).
+
+---
+
+## 5b. Çok Dilli (i18n/l10n) — docs/14
+
+- **Kullanıcı metni hardcode edilmez.** Yeni görünen metin → `lib/l10n/app_en.arb`
+  (kaynak) + `app_tr.arb`'ye anahtar açılır, `AppL10n.of(context).<key>` ile
+  kullanılır. Anahtar adı `alanEkran_amac` camelCase (ör. `home_streakTitle`).
+- **Parametre** ICU placeholder (`{count}`); çoğul gerekiyorsa `plural`.
+- **Tarih/sayı biçimi** daima aktif locale: `context.dateFmt('...')`,
+  `context.numFmt` (`core/i18n/formatting.dart`). `'tr_TR'` sabiti **yasak**.
+- **Enum/DB anahtar etiketleri** (cinsiyet, aktiflik, tema, dil):
+  `core/i18n/enum_labels.dart`. Anahtar İngilizce sabit, etiket dile göre çözülür.
+- ARB değişince `flutter gen-l10n` (veya `flutter pub get`) çalıştır.
 
 ---
 

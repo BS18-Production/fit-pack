@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../core/onboarding/first_run_hints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
@@ -25,10 +26,16 @@ class BodyMetricsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('İlerleme')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddMeasurementDialog(context, ref),
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Ölçüm Ekle'),
+      // İlk-kullanım ipucu (docs/15 §B): sekmeye ilk girişte kilo/ölçüm
+      // girmeyi işaret eder; bir kez gösterilir.
+      floatingActionButton: CoachMark(
+        hint: FirstRunHint.progress,
+        message: (l) => l.hintProgress,
+        child: FloatingActionButton.extended(
+          onPressed: () => _showAddMeasurementDialog(context, ref),
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('Ölçüm Ekle'),
+        ),
       ),
       body: ListView(
         padding: AppSpacing.screen,
@@ -63,10 +70,13 @@ class BodyMetricsScreen extends ConsumerWidget {
       data: (measurements) {
         if (measurements.isEmpty) {
           return [
-            const EmptyState(
+            // Boş hal = öğretmen (docs/15 §C): tek net aksiyonla yönlendir.
+            EmptyState(
               icon: Icons.monitor_weight_outlined,
               title: 'Henüz ölçüm yok',
               message: 'İlk vücut ölçümünü ekleyerek ilerlemeni takip et',
+              actionLabel: 'İlk ölçümünü ekle',
+              onAction: () => _showAddMeasurementDialog(context, ref),
               compact: true,
             ),
           ];

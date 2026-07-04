@@ -1,0 +1,8 @@
+# docs/14 — Localization (gen-l10n) yapılandırması.
+# ARB dosyaları lib/l10n/ altında; app_en.arb template (kaynak dil).
+# Üretilen sınıf: AppL10n → AppL10n.of(context).<key>
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_l10n.dart
+output-class: AppL10n
+nullable-getter: false

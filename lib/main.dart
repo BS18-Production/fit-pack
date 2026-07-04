@@ -4,15 +4,18 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'core/config/supabase_config.dart';
+import 'core/onboarding/first_run_hints.dart';
 import 'data/providers.dart';
 import 'data/seed/seed_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Türkçe tarih biçimlendirme verisini yükle. Olmadan DateFormat(..., 'tr_TR')
-  // LocaleDataException fırlatır (V1'de eksikti — Aşama 0 sağlamlaştırma).
-  await initializeDateFormatting('tr_TR', null);
+  // Tarih biçimlendirme verisini yükle (docs/14 — çok dilli). Desteklenen her
+  // dil için gerekir; olmadan DateFormat(..., locale) LocaleDataException
+  // fırlatır. `en` + `tr` yeter (uygulama iki dili destekliyor).
+  await initializeDateFormatting('en', null);
+  await initializeDateFormatting('tr', null);
 
   // Bulut yedek/hesap için Supabase (docs/13). Hata olsa bile uygulama
   // yerel-öncelikli çalışmaya devam eder — bulut opsiyonel bir katman.
@@ -36,6 +39,10 @@ void main() async {
   // onboarded=false ise router onboarding ekranıyla başlar.
   final profile = await db.userProfileDao.getProfile();
   final onboarded = profile?.onboarded ?? false;
+
+  // İlk-kullanım ipuçları (docs/15 §B): mevcut kullanıcıya güncelleme sonrası
+  // coach mark gösterme — yalnız yeni onboarding'den geçenler görür.
+  await FirstRunHints.initialize(onboarded: onboarded);
 
   runApp(
     UncontrolledProviderScope(

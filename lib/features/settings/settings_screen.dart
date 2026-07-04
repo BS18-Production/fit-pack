@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/theme/theme_mode_provider.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/widgets/app_state_views.dart';
@@ -89,6 +90,20 @@ class _SettingsBody extends ConsumerWidget {
     );
     if (picked != null) {
       await _save(ref, profile.copyWith(activityLevel: Value(picked)));
+    }
+  }
+
+  Future<void> _editTheme(BuildContext context, WidgetRef ref) async {
+    final picked = await _pickOption(
+      context,
+      title: 'Tema',
+      options: ThemeMode.values.map((m) => (m.name, themeModeLabelTr(m))).toList(),
+      current: ref.read(themeModeProvider).name,
+    );
+    if (picked != null) {
+      final mode = ThemeMode.values
+          .firstWhere((m) => m.name == picked, orElse: () => ThemeMode.system);
+      await ref.read(themeModeProvider.notifier).setMode(mode);
     }
   }
 
@@ -322,6 +337,13 @@ class _SettingsBody extends ConsumerWidget {
           onTap: () => _editActivity(context, ref),
         ),
         _DailyEnergyTile(profile: profile),
+        const _SectionHeader('Görünüm'),
+        _SettingTile(
+          icon: Icons.brightness_6_rounded,
+          title: 'Tema',
+          value: themeModeLabelTr(ref.watch(themeModeProvider)),
+          onTap: () => _editTheme(context, ref),
+        ),
         const _SectionHeader('Beslenme'),
         _SettingTile(
           icon: Icons.restaurant_menu_rounded,

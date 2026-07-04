@@ -392,36 +392,56 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     final started = DateTime(
         _sessionDate.year, _sessionDate.month, _sessionDate.day, tod.hour, tod.minute);
     final ended = _isManual ? null : started.add(_elapsed);
-    final sessionId = await dao.insertSession(WorkoutSessionsCompanion(
-      date: Value(started),
-      phase: const Value(0),
-      workoutType: Value(_title),
-      routineId: Value(widget.routineId),
-      startedAt: Value(started),
-      endedAt: Value(ended),
-      durationMin: _isManual
-          ? const Value(null)
-          : Value(_elapsed.inMinutes),
-    ));
 
-    for (final ex in _exercises) {
-      var n = 1;
-      for (final s in ex.sets) {
-        if (!s.hasInput(ex.measure) && !s.done) continue;
-        await dao.insertSet(WorkoutSetsCompanion(
-          sessionId: Value(sessionId),
-          exerciseId: Value(ex.exercise.id),
-          setNumber: Value(n++),
-          weightKg: Value(s.weight),
-          reps: Value(s.reps),
-          rpe: Value(s.rpe),
-          durationSec: Value(s.durationSec),
-          distanceM: Value(s.distanceM),
-          setType: Value(s.type),
-          isComplete: Value(s.done),
-          isWarmup: Value(s.type == 'warmup'),
-        ));
+    final int sessionId;
+    try {
+      // Seans + setler tek transaction'da: yarıda kesilirse DB'de yarım
+      // seans kalmaz, taslak da durur → kullanıcı yeniden deneyebilir.
+      sessionId = await dao.insertSessionWithSets(
+        WorkoutSessionsCompanion(
+          date: Value(started),
+          phase: const Value(0),
+          workoutType: Value(_title),
+          routineId: Value(widget.routineId),
+          startedAt: Value(started),
+          endedAt: Value(ended),
+          durationMin: _isManual
+              ? const Value(null)
+              : Value(_elapsed.inMinutes),
+        ),
+        (id) {
+          final out = <WorkoutSetsCompanion>[];
+          for (final ex in _exercises) {
+            var n = 1;
+            for (final s in ex.sets) {
+              if (!s.hasInput(ex.measure) && !s.done) continue;
+              out.add(WorkoutSetsCompanion(
+                sessionId: Value(id),
+                exerciseId: Value(ex.exercise.id),
+                setNumber: Value(n++),
+                weightKg: Value(s.weight),
+                reps: Value(s.reps),
+                rpe: Value(s.rpe),
+                durationSec: Value(s.durationSec),
+                distanceM: Value(s.distanceM),
+                setType: Value(s.type),
+                isComplete: Value(s.done),
+                isWarmup: Value(s.type == 'warmup'),
+              ));
+            }
+          }
+          return out;
+        },
+      );
+    } catch (_) {
+      // Yazım başarısız: taslak duruyor, veri kaybolmadı. Düğmeyi serbest
+      // bırak ki kullanıcı tekrar deneyebilsin.
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Antrenman kaydedilemedi — tekrar dene')));
       }
+      return;
     }
 
     _clearDraft(); // seans DB'ye yazıldı — taslağı sil

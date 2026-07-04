@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drift/drift.dart' show Value;
@@ -165,6 +164,25 @@ class _SettingsBody extends ConsumerWidget {
 
     try {
       await ref.read(backupServiceProvider).restoreFromFile(file);
+    } on FormatException catch (e) {
+      // Doğrulama hatası — DB kapanmadan reddedildi, uygulama çalışır durumda.
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message)),
+        );
+      }
+      return;
+    } on RestoreNeedsRestartException {
+      // Kopyalama yarıda kesildi; mevcut veri korundu ama bağlantı kapalı.
+      if (context.mounted) {
+        await showRestartDialog(
+          context,
+          title: 'Geri yükleme başarısız',
+          message: 'Bir sorun oluştu, mevcut verin korundu. Uygulama '
+              'kapanacak — tekrar açman yeterli.',
+        );
+      }
+      return;
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -175,21 +193,11 @@ class _SettingsBody extends ConsumerWidget {
     }
 
     if (!context.mounted) return;
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Geri yüklendi'),
-        content: const Text(
-            'Veriler geri yüklendi. Değişikliklerin görünmesi için uygulama '
-            'kapanacak — tekrar açman yeterli.'),
-        actions: [
-          FilledButton(
-            onPressed: () => SystemNavigator.pop(),
-            child: const Text('Uygulamayı Kapat'),
-          ),
-        ],
-      ),
+    await showRestartDialog(
+      context,
+      title: 'Geri yüklendi',
+      message: 'Veriler geri yüklendi. Değişikliklerin görünmesi için '
+          'uygulama kapanacak — tekrar açman yeterli.',
     );
   }
 

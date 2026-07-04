@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
@@ -251,6 +252,33 @@ class SheetHeader extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Veritabanı bağlantısı kapandıktan sonra (yedekten geri yükleme) gösterilen
+/// KAPATILAMAZ diyalog. Geri tuşu dahil hiçbir yolla geçilemez — uygulama
+/// kapalı bağlantıyla çalışmaya devam edemez, tek çıkış yeniden başlatmak.
+Future<void> showRestartDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+}) {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => PopScope(
+      canPop: false,
+      child: AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          FilledButton(
+            onPressed: () => SystemNavigator.pop(),
+            child: const Text('Uygulamayı Kapat'),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 /// Tehlikeli işlem öncesi onay. true dönerse devam et.

@@ -52,6 +52,31 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
   Future<int> addRoutineExercise(RoutineExercisesCompanion entry) =>
       into(routineExercises).insert(entry);
 
+  /// Rutin + hareket listesini TEK transaction'da yazar. Düzenlemede "önce
+  /// sil sonra yeniden yaz" adımları atomikleşir: ortada hata olursa rutinin
+  /// mevcut hareketleri kaybolmaz. Rutin id'sini döner.
+  Future<int> saveRoutineWithExercises({
+    required RoutinesCompanion routine,
+    required bool isNew,
+    required List<RoutineExercisesCompanion> Function(int routineId)
+        buildExercises,
+  }) =>
+      transaction(() async {
+        final int id;
+        if (isNew) {
+          id = await createRoutine(routine);
+        } else {
+          id = routine.id.value;
+          await updateRoutine(routine);
+          await clearRoutineExercises(id);
+        }
+        final items = buildExercises(id);
+        if (items.isNotEmpty) {
+          await batch((b) => b.insertAll(routineExercises, items));
+        }
+        return id;
+      });
+
   /// Rutinin tüm hareketlerini siler (oluşturucuda yeniden yazmadan önce).
   Future<void> clearRoutineExercises(int routineId) =>
       (delete(routineExercises)..where((e) => e.routineId.equals(routineId)))
@@ -167,6 +192,22 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
 
   Future<int> insertSession(WorkoutSessionsCompanion entry) =>
       into(workoutSessions).insert(entry);
+
+  /// Seans + setlerini TEK transaction'da yazar: yazım yarıda kesilirse
+  /// (çökme, disk hatası) DB'de yarım seans kalmaz — ya hepsi ya hiçbiri.
+  /// [buildSets] yeni seans id'siyle set companion'larını üretir.
+  Future<int> insertSessionWithSets(
+    WorkoutSessionsCompanion session,
+    List<WorkoutSetsCompanion> Function(int sessionId) buildSets,
+  ) =>
+      transaction(() async {
+        final id = await into(workoutSessions).insert(session);
+        final sets = buildSets(id);
+        if (sets.isNotEmpty) {
+          await batch((b) => b.insertAll(workoutSets, sets));
+        }
+        return id;
+      });
 
   Future<bool> updateSession(WorkoutSession entry) =>
       update(workoutSessions).replace(entry);

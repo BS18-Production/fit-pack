@@ -104,37 +104,47 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
     }
     setState(() => _saving = true);
     final dao = ref.read(workoutDaoProvider);
-    final companion = RoutinesCompanion(
+    var companion = RoutinesCompanion(
       name: Value(name),
       scheduledWeekday: Value(_weekday),
     );
 
-    int routineId;
-    if (_isEdit) {
-      routineId = widget.routineId!;
-      final existing = await dao.getRoutine(routineId);
-      await dao.updateRoutine(companion.copyWith(
-        id: Value(routineId),
-        createdAt: Value(existing!.createdAt),
-        orderIndex: Value(existing.orderIndex),
-        isArchived: Value(existing.isArchived),
-      ));
-      await dao.clearRoutineExercises(routineId);
-    } else {
-      routineId = await dao.createRoutine(companion);
-    }
-
-    for (var i = 0; i < _items.length; i++) {
-      final it = _items[i];
-      await dao.addRoutineExercise(RoutineExercisesCompanion(
-        routineId: Value(routineId),
-        exerciseId: Value(it.exercise.id),
-        orderIndex: Value(i),
-        targetSets: Value(it.sets),
-        targetRepsMin: Value(it.repsMin),
-        targetRepsMax: Value(it.repsMax),
-        targetRestSec: Value(it.restSec),
-      ));
+    final int routineId;
+    try {
+      if (_isEdit) {
+        final existing = await dao.getRoutine(widget.routineId!);
+        companion = companion.copyWith(
+          id: Value(widget.routineId!),
+          createdAt: Value(existing!.createdAt),
+          orderIndex: Value(existing.orderIndex),
+          isArchived: Value(existing.isArchived),
+        );
+      }
+      // Rutin + hareketler tek transaction'da: düzenlemede "sil + yeniden
+      // yaz" adımları atomik — ortada hata olsa mevcut liste kaybolmaz.
+      routineId = await dao.saveRoutineWithExercises(
+        routine: companion,
+        isNew: !_isEdit,
+        buildExercises: (id) => [
+          for (var i = 0; i < _items.length; i++)
+            RoutineExercisesCompanion(
+              routineId: Value(id),
+              exerciseId: Value(_items[i].exercise.id),
+              orderIndex: Value(i),
+              targetSets: Value(_items[i].sets),
+              targetRepsMin: Value(_items[i].repsMin),
+              targetRepsMax: Value(_items[i].repsMax),
+              targetRestSec: Value(_items[i].restSec),
+            ),
+        ],
+      );
+    } catch (_) {
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Rutin kaydedilemedi — tekrar dene')));
+      }
+      return;
     }
 
     ref.invalidate(activeRoutinesProvider);

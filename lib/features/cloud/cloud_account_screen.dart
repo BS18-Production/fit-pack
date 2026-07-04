@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../shared/widgets/app_state_views.dart';
+import '../settings/backup_service.dart' show RestoreNeedsRestartException;
 import 'auth_service.dart';
 import 'cloud_backup_service.dart';
 
@@ -247,20 +247,29 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
     try {
       await ref.read(cloudBackupServiceProvider).restoreFromCloud();
       if (!mounted) return;
-      await showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => AlertDialog(
-          title: const Text('Geri yüklendi'),
-          content: const Text(
-              'Bulut yedeği yüklendi. Uygulama kapanacak — tekrar açman yeterli.'),
-          actions: [
-            FilledButton(
-                onPressed: () => SystemNavigator.pop(),
-                child: const Text('Uygulamayı Kapat')),
-          ],
-        ),
+      await showRestartDialog(
+        context,
+        title: 'Geri yüklendi',
+        message:
+            'Bulut yedeği yüklendi. Uygulama kapanacak — tekrar açman yeterli.',
       );
+    } on FormatException catch (e) {
+      // Doğrulama hatası — DB kapanmadan reddedildi, uygulama çalışır durumda.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message)),
+        );
+      }
+    } on RestoreNeedsRestartException {
+      // Kopyalama yarıda kesildi; mevcut veri korundu ama bağlantı kapalı.
+      if (mounted) {
+        await showRestartDialog(
+          context,
+          title: 'Geri yükleme başarısız',
+          message: 'Bir sorun oluştu, mevcut verin korundu. Uygulama '
+              'kapanacak — tekrar açman yeterli.',
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

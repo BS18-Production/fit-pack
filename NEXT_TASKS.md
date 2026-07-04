@@ -1,7 +1,21 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
-> **Son güncelleme:** 2026-06-30
-> **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [docs/04-roadmap.md](docs/04-roadmap.md), [docs/08-design-brief.md](docs/08-design-brief.md)
+> **Son güncelleme:** 2026-07-04
+> **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [CODE_REVIEW.md](CODE_REVIEW.md), [docs/04-roadmap.md](docs/04-roadmap.md)
+
+---
+
+## 🔍 Kod İncelemesi & Tutarlılık Refactor'u (2026-07-04) — `fix/code-review`
+
+Tam kod denetimi yapıldı → [CODE_REVIEW.md](CODE_REVIEW.md) (bulgular + batch planı orada).
+
+- [x] **Faz 1 — Denetim:** 1 CRITICAL + 6 HIGH + 11 MEDIUM + 9 LOW bulgu, rapor yazıldı
+- [x] **Batch 1 — Veri güvenliği:** güvenli geri yükleme (emniyet kopyası + atomik değişim + sürüm kontrolü), kapatılamaz yeniden-başlat diyaloğu, seans/rutin yazımları transaction'lı. analyze 0 · test 96/96
+- [ ] **Batch 2 — Doğruluk:** H-01 gün sınırı çift sayım, H-02 seans listesi key'leri, H-05 kilo invalidate, M-01 resume routineId, M-10 onboarding, M-11 getSessionById
+- [ ] **Batch 3 — Tazelik & dayanıklılık:** M-02 gece yarısı, M-03 dinlenme sayacı, M-04 açılış seed guard, M-06 ref anti-pattern, L-04
+- [ ] **Batch 4 — Temizlik:** M-07 export V2, M-09 ölü kod, L-01/02/03/05/06/08/09
+- [ ] **Faz 3 — CONVENTIONS.md + CLAUDE.md güncellemesi**
+- [ ] **Samet kararı bekleyen:** H-04 yayın imzası (keystore + targetSdk; telefondaki kurulumu etkiler), M-08 Google girişi (tamamla ya da düğmeyi gizle)
 
 ---
 

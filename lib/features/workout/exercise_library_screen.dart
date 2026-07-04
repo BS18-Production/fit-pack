@@ -10,6 +10,7 @@ import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'workout_ui.dart';
+import '../../core/router/app_routes.dart';
 
 /// Antrenman V2 — Hareket Kütüphanesi (Claude Design reskin).
 /// Hareket/ekipman/kas adları İngilizce (salon standardı), arayüz Türkçe.
@@ -172,7 +173,7 @@ class _ExerciseLibraryScreenState
                               exercises: list,
                               onTap: (e) => widget.selectionMode
                                   ? Navigator.pop(context, e)
-                                  : context.push('/exercise/${e.id}'),
+                                  : context.push(AppRoutes.exerciseDetail(e.id)),
                               selectionMode: widget.selectionMode,
                             ),
                     ),

@@ -46,9 +46,6 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
   // === Foods ===
   Future<List<Food>> getAllFoods() => select(foods).get();
 
-  Future<List<Food>> searchFoods(String query) =>
-      (select(foods)..where((f) => f.name.like('%$query%'))).get();
-
   Future<Food?> getFoodById(int id) =>
       (select(foods)..where((f) => f.id.equals(id))).getSingleOrNull();
 
@@ -217,12 +214,9 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
     return DailyNutrition(kcal: kcal, protein: protein, carb: carb, fat: fat);
   }
 
-  // === Recipe Items ===
-  Future<List<RecipeItem>> getRecipeItems(int recipeId) =>
-      (select(recipeItems)..where((r) => r.recipeId.equals(recipeId))).get();
-
-  Future<void> insertRecipeItem(RecipeItemsCompanion entry) =>
-      into(recipeItems).insert(entry);
+  // NOT: `recipe_items` tablosu şemada durur (ADR-007) ama tarif/öğün-bileşimi
+  // özelliği henüz yok — erişim metotları kullanılmıyordu, kaldırıldı. Özellik
+  // gelince buraya yeniden eklenir.
 }
 
 /// FoodLog + ait olduğu Food (join sonucu). UI yemek adını buradan okur.

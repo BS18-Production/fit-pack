@@ -53,6 +53,8 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Kamera vizörü: doğası gereği tema-bağımsız siyah zemin + beyaz metin.
+    // Tema token'ı bilinçli kullanılmıyor (L-03 istisnası).
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(

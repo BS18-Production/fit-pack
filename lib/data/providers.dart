@@ -3,7 +3,6 @@ import 'database/app_database.dart';
 import 'database/daos/workout_dao.dart';
 import 'database/daos/nutrition_dao.dart';
 import 'database/daos/body_dao.dart';
-import 'database/daos/achievement_dao.dart';
 import 'database/daos/user_profile_dao.dart';
 import 'services/openfoodfacts_service.dart';
 
@@ -27,9 +26,9 @@ final bodyDaoProvider = Provider<BodyDao>((ref) {
   return ref.watch(databaseProvider).bodyDao;
 });
 
-final achievementDaoProvider = Provider<AchievementDao>((ref) {
-  return ref.watch(databaseProvider).achievementDao;
-});
+// NOT: `achievements` tablosu ve `AchievementDao` şemada durur (ADR-007 —
+// yıkıcı migration yasak) ama henüz UI'sı yok (P-14 kararı bekliyor).
+// Achievements ekranı gelince buraya bir achievementDaoProvider eklenir.
 
 final userProfileDaoProvider = Provider<UserProfileDao>((ref) {
   return ref.watch(databaseProvider).userProfileDao;

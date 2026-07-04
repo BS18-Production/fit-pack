@@ -5,10 +5,15 @@
 String fmtNum(double v) =>
     v == v.roundToDouble() ? v.round().toString() : v.toString();
 
-/// Saniyeyi "dakika:saniye" biçimine çevirir (dakika dolgusuz).
-/// Örn: 90 → "1:30", 45 → "0:45", 750 → "12:30".
+/// Saniyeyi "dakika:saniye" biçimine çevirir (dakika dolgusuz). 1 saati
+/// aşınca "saat:dk:sn" olur (uzun kardiyoda "90:00" yerine "1:30:00").
+/// Örn: 90 → "1:30", 45 → "0:45", 750 → "12:30", 5400 → "1:30:00".
 String fmtDuration(int totalSeconds) {
-  final m = totalSeconds ~/ 60;
+  final h = totalSeconds ~/ 3600;
+  final m = (totalSeconds % 3600) ~/ 60;
   final s = (totalSeconds % 60).toString().padLeft(2, '0');
+  if (h > 0) {
+    return '$h:${m.toString().padLeft(2, '0')}:$s';
+  }
   return '$m:$s';
 }

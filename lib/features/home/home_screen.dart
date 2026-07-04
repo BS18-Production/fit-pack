@@ -12,6 +12,7 @@ import '../../shared/widgets/progress_indicators.dart';
 import '../workout/routine_providers.dart';
 import '../nutrition/macro_goals.dart';
 import 'providers/home_providers.dart';
+import '../../core/router/app_routes.dart';
 
 /// Ana Sayfa — Claude Design (2026-06-21) tasarımına göre yeniden kuruldu.
 /// Özel header (BUGÜN + tarih + ikonlar), durum-duyarlı birincil kart
@@ -105,13 +106,13 @@ class _Header extends StatelessWidget {
               tooltip: 'Veri dışa aktar',
               icon: const Icon(Icons.ios_share_rounded),
               color: context.colors.onSurfaceVariant,
-              onPressed: () => context.push('/export'),
+              onPressed: () => context.push(AppRoutes.export),
             ),
             IconButton(
               tooltip: 'Ayarlar',
               icon: const Icon(Icons.tune_rounded),
               color: context.colors.onSurfaceVariant,
-              onPressed: () => context.push('/settings'),
+              onPressed: () => context.push(AppRoutes.settings),
             ),
           ],
         ),
@@ -168,7 +169,7 @@ class _TrainingDayCard extends ConsumerWidget {
         color: Colors.transparent,
         borderRadius: AppRadius.brXl,
         child: InkWell(
-          onTap: () => context.push('/workout/routine/${routine.id}/preview'),
+          onTap: () => context.push(AppRoutes.routinePreview(routine.id)),
           borderRadius: AppRadius.brXl,
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -181,14 +182,14 @@ class _TrainingDayCard extends ConsumerWidget {
                     children: [
                       Text('Bugün: ${routine.name}',
                           style: context.texts.titleLarge
-                              ?.copyWith(color: Colors.white)),
+                              ?.copyWith(color: AppColors.onGradient)),
                       const SizedBox(height: 4),
                       Text(
                           exCount != null
                               ? 'Antrenmanı başlat · $exCount hareket'
                               : 'Antrenmanı başlat',
                           style: context.texts.bodySmall?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.82))),
+                              color: AppColors.onGradient.withValues(alpha: 0.82))),
                     ],
                   ),
                 ),
@@ -197,11 +198,11 @@ class _TrainingDayCard extends ConsumerWidget {
                   width: 46,
                   height: 46,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.20),
+                    color: AppColors.onGradient.withValues(alpha: 0.20),
                     borderRadius: AppRadius.brMd,
                   ),
                   child: const Icon(Icons.arrow_forward_rounded,
-                      color: Colors.white),
+                      color: AppColors.onGradient),
                 ),
               ],
             ),
@@ -219,7 +220,7 @@ class _StartWorkoutCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        onTap: () => context.go('/workout'),
+        onTap: () => context.go(AppRoutes.workout),
         borderRadius: AppRadius.brLg,
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -302,7 +303,7 @@ class _RestDayCard extends StatelessWidget {
             ),
             AppSpacing.vGapMd,
             InkWell(
-              onTap: () => context.go('/workout'),
+              onTap: () => context.go(AppRoutes.workout),
               borderRadius: AppRadius.brMd,
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -352,7 +353,7 @@ class _NutritionHeroCard extends StatelessWidget {
         deriveMacroGoals(kcalGoal: kcalGoal, proteinGoal: proteinGoal);
     return Card(
       child: InkWell(
-        onTap: () => context.go('/nutrition'),
+        onTap: () => context.go(AppRoutes.nutrition),
         borderRadius: AppRadius.brLg,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl,
@@ -560,7 +561,7 @@ class _StatRow extends ConsumerWidget {
             Expanded(
               child: _StatColumn(
                 label: 'SERİ',
-                onTap: streak > 0 ? null : () => context.go('/workout'),
+                onTap: streak > 0 ? null : () => context.go(AppRoutes.workout),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
@@ -582,7 +583,7 @@ class _StatRow extends ConsumerWidget {
             Expanded(
               child: _StatColumn(
                 label: 'SON KİLO',
-                onTap: () => context.go('/progress'),
+                onTap: () => context.go(AppRoutes.progress),
                 child: trend?.latest == null
                     ? Text('İlk kilonu gir',
                         style: context.texts.titleSmall?.copyWith(

@@ -17,6 +17,7 @@ import 'exercise_detail_screen.dart';
 import 'routine_providers.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
+import '../../core/router/app_routes.dart';
 
 /// Aktif Antrenman Seansı (Antrenman V2 Faz C — docs/09-workout-v2.md).
 /// Set tablosu (KG/tekrar/RPE/✓), set tipleri, dinlenme sayacı, canlı süre,
@@ -347,7 +348,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   }
 
   Future<void> _addExercise() async {
-    final ex = await context.push<Exercise>('/exercises/select');
+    final ex = await context.push<Exercise>(AppRoutes.exercisesSelect);
     if (ex == null) return;
     final last = await ref.read(workoutDaoProvider).getLastSetForExercise(ex.id);
     final prev = prevLabel(last, ex.measurementType);
@@ -471,7 +472,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     ref.invalidate(weekWorkoutStatsProvider);
     ref.invalidate(lastWorkoutSessionProvider);
     ref.invalidate(workoutStreakProvider);
-    if (mounted) context.pushReplacement('/workout/summary/$sessionId');
+    if (mounted) context.pushReplacement(AppRoutes.summary(sessionId));
   }
 
   Future<bool> _confirmExit() async {

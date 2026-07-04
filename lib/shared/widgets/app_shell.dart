@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/router/app_routes.dart';
 
 class AppShell extends StatelessWidget {
   final Widget child;
@@ -8,9 +9,9 @@ class AppShell extends StatelessWidget {
 
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/workout')) return 1;
-    if (location.startsWith('/nutrition')) return 2;
-    if (location.startsWith('/progress')) return 3;
+    if (location.startsWith(AppRoutes.workout)) return 1;
+    if (location.startsWith(AppRoutes.nutrition)) return 2;
+    if (location.startsWith(AppRoutes.progress)) return 3;
     return 0;
   }
 
@@ -23,13 +24,13 @@ class AppShell extends StatelessWidget {
         onDestinationSelected: (index) {
           switch (index) {
             case 0:
-              context.go('/home');
+              context.go(AppRoutes.home);
             case 1:
-              context.go('/workout');
+              context.go(AppRoutes.workout);
             case 2:
-              context.go('/nutrition');
+              context.go(AppRoutes.nutrition);
             case 3:
-              context.go('/progress');
+              context.go(AppRoutes.progress);
           }
         },
         destinations: const [

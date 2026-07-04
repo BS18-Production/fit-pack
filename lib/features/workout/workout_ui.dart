@@ -313,16 +313,16 @@ class GradientButton extends StatelessWidget {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2.4, color: Colors.white),
+                          strokeWidth: 2.4, color: AppColors.onGradient),
                     )
                   else ...[
                     if (icon != null) ...[
-                      Icon(icon, color: Colors.white, size: 20),
+                      Icon(icon, color: AppColors.onGradient, size: 20),
                       AppSpacing.hGapSm,
                     ],
                     Text(label,
                         style: context.texts.titleMedium?.copyWith(
-                          color: Colors.white,
+                          color: AppColors.onGradient,
                           fontWeight: FontWeight.w800,
                         )),
                   ],

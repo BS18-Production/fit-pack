@@ -7,6 +7,7 @@ import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'routine_providers.dart';
 import 'workout_ui.dart';
+import '../../core/router/app_routes.dart';
 
 /// Rutin Önizleme (Claude Design reskin). Hareketler + hedef set×tekrar +
 /// "Antrenmana Başla" + Düzenle/Arşivle. Hareket adları İngilizce.
@@ -30,7 +31,7 @@ class RoutinePreviewScreen extends ConsumerWidget {
           IconButton(
             tooltip: 'Düzenle',
             icon: const Icon(Icons.edit_outlined),
-            onPressed: () => context.push('/workout/routine/$routineId/edit'),
+            onPressed: () => context.push(AppRoutes.routineEdit(routineId)),
           ),
           IconButton(
             tooltip: 'Arşivle',
@@ -53,7 +54,7 @@ class RoutinePreviewScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/workout/active/$routineId'),
+        onPressed: () => context.push(AppRoutes.workoutActiveRoutine(routineId)),
         icon: const Icon(Icons.play_arrow_rounded),
         label: const Text('Antrenmana Başla'),
       ),

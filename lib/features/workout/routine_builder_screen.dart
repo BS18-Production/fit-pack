@@ -9,6 +9,7 @@ import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import 'routine_providers.dart';
 import 'workout_ui.dart';
+import '../../core/router/app_routes.dart';
 
 /// Rutin Oluşturucu (Antrenman V2 Faz B — docs/09-workout-v2.md).
 /// Ad + opsiyonel haftalık gün + hareketler (kütüphaneden) + hedef set×tekrar
@@ -80,7 +81,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
   }
 
   Future<void> _addExercise() async {
-    final ex = await context.push<Exercise>('/exercises/select');
+    final ex = await context.push<Exercise>(AppRoutes.exercisesSelect);
     if (ex == null) return;
     if (_items.any((i) => i.exercise.id == ex.id)) return; // tekrar ekleme
     setState(() => _items.add(_BuilderItem(

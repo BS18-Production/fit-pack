@@ -7,6 +7,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import 'workout_ui.dart';
+import '../../core/router/app_routes.dart';
 
 /// Antrenman Özeti (Antrenman V2 Faz C). Süre, toplam hacim, set sayısı,
 /// hareket bazlı döküm. Seans zaten kaydedildi; bu ekran recap.
@@ -21,7 +22,7 @@ class WorkoutSummaryScreen extends ConsumerWidget {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) context.go('/workout');
+        if (!didPop) context.go(AppRoutes.workout);
       },
       child: Scaffold(
         appBar: AppBar(
@@ -105,7 +106,7 @@ class WorkoutSummaryScreen extends ConsumerWidget {
               AppSpacing.vGapLg,
               GradientButton(
                 label: 'Bitti',
-                onTap: () => context.go('/workout'),
+                onTap: () => context.go(AppRoutes.workout),
               ),
             ],
           ),

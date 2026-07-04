@@ -17,6 +17,7 @@ import 'package:fit_pack/features/cloud/cloud_account_screen.dart';
 import 'package:fit_pack/features/settings/settings_screen.dart';
 import 'package:fit_pack/features/onboarding/onboarding_screen.dart';
 import 'package:fit_pack/shared/widgets/app_shell.dart';
+import 'app_routes.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -26,10 +27,10 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 /// pilot için yeterli — onboarding bittiğinde `context.go('/home')` çağrılır.
 GoRouter createAppRouter({required bool onboarded}) => GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: onboarded ? '/home' : '/onboarding',
+  initialLocation: onboarded ? AppRoutes.home : AppRoutes.onboarding,
   routes: [
     GoRoute(
-      path: '/onboarding',
+      path: AppRoutes.onboarding,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const OnboardingScreen(),
     ),
@@ -38,25 +39,25 @@ GoRouter createAppRouter({required bool onboarded}) => GoRouter(
       builder: (context, state, child) => AppShell(child: child),
       routes: [
         GoRoute(
-          path: '/home',
+          path: AppRoutes.home,
           pageBuilder: (context, state) => const NoTransitionPage(
             child: HomeScreen(),
           ),
         ),
         GoRoute(
-          path: '/workout',
+          path: AppRoutes.workout,
           pageBuilder: (context, state) => const NoTransitionPage(
             child: WorkoutListScreen(),
           ),
         ),
         GoRoute(
-          path: '/nutrition',
+          path: AppRoutes.nutrition,
           pageBuilder: (context, state) => const NoTransitionPage(
             child: NutritionScreen(),
           ),
         ),
         GoRoute(
-          path: '/progress',
+          path: AppRoutes.progress,
           pageBuilder: (context, state) => const NoTransitionPage(
             child: BodyMetricsScreen(),
           ),
@@ -64,92 +65,92 @@ GoRouter createAppRouter({required bool onboarded}) => GoRouter(
       ],
     ),
     GoRoute(
-      path: '/workout/history',
+      path: AppRoutes.workoutHistory,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const WorkoutHistoryScreen(),
     ),
     // Antrenman V2 (docs/09-workout-v2.md) — rutinler + aktif seans.
     GoRoute(
-      path: '/workout/routine/new',
+      path: AppRoutes.routineNew,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const RoutineBuilderScreen(),
     ),
     GoRoute(
-      path: '/workout/routine/:id/edit',
+      path: AppRoutes.routineEditPath,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => RoutineBuilderScreen(
           routineId: int.parse(state.pathParameters['id']!)),
     ),
     GoRoute(
-      path: '/workout/routine/:id/preview',
+      path: AppRoutes.routinePreviewPath,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => RoutinePreviewScreen(
           routineId: int.parse(state.pathParameters['id']!)),
     ),
     GoRoute(
-      path: '/workout/active',
+      path: AppRoutes.workoutActive,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const ActiveSessionScreen(),
     ),
     // Kaydedilmiş taslaktan devam (docs/12). :routineId'den ÖNCE gelmeli.
     GoRoute(
-      path: '/workout/active/resume',
+      path: AppRoutes.workoutActiveResume,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const ActiveSessionScreen(resume: true),
     ),
     GoRoute(
-      path: '/workout/active/:routineId',
+      path: AppRoutes.workoutActiveRoutinePath,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => ActiveSessionScreen(
           routineId: int.parse(state.pathParameters['routineId']!)),
     ),
     // Geçmiş antrenman ekle (H-B) — kronometresiz, tarih seçilir.
     GoRoute(
-      path: '/workout/log-past',
+      path: AppRoutes.workoutLogPast,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) =>
           ActiveSessionScreen(manualDate: DateTime.now()),
     ),
     GoRoute(
-      path: '/workout/summary/:sessionId',
+      path: AppRoutes.summaryPath,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => WorkoutSummaryScreen(
           sessionId: int.parse(state.pathParameters['sessionId']!)),
     ),
     GoRoute(
-      path: '/exercises',
+      path: AppRoutes.exercises,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const ExerciseLibraryScreen(),
     ),
     GoRoute(
-      path: '/exercises/select',
+      path: AppRoutes.exercisesSelect,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) =>
           const ExerciseLibraryScreen(selectionMode: true),
     ),
     GoRoute(
-      path: '/exercise/:id',
+      path: AppRoutes.exerciseDetailPath,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => ExerciseDetailScreen(
           exerciseId: int.parse(state.pathParameters['id']!)),
     ),
     GoRoute(
-      path: '/foods',
+      path: AppRoutes.foods,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const FoodsScreen(),
     ),
     GoRoute(
-      path: '/export',
+      path: AppRoutes.export,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const ExportScreen(),
     ),
     GoRoute(
-      path: '/cloud',
+      path: AppRoutes.cloud,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const CloudAccountScreen(),
     ),
     GoRoute(
-      path: '/settings',
+      path: AppRoutes.settings,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const SettingsScreen(),
     ),

@@ -21,6 +21,12 @@ class AppColors {
   static const teal = Color(0xFF14B8A6);
   static const tealBright = Color(0xFF2DD4BF);
 
+  /// İndigo gradient yüzeylerin (CTA kartları, GradientButton) üstündeki
+  /// içerik rengi. Gradient tema-bağımsız sabit olduğundan bu da sabit beyaz —
+  /// `context.colors.onPrimary` DEĞİL (o light temada değişebilir). Tek yerden
+  /// yönetilir ki tüm gradient yüzeyler tutarlı kalsın (L-03).
+  static const onGradient = Color(0xFFFFFFFF);
+
   // ─── DARK (öncelikli) ────────────────────────────────────────────
   static const _dBg = Color(0xFF101218); // scaffold
   static const _dSurface = Color(0xFF1B1E27); // kart

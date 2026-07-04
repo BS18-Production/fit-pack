@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:csv/csv.dart';
 import 'package:intl/intl.dart';
 import '../database/app_database.dart';
+import '../database/daos/workout_dao.dart' show RoutineExerciseWithExercise;
 
 /// Exports workout, nutrition, and body data as Markdown, JSON, or CSV.
 enum ExportScope { all, workout, nutrition }
@@ -16,8 +17,11 @@ class _ExportSnapshot {
   final List<WorkoutSession> sessions;
   final Map<int, List<WorkoutSet>> setsBySession;
   final Map<int, String> exerciseNames;
+  final List<Routine> routines;
+  final Map<int, List<RoutineExerciseWithExercise>> routineExercises;
   final List<FoodLog> foodLogs;
   final Map<int, String> foodNames;
+  final Map<DateTime, int> water; // gün → ml
   final List<BodyMeasurement> measurements;
 
   _ExportSnapshot({
@@ -28,8 +32,11 @@ class _ExportSnapshot {
     required this.sessions,
     required this.setsBySession,
     required this.exerciseNames,
+    required this.routines,
+    required this.routineExercises,
     required this.foodLogs,
     required this.foodNames,
+    required this.water,
     required this.measurements,
   });
 
@@ -48,6 +55,29 @@ class ExportService {
   static final DateFormat _isoDate = DateFormat('yyyy-MM-dd');
   static final DateFormat _isoDateTime = DateFormat('yyyy-MM-dd HH:mm');
 
+  // Rutin haftalık gün etiketi — data katmanı feature koduna bağlanmasın diye
+  // yerel tutulur (kWeekdayTr'nin kopyası değil, export'a özgü kısa biçim).
+  static const _weekdayTr = {
+    1: 'Pzt', 2: 'Sal', 3: 'Çar', 4: 'Per', 5: 'Cum', 6: 'Cmt', 7: 'Paz',
+  };
+
+  /// Süre saniye → "m:ss"; null → "-". Ölçüm-tipli setlerin (plank/kardiyo)
+  /// dışa aktarımı için.
+  static String _dur(int? s) =>
+      s == null ? '-' : '${s ~/ 60}:${(s % 60).toString().padLeft(2, '0')}';
+
+  /// Mesafe metre → "x.xx km"; null → "-".
+  static String _dist(double? m) =>
+      m == null ? '-' : '${(m / 1000).toStringAsFixed(2)} km';
+
+  /// Set tipi kodunu okunur etikete çevirir (normal → boş).
+  static String _setTypeTr(String t) => switch (t) {
+        'warmup' => 'Isınma',
+        'drop' => 'Drop',
+        'failure' => 'Fail',
+        _ => '',
+      };
+
   Future<_ExportSnapshot> _snapshot(
     DateTime start,
     DateTime end,
@@ -56,31 +86,45 @@ class ExportService {
     // Profile always included as a header block.
     final profile = await db.userProfileDao.getProfile();
 
-    // Workout branch — one session query + one bulk set query.
+    // Workout branch — sessions + bulk sets + rutin tanımları.
     List<WorkoutSession> sessions = const [];
     Map<int, List<WorkoutSet>> setsBySession = const {};
     Map<int, String> exerciseNames = const {};
+    List<Routine> routines = const [];
+    Map<int, List<RoutineExerciseWithExercise>> routineExercises = const {};
     if (scope == ExportScope.all || scope == ExportScope.workout) {
       final results = await (
         db.workoutDao.getSessionsByDateRange(start, end),
         db.workoutDao.getAllExercises(),
+        db.workoutDao.getActiveRoutines(),
       ).wait;
       sessions = results.$1;
       exerciseNames = {for (final e in results.$2) e.id: e.name};
+      routines = results.$3;
       setsBySession = await db.workoutDao
           .getSetsForSessions(sessions.map((s) => s.id).toList());
+      // Rutin şablonları (tarih aralığından bağımsız — kullanıcının kurduğu
+      // programlar). Az sayıda rutin → N+1 kabul edilebilir.
+      final re = <int, List<RoutineExerciseWithExercise>>{};
+      for (final r in routines) {
+        re[r.id] = await db.workoutDao.getRoutineExercises(r.id);
+      }
+      routineExercises = re;
     }
 
-    // Nutrition branch — logs + food name lookup in parallel.
+    // Nutrition branch — logs + food name lookup + su takibi.
     List<FoodLog> foodLogs = const [];
     Map<int, String> foodNames = const {};
+    Map<DateTime, int> water = const {};
     if (scope == ExportScope.all || scope == ExportScope.nutrition) {
       final results = await (
         db.nutritionDao.getLogsInRange(start, end),
         db.nutritionDao.getAllFoods(),
+        db.nutritionDao.getWaterInRange(start, end),
       ).wait;
       foodLogs = results.$1;
       foodNames = {for (final f in results.$2) f.id: f.name};
+      water = results.$3;
     }
 
     // Body branch — single query, only for full exports.
@@ -97,8 +141,11 @@ class ExportService {
       sessions: sessions,
       setsBySession: setsBySession,
       exerciseNames: exerciseNames,
+      routines: routines,
+      routineExercises: routineExercises,
       foodLogs: foodLogs,
       foodNames: foodNames,
+      water: water,
       measurements: measurements,
     );
   }
@@ -130,8 +177,14 @@ class ExportService {
       buffer.writeln();
     }
 
-    if (snap.includesWorkout) _workoutsMarkdown(buffer, snap);
-    if (snap.includesNutrition) _nutritionMarkdown(buffer, snap);
+    if (snap.includesWorkout) {
+      _workoutsMarkdown(buffer, snap);
+      _routinesMarkdown(buffer, snap);
+    }
+    if (snap.includesNutrition) {
+      _nutritionMarkdown(buffer, snap);
+      _waterMarkdown(buffer, snap);
+    }
     if (snap.includesBody) _bodyMarkdown(buffer, snap);
     return buffer.toString();
   }
@@ -153,15 +206,37 @@ class ExportService {
       if (sets.isNotEmpty) {
         buffer
           ..writeln()
-          ..writeln('| Egzersiz | Set | Kg | Reps | Isınma |')
-          ..writeln('|---|---|---|---|---|');
+          ..writeln('| Egzersiz | Set | Kg | Tekrar | RPE | Süre | Mesafe | Tip |')
+          ..writeln('|---|---|---|---|---|---|---|---|');
         for (final set in sets) {
           final name = snap.exerciseNames[set.exerciseId] ?? '?';
           final kg = set.weightKg?.toStringAsFixed(1) ?? '-';
           final reps = set.reps?.toString() ?? '-';
-          final warmup = set.isWarmup ? '✓' : '';
-          buffer.writeln('| $name | ${set.setNumber} | $kg | $reps | $warmup |');
+          final rpe = set.rpe == null ? '-' : _trimNum(set.rpe!);
+          final dur = set.durationSec == null ? '-' : _dur(set.durationSec);
+          final dist = set.distanceM == null ? '-' : _dist(set.distanceM);
+          buffer.writeln('| $name | ${set.setNumber} | $kg | $reps | '
+              '$rpe | $dur | $dist | ${_setTypeTr(set.setType)} |');
         }
+      }
+      buffer.writeln();
+    }
+  }
+
+  void _routinesMarkdown(StringBuffer buffer, _ExportSnapshot snap) {
+    if (snap.routines.isEmpty) return;
+    buffer..writeln('## Rutinler (${snap.routines.length})')..writeln();
+    for (final r in snap.routines) {
+      final day = r.scheduledWeekday == null
+          ? ''
+          : ' (${_weekdayTr[r.scheduledWeekday]})';
+      buffer.writeln('### ${r.name}$day');
+      for (final re in snap.routineExercises[r.id] ?? const []) {
+        final t = re.routineExercise;
+        final reps = (t.targetRepsMin != null && t.targetRepsMax != null)
+            ? '${t.targetRepsMin}-${t.targetRepsMax}'
+            : '-';
+        buffer.writeln('- ${re.exercise.name} — ${t.targetSets ?? '-'}×$reps');
       }
       buffer.writeln();
     }
@@ -212,6 +287,17 @@ class ExportService {
     }
   }
 
+  void _waterMarkdown(StringBuffer buffer, _ExportSnapshot snap) {
+    if (snap.water.isEmpty) return;
+    final days = snap.water.keys.toList()..sort((a, b) => b.compareTo(a));
+    buffer..writeln('## Su (${days.length} gün)')..writeln();
+    buffer..writeln('| Tarih | ml |')..writeln('|---|---|');
+    for (final d in days) {
+      buffer.writeln('| ${_isoDate.format(d)} | ${snap.water[d]} |');
+    }
+    buffer.writeln();
+  }
+
   void _bodyMarkdown(StringBuffer buffer, _ExportSnapshot snap) {
     buffer..writeln('## Vücut Ölçüleri (${snap.measurements.length} kayıt)')..writeln();
     if (snap.measurements.isEmpty) {
@@ -232,6 +318,8 @@ class ExportService {
   }
 
   String _num(double? v) => v == null ? '-' : v.toStringAsFixed(1);
+  String _trimNum(double v) =>
+      v == v.roundToDouble() ? v.round().toString() : v.toString();
 
   Future<String> exportJson(
     DateTime start,
@@ -256,6 +344,10 @@ class ExportService {
         'proteinGoal': profile.proteinGoal,
         'heightCm': profile.heightCm,
         'goalWeightKg': profile.goalWeightKg,
+        'birthDate': profile.birthDate?.toIso8601String(),
+        'gender': profile.gender,
+        'activityLevel': profile.activityLevel,
+        'waterGoalMl': profile.waterGoalMl,
       };
     }
 
@@ -266,6 +358,7 @@ class ExportService {
           'id': s.id,
           'date': s.date.toIso8601String(),
           'workoutType': s.workoutType,
+          'routineId': s.routineId,
           'durationMin': s.durationMin,
           'rpe': s.rpe,
           'notes': s.notes,
@@ -276,10 +369,36 @@ class ExportService {
                     'setNumber': set.setNumber,
                     'weightKg': set.weightKg,
                     'reps': set.reps,
+                    'rpe': set.rpe,
+                    'setType': set.setType,
+                    'isComplete': set.isComplete,
+                    'durationSec': set.durationSec,
+                    'distanceM': set.distanceM,
                     'isWarmup': set.isWarmup,
                     'restSeconds': set.restSeconds,
                   })
               .toList(),
+        };
+      }).toList();
+
+      data['routines'] = snap.routines.map((r) {
+        final exs = snap.routineExercises[r.id] ?? const [];
+        return {
+          'id': r.id,
+          'name': r.name,
+          'scheduledWeekday': r.scheduledWeekday,
+          'exercises': exs.map((re) {
+            final t = re.routineExercise;
+            return {
+              'exerciseId': re.exercise.id,
+              'exerciseName': re.exercise.name,
+              'orderIndex': t.orderIndex,
+              'targetSets': t.targetSets,
+              'targetRepsMin': t.targetRepsMin,
+              'targetRepsMax': t.targetRepsMax,
+              'targetRestSec': t.targetRestSec,
+            };
+          }).toList(),
         };
       }).toList();
     }
@@ -298,6 +417,10 @@ class ExportService {
                 'carb': l.computedCarb,
                 'fat': l.computedFat,
               })
+          .toList();
+
+      data['water'] = (snap.water.keys.toList()..sort())
+          .map((d) => {'date': _isoDate.format(d), 'ml': snap.water[d]})
           .toList();
     }
 
@@ -335,8 +458,9 @@ class ExportService {
       buffer.writeln('# WORKOUT_SETS');
       final rows = <List<dynamic>>[
         [
-          'date', 'phase', 'workoutType', 'exercise', 'setNumber',
-          'weightKg', 'reps', 'isWarmup', 'restSeconds',
+          'date', 'workoutType', 'exercise', 'setNumber', 'weightKg', 'reps',
+          'rpe', 'setType', 'isComplete', 'durationSec', 'distanceM',
+          'isWarmup', 'restSeconds',
         ],
       ];
       for (final s in snap.sessions) {
@@ -344,18 +468,50 @@ class ExportService {
         for (final set in sets) {
           rows.add([
             _isoDate.format(s.date),
-            s.phase,
             s.workoutType,
             snap.exerciseNames[set.exerciseId] ?? '',
             set.setNumber,
             set.weightKg ?? '',
             set.reps ?? '',
+            set.rpe ?? '',
+            set.setType,
+            set.isComplete,
+            set.durationSec ?? '',
+            set.distanceM ?? '',
             set.isWarmup,
             set.restSeconds ?? '',
           ]);
         }
       }
       buffer..writeln(converter.convert(rows))..writeln();
+
+      if (snap.routines.isNotEmpty) {
+        buffer.writeln('# ROUTINES');
+        final rRows = <List<dynamic>>[
+          [
+            'routine', 'weekday', 'exercise', 'orderIndex',
+            'targetSets', 'targetRepsMin', 'targetRepsMax', 'targetRestSec',
+          ],
+        ];
+        for (final r in snap.routines) {
+          for (final re in snap.routineExercises[r.id] ?? const []) {
+            final t = re.routineExercise;
+            rRows.add([
+              r.name,
+              r.scheduledWeekday == null
+                  ? ''
+                  : _weekdayTr[r.scheduledWeekday] ?? '',
+              re.exercise.name,
+              t.orderIndex,
+              t.targetSets ?? '',
+              t.targetRepsMin ?? '',
+              t.targetRepsMax ?? '',
+              t.targetRestSec ?? '',
+            ]);
+          }
+        }
+        buffer..writeln(converter.convert(rRows))..writeln();
+      }
     }
 
     if (snap.includesNutrition) {
@@ -376,6 +532,17 @@ class ExportService {
         ]);
       }
       buffer..writeln(converter.convert(rows))..writeln();
+
+      if (snap.water.isNotEmpty) {
+        buffer.writeln('# WATER');
+        final wRows = <List<dynamic>>[
+          ['date', 'ml'],
+        ];
+        for (final d in snap.water.keys.toList()..sort()) {
+          wRows.add([_isoDate.format(d), snap.water[d]]);
+        }
+        buffer..writeln(converter.convert(wRows))..writeln();
+      }
     }
 
     if (snap.includesBody) {

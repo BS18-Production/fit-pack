@@ -14,6 +14,7 @@ import '../home/providers/home_providers.dart';
 import '../workout/calorie_estimate.dart';
 import '../cloud/auth_service.dart';
 import 'backup_service.dart';
+import '../../core/router/app_routes.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -327,7 +328,7 @@ class _SettingsBody extends ConsumerWidget {
           title: 'Yemekler',
           subtitle: 'Besin veritabanı — değerleri gör, düzenle, ekle',
           trailing: const Icon(Icons.chevron_right_rounded),
-          onTap: () => context.push('/foods'),
+          onTap: () => context.push(AppRoutes.foods),
         ),
         const _SectionHeader('Verilerim'),
         _CloudAccountTile(),
@@ -350,7 +351,7 @@ class _SettingsBody extends ConsumerWidget {
           title: 'Veri Dışa Aktar (rapor)',
           subtitle: 'Okunabilir rapor — Markdown / JSON / CSV',
           trailing: const Icon(Icons.chevron_right_rounded),
-          onTap: () => context.push('/export'),
+          onTap: () => context.push(AppRoutes.export),
         ),
         const _SectionHeader('Hakkında'),
         _SettingTile(
@@ -449,7 +450,7 @@ class _CloudAccountTile extends ConsumerWidget {
           ? '${user.email ?? "Giriş yapıldı"} · buluta yedekle / geri yükle'
           : 'Giriş yap → verini buluta yedekle, yeni cihazda geri yükle',
       trailing: const Icon(Icons.chevron_right_rounded),
-      onTap: () => context.push('/cloud'),
+      onTap: () => context.push(AppRoutes.cloud),
     );
   }
 }

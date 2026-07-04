@@ -9,6 +9,7 @@ import '../../shared/widgets/app_state_views.dart';
 import 'routine_providers.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
+import '../../core/router/app_routes.dart';
 
 /// Antrenman ana ekranı (Antrenman V2 — Claude Design reskin).
 /// Özel header (tarih + başlık + geçmiş/kütüphane), Bu Hafta istatistik kartı,
@@ -57,7 +58,7 @@ class WorkoutListScreen extends ConsumerWidget {
                     AppSpacing.vGapSm,
                     if (routines.isEmpty)
                       _NoRoutines(
-                        onCreate: () => context.push('/workout/routine/new'),
+                        onCreate: () => context.push(AppRoutes.routineNew),
                       )
                     else
                       ...routines.map((r) => Padding(
@@ -67,7 +68,7 @@ class WorkoutListScreen extends ConsumerWidget {
                           )),
                     AppSpacing.vGapXs,
                     _NewRoutineButton(
-                      onTap: () => context.push('/workout/routine/new'),
+                      onTap: () => context.push(AppRoutes.routineNew),
                     ),
                   ],
                 );
@@ -131,19 +132,19 @@ class _Header extends StatelessWidget {
               tooltip: 'Hareket Kütüphanesi',
               icon: const Icon(Icons.menu_book_rounded),
               color: context.colors.onSurfaceVariant,
-              onPressed: () => context.push('/exercises'),
+              onPressed: () => context.push(AppRoutes.exercises),
             ),
             IconButton(
               tooltip: 'Geçmiş Antrenman Ekle',
               icon: const Icon(Icons.edit_calendar_rounded),
               color: context.colors.onSurfaceVariant,
-              onPressed: () => context.push('/workout/log-past'),
+              onPressed: () => context.push(AppRoutes.workoutLogPast),
             ),
             IconButton(
               tooltip: 'Antrenman Geçmişi',
               icon: const Icon(Icons.history_rounded),
               color: context.colors.onSurfaceVariant,
-              onPressed: () => context.push('/workout/history'),
+              onPressed: () => context.push(AppRoutes.workoutHistory),
             ),
           ],
         ),
@@ -259,18 +260,18 @@ class _EmptyWorkoutButton extends StatelessWidget {
         color: Colors.transparent,
         borderRadius: AppRadius.brXl,
         child: InkWell(
-          onTap: () => context.push('/workout/active'),
+          onTap: () => context.push(AppRoutes.workoutActive),
           borderRadius: AppRadius.brXl,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg + 2),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.add_rounded, color: Colors.white, size: 22),
+                const Icon(Icons.add_rounded, color: AppColors.onGradient, size: 22),
                 AppSpacing.hGapSm,
                 Text('Boş Antrenman Başlat',
                     style: context.texts.titleMedium?.copyWith(
-                      color: Colors.white,
+                      color: AppColors.onGradient,
                       fontWeight: FontWeight.w800,
                     )),
               ],
@@ -358,7 +359,7 @@ class _RoutineCard extends ConsumerWidget {
 
     return Card(
       child: InkWell(
-        onTap: () => context.push('/workout/routine/${routine.id}/preview'),
+        onTap: () => context.push(AppRoutes.routinePreview(routine.id)),
         borderRadius: AppRadius.brLg,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
@@ -413,7 +414,7 @@ class _RoutineCard extends ConsumerWidget {
                         color: context.colors.onSurfaceVariant
                             .withValues(alpha: 0.7)),
                     onPressed: () =>
-                        context.push('/workout/routine/${routine.id}/edit'),
+                        context.push(AppRoutes.routineEdit(routine.id)),
                   ),
                 ],
               ),
@@ -475,7 +476,7 @@ class _ResumeBanner extends ConsumerWidget {
         child: InkWell(
           borderRadius: AppRadius.brLg,
           onTap: () => context
-              .push('/workout/active/resume')
+              .push(AppRoutes.workoutActiveResume)
               .then((_) => ref.invalidate(activeDraftProvider)),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),

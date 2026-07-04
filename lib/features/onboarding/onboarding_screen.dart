@@ -9,6 +9,7 @@ import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../home/providers/home_providers.dart';
 import 'onboarding_calc.dart';
+import '../../core/router/app_routes.dart';
 
 /// İlk açılış akışı (P-10 — docs/03-ux-flows.md §3).
 ///
@@ -152,7 +153,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ref.invalidate(latestWeightProvider);
       ref.invalidate(weightTrendProvider);
 
-      if (mounted) context.go('/home');
+      if (mounted) context.go(AppRoutes.home);
     } catch (_) {
       // Kayıt başarısız — kullanıcı bilsin ve tekrar deneyebilsin (M-10:
       // eskiden hata sessizce yutulup düğme takılı kalıyordu).

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import '../../core/i18n/formatting.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../l10n/app_l10n.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
@@ -70,8 +71,8 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today =
-        DateFormat('EEEE, d MMMM', 'tr_TR').format(DateTime.now());
+    final l = AppL10n.of(context);
+    final today = context.dateFmt('EEEE, d MMMM').format(DateTime.now());
     final dateLabel = today[0].toUpperCase() + today.substring(1);
     return SafeArea(
       bottom: false,
@@ -84,7 +85,7 @@ class _Header extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('BUGÜN',
+                  Text(l.homeToday,
                       style: context.texts.labelSmall?.copyWith(
                         color: context.colors.primary,
                         fontWeight: FontWeight.w800,
@@ -96,13 +97,13 @@ class _Header extends StatelessWidget {
               ),
             ),
             IconButton(
-              tooltip: 'Veri dışa aktar',
+              tooltip: l.homeExportTooltip,
               icon: const Icon(Icons.ios_share_rounded),
               color: context.colors.onSurfaceVariant,
               onPressed: () => context.push(AppRoutes.export),
             ),
             IconButton(
-              tooltip: 'Ayarlar',
+              tooltip: l.homeSettingsTooltip,
               icon: const Icon(Icons.tune_rounded),
               color: context.colors.onSurfaceVariant,
               onPressed: () => context.push(AppRoutes.settings),
@@ -123,27 +124,39 @@ class _MomentumHero extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
     final streak = ref.watch(workoutStreakProvider).valueOrNull ?? 0;
     final month = ref.watch(last30WorkoutStatsProvider).valueOrNull;
     final c = context.colors;
-    final fmt = NumberFormat.decimalPattern('tr_TR');
+    final fmt = context.numFmt;
 
-    final kicker = streak > 0 ? 'Seri korunuyor' : 'Yeni hafta, yeni ritim';
+    final kicker = streak > 0 ? l.homeStreakKicker : l.homeStreakKickerZero;
     final title =
-        streak > 0 ? '$streak gündür\nritimdesin 🔥' : 'Serini başlat 💪';
+        streak > 0 ? l.homeStreakTitle(streak) : l.homeStreakTitleZero;
 
     return _Card(
       child: Stack(
         children: [
+          // Köşe ışıması — kenarı şeffafa eriyen yumuşak bloom (keskin disk
+          // değil). Kart onu kırpsa da belirgin dairesel kenar oluşmaz.
           Positioned(
-            right: -54,
-            top: -48,
-            child: Container(
-              width: 132,
-              height: 132,
-              decoration: BoxDecoration(
-                color: c.primary.withValues(alpha: 0.14),
-                shape: BoxShape.circle,
+            right: -70,
+            top: -70,
+            child: IgnorePointer(
+              child: Container(
+                width: 184,
+                height: 184,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    stops: const [0.0, 0.5, 1.0],
+                    colors: [
+                      c.primary.withValues(alpha: 0.20),
+                      c.primary.withValues(alpha: 0.06),
+                      c.primary.withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -160,14 +173,16 @@ class _MomentumHero extends ConsumerWidget {
               Row(
                 children: [
                   _MomentumStat(
-                      value: '${month?.sessions ?? 0}', label: 'antrenman'),
+                      value: '${month?.sessions ?? 0}',
+                      label: l.homeStatWorkouts),
                   AppSpacing.hGapSm,
                   _MomentumStat(
                       value: fmt.format(month?.volumeKg ?? 0),
-                      label: 'kg hacim'),
+                      label: l.homeStatVolume),
                   AppSpacing.hGapSm,
                   _MomentumStat(
-                      value: fmt.format(month?.kcalBurned ?? 0), label: 'kcal'),
+                      value: fmt.format(month?.kcalBurned ?? 0),
+                      label: l.homeStatKcal),
                 ],
               ),
             ],
@@ -239,6 +254,7 @@ class _TrainingDayCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
     final exCount =
         ref.watch(routineExercisesProvider(routine.id)).valueOrNull?.length;
     return DecoratedBox(
@@ -272,14 +288,14 @@ class _TrainingDayCard extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Bugün: ${routine.name}',
+                      Text(l.homeTodayRoutine(routine.name),
                           style: context.texts.titleLarge
                               ?.copyWith(color: AppColors.onGradient)),
                       const SizedBox(height: 4),
                       Text(
                           exCount != null
-                              ? 'Antrenmanı başlat · $exCount hareket'
-                              : 'Antrenmanı başlat',
+                              ? l.homeStartWithCount(exCount)
+                              : l.homeStart,
                           style: context.texts.bodySmall?.copyWith(
                               color: AppColors.onGradient
                                   .withValues(alpha: 0.82))),
@@ -336,9 +352,10 @@ class _StartWorkoutCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Antrenmana başla', style: context.texts.titleMedium),
+                    Text(AppL10n.of(context).homeStartTitle,
+                        style: context.texts.titleMedium),
                     const SizedBox(height: 2),
-                    Text('Rutin oluştur ya da boş antrenman başlat',
+                    Text(AppL10n.of(context).homeStartSubtitle,
                         style: context.texts.bodySmall?.copyWith(
                             color: context.colors.onSurfaceVariant)),
                   ],
@@ -359,6 +376,7 @@ class _RestDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     final muted = context.colors.onSurfaceVariant;
     return _Card(
       child: Column(
@@ -379,11 +397,11 @@ class _RestDayCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Bugün dinlenme günü',
+                    Text(l.homeRestTitle,
                         style: context.texts.titleMedium),
                     if (nextName != null) ...[
                       const SizedBox(height: 3),
-                      Text('Sıradaki: $nextName',
+                      Text(l.homeRestNext(nextName!),
                           style: context.texts.bodySmall
                               ?.copyWith(color: muted)),
                     ],
@@ -408,7 +426,7 @@ class _RestDayCard extends StatelessWidget {
                   Icon(Icons.bolt_rounded, color: muted, size: AppIconSize.sm),
                   AppSpacing.hGapMd,
                   Expanded(
-                    child: Text('Yine de antrenman yap',
+                    child: Text(l.homeWorkoutAnyway,
                         style: context.texts.labelLarge?.copyWith(
                             color: muted, fontWeight: FontWeight.w600)),
                   ),
@@ -431,15 +449,16 @@ class _WeekDashboard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
     final async = ref.watch(weekDashboardProvider);
     final data = async.valueOrNull;
-    final fmt = NumberFormat.decimalPattern('tr_TR');
+    final fmt = context.numFmt;
 
     final goalText = data == null
         ? ''
         : (data.scheduledDays != null
-            ? '${data.workouts}/${data.scheduledDays} antrenman tamam'
-            : '${data.workouts} antrenman');
+            ? l.homeWeekGoalDone(data.workouts, data.scheduledDays!)
+            : l.homeWeekGoalCount(data.workouts));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -447,7 +466,7 @@ class _WeekDashboard extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Bu Hafta', style: context.texts.headlineSmall),
+            Text(l.homeThisWeek, style: context.texts.headlineSmall),
             if (goalText.isNotEmpty)
               Flexible(
                 child: Text(goalText,
@@ -472,7 +491,7 @@ class _WeekDashboard extends ConsumerWidget {
               _MetricCard(
                 icon: Icons.fitness_center_rounded,
                 value: '${fmt.format(data?.volumeKg ?? 0)} kg',
-                caption: 'kaldırılan hacim',
+                caption: l.homeMetricVolume,
                 change: data?.volumeDeltaPct == null
                     ? null
                     : '${data!.volumeDeltaPct! >= 0 ? '+' : ''}${data.volumeDeltaPct}%',
@@ -482,7 +501,7 @@ class _WeekDashboard extends ConsumerWidget {
                 icon: Icons.local_fire_department_rounded,
                 tint: context.semantic.warning,
                 value: fmt.format(data?.kcalBurned ?? 0),
-                caption: 'kcal yakıldı',
+                caption: l.homeMetricKcal,
               ),
               _MetricCard(
                 icon: Icons.event_available_rounded,
@@ -490,7 +509,7 @@ class _WeekDashboard extends ConsumerWidget {
                 value: data?.scheduledDays != null
                     ? '${data?.workouts ?? 0}/${data!.scheduledDays}'
                     : '${data?.workouts ?? 0}',
-                caption: 'antrenman tamamlandı',
+                caption: l.homeMetricWorkouts,
               ),
               _MetricCard(
                 icon: Icons.egg_alt_outlined,
@@ -498,7 +517,7 @@ class _WeekDashboard extends ConsumerWidget {
                 value: data?.proteinAvgPct != null
                     ? '%${data!.proteinAvgPct}'
                     : '—',
-                caption: 'protein hedefi ort.',
+                caption: l.homeMetricProtein,
               ),
             ],
           ),
@@ -595,6 +614,7 @@ class _CompactNutrition extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
     final nutrition = ref.watch(todayNutritionProvider).valueOrNull;
     final profile = ref.watch(userProfileProvider).valueOrNull;
     if (nutrition == null) return Skeleton.card(height: 190);
@@ -617,8 +637,8 @@ class _CompactNutrition extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Bugünkü Beslenme', style: context.texts.titleLarge),
-                  Text('Düzenle',
+                  Text(l.homeNutritionTitle, style: context.texts.titleLarge),
+                  Text(l.commonEdit,
                       style: context.texts.labelMedium?.copyWith(
                           color: context.colors.primary,
                           fontWeight: FontWeight.w700)),
@@ -634,7 +654,7 @@ class _CompactNutrition extends ConsumerWidget {
                     child: Column(
                       children: [
                         MacroBar(
-                          label: 'Protein',
+                          label: l.macroProtein,
                           current: nutrition.protein,
                           goal: proteinGoal,
                           unit: 'g',
@@ -642,7 +662,7 @@ class _CompactNutrition extends ConsumerWidget {
                         ),
                         AppSpacing.vGapMd,
                         MacroBar(
-                          label: 'Karbonhidrat',
+                          label: l.macroCarbs,
                           current: nutrition.carb,
                           goal: derived.carb,
                           unit: 'g',
@@ -650,7 +670,7 @@ class _CompactNutrition extends ConsumerWidget {
                         ),
                         AppSpacing.vGapMd,
                         MacroBar(
-                          label: 'Yağ',
+                          label: l.macroFat,
                           current: nutrition.fat,
                           goal: derived.fat,
                           unit: 'g',
@@ -677,6 +697,7 @@ class _InsightCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
     final top = ref.watch(topProgressProvider).valueOrNull;
     if (top == null) return const SizedBox.shrink();
     final c = context.colors;
@@ -701,19 +722,19 @@ class _InsightCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('İÇGÖRÜ',
+                  Text(l.homeInsightLabel,
                       style: context.texts.labelSmall?.copyWith(
                         color: success,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.4,
                       )),
                   const SizedBox(height: 2),
-                  Text('En çok gelişen: ${top.name}',
+                  Text(l.homeInsightMostImproved(top.name),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: context.texts.titleSmall),
                   const SizedBox(height: 2),
-                  Text('Son 6 haftada tahmini 1RM\'in arttı',
+                  Text(l.homeInsightSubtitle,
                       style: context.texts.bodySmall
                           ?.copyWith(color: c.onSurfaceVariant)),
                 ],
@@ -765,6 +786,7 @@ class _WaterMini extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
     final accent = context.semantic.info;
     final goalMl =
         ref.watch(userProfileProvider).valueOrNull?.waterGoalMl ?? 2500;
@@ -797,8 +819,8 @@ class _WaterMini extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Su', style: context.texts.titleSmall),
-                      Text('$liters / $goalL L',
+                      Text(l.homeWaterTitle, style: context.texts.titleSmall),
+                      Text(l.homeWaterAmount(liters, goalL),
                           style: context.texts.bodySmall?.copyWith(
                               color: context.colors.onSurfaceVariant)),
                     ],
@@ -825,7 +847,7 @@ class _WaterMini extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               child: _MiniAction(
-                label: '+250 ml',
+                label: l.homeWaterAdd,
                 accent: accent,
                 onTap: () => _add(ref, 250),
               ),
@@ -869,6 +891,7 @@ class _WeightMini extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
     final trend = ref.watch(weightTrendProvider).valueOrNull;
     final c = context.colors;
     final success = context.semantic.success;
@@ -897,13 +920,14 @@ class _WeightMini extends ConsumerWidget {
                   ),
                   AppSpacing.hGapSm,
                   Expanded(
-                    child: Text('Son kilo', style: context.texts.titleSmall),
+                    child:
+                        Text(l.homeWeightTitle, style: context.texts.titleSmall),
                   ),
                 ],
               ),
               AppSpacing.vGapMd,
               if (trend?.latest == null)
-                Text('İlk kilonu gir',
+                Text(l.homeWeightEmpty,
                     style:
                         context.texts.titleSmall?.copyWith(color: c.primary))
               else ...[
@@ -914,7 +938,7 @@ class _WeightMini extends ConsumerWidget {
                     Text(trend!.latest!.toStringAsFixed(1),
                         style: context.texts.headlineSmall),
                     AppSpacing.hGapXs,
-                    Text('kg',
+                    Text(l.unitKg,
                         style: context.texts.bodySmall
                             ?.copyWith(color: c.onSurfaceVariant)),
                   ],

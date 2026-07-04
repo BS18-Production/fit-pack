@@ -1,0 +1,294 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Fit Pack",
+
+  "commonSave": "Save",
+  "commonCancel": "Cancel",
+  "commonSaved": "Saved",
+  "commonDelete": "Delete",
+  "commonEdit": "Edit",
+  "commonBack": "Back",
+  "commonNext": "Next",
+  "commonDone": "Done",
+  "commonRetry": "Retry",
+  "commonInvalidNumber": "Invalid number",
+  "commonRangeHint": "Range: {min} – {max}",
+  "@commonRangeHint": {
+    "placeholders": {
+      "min": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+  "commonRangeError": "Must be between {min} and {max}",
+  "@commonRangeError": {
+    "placeholders": {
+      "min": { "type": "String" },
+      "max": { "type": "String" }
+    }
+  },
+
+  "macroProtein": "Protein",
+  "macroCarbs": "Carbs",
+  "macroFat": "Fat",
+  "macroCalories": "Calories",
+
+  "navHome": "Home",
+  "navWorkout": "Workout",
+  "navNutrition": "Nutrition",
+  "navProgress": "Progress",
+
+  "homeToday": "TODAY",
+  "homeExportTooltip": "Export data",
+  "homeSettingsTooltip": "Settings",
+  "homeStreakKicker": "On a streak",
+  "homeStreakKickerZero": "New week, new rhythm",
+  "homeStreakTitle": "{count}-day\nstreak 🔥",
+  "@homeStreakTitle": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "homeStreakTitleZero": "Start your streak 💪",
+  "homeStatWorkouts": "workouts",
+  "homeStatVolume": "kg volume",
+  "homeStatKcal": "kcal",
+
+  "homeTodayRoutine": "Today: {name}",
+  "@homeTodayRoutine": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "homeStartWithCount": "Start workout · {count} exercises",
+  "@homeStartWithCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "homeStart": "Start workout",
+  "homeStartTitle": "Start a workout",
+  "homeStartSubtitle": "Create a routine or start an empty workout",
+  "homeRestTitle": "Rest day today",
+  "homeRestNext": "Next: {name}",
+  "@homeRestNext": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "homeWorkoutAnyway": "Work out anyway",
+
+  "homeThisWeek": "This Week",
+  "homeWeekGoalDone": "{done}/{total} workouts done",
+  "@homeWeekGoalDone": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "homeWeekGoalCount": "{count, plural, =1{1 workout} other{{count} workouts}}",
+  "@homeWeekGoalCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "homeMetricVolume": "volume lifted",
+  "homeMetricKcal": "kcal burned",
+  "homeMetricWorkouts": "workouts done",
+  "homeMetricProtein": "avg protein goal",
+
+  "homeNutritionTitle": "Today's Nutrition",
+
+  "nutritionKcalLeft": "kcal left",
+  "nutritionKcalOver": "kcal over",
+
+  "homeInsightLabel": "INSIGHT",
+  "homeInsightMostImproved": "Most improved: {name}",
+  "@homeInsightMostImproved": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "homeInsightSubtitle": "Your estimated 1RM rose in the last 6 weeks",
+
+  "homeWaterTitle": "Water",
+  "homeWaterAmount": "{current} / {goal} L",
+  "@homeWaterAmount": {
+    "placeholders": {
+      "current": { "type": "String" },
+      "goal": { "type": "String" }
+    }
+  },
+  "homeWaterAdd": "+250 ml",
+  "homeWeightTitle": "Latest weight",
+  "homeWeightEmpty": "Log your first weight",
+  "unitKg": "kg",
+
+  "settingsTitle": "Settings",
+  "settingsProfileNotFound": "Profile not found",
+  "settingsProfileNotFoundHint": "Try restarting the app",
+  "settingsLoadError": "Couldn't load settings",
+
+  "settingsSectionGoals": "Goals",
+  "settingsSectionBody": "Body",
+  "settingsSectionAppearance": "Appearance",
+  "settingsSectionNutrition": "Nutrition",
+  "settingsSectionMyData": "My Data",
+  "settingsSectionAbout": "About",
+
+  "settingsKcalGoal": "Calorie Goal",
+  "settingsProteinGoal": "Protein Goal",
+  "settingsHeight": "Height",
+  "settingsGoalWeight": "Goal Weight",
+  "settingsGender": "Gender",
+  "settingsBirthDate": "Birth Date",
+  "settingsActivityLevel": "Activity Level",
+  "settingsTheme": "Theme",
+  "settingsLanguage": "Language",
+  "settingsFoods": "Foods",
+  "settingsFoodsSubtitle": "Food database — view, edit and add values",
+  "settingsBackup": "Back Up to Device",
+  "settingsBackupSubtitle": "Save your data as a file (Drive/Files) — restorable",
+  "settingsRestore": "Restore from Backup",
+  "settingsRestoreSubtitle": "Restore a backup file you saved earlier",
+  "settingsExport": "Export Data (report)",
+  "settingsExportSubtitle": "Readable report — Markdown / JSON / CSV",
+  "settingsCloudAccount": "Cloud Account",
+  "settingsCloudSignedIn": "{email} · back up / restore to cloud",
+  "@settingsCloudSignedIn": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "settingsCloudSignedInFallback": "Signed in",
+  "settingsCloudSignedOut": "Sign in → back up to cloud, restore on a new device",
+  "settingsAboutSubtitle": "Version {version} · Personal fitness tracking",
+  "@settingsAboutSubtitle": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+
+  "settingsGenderMale": "Male",
+  "settingsGenderFemale": "Female",
+  "settingsBirthDateValue": "{date} · age {age}",
+  "@settingsBirthDateValue": {
+    "placeholders": {
+      "date": { "type": "String" },
+      "age": { "type": "int" }
+    }
+  },
+  "settingsPickBirthDate": "Pick your birth date",
+
+  "settingsDailyEnergyTitle": "Estimated Daily Burn",
+  "settingsDailyEnergyValue": "~{total} kcal/day  ·  resting {bmr}",
+  "@settingsDailyEnergyValue": {
+    "placeholders": {
+      "total": { "type": "int" },
+      "bmr": { "type": "int" }
+    }
+  },
+  "settingsDailyEnergyMissing": "To calculate, enter: {fields}",
+  "@settingsDailyEnergyMissing": {
+    "placeholders": {
+      "fields": { "type": "String" }
+    }
+  },
+  "settingsMissingWeight": "weight",
+  "settingsMissingHeight": "height",
+  "settingsMissingBirthDate": "birth date",
+  "settingsMissingGender": "gender",
+
+  "settingsBackupFailed": "Couldn't create backup: {error}",
+  "@settingsBackupFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "settingsRestoreConfirmTitle": "Restore from backup",
+  "settingsRestoreConfirmMessage": "This will replace all your current data with this backup. This can't be undone. Continue?",
+  "settingsRestoreConfirmAction": "Restore",
+  "settingsRestoreFailedTitle": "Restore failed",
+  "settingsRestoreFailedMessage": "Something went wrong, your current data is safe. The app will close — just reopen it.",
+  "settingsRestoreFailed": "Restore failed: {error}",
+  "@settingsRestoreFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "settingsRestoredTitle": "Restored",
+  "settingsRestoredMessage": "Your data has been restored. The app will close so changes take effect — just reopen it.",
+
+  "themeSystem": "System (device)",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+
+  "languageSystem": "System (device)",
+  "languageEnglish": "English",
+  "languageTurkish": "Türkçe",
+
+  "activitySedentary": "Sedentary",
+  "activityLight": "Lightly active",
+  "activityModerate": "Moderately active",
+  "activityActive": "Active",
+  "activityVeryActive": "Very active",
+
+  "onbWelcomeTitle": "Welcome to Fit Pack",
+  "onbWelcomeTagline": "Your workouts, nutrition and progress — all in one place.",
+  "onbWelcomeHint": "A few quick questions to build your plan — takes under a minute.",
+  "onbAboutYouTitle": "Let's get to know you",
+  "onbAboutYouSubtitle": "Your weight is enough for a goal suggestion — the rest is optional (gender and birth date improve the daily energy estimate).",
+  "onbCurrentWeight": "Current weight",
+  "onbGoalWeightOptional": "Goal weight (optional)",
+  "onbBirthDateOptional": "Birth date (optional)",
+  "commonSelect": "Select",
+  "onbYourGoal": "Your goal",
+  "phaseCut": "Lose Weight",
+  "phaseCutDesc": "Burn fat, keep muscle",
+  "phaseMaintain": "Maintain",
+  "phaseMaintainDesc": "Sustain your current shape",
+  "phaseBulk": "Build Muscle",
+  "phaseBulkDesc": "Gain muscle, get stronger",
+  "onbPlanReadyTitle": "Your plan is ready ✨",
+  "onbPlanReadySubtitle": "Suggested from your goal — adjust freely. You can change these anytime in Settings.",
+  "onbDailyKcal": "Daily calorie goal",
+  "onbDailyProtein": "Daily protein goal",
+  "onbProjectionCut": "At this pace, you could reach {goal} kg in roughly {weeks} weeks.",
+  "@onbProjectionCut": {
+    "placeholders": {
+      "goal": { "type": "String" },
+      "weeks": { "type": "int" }
+    }
+  },
+  "onbProjectionBulk": "At this pace, you could build up to {goal} kg in roughly {weeks} weeks.",
+  "@onbProjectionBulk": {
+    "placeholders": {
+      "goal": { "type": "String" },
+      "weeks": { "type": "int" }
+    }
+  },
+  "onbProjectionNote": "An estimate — real progress varies from person to person.",
+  "onbWhatsInsideTitle": "What's inside",
+  "onbWhatsInsideSubtitle": "Four tabs, everything in its place:",
+  "onbTourHomeDesc": "Your day at a glance: streak, plan, nutrition, water",
+  "onbTourWorkoutDesc": "Build routines, log your sets, review past sessions",
+  "onbTourNutritionDesc": "Add meals: search, scan a barcode, track macros",
+  "onbTourProgressDesc": "Log weight and measurements, watch the trend",
+  "onbStart": "Let's go",
+  "onbGoalsNumberError": "Enter your calorie and protein goals as numbers",
+  "onbSaveError": "Couldn't save — try again",
+
+  "hintWorkout": "Create your first routine here — or start an empty workout right away.",
+  "hintNutrition": "Add your first meal: search by typing or scan a barcode.",
+  "hintProgress": "Log your first weight — your chart starts here.",
+  "hintGotIt": "Got it",
+
+  "emptyRestartHint": "Try restarting the app",
+
+  "unitAge": "{age} yr",
+  "@unitAge": {
+    "placeholders": {
+      "age": { "type": "int" }
+    }
+  }
+}

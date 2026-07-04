@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../l10n/app_l10n.dart';
 
 /// Modern beslenme/ilerleme görselleştirme bileşenleri.
 ///
@@ -69,7 +70,11 @@ class CalorieRing extends StatelessWidget {
                     over ? '+${remaining.abs()}' : '$remaining',
                     style: titleStyle?.copyWith(color: active),
                   ),
-                  Text(over ? 'kcal fazla' : 'kcal kaldı', style: subStyle),
+                  Text(
+                      over
+                          ? AppL10n.of(context).nutritionKcalOver
+                          : AppL10n.of(context).nutritionKcalLeft,
+                      style: subStyle),
                 ],
               ),
             ),

@@ -40,13 +40,8 @@ const activityFactors = <String, double>{
   'veryActive': 1.9, // çok ağır / fiziksel iş
 };
 
-const activityLabelsTr = <String, String>{
-  'sedentary': 'Hareketsiz',
-  'light': 'Az hareketli',
-  'moderate': 'Orta',
-  'active': 'Aktif',
-  'veryActive': 'Çok aktif',
-};
+// Görünen aktiflik etiketleri docs/14 ile lokalize edildi →
+// `core/i18n/enum_labels.dart` `activityLabel(l, key)` + `activityLevelKeys`.
 
 double activityFactor(String? level) => activityFactors[level] ?? 1.55;
 

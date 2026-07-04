@@ -100,7 +100,14 @@ class _Glow extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: RadialGradient(
-            colors: [color, color.withValues(alpha: 0)],
+            // 3 duraklı yumuşak düşüş: parlak çekirdek + uzun, kenarı
+            // belirsiz kuyruk → "ışık sızması" hissi (lineer kenar yok).
+            stops: const [0.0, 0.45, 1.0],
+            colors: [
+              color,
+              color.withValues(alpha: color.a * 0.32),
+              color.withValues(alpha: 0),
+            ],
           ),
         ),
       ),

@@ -37,9 +37,5 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
 final themeModeProvider =
     NotifierProvider<ThemeModeNotifier, ThemeMode>(ThemeModeNotifier.new);
 
-/// Türkçe etiket — Ayarlar tile'ı ve seçici için.
-String themeModeLabelTr(ThemeMode m) => switch (m) {
-      ThemeMode.system => 'Sistem (cihaz)',
-      ThemeMode.light => 'Açık',
-      ThemeMode.dark => 'Koyu',
-    };
+// Görünen etiketler docs/14 ile lokalize edildi → `core/i18n/enum_labels.dart`
+// `themeModeLabel(l, mode)`.

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_mode_provider.dart';
+import 'core/i18n/locale_provider.dart';
 import 'core/router/app_router.dart';
+import 'l10n/app_l10n.dart';
 import 'features/home/providers/home_providers.dart';
 import 'features/nutrition/nutrition_screen.dart' show selectedDateProvider;
 import 'features/workout/routine_providers.dart';
@@ -27,12 +29,18 @@ class _FitPackAppState extends ConsumerState<FitPackApp> {
   Widget build(BuildContext context) {
     // Kullanıcı tema tercihi (Sistem/Açık/Koyu) — Ayarlar'dan değişir.
     final themeMode = ref.watch(themeModeProvider);
+    // Dil tercihi (docs/14). null = cihazı takip et; supportedLocales'te
+    // `en` ilk olduğundan desteklenmeyen diller İngilizce'ye düşer.
+    final locale = ref.watch(localeProvider);
     return MaterialApp.router(
       title: 'Fit Pack',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
+      locale: locale,
+      localizationsDelegates: AppL10n.localizationsDelegates,
+      supportedLocales: AppL10n.supportedLocales,
       routerConfig: _router,
       builder: (context, child) =>
           _DayRolloverGuard(child: child ?? const SizedBox.shrink()),

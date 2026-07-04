@@ -102,7 +102,11 @@ class BodyMetricsScreen extends ConsumerWidget {
                     );
                     if (!ok) return;
                     await ref.read(bodyDaoProvider).deleteMeasurement(m.id);
+                    // Kilo verisini okuyan TÜM provider'lar tazelenir (H-05):
+                    // Home "Son Kilo", Ayarlar TDEE, seans kalori tahmini.
                     ref.invalidate(allMeasurementsProvider);
+                    ref.invalidate(weightTrendProvider);
+                    ref.invalidate(latestWeightProvider);
                   },
                 ),
               )),
@@ -517,7 +521,10 @@ class _AddMeasurementSheetState extends State<_AddMeasurementSheet> {
               bodyFatPct: Value(fat),
             ),
           );
+      // Kilo verisini okuyan TÜM provider'lar tazelenir (H-05).
       widget.ref.invalidate(allMeasurementsProvider);
+      widget.ref.invalidate(weightTrendProvider);
+      widget.ref.invalidate(latestWeightProvider);
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {

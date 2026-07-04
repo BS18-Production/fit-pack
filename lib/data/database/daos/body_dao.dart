@@ -18,9 +18,12 @@ class BodyDao extends DatabaseAccessor<AppDatabase> with _$BodyDaoMixin {
             ..limit(1))
           .getSingleOrNull();
 
+  /// [start, end) aralığındaki ölçümler — bitiş HARİÇ (CODE_REVIEW H-01).
   Future<List<BodyMeasurement>> getMeasurementsInRange(DateTime start, DateTime end) =>
       (select(bodyMeasurements)
-            ..where((m) => m.date.isBetweenValues(start, end))
+            ..where((m) =>
+                m.date.isBiggerOrEqualValue(start) &
+                m.date.isSmallerThanValue(end))
             ..orderBy([(m) => OrderingTerm.asc(m.date)]))
           .get();
 

@@ -99,9 +99,10 @@ Map<int, DayActivity> buildMonthActivity({
 /// `context.go` ile route değiştirir (IndexedStack yok) → ekran dispose olur.
 final monthActivityProvider = FutureProvider.autoDispose
     .family<Map<int, DayActivity>, DateTime>((ref, month) async {
+  // Aralık kuralı [start, end): bitiş = sonraki ayın ilk günü, HARİÇ tutulur
+  // (DAO sorguları H-01 gereği < end kullanır — eski -1ms hilesi gereksiz).
   final start = DateTime(month.year, month.month, 1);
-  final end = DateTime(month.year, month.month + 1, 1)
-      .subtract(const Duration(milliseconds: 1));
+  final end = DateTime(month.year, month.month + 1, 1);
 
   final nut = ref.watch(nutritionDaoProvider);
   final wo = ref.watch(workoutDaoProvider);

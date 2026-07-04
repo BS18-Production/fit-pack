@@ -188,8 +188,10 @@ class _Summary {
 final _summaryProvider =
     FutureProvider.family<_Summary, int>((ref, sessionId) async {
   final dao = ref.watch(workoutDaoProvider);
-  final sessions = await dao.getAllSessions();
-  final session = sessions.firstWhere((s) => s.id == sessionId);
+  final session = await dao.getSessionById(sessionId);
+  if (session == null) {
+    throw StateError('Seans bulunamadı: $sessionId');
+  }
   final sets = await dao.getSetsForSession(sessionId);
   final allEx = {for (final e in await dao.getAllExercises()) e.id: e.name};
 

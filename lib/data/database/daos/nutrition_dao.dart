@@ -80,11 +80,16 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
   }
 
   // === Food Logs ===
+  // Tarih aralığı KURALI (CODE_REVIEW H-01): [start, end) — başlangıç dahil,
+  // bitiş HARİÇ. `isBetweenValues` SQL BETWEEN üretir (iki uç dahil); tam gece
+  // yarısına yazılan kayıtlar (tarih seçici / "dünü kopyala") iki güne birden
+  // sayılırdı. Bu yüzden aralık sorgularında >= start AND < end kullanılır.
   Future<List<FoodLog>> getLogsForDate(DateTime date) {
     final start = DateTime(date.year, date.month, date.day);
     final end = start.add(const Duration(days: 1));
     return (select(foodLogs)
-          ..where((l) => l.date.isBetweenValues(start, end))
+          ..where((l) =>
+              l.date.isBiggerOrEqualValue(start) & l.date.isSmallerThanValue(end))
           ..orderBy([(l) => OrderingTerm.asc(l.mealType)]))
         .get();
   }
@@ -98,7 +103,8 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
     final query = select(foodLogs).join([
       innerJoin(foods, foods.id.equalsExp(foodLogs.foodId)),
     ])
-      ..where(foodLogs.date.isBetweenValues(start, end))
+      ..where(foodLogs.date.isBiggerOrEqualValue(start) &
+          foodLogs.date.isSmallerThanValue(end))
       ..orderBy([OrderingTerm.asc(foodLogs.id)]);
     final rows = await query.get();
     return rows
@@ -109,9 +115,12 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
         .toList();
   }
 
+  /// [start, end) aralığındaki kayıtlar (bitiş hariç — H-01 kuralı).
   Future<List<FoodLog>> getLogsInRange(DateTime start, DateTime end) =>
       (select(foodLogs)
-            ..where((l) => l.date.isBetweenValues(start, end))
+            ..where((l) =>
+                l.date.isBiggerOrEqualValue(start) &
+                l.date.isSmallerThanValue(end))
             ..orderBy([(l) => OrderingTerm.desc(l.date)]))
           .get();
 
@@ -142,7 +151,9 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
   Future<Map<DateTime, int>> getWaterInRange(
       DateTime start, DateTime end) async {
     final rows = await (select(waterIntake)
-          ..where((w) => w.date.isBetweenValues(start, end)))
+          ..where((w) =>
+              w.date.isBiggerOrEqualValue(start) &
+              w.date.isSmallerThanValue(end)))
         .get();
     return {
       for (final w in rows)

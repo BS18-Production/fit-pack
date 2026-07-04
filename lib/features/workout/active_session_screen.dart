@@ -117,6 +117,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     with WidgetsBindingObserver {
   final List<_SessionExercise> _exercises = [];
   late String _title;
+  // Rutin bağı: normalde route'tan gelir; resume modunda TASLAKTAN geri
+  // yüklenir (M-01 — widget.routineId resume'da null olur, bağ kopmasın).
+  int? _routineId;
   late DateTime _startedAt;
   late DateTime _sessionDate; // seansın yazılacağı mantıksal gün
   bool _loading = true;
@@ -137,6 +140,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   void initState() {
     super.initState();
     final now = DateTime.now();
+    _routineId = widget.routineId;
     _startedAt = widget.manualDate ?? now;
     _sessionDate = DateTime(_startedAt.year, _startedAt.month, _startedAt.day);
     _title = _isManual ? 'Geçmiş Antrenman' : 'Boş Antrenman';
@@ -166,7 +170,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   WorkoutDraft _buildDraft() => WorkoutDraft(
         title: _title,
-        routineId: widget.routineId,
+        routineId: _routineId,
         startedAtMs: _startedAt.millisecondsSinceEpoch,
         sessionDateMs: _sessionDate.millisecondsSinceEpoch,
         exercises: _exercises
@@ -204,6 +208,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   Future<void> _restoreFromDraft(WorkoutDraft d) async {
     final dao = ref.read(workoutDaoProvider);
     _title = d.title;
+    _routineId = d.routineId;
     _startedAt = d.startedAt;
     _sessionDate = d.sessionDate;
     for (final de in d.exercises) {
@@ -402,7 +407,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
           date: Value(started),
           phase: const Value(0),
           workoutType: Value(_title),
-          routineId: Value(widget.routineId),
+          routineId: Value(_routineId),
           startedAt: Value(started),
           endedAt: Value(ended),
           durationMin: _isManual
@@ -552,7 +557,12 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                             padding: const EdgeInsets.fromLTRB(
                                 AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 96),
                             children: [
+                              // ObjectKey ŞART (H-02): key'siz listede Flutter
+                              // durumu konuma göre eşler; ortadan hareket
+                              // silinince alttaki hareketin metin kutuları
+                              // silinenin yazısını devralırdı (ekran ≠ kayıt).
                               ..._exercises.map((e) => _ExerciseBlock(
+                                    key: ObjectKey(e),
                                     ex: e,
                                     onToggle: (s) => _toggleDone(e, s),
                                     onCycleType: _cycleType,
@@ -756,7 +766,8 @@ class _ExerciseBlock extends StatelessWidget {
   final void Function(_SetEntry) onCycleType;
   final VoidCallback onAddSet, onRemoveSet, onRemoveExercise, onChanged;
   const _ExerciseBlock(
-      {required this.ex,
+      {super.key,
+      required this.ex,
       required this.onToggle,
       required this.onCycleType,
       required this.onAddSet,
@@ -875,7 +886,10 @@ class _ExerciseBlock extends StatelessWidget {
                 ],
               ),
             ),
+            // Set satırları da kimlikli — set silme/ekleme kaydırmasında
+            // TextFormField durumu doğru sette kalsın (H-02).
             ...ex.sets.asMap().entries.map((e) => _SetRow(
+                  key: ObjectKey(e.value),
                   index: e.key,
                   set: e.value,
                   measure: ex.measure,
@@ -1022,7 +1036,8 @@ class _SetRow extends StatelessWidget {
   final String? previous;
   final VoidCallback onToggle, onCycleType, onChanged;
   const _SetRow(
-      {required this.index,
+      {super.key,
+      required this.index,
       required this.set,
       required this.measure,
       required this.previous,

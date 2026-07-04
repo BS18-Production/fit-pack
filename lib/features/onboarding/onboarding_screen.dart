@@ -108,10 +108,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _finish() async {
     if (_saving) return;
+    // Hedefler sayı olarak okunamıyorsa kaydetmeye hiç girme — kullanıcıya
+    // söyle (M-10: eski int.parse boş alanda sessizce çöküyordu).
+    final kcal = int.tryParse(_kcalCtrl.text);
+    final protein = int.tryParse(_proteinCtrl.text);
+    if (kcal == null || protein == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Kalori ve protein hedefini sayı olarak gir')));
+      return;
+    }
     setState(() => _saving = true);
     try {
-      final kcal = int.parse(_kcalCtrl.text);
-      final protein = int.parse(_proteinCtrl.text);
       final height = double.tryParse(_heightCtrl.text.replaceAll(',', '.'));
       final goalWeight =
           double.tryParse(_goalWeightCtrl.text.replaceAll(',', '.'));
@@ -139,13 +146,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             );
       }
 
-      // Home ekranı taze profili görsün.
+      // Home ekranı taze profili + kiloyu görsün (H-05: kilo okuyan tüm
+      // provider'lar).
       ref.invalidate(userProfileProvider);
       ref.invalidate(latestWeightProvider);
+      ref.invalidate(weightTrendProvider);
 
       if (mounted) context.go('/home');
+    } catch (_) {
+      // Kayıt başarısız — kullanıcı bilsin ve tekrar deneyebilsin (M-10:
+      // eskiden hata sessizce yutulup düğme takılı kalıyordu).
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Kaydedilemedi — tekrar dene')));
+      }
     } finally {
-      if (mounted) _saving = false;
+      if (mounted) setState(() => _saving = false);
     }
   }
 

@@ -178,11 +178,19 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
   Future<List<WorkoutSession>> getAllSessions() =>
       (select(workoutSessions)..orderBy([(s) => OrderingTerm.desc(s.date)])).get();
 
+  /// [start, end) aralığındaki seanslar — bitiş HARİÇ (CODE_REVIEW H-01:
+  /// gece yarısı kayıtları iki döneme birden sayılmasın).
   Future<List<WorkoutSession>> getSessionsByDateRange(DateTime start, DateTime end) =>
       (select(workoutSessions)
-            ..where((s) => s.date.isBetweenValues(start, end))
+            ..where((s) =>
+                s.date.isBiggerOrEqualValue(start) &
+                s.date.isSmallerThanValue(end))
             ..orderBy([(s) => OrderingTerm.desc(s.date)]))
           .get();
+
+  Future<WorkoutSession?> getSessionById(int id) =>
+      (select(workoutSessions)..where((s) => s.id.equals(id)))
+          .getSingleOrNull();
 
   Future<WorkoutSession?> getLastSession() =>
       (select(workoutSessions)
@@ -273,7 +281,8 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
     final count = countAll();
     final query = selectOnly(workoutSessions)
       ..addColumns([count])
-      ..where(workoutSessions.date.isBetweenValues(start, end));
+      ..where(workoutSessions.date.isBiggerOrEqualValue(start) &
+          workoutSessions.date.isSmallerThanValue(end));
     final result = await query.getSingle();
     return result.read(count) ?? 0;
   }

@@ -5,10 +5,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_dimens.dart';
 
-/// Fit Pack tema sistemi — Material 3, "Pro" (Indigo/Teal), Manrope.
+/// Fit Pack tema sistemi — Material 3, "Pro" (Indigo/Teal), Plus Jakarta Sans.
 /// Dark öncelikli; light de tam destekli (sistem takip eder).
-/// Font: Manrope (Claude Design onaylı tasarım fontu — yumuşak, modern,
-/// tam Türkçe glyph desteği). Inter'den geçiş 2026-06-21.
+/// Font: Plus Jakarta Sans (premium/glass reskin fontu — geometrik-hümanist,
+/// modern, tam Türkçe glyph desteği). Geçiş: Inter → Manrope → Plus Jakarta
+/// Sans (2026-07, premium yön).
 class AppTheme {
   AppTheme._();
 
@@ -32,24 +33,24 @@ class AppTheme {
       colorScheme: scheme,
     );
 
-    // Manrope type scale — okunaklı, hiyerarşik. Tasarım (Claude Design)
-    // ağırlıkları daha kalın kullanıyor (başlıklar 800); ona yaklaşıldı.
-    final text = GoogleFonts.manropeTextTheme(base.textTheme).copyWith(
-      displaySmall: GoogleFonts.manrope(
+    // Plus Jakarta Sans type scale — okunaklı, hiyerarşik. Başlıklar kalın
+    // (800); premium/glass yönüne uygun geometrik-hümanist karakter.
+    final text = GoogleFonts.plusJakartaSansTextTheme(base.textTheme).copyWith(
+      displaySmall: GoogleFonts.plusJakartaSans(
           fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: -0.5),
-      headlineMedium: GoogleFonts.manrope(
+      headlineMedium: GoogleFonts.plusJakartaSans(
           fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.5),
-      headlineSmall: GoogleFonts.manrope(
+      headlineSmall: GoogleFonts.plusJakartaSans(
           fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.3),
-      titleLarge: GoogleFonts.manrope(fontSize: 19, fontWeight: FontWeight.w700),
-      titleMedium: GoogleFonts.manrope(fontSize: 16, fontWeight: FontWeight.w700),
-      titleSmall: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w700),
-      bodyLarge: GoogleFonts.manrope(fontSize: 16, fontWeight: FontWeight.w500),
-      bodyMedium: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w500),
-      bodySmall: GoogleFonts.manrope(fontSize: 12.5, fontWeight: FontWeight.w500),
-      labelLarge: GoogleFonts.manrope(fontSize: 14, fontWeight: FontWeight.w700),
-      labelMedium: GoogleFonts.manrope(fontSize: 12.5, fontWeight: FontWeight.w600),
-      labelSmall: GoogleFonts.manrope(fontSize: 11.5, fontWeight: FontWeight.w600),
+      titleLarge: GoogleFonts.plusJakartaSans(fontSize: 19, fontWeight: FontWeight.w700),
+      titleMedium: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700),
+      titleSmall: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700),
+      bodyLarge: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w500),
+      bodyMedium: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w500),
+      bodySmall: GoogleFonts.plusJakartaSans(fontSize: 12.5, fontWeight: FontWeight.w500),
+      labelLarge: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700),
+      labelMedium: GoogleFonts.plusJakartaSans(fontSize: 12.5, fontWeight: FontWeight.w600),
+      labelSmall: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600),
     ).apply(
       bodyColor: scheme.onSurface,
       displayColor: scheme.onSurface,

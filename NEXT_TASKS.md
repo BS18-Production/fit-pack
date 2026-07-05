@@ -25,20 +25,28 @@ en+tr tarih verisi yükler; `app.dart` locale + delegates bağlı.
 - [x] `CalorieRing` "kcal kaldı/fazla" (`progress_indicators.dart`)
 - [x] Ölü kod temizliği: `themeModeLabelTr`, `activityLabelsTr` kaldırıldı
 
-**Kalan UI (görünürlük sırasına göre batch'ler — HER BİRİ ayrı):**
-- [ ] **Beslenme** (`nutrition_screen.dart` — büyük; tarih çubuğu okları zaten
-      cam-uyumlu, metinler kaldı) + `barcode_flow.dart`
-- [ ] **Onboarding** (`onboarding_screen.dart` + `onboarding_calc.dart` — hedef
-      adları/açıklamaları)
-- [ ] **Antrenman kümesi (EN BÜYÜK):** `workout_list_screen`, `routine_builder`,
-      `active_session_screen`, `workout_preview`, `workout_history_screen`,
-      egzersiz kütüphanesi/detay, `calorie_estimate` etiketleri
-- [ ] **İlerleme/Vücut/Aktivite:** `body_metrics_screen`, `activity_calendar`
-- [ ] **Dışa Aktar/Bulut:** `export_screen`, `cloud/*` (auth ekranları)
-- [ ] **Ortak widget + dialog'lar:** `app_state_views` (Empty/Error/confirm/
-      restart), `foods` ekranı, snackbar/exception mesajları
-- [ ] Kalan `DateFormat(...,'tr_TR')` / `NumberFormat(...'tr_TR')` → `context.*`
-      (grep: `grep -rn "tr_TR" lib`)
+**✅ UI MIGRATION TAMAM (2026-07-05, aynı oturum):** Beslenme+barkod+Yemekler,
+Onboarding (V2 ile), **Antrenman kümesinin tamamı** (liste/builder/aktif
+seans/geçmiş/özet/önizleme/kütüphane/detay), İlerleme/Vücut/Aktivite takvimi,
+Export, Cloud, ortak widget'lar (Empty/Error/confirm/restart/SheetHeader).
+`tr_TR` sabiti lib'de sıfır; haftaiçi adları locale'den
+(`context.weekdayName/weekdayShort`). Birim etiketleri (porsiyon/adet…) locale
+seçenekli + eski kayıtlı değeri koruyan `unitOptionsWith`. ~300 ARB anahtarı.
+analyze 0 · test 123/123 · EN+TR emülatörde doğrulandı (Antrenman, Beslenme,
+İlerleme ekran görüntüleri).
+
+**✅ Emoji/sembol denetimi (2026-07-05):** UI'daki tüm emojiler temalı ikonlara
+çevrildi: streak 🔥→ alev ikonu (warning tint), 💪→ bolt (indigo), onboarding
+✨→ auto_awesome (teal), Rekorlar 🏆🏋️📈→ ikon-rozet, kilo rozeti ↓↑ metin oku →
+arrow ikonları. Kural CONVENTIONS §5b'ye eklendi (emoji yasak).
+Emülatörde doğrulandı.
+
+**Kalan küçük işler (i18n):**
+- [ ] Servis katmanı istisna/paylaşım metinleri (context yok): `backup_service`
+      (FormatException mesajları + paylaşım metni), `cloud_backup_service`
+      (StateError). Doğru yol: tipli exception → UI'da eşle.
+- [ ] `export_service` rapor içeriği Türkçe üretiliyor (başlıklar/gün adları)
+      — dışa aktarım dili tercihi ayrı karar.
 
 **Faz B (içerik i18n — ertelendi, çok turlu):** şema v9 + çift dilli seed
 (egzersiz/besin adları). Detay docs/14 §Faz B. Ayrı PRD gerekir.

@@ -4,12 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
+import '../../l10n/app_l10n.dart';
 import 'barcode_scan_screen.dart';
 
 /// Barkod akışı (docs/07-nutrition-v2.md §6.3):
 /// tara → lokal `foods.barcode` eşleşir mi → yoksa OpenFoodFacts → ekle.
 /// Dönen `Food`: çağıran onu seçer/listeler. null = iptal/elle ekle/bulunamadı.
 Future<Food?> scanBarcodeToFood(BuildContext context, WidgetRef ref) async {
+  // await'lerden önce yakala — sonrasında context.mounted kontrolleri var
+  // ama l güvenle taşınabilir.
+  final l = AppL10n.of(context);
   final code = await Navigator.of(context, rootNavigator: true).push<String>(
     MaterialPageRoute(
       builder: (_) => const BarcodeScanScreen(),
@@ -25,7 +29,7 @@ Future<Food?> scanBarcodeToFood(BuildContext context, WidgetRef ref) async {
   final existing = await dao.getFoodByBarcode(code);
   if (existing != null) {
     if (context.mounted) {
-      _snack(context, '${existing.name} (zaten kayıtlı)');
+      _snack(context, l.nutritionAlreadySaved(existing.name));
     }
     return existing;
   }
@@ -45,17 +49,17 @@ Future<Food?> scanBarcodeToFood(BuildContext context, WidgetRef ref) async {
         WidgetsBinding.instance
             .addPostFrameCallback((_) => Navigator.of(ctx).pop());
       }
-      return const PopScope(
+      return PopScope(
         canPop: false,
         child: AlertDialog(
           content: Row(
             children: [
-              SizedBox(
+              const SizedBox(
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(strokeWidth: 2)),
-              SizedBox(width: 16),
-              Expanded(child: Text('OpenFoodFacts sorgulanıyor…')),
+              const SizedBox(width: 16),
+              Expanded(child: Text(l.nutritionOffQuerying)),
             ],
           ),
         ),
@@ -73,8 +77,7 @@ Future<Food?> scanBarcodeToFood(BuildContext context, WidgetRef ref) async {
   if (!context.mounted) return null;
 
   if (off == null) {
-    _snack(context,
-        'Ürün bulunamadı ($code). Elle ekleyebilirsin.');
+    _snack(context, l.nutritionProductNotFound(code));
     return null;
   }
 
@@ -91,7 +94,7 @@ Future<Food?> scanBarcodeToFood(BuildContext context, WidgetRef ref) async {
   ));
   final food = await dao.getFoodById(id);
   if (context.mounted && food != null) {
-    _snack(context, '${food.name} eklendi (OpenFoodFacts)');
+    _snack(context, l.nutritionAddedFromOff(food.name));
   }
   return food;
 }

@@ -92,11 +92,11 @@ class AppL10nEn extends AppL10n {
 
   @override
   String homeStreakTitle(int count) {
-    return '$count-day\nstreak 🔥';
+    return '$count-day\nstreak';
   }
 
   @override
-  String get homeStreakTitleZero => 'Start your streak 💪';
+  String get homeStreakTitleZero => 'Start your streak';
 
   @override
   String get homeStatWorkouts => 'workouts';
@@ -176,6 +176,962 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get nutritionKcalOver => 'kcal over';
+
+  @override
+  String get commonToday => 'Today';
+
+  @override
+  String get commonAdd => 'Add';
+
+  @override
+  String get commonClose => 'Close';
+
+  @override
+  String get commonRequired => 'Required';
+
+  @override
+  String get commonMustBePositive => 'Must be greater than 0';
+
+  @override
+  String get commonNotNegative => 'Can\'t be negative';
+
+  @override
+  String get commonEnterName => 'Enter a name';
+
+  @override
+  String get nutritionPickDate => 'Pick a date';
+
+  @override
+  String get nutritionAddFood => 'Add Food';
+
+  @override
+  String get nutritionLoadError => 'Couldn\'t load nutrition logs';
+
+  @override
+  String get nutritionCopyYesterday => 'Copy yesterday\'s meals';
+
+  @override
+  String get nutritionCopyPrevDay => 'Copy the previous day\'s meals';
+
+  @override
+  String get nutritionCopyEmpty => 'No entries on the previous day';
+
+  @override
+  String nutritionCopied(int count) {
+    return '$count entries copied';
+  }
+
+  @override
+  String get nutritionCopyFailed => 'Couldn\'t copy — try again';
+
+  @override
+  String get nutritionPrevDay => 'Previous day';
+
+  @override
+  String get nutritionNextDay => 'Next day';
+
+  @override
+  String get mealBreakfast => 'Breakfast';
+
+  @override
+  String get mealLunch => 'Lunch';
+
+  @override
+  String get mealDinner => 'Dinner';
+
+  @override
+  String get mealSnack => 'Snack';
+
+  @override
+  String get mealSnackShort => 'Snack';
+
+  @override
+  String nutritionAddTo(String meal) {
+    return 'Add to $meal';
+  }
+
+  @override
+  String get nutritionNoEntries => 'No entries yet';
+
+  @override
+  String get nutritionAddFailed => 'Couldn\'t add — try again';
+
+  @override
+  String get nutritionOffNoResults =>
+      'No results on OpenFoodFacts. You can add it manually.';
+
+  @override
+  String get nutritionMultiAddHint => 'You can add more than one';
+
+  @override
+  String nutritionSessionAdded(int count, String name) {
+    return '$count added · last: $name';
+  }
+
+  @override
+  String get nutritionSearchHint => 'Search foods…';
+
+  @override
+  String get nutritionScanBarcode => 'Scan barcode';
+
+  @override
+  String get nutritionAddCustom => 'Add your own food';
+
+  @override
+  String get nutritionOffSearching => 'Searching OpenFoodFacts…';
+
+  @override
+  String nutritionOffSearchFor(String query) {
+    return 'Search packaged product online: \"$query\"';
+  }
+
+  @override
+  String nutritionOffHeader(String query, int count) {
+    return 'OpenFoodFacts · \"$query\" ($count)';
+  }
+
+  @override
+  String get nutritionNoFoods => 'No foods';
+
+  @override
+  String nutritionNotFound(String query) {
+    return '\"$query\" not found';
+  }
+
+  @override
+  String get nutritionNotInListHint =>
+      'If it\'s not in the list, add it yourself';
+
+  @override
+  String nutritionUnitApprox(String unit, int grams) {
+    return '1 $unit ≈ $grams g';
+  }
+
+  @override
+  String get nutritionCustomTitle => 'Your own food';
+
+  @override
+  String get nutritionCustomHelp =>
+      'Enter the values for one unit (e.g. 1 portion of \"3-Egg Omelette\"): how many grams plus that amount\'s kcal/macros. It gets converted to /100g, saved and reused. No unit? Pick \"(no unit)\".';
+
+  @override
+  String get nutritionFoodName => 'Food name';
+
+  @override
+  String get nutritionUnit => 'Unit';
+
+  @override
+  String get nutritionNoUnitOption => '(no unit — grams only)';
+
+  @override
+  String nutritionOneUnit(String unit) {
+    return '1 $unit';
+  }
+
+  @override
+  String get nutritionPortionGrams => 'Portion (g)';
+
+  @override
+  String nutritionUnitGramsQuestion(String unit) {
+    return 'How many grams is 1 $unit?';
+  }
+
+  @override
+  String get nutritionTotalKcal => 'Total kcal';
+
+  @override
+  String get nutritionAdding => 'Adding…';
+
+  @override
+  String nutritionAlreadySaved(String name) {
+    return '$name (already saved)';
+  }
+
+  @override
+  String get nutritionOffQuerying => 'Querying OpenFoodFacts…';
+
+  @override
+  String nutritionProductNotFound(String code) {
+    return 'Product not found ($code). You can add it manually.';
+  }
+
+  @override
+  String nutritionAddedFromOff(String name) {
+    return '$name added (OpenFoodFacts)';
+  }
+
+  @override
+  String get scanTitle => 'Scan Barcode';
+
+  @override
+  String get scanTorchOn => 'Flashlight';
+
+  @override
+  String get scanTorchOff => 'Turn off flashlight';
+
+  @override
+  String get scanPermissionDenied =>
+      'Camera permission denied. Allow it in Settings or add the food manually.';
+
+  @override
+  String get scanCameraError =>
+      'Camera couldn\'t start. You can add the food manually.';
+
+  @override
+  String get scanFrameHint => 'Line up the barcode in the frame';
+
+  @override
+  String get scanManualAdd => 'Add manually';
+
+  @override
+  String get foodsNew => 'New food';
+
+  @override
+  String foodsAdded(String name) {
+    return '$name added';
+  }
+
+  @override
+  String get foodsUpdated => 'Updated';
+
+  @override
+  String foodsHasLogs(String name, int count) {
+    return '\"$name\" has $count log entries — delete those first';
+  }
+
+  @override
+  String get foodsDeleteTitle => 'Delete food';
+
+  @override
+  String foodsDeleteMessage(String name) {
+    return 'Remove \"$name\" from the food database?';
+  }
+
+  @override
+  String foodsDeleted(String name) {
+    return '$name deleted';
+  }
+
+  @override
+  String get foodsPer100g => 'Per 100 g';
+
+  @override
+  String get foodsReadOnlyNote =>
+      'Built-in food — can\'t be edited (the database is protected).';
+
+  @override
+  String get foodsLoadError => 'Couldn\'t load foods';
+
+  @override
+  String get foodsEmptyHint => 'Add a new food from the bottom right';
+
+  @override
+  String get foodsEditTitle => 'Edit food';
+
+  @override
+  String get foodsFormHelp =>
+      'Values are entered per 100 grams. If you pick a unit, also enter \"grams per 1 unit\" — then you can log by piece/slice.';
+
+  @override
+  String get foodsKcalPer100 => 'Calories /100g (kcal)';
+
+  @override
+  String get foodsProteinPer100 => 'Protein /100g (g)';
+
+  @override
+  String get foodsCarbPer100 => 'Carbs /100g (g)';
+
+  @override
+  String get foodsFatPer100 => 'Fat /100g (g)';
+
+  @override
+  String get commonYesterday => 'Yesterday';
+
+  @override
+  String get commonDate => 'Date';
+
+  @override
+  String get commonArchive => 'Archive';
+
+  @override
+  String get commonNone => 'None';
+
+  @override
+  String get unitMinShort => 'min';
+
+  @override
+  String get unitReps => 'reps';
+
+  @override
+  String get labelSets => 'Sets';
+
+  @override
+  String get labelReps => 'Reps';
+
+  @override
+  String get labelRest => 'Rest';
+
+  @override
+  String get labelDuration => 'Duration';
+
+  @override
+  String get labelVolume => 'Volume';
+
+  @override
+  String get workoutLoadRoutinesError => 'Couldn\'t load routines';
+
+  @override
+  String get workoutLibrary => 'Exercise Library';
+
+  @override
+  String get workoutAddPast => 'Add Past Workout';
+
+  @override
+  String get workoutHistory => 'Workout History';
+
+  @override
+  String get workoutThisWeekCaps => 'THIS WEEK';
+
+  @override
+  String get workoutTotalVolumeCaps => 'TOTAL VOLUME';
+
+  @override
+  String get workoutStartEmpty => 'Start Empty Workout';
+
+  @override
+  String get workoutNewRoutine => 'Create New Routine';
+
+  @override
+  String get workoutMyRoutines => 'My Routines';
+
+  @override
+  String get workoutNoRoutines => 'No routines yet';
+
+  @override
+  String get workoutNoRoutinesMsg =>
+      'Create your own workout routine — pick exercises, set target sets and reps.';
+
+  @override
+  String get workoutCreateRoutine => 'Create routine';
+
+  @override
+  String get workoutResumeTitle => 'Workout in progress';
+
+  @override
+  String workoutResumeSub(int ex, int sets) {
+    return '$ex exercises · $sets sets';
+  }
+
+  @override
+  String get workoutDraftDelete => 'Discard draft';
+
+  @override
+  String get workoutDraftDeleteMsg =>
+      'Discard the in-progress workout draft? Your entered sets won\'t be saved.';
+
+  @override
+  String workoutExerciseCount(int count) {
+    return '$count exercises';
+  }
+
+  @override
+  String workoutSetCount(int count) {
+    return '$count sets';
+  }
+
+  @override
+  String get workoutAddExercise => 'Add Exercise';
+
+  @override
+  String get rbEditTitle => 'Edit Routine';
+
+  @override
+  String get rbNewTitle => 'New Routine';
+
+  @override
+  String get rbNameCaps => 'ROUTINE NAME';
+
+  @override
+  String get rbNameHint => 'e.g. Push Day';
+
+  @override
+  String get rbNoExercises => 'No exercises yet';
+
+  @override
+  String get rbWeekday => 'Weekly day (optional)';
+
+  @override
+  String get rbWeekdayHelper =>
+      'If set, Home suggests this routine on that day';
+
+  @override
+  String get rbNoDay => 'No day';
+
+  @override
+  String get rbRestBetweenSets => 'Rest between sets';
+
+  @override
+  String get rbNameRequired => 'Give the routine a name';
+
+  @override
+  String get rbNeedExercise => 'Add at least one exercise';
+
+  @override
+  String get rbSaveError => 'Couldn\'t save routine — try again';
+
+  @override
+  String get rbTargetHint => 'target sets×reps';
+
+  @override
+  String get rbSave => 'Save Routine';
+
+  @override
+  String get whLoadError => 'Couldn\'t load history';
+
+  @override
+  String get whEmptyTitle => 'No workouts yet';
+
+  @override
+  String get whEmptyMsg => 'Your first completed workout will appear here';
+
+  @override
+  String get whEditDate => 'Edit date';
+
+  @override
+  String get whDeleteTitle => 'Delete workout';
+
+  @override
+  String get whDeleteMsg =>
+      'This session and all its sets will be deleted. Can\'t be undone.';
+
+  @override
+  String get whSetsLoadError => 'Couldn\'t load sets';
+
+  @override
+  String get whNoSets => 'No set records';
+
+  @override
+  String get whCalorieNote =>
+      'Calories are an estimate — based on weight, duration and intensity (RPE).';
+
+  @override
+  String get wsTitle => 'Workout Summary';
+
+  @override
+  String get wsLoadError => 'Couldn\'t load summary';
+
+  @override
+  String get wsDone => 'Workout Complete';
+
+  @override
+  String get wsExercises => 'Exercises';
+
+  @override
+  String get wsDoneBtn => 'Done';
+
+  @override
+  String get rpFallback => 'Routine';
+
+  @override
+  String get rpArchiveTitle => 'Archive routine';
+
+  @override
+  String get rpArchiveMsg =>
+      'Remove this routine from the list? Past workouts are kept.';
+
+  @override
+  String get rpStart => 'Start Workout';
+
+  @override
+  String get rpLoadError => 'Couldn\'t load routine';
+
+  @override
+  String get rpEmptyTitle => 'This routine is empty';
+
+  @override
+  String get rpEmptyMsg => 'Add exercises via Edit';
+
+  @override
+  String get asPastWorkout => 'Past Workout';
+
+  @override
+  String get asEmptyWorkout => 'Empty Workout';
+
+  @override
+  String get asPastEntry => 'Past entry';
+
+  @override
+  String get asFinish => 'Finish';
+
+  @override
+  String get asExitTitle => 'Leave workout?';
+
+  @override
+  String get asExitMsg => 'Your entered sets won\'t be saved.';
+
+  @override
+  String get asKeepGoing => 'Keep going';
+
+  @override
+  String get asLeave => 'Leave';
+
+  @override
+  String get asRemoveExercise => 'Remove exercise';
+
+  @override
+  String asRemoveExerciseMsg(String name) {
+    return '$name and your entered sets will be deleted.';
+  }
+
+  @override
+  String get asRemove => 'Remove';
+
+  @override
+  String get asNeedOneSet => 'Enter at least one set first';
+
+  @override
+  String get asSaveError => 'Couldn\'t save workout — try again';
+
+  @override
+  String get asStartFromLibrary => 'Start by adding exercises from the library';
+
+  @override
+  String get asAddSet => 'Add Set';
+
+  @override
+  String get asRemoveSet => 'Remove';
+
+  @override
+  String get asHowTo => 'How to do it';
+
+  @override
+  String get asExerciseOptions => 'Exercise options';
+
+  @override
+  String get asSkip => 'Skip';
+
+  @override
+  String get hdrSet => 'SET';
+
+  @override
+  String get hdrPrev => 'PREV';
+
+  @override
+  String get hdrKg => 'KG';
+
+  @override
+  String get hdrReps => 'REPS';
+
+  @override
+  String get hdrTime => 'TIME';
+
+  @override
+  String get hdrDistance => 'DISTANCE';
+
+  @override
+  String get rpeTitle => 'RPE — Perceived Exertion';
+
+  @override
+  String get rpeHelp =>
+      'You rate how hard the set felt from 1 to 10. It\'s based on \"how many more reps could you have done?\". Optional — you can leave it empty.';
+
+  @override
+  String get rpe10 => 'Last rep — couldn\'t have done one more';
+
+  @override
+  String get rpe9 => 'Could have done 1 more rep';
+
+  @override
+  String get rpe8 => '2 reps left in reserve';
+
+  @override
+  String get rpe7 => '3-4 reps in reserve';
+
+  @override
+  String get rpe6 => 'Easy / warm-up set';
+
+  @override
+  String get elPickTitle => 'Pick Exercise';
+
+  @override
+  String get elSearchHint => 'Search exercises…';
+
+  @override
+  String get elLoadError => 'Couldn\'t load exercises';
+
+  @override
+  String get elNotFoundTitle => 'No exercises found';
+
+  @override
+  String get elFilterHint => 'Change the filter or add a new exercise';
+
+  @override
+  String get elNew => 'New Exercise';
+
+  @override
+  String get elAdded => 'Exercise added';
+
+  @override
+  String get elNameLabel => 'Exercise name (e.g. Cable Row)';
+
+  @override
+  String get elCategory => 'Category';
+
+  @override
+  String get elPrimaryMuscle => 'Primary muscle';
+
+  @override
+  String get elEquipment => 'Equipment';
+
+  @override
+  String get elMeasureType => 'Measurement type';
+
+  @override
+  String get measureWeightReps => 'kg × reps';
+
+  @override
+  String get measureReps => 'reps';
+
+  @override
+  String get measureTime => 'time';
+
+  @override
+  String get measureDistance => 'distance';
+
+  @override
+  String get edFallbackTitle => 'Exercise';
+
+  @override
+  String get edArchiveTitle => 'Archive exercise';
+
+  @override
+  String edArchiveMsg(String name) {
+    return 'Remove $name from the library? Past records are kept.';
+  }
+
+  @override
+  String get edTabHow => 'How';
+
+  @override
+  String get edTabHistory => 'History';
+
+  @override
+  String get edTabChart => 'Chart';
+
+  @override
+  String get edTabRecords => 'Records';
+
+  @override
+  String get edMusclesWorked => 'Muscles Worked';
+
+  @override
+  String get edPrimary => 'Primary';
+
+  @override
+  String get edSecondary => 'Secondary';
+
+  @override
+  String get edNoInstructions => 'No instructions';
+
+  @override
+  String get edNoInstructionsMsg => 'No step-by-step guide for this exercise';
+
+  @override
+  String get edHowTo => 'How To';
+
+  @override
+  String get edLevelBeginner => 'Beginner';
+
+  @override
+  String get edLevelIntermediate => 'Intermediate';
+
+  @override
+  String get edLevelExpert => 'Advanced';
+
+  @override
+  String get edForcePush => 'Push';
+
+  @override
+  String get edForcePull => 'Pull';
+
+  @override
+  String get edForceStatic => 'Static';
+
+  @override
+  String get edLoadError => 'Couldn\'t load';
+
+  @override
+  String get edAppearsHere =>
+      'Appears here once you use this exercise in a workout';
+
+  @override
+  String get edSetHistory => 'Set history';
+
+  @override
+  String get edChartEmpty => 'Not enough data for a chart';
+
+  @override
+  String get edChartEmptyMsg =>
+      'Log kg×reps at least twice to see the progress chart';
+
+  @override
+  String get edE1rmTitle => 'Estimated 1RM progress';
+
+  @override
+  String get edEpley => 'Epley: kg × (1 + reps/30)';
+
+  @override
+  String get edNoPr => 'No records yet';
+
+  @override
+  String get edNoPrMsg =>
+      'Your personal records collect here once you log kg×reps';
+
+  @override
+  String get edBestE1rm => 'Estimated 1RM';
+
+  @override
+  String get edHeaviest => 'Heaviest set';
+
+  @override
+  String get edTotalLogs => 'Total logged';
+
+  @override
+  String get errorGeneric => 'Something went wrong';
+
+  @override
+  String get commonCloseApp => 'Close App';
+
+  @override
+  String get bmAddMeasurement => 'Add Measurement';
+
+  @override
+  String get bmLoadError => 'Couldn\'t load measurements';
+
+  @override
+  String get bmEmptyTitle => 'No measurements yet';
+
+  @override
+  String get bmEmptyMsg =>
+      'Track your progress by adding your first body measurement';
+
+  @override
+  String get bmAddFirst => 'Add your first measurement';
+
+  @override
+  String get bmPastMeasurements => 'Past Measurements';
+
+  @override
+  String get bmDeleteTitle => 'Delete measurement';
+
+  @override
+  String bmDeleteMsg(String date) {
+    return 'Delete the measurement from $date?';
+  }
+
+  @override
+  String get bmWeightTrend => 'Weight Trend';
+
+  @override
+  String bmGoalLine(String kg) {
+    return 'Goal $kg kg';
+  }
+
+  @override
+  String get bmLatest => 'Latest Measurements';
+
+  @override
+  String get bmWeight => 'Weight';
+
+  @override
+  String get bmWaist => 'Waist';
+
+  @override
+  String get bmArm => 'Arm';
+
+  @override
+  String get bmChest => 'Chest';
+
+  @override
+  String get bmHip => 'Hip';
+
+  @override
+  String get bmNeck => 'Neck';
+
+  @override
+  String get bmBodyFat => 'Body Fat';
+
+  @override
+  String get bmNeedOneValue => 'Enter at least one value';
+
+  @override
+  String get bmSaveFailed => 'Couldn\'t save — try again';
+
+  @override
+  String get bmNewMeasurement => 'New Measurement';
+
+  @override
+  String get bmSheetSubtitle => 'Empty fields aren\'t saved';
+
+  @override
+  String get actTitle => 'Activity';
+
+  @override
+  String get actLoadError => 'Couldn\'t load calendar';
+
+  @override
+  String get actNoEntry => 'No entries for this day.';
+
+  @override
+  String get exTitle => 'Export Data';
+
+  @override
+  String get exNoData => 'No data to export in the selected range';
+
+  @override
+  String get exShareFailed => 'Sharing failed, try again';
+
+  @override
+  String get exHeadline => 'Export your data, analyze it with AI';
+
+  @override
+  String get exFormat => 'Format';
+
+  @override
+  String get exDateRange => 'Date Range';
+
+  @override
+  String get exWeek => '1 Week';
+
+  @override
+  String get exMonth => '1 Month';
+
+  @override
+  String get exAll => 'All';
+
+  @override
+  String get exScope => 'Scope';
+
+  @override
+  String get exScopeAll => 'All';
+
+  @override
+  String get exPreparing => 'Preparing…';
+
+  @override
+  String get exShareBtn => 'Export & Share';
+
+  @override
+  String get cloudSignupOk => 'Registered. Verify your email, then sign in.';
+
+  @override
+  String cloudConnErr(String err) {
+    return 'Couldn\'t connect: $err';
+  }
+
+  @override
+  String get cloudGoogleErr =>
+      'Google sign-in isn\'t configured yet or was cancelled.';
+
+  @override
+  String get cloudSignIn => 'Sign in';
+
+  @override
+  String get cloudCreateAccount => 'Create account';
+
+  @override
+  String get cloudIntro =>
+      'Back your data up to the cloud, sign in on a new device and restore. Your data still lives primarily on your device.';
+
+  @override
+  String get cloudEmail => 'Email';
+
+  @override
+  String get cloudPassword => 'Password (min 6 characters)';
+
+  @override
+  String get cloudSignInBtn => 'Sign In';
+
+  @override
+  String get cloudSignUpBtn => 'Sign Up';
+
+  @override
+  String get cloudGoogle => 'Continue with Google';
+
+  @override
+  String get cloudNoAccount => 'No account? Sign up';
+
+  @override
+  String get cloudHaveAccount => 'Already have an account? Sign in';
+
+  @override
+  String get cloudBackedUp => 'Backed up to cloud';
+
+  @override
+  String cloudBackupFailed(String err) {
+    return 'Backup failed: $err';
+  }
+
+  @override
+  String get cloudRestoreTitle => 'Restore from cloud';
+
+  @override
+  String get cloudRestoreMsg =>
+      'This will replace all data on this device with the cloud backup. This can\'t be undone. Continue?';
+
+  @override
+  String get cloudRestoredMsg =>
+      'Cloud backup loaded. The app will close — just reopen it.';
+
+  @override
+  String get cloudNoBackup => 'No cloud backup yet';
+
+  @override
+  String cloudLastBackup(String date) {
+    return 'Last cloud backup: $date';
+  }
+
+  @override
+  String get cloudBackupBtn => 'Back Up to Cloud';
+
+  @override
+  String get cloudRestoreBtn => 'Restore from Cloud';
+
+  @override
+  String get cloudSignOut => 'Sign Out';
+
+  @override
+  String get unitPortion => 'portion';
+
+  @override
+  String get unitPiece => 'piece';
+
+  @override
+  String get unitSlice => 'slice';
+
+  @override
+  String get unitBowl => 'bowl';
+
+  @override
+  String get unitWaterGlass => 'glass';
+
+  @override
+  String get unitCup => 'cup';
+
+  @override
+  String get unitTablespoon => 'tablespoon';
+
+  @override
+  String get unitHandful => 'handful';
+
+  @override
+  String get unitClove => 'clove';
+
+  @override
+  String get unitScoop => 'scoop';
+
+  @override
+  String get unitCan => 'can';
 
   @override
   String get homeInsightLabel => 'INSIGHT';
@@ -472,7 +1428,7 @@ class AppL10nEn extends AppL10n {
   String get phaseBulkDesc => 'Gain muscle, get stronger';
 
   @override
-  String get onbPlanReadyTitle => 'Your plan is ready ✨';
+  String get onbPlanReadyTitle => 'Your plan is ready';
 
   @override
   String get onbPlanReadySubtitle =>

@@ -4,13 +4,14 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/utils/format.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/workout_dao.dart';
 import '../../data/providers.dart';
+import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'exercise_library_screen.dart' show libraryExercisesProvider;
 import 'muscle_map.dart';
@@ -32,24 +33,24 @@ class ExerciseDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
     final ex = ref.watch(_exerciseProvider(exerciseId)).valueOrNull;
     return DefaultTabController(
       length: 4,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(ex?.name ?? 'Hareket'),
+          title: Text(ex?.name ?? l.edFallbackTitle),
           actions: [
             if (ex?.isCustom == true)
               IconButton(
-                tooltip: 'Arşivle',
+                tooltip: l.commonArchive,
                 icon: const Icon(Icons.archive_outlined),
                 onPressed: () async {
                   final ok = await confirmAction(
                     context,
-                    title: 'Hareketi arşivle',
-                    message:
-                        '${ex!.name} kütüphaneden kaldırılsın mı? Geçmiş kayıtlar korunur.',
-                    confirmLabel: 'Arşivle',
+                    title: l.edArchiveTitle,
+                    message: l.edArchiveMsg(ex!.name),
+                    confirmLabel: l.commonArchive,
                   );
                   if (!ok) return;
                   await ref.read(workoutDaoProvider).archiveExercise(ex.id);
@@ -58,11 +59,11 @@ class ExerciseDetailScreen extends ConsumerWidget {
                 },
               ),
           ],
-          bottom: const TabBar(isScrollable: true, tabs: [
-            Tab(text: 'Nasıl'),
-            Tab(text: 'Geçmiş'),
-            Tab(text: 'Grafik'),
-            Tab(text: 'Rekorlar'),
+          bottom: TabBar(isScrollable: true, tabs: [
+            Tab(text: l.edTabHow),
+            Tab(text: l.edTabHistory),
+            Tab(text: l.edTabChart),
+            Tab(text: l.edTabRecords),
           ]),
         ),
         body: TabBarView(children: [
@@ -169,17 +170,20 @@ class ExerciseHowToContent extends StatelessWidget {
         // Çalışan kaslar — vücut diyagramı (veriden renklenir).
         if (ex.primaryMuscle != null || muscles.isNotEmpty) ...[
           AppSpacing.vGapLg,
-          Text('Çalışan Kaslar', style: context.texts.titleSmall),
+          Text(AppL10n.of(context).edMusclesWorked,
+              style: context.texts.titleSmall),
           AppSpacing.vGapSm,
           Center(
               child: MuscleMap(
                   primaryMuscle: ex.primaryMuscle, muscles: muscles)),
           AppSpacing.vGapXs,
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            _legendDot(context, context.colors.primary, 'Birincil'),
+            _legendDot(context, context.colors.primary,
+                AppL10n.of(context).edPrimary),
             AppSpacing.hGapLg,
             _legendDot(context,
-                context.colors.primary.withValues(alpha: 0.4), 'İkincil'),
+                context.colors.primary.withValues(alpha: 0.4),
+                AppL10n.of(context).edSecondary),
           ]),
         ],
         AppSpacing.vGapLg,
@@ -187,20 +191,22 @@ class ExerciseHowToContent extends StatelessWidget {
         if (ex.level != null) ...[
           AppSpacing.vGapMd,
           Wrap(spacing: AppSpacing.sm, children: [
-            _Chip(_levelTr(ex.level!)),
-            if (ex.force != null) _Chip(_forceTr(ex.force!)),
+            _Chip(_levelLabel(AppL10n.of(context), ex.level!)),
+            if (ex.force != null)
+              _Chip(_forceLabel(AppL10n.of(context), ex.force!)),
           ]),
         ],
         AppSpacing.vGapLg,
         if (steps.isEmpty)
-          const EmptyState(
+          EmptyState(
             icon: Icons.menu_book_rounded,
-            title: 'Talimat yok',
-            message: 'Bu hareket için adım adım açıklama bulunmuyor',
+            title: AppL10n.of(context).edNoInstructions,
+            message: AppL10n.of(context).edNoInstructionsMsg,
             compact: true,
           )
         else ...[
-          Text('Nasıl Yapılır', style: context.texts.titleSmall),
+          Text(AppL10n.of(context).edHowTo,
+              style: context.texts.titleSmall),
           AppSpacing.vGapMd,
           ...steps.asMap().entries.map((e) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -254,17 +260,17 @@ class ExerciseHowToContent extends StatelessWidget {
     ]);
   }
 
-  static String _levelTr(String l) => switch (l) {
-        'beginner' => 'Başlangıç',
-        'intermediate' => 'Orta',
-        'expert' => 'İleri',
-        _ => l,
+  static String _levelLabel(AppL10n l, String level) => switch (level) {
+        'beginner' => l.edLevelBeginner,
+        'intermediate' => l.edLevelIntermediate,
+        'expert' => l.edLevelExpert,
+        _ => level,
       };
-  static String _forceTr(String f) => switch (f) {
-        'push' => 'İtme',
-        'pull' => 'Çekme',
-        'static' => 'Statik',
-        _ => f,
+  static String _forceLabel(AppL10n l, String force) => switch (force) {
+        'push' => l.edForcePush,
+        'pull' => l.edForcePull,
+        'static' => l.edForceStatic,
+        _ => force,
       };
 }
 
@@ -297,23 +303,25 @@ class _HistoryTab extends ConsumerWidget {
     final async = ref.watch(_historyProvider(exerciseId));
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, _) => const Center(child: Text('Yüklenemedi')),
+      error: (_, _) =>
+          Center(child: Text(AppL10n.of(context).edLoadError)),
       data: (points) {
-        final df = DateFormat('d MMM yyyy', 'tr_TR');
+        final df = context.dateFmt('d MMM yyyy');
         return ListView(
           padding: AppSpacing.screen,
           children: [
             if (exercise != null) _InfoCard(exercise!),
             AppSpacing.vGapLg,
             if (points.isEmpty)
-              const EmptyState(
+              EmptyState(
                 icon: Icons.history_rounded,
-                title: 'Henüz kayıt yok',
-                message: 'Bu hareketi bir antrenmanda kullanınca burada görünür',
+                title: AppL10n.of(context).nutritionNoEntries,
+                message: AppL10n.of(context).edAppearsHere,
                 compact: true,
               )
             else ...[
-              Text('Set geçmişi', style: context.texts.titleSmall),
+              Text(AppL10n.of(context).edSetHistory,
+                  style: context.texts.titleSmall),
               AppSpacing.vGapSm,
               ...points.reversed.map((p) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
@@ -326,7 +334,7 @@ class _HistoryTab extends ConsumerWidget {
                         Text(
                           p.weightKg != null
                               ? '${fmtNum(p.weightKg!)} kg × ${p.reps ?? '-'}'
-                              : '${p.reps ?? '-'} tekrar',
+                              : '${p.reps ?? '-'} ${AppL10n.of(context).unitReps}',
                           style: context.texts.titleSmall,
                         ),
                       ],
@@ -394,17 +402,18 @@ class _ChartTab extends ConsumerWidget {
     final async = ref.watch(_historyProvider(exerciseId));
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, _) => const Center(child: Text('Yüklenemedi')),
+      error: (_, _) =>
+          Center(child: Text(AppL10n.of(context).edLoadError)),
       data: (points) {
         final e1rms = points
             .where((p) => p.e1rm != null)
             .map((p) => p.e1rm!)
             .toList();
         if (e1rms.length < 2) {
-          return const EmptyState(
+          return EmptyState(
             icon: Icons.show_chart_rounded,
-            title: 'Grafik için yeterli veri yok',
-            message: 'En az iki kez kg×tekrar girince ilerleme grafiği çıkar',
+            title: AppL10n.of(context).edChartEmpty,
+            message: AppL10n.of(context).edChartEmptyMsg,
             compact: true,
           );
         }
@@ -420,9 +429,9 @@ class _ChartTab extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Tahmini 1RM gelişimi',
+              Text(AppL10n.of(context).edE1rmTitle,
                   style: context.texts.titleSmall),
-              Text('Epley: kg × (1 + tekrar/30)',
+              Text(AppL10n.of(context).edEpley,
                   style: context.texts.labelSmall
                       ?.copyWith(color: context.colors.onSurfaceVariant)),
               AppSpacing.vGapLg,
@@ -485,14 +494,15 @@ class _RecordsTab extends ConsumerWidget {
     final async = ref.watch(_historyProvider(exerciseId));
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, _) => const Center(child: Text('Yüklenemedi')),
+      error: (_, _) =>
+          Center(child: Text(AppL10n.of(context).edLoadError)),
       data: (points) {
         final withData = points.where((p) => p.e1rm != null).toList();
         if (withData.isEmpty) {
-          return const EmptyState(
+          return EmptyState(
             icon: Icons.emoji_events_outlined,
-            title: 'Henüz rekor yok',
-            message: 'kg×tekrar girince kişisel rekorların burada toplanır',
+            title: AppL10n.of(context).edNoPr,
+            message: AppL10n.of(context).edNoPrMsg,
             compact: true,
           );
         }
@@ -505,13 +515,24 @@ class _RecordsTab extends ConsumerWidget {
         return ListView(
           padding: AppSpacing.screen,
           children: [
-            _Record('🏆', 'Tahmini 1RM',
+            _Record(
+                Icons.emoji_events_rounded,
+                context.semantic.warning,
+                AppL10n.of(context).edBestE1rm,
                 '${bestE1rm.e1rm!.round()} kg',
                 '${fmtNum(bestE1rm.weightKg!)} kg × ${bestE1rm.reps}'),
-            _Record('🏋️', 'En ağır set',
+            _Record(
+                Icons.fitness_center_rounded,
+                context.colors.primary,
+                AppL10n.of(context).edHeaviest,
                 '${fmtNum(maxWeight.weightKg!)} kg',
-                '${maxWeight.reps} tekrar'),
-            _Record('📈', 'Toplam kayıt', '${points.length} set', ''),
+                '${maxWeight.reps} ${AppL10n.of(context).unitReps}'),
+            _Record(
+                Icons.insights_rounded,
+                context.colors.secondary,
+                AppL10n.of(context).edTotalLogs,
+                '${points.length} set',
+                ''),
           ],
         );
       },
@@ -520,8 +541,10 @@ class _RecordsTab extends ConsumerWidget {
 }
 
 class _Record extends StatelessWidget {
-  final String emoji, label, value, sub;
-  const _Record(this.emoji, this.label, this.value, this.sub);
+  final IconData icon;
+  final Color tint;
+  final String label, value, sub;
+  const _Record(this.icon, this.tint, this.label, this.value, this.sub);
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -530,7 +553,16 @@ class _Record extends StatelessWidget {
         padding: AppSpacing.card,
         child: Row(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 28)),
+            // Emoji yerine temanın ikon-rozet dili (emoji denetimi).
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: tint.withValues(alpha: 0.16),
+                borderRadius: AppRadius.brMd,
+              ),
+              child: Icon(icon, color: tint),
+            ),
             AppSpacing.hGapLg,
             Expanded(
               child: Column(

@@ -5,6 +5,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../l10n/app_l10n.dart';
 
 /// Barkod tarama ekranı (docs/07-nutrition-v2.md §6.3).
 /// İlk geçerli barkodu okuyunca `String` ile pop eder. "Elle gir" → null pop;
@@ -53,6 +54,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     // Kamera vizörü: doğası gereği tema-bağımsız siyah zemin + beyaz metin.
     // Tema token'ı bilinçli kullanılmıyor (L-03 istisnası).
     return Scaffold(
@@ -60,14 +62,14 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: const Text('Barkod Tara'),
+        title: Text(l.scanTitle),
         actions: [
           ValueListenableBuilder<MobileScannerState>(
             valueListenable: _controller,
             builder: (_, state, _) {
               final on = state.torchState == TorchState.on;
               return IconButton(
-                tooltip: on ? 'Feneri kapat' : 'Fener',
+                tooltip: on ? l.scanTorchOff : l.scanTorchOn,
                 icon: Icon(on
                     ? Icons.flash_on_rounded
                     : Icons.flash_off_rounded),
@@ -86,9 +88,8 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
             errorBuilder: (context, error) => _ScanError(
               message: switch (error.errorCode) {
                 MobileScannerErrorCode.permissionDenied =>
-                  'Kamera izni verilmedi. Ayarlar\'dan izin ver veya '
-                      'yemeği elle ekle.',
-                _ => 'Kamera açılamadı. Yemeği elle ekleyebilirsin.',
+                  l.scanPermissionDenied,
+                _ => l.scanCameraError,
               },
             ),
           ),
@@ -114,7 +115,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
             child: Column(
               children: [
                 Text(
-                  'Barkodu çerçeveye getir',
+                  l.scanFrameHint,
                   textAlign: TextAlign.center,
                   style: context.texts.bodyMedium
                       ?.copyWith(color: Colors.white),
@@ -123,7 +124,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
                 FilledButton.tonalIcon(
                   onPressed: () => Navigator.of(context).pop(),
                   icon: const Icon(Icons.edit_note_rounded),
-                  label: const Text('Elle ekle'),
+                  label: Text(l.scanManualAdd),
                 ),
               ],
             ),
@@ -157,7 +158,7 @@ class _ScanError extends StatelessWidget {
           AppSpacing.vGapLg,
           FilledButton.tonal(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Elle ekle'),
+            child: Text(AppL10n.of(context).scanManualAdd),
           ),
         ],
       ),

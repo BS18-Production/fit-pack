@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
+import '../../l10n/app_l10n.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
 
@@ -27,11 +28,12 @@ class WorkoutSummaryScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: const Text('Antrenman Özeti'),
+          title: Text(AppL10n.of(context).wsTitle),
         ),
         body: async.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => const Center(child: Text('Özet yüklenemedi')),
+          error: (_, _) =>
+              Center(child: Text(AppL10n.of(context).wsLoadError)),
           data: (s) => ListView(
             padding: const EdgeInsets.fromLTRB(
                 AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, AppSpacing.xxxl),
@@ -50,27 +52,30 @@ class WorkoutSummaryScreen extends ConsumerWidget {
               ),
               AppSpacing.vGapLg,
               Center(
-                child: Text('Antrenman Tamamlandı',
+                child: Text(AppL10n.of(context).wsDone,
                     style: context.texts.headlineSmall,
                     textAlign: TextAlign.center),
               ),
               const SizedBox(height: 5),
               Center(
-                child: Text('${s.title} · ${_relativeDateLabel(s.date)}',
+                child: Text(
+                    '${s.title} · ${_relativeDateLabel(context, s.date)}',
                     style: context.texts.bodyMedium?.copyWith(
                         color: context.colors.onSurfaceVariant),
                     textAlign: TextAlign.center),
               ),
               AppSpacing.vGapxl_,
               _StatsCard(
-                duration: '${s.durationMin} dk',
+                duration:
+                    '${s.durationMin} ${AppL10n.of(context).unitMinShort}',
                 volume: s.volume >= 1000
                     ? '${(s.volume / 1000).toStringAsFixed(1)}k'
                     : '${s.volume}',
                 sets: '${s.totalSets}',
               ),
               AppSpacing.vGapxl_,
-              Text('Hareketler', style: context.texts.titleMedium),
+              Text(AppL10n.of(context).wsExercises,
+                  style: context.texts.titleMedium),
               AppSpacing.vGapSm,
               ...s.perExercise.map((e) => Card(
                     margin: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -91,8 +96,9 @@ class WorkoutSummaryScreen extends ConsumerWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                     e.volume > 0
-                                        ? '${e.sets} set · ${e.volume} kg'
-                                        : '${e.sets} set',
+                                        ? '${AppL10n.of(context).workoutSetCount(e.sets)} · ${e.volume} kg'
+                                        : AppL10n.of(context)
+                                            .workoutSetCount(e.sets),
                                     style: context.texts.bodySmall?.copyWith(
                                         color:
                                             context.colors.onSurfaceVariant)),
@@ -105,7 +111,7 @@ class WorkoutSummaryScreen extends ConsumerWidget {
                   )),
               AppSpacing.vGapLg,
               GradientButton(
-                label: 'Bitti',
+                label: AppL10n.of(context).wsDoneBtn,
                 onTap: () => context.go(AppRoutes.workout),
               ),
             ],
@@ -129,11 +135,14 @@ class _StatsCard extends StatelessWidget {
         child: IntrinsicHeight(
           child: Row(
             children: [
-              Expanded(child: _Col('Süre', duration)),
+              Expanded(
+                  child: _Col(AppL10n.of(context).labelDuration, duration)),
               _div(context),
-              Expanded(child: _Col('Hacim', '$volume kg')),
+              Expanded(
+                  child:
+                      _Col(AppL10n.of(context).labelVolume, '$volume kg')),
               _div(context),
-              Expanded(child: _Col('Set', sets)),
+              Expanded(child: _Col(AppL10n.of(context).labelSets, sets)),
             ],
           ),
         ),
@@ -219,12 +228,13 @@ final _summaryProvider =
 });
 
 /// Seans tarihini göreceli/okunur etikete çevirir: Bugün / Dün / "20 Haziran".
-String _relativeDateLabel(DateTime date) {
+String _relativeDateLabel(BuildContext context, DateTime date) {
+  final l = AppL10n.of(context);
   final now = DateTime.now();
   final d = DateTime(date.year, date.month, date.day);
   final today = DateTime(now.year, now.month, now.day);
   final diff = today.difference(d).inDays;
-  if (diff == 0) return 'Bugün';
-  if (diff == 1) return 'Dün';
-  return DateFormat('d MMMM', 'tr_TR').format(date);
+  if (diff == 0) return l.commonToday;
+  if (diff == 1) return l.commonYesterday;
+  return context.dateFmt('d MMMM').format(date);
 }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../l10n/app_l10n.dart';
 
 /// Tutarlı boş/hata/yükleniyor durumları + onay diyaloğu.
 /// Tüm ekranlar bunları kullanır — durum gösterimi tek elden.
@@ -72,12 +73,13 @@ class EmptyState extends StatelessWidget {
 /// Hata durumu: kullanıcı-dostu mesaj + (opsiyonel) yeniden dene.
 /// Teknik detayı KULLANICIYA göstermez (log'a bırakılır).
 class ErrorState extends StatelessWidget {
-  final String message;
+  /// null → genel "Bir şeyler ters gitti" (locale'e göre, build'de çözülür).
+  final String? message;
   final VoidCallback? onRetry;
 
   const ErrorState({
     super.key,
-    this.message = 'Bir şeyler ters gitti',
+    this.message,
     this.onRetry,
   });
 
@@ -99,7 +101,7 @@ class ErrorState extends StatelessWidget {
                   size: AppIconSize.lg, color: context.colors.error),
             ),
             AppSpacing.vGapLg,
-            Text(message,
+            Text(message ?? AppL10n.of(context).errorGeneric,
                 textAlign: TextAlign.center,
                 style: context.texts.bodyMedium),
             if (onRetry != null) ...[
@@ -108,7 +110,7 @@ class ErrorState extends StatelessWidget {
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh_rounded,
                     size: AppIconSize.sm),
-                label: const Text('Tekrar dene'),
+                label: Text(AppL10n.of(context).commonRetry),
               ),
             ],
           ],
@@ -240,7 +242,7 @@ class SheetHeader extends StatelessWidget {
               ),
             ),
             IconButton(
-              tooltip: 'Kapat',
+              tooltip: AppL10n.of(context).commonClose,
               icon: const Icon(Icons.close_rounded),
               onPressed: () => Navigator.of(context).maybePop(),
               style: IconButton.styleFrom(
@@ -273,7 +275,7 @@ Future<void> showRestartDialog(
         actions: [
           FilledButton(
             onPressed: () => SystemNavigator.pop(),
-            child: const Text('Uygulamayı Kapat'),
+            child: Text(AppL10n.of(ctx).commonCloseApp),
           ),
         ],
       ),
@@ -286,7 +288,7 @@ Future<bool> confirmAction(
   BuildContext context, {
   required String title,
   required String message,
-  String confirmLabel = 'Sil',
+  String? confirmLabel, // null → "Sil"/"Delete" (locale'e göre)
   bool destructive = true,
 }) async {
   final result = await showDialog<bool>(
@@ -297,7 +299,7 @@ Future<bool> confirmAction(
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
-          child: const Text('Vazgeç'),
+          child: Text(AppL10n.of(ctx).commonCancel),
         ),
         FilledButton(
           style: destructive
@@ -306,7 +308,7 @@ Future<bool> confirmAction(
                   foregroundColor: ctx.colors.onError)
               : null,
           onPressed: () => Navigator.pop(ctx, true),
-          child: Text(confirmLabel),
+          child: Text(confirmLabel ?? AppL10n.of(ctx).commonDelete),
         ),
       ],
     ),

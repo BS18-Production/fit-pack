@@ -193,6 +193,12 @@ Kalıcı/kapatılamaz akış (geri yükleme sonrası restart) `PopScope(canPop:f
 - **Enum/DB anahtar etiketleri** (cinsiyet, aktiflik, tema, dil):
   `core/i18n/enum_labels.dart`. Anahtar İngilizce sabit, etiket dile göre çözülür.
 - ARB değişince `flutter gen-l10n` (veya `flutter pub get`) çalıştır.
+- **Emoji YASAK (UI metinlerinde).** Sistem emojileri (🔥💪✨…) platforma göre
+  farklı görünür ve premium glass dile yabancıdır. Duygu/vurgu, temanın
+  ikon-rozet diliyle verilir: tonlu yuvarlak zemin (`tint.withValues(alpha:
+  .16)` + `AppRadius.brMd`) içinde Material **Rounded** ikon, ya da başlık
+  sonunda `WidgetSpan` ikon (örn. streak alevi `local_fire_department_rounded`
+  + `semantic.warning`). Metin oku (↓↑) yerine `arrow_*_rounded` ikonu.
 
 ---
 

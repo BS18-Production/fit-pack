@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
+import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'routine_providers.dart';
 import 'workout_ui.dart';
@@ -24,25 +25,25 @@ class RoutinePreviewScreen extends ConsumerWidget {
         .firstOrNull;
     final exAsync = ref.watch(routineExercisesProvider(routineId));
 
+    final l = AppL10n.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(routine?.name ?? 'Rutin'),
+        title: Text(routine?.name ?? l.rpFallback),
         actions: [
           IconButton(
-            tooltip: 'Düzenle',
+            tooltip: l.commonEdit,
             icon: const Icon(Icons.edit_outlined),
             onPressed: () => context.push(AppRoutes.routineEdit(routineId)),
           ),
           IconButton(
-            tooltip: 'Arşivle',
+            tooltip: l.commonArchive,
             icon: const Icon(Icons.archive_outlined),
             onPressed: () async {
               final ok = await confirmAction(
                 context,
-                title: 'Rutini arşivle',
-                message:
-                    'Bu rutin listeden kaldırılsın mı? Geçmiş antrenmanlar korunur.',
-                confirmLabel: 'Arşivle',
+                title: l.rpArchiveTitle,
+                message: l.rpArchiveMsg,
+                confirmLabel: l.commonArchive,
               );
               if (!ok) return;
               await ref.read(workoutDaoProvider).archiveRoutine(routineId);
@@ -56,20 +57,20 @@ class RoutinePreviewScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.workoutActiveRoutine(routineId)),
         icon: const Icon(Icons.play_arrow_rounded),
-        label: const Text('Antrenmana Başla'),
+        label: Text(l.rpStart),
       ),
       body: exAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (_, _) => ErrorState(
-          message: 'Rutin yüklenemedi',
+          message: l.rpLoadError,
           onRetry: () => ref.invalidate(routineExercisesProvider(routineId)),
         ),
         data: (items) {
           if (items.isEmpty) {
             return EmptyState(
               icon: Icons.fitness_center_outlined,
-              title: 'Bu rutin boş',
-              message: 'Düzenle ile hareket ekle',
+              title: l.rpEmptyTitle,
+              message: l.rpEmptyMsg,
             );
           }
           return ListView.separated(

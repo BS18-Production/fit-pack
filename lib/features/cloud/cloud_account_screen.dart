@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
+import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../settings/backup_service.dart' show RestoreNeedsRestartException;
 import 'auth_service.dart';
@@ -19,7 +20,7 @@ class CloudAccountScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Bulut Hesabı')),
+      appBar: AppBar(title: Text(AppL10n.of(context).settingsCloudAccount)),
       body: user == null
           ? const _AuthForm()
           : _AccountPanel(email: user.email ?? '—'),
@@ -67,14 +68,17 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
         await auth.signUpWithEmail(email, pass);
         if (mounted && ref.read(currentUserProvider) == null) {
           // E-posta doğrulama açıksa oturum hemen açılmaz.
-          setState(() => _error =
-              'Kayıt alındı. E-postanı doğrulayıp giriş yapabilirsin.');
+          setState(
+              () => _error = AppL10n.of(context).cloudSignupOk);
         }
       }
     } on AuthException catch (e) {
       setState(() => _error = e.message);
     } catch (e) {
-      setState(() => _error = 'Bağlanılamadı: $e');
+      if (mounted) {
+        setState(() =>
+            _error = AppL10n.of(context).cloudConnErr(e.toString()));
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -88,8 +92,9 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
     try {
       await ref.read(authServiceProvider).signInWithGoogle();
     } catch (e) {
-      setState(() => _error =
-          'Google girişi henüz yapılandırılmadı ya da iptal edildi.');
+      if (mounted) {
+        setState(() => _error = AppL10n.of(context).cloudGoogleErr);
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -97,20 +102,20 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
       children: [
         Icon(Icons.cloud_outlined,
             size: AppIconSize.xxl, color: context.colors.primary),
         AppSpacing.vGapMd,
-        Text(_isLogin ? 'Giriş yap' : 'Hesap oluştur',
+        Text(_isLogin ? l.cloudSignIn : l.cloudCreateAccount,
             textAlign: TextAlign.center,
             style: context.texts.titleLarge
                 ?.copyWith(fontWeight: FontWeight.bold)),
         AppSpacing.vGapSm,
         Text(
-          'Verini buluta yedekle, yeni cihazda giriş yapıp geri yükle. '
-          'Verin yine öncelikle cihazında tutulur.',
+          l.cloudIntro,
           textAlign: TextAlign.center,
           style: context.texts.bodyMedium
               ?.copyWith(color: context.colors.onSurfaceVariant),
@@ -121,10 +126,10 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
           keyboardType: TextInputType.emailAddress,
           autofillHints: const [AutofillHints.email],
           onChanged: (_) => setState(() {}),
-          decoration: const InputDecoration(
-            labelText: 'E-posta',
-            prefixIcon: Icon(Icons.mail_outline_rounded),
-            border: OutlineInputBorder(borderRadius: AppRadius.brMd),
+          decoration: InputDecoration(
+            labelText: l.cloudEmail,
+            prefixIcon: const Icon(Icons.mail_outline_rounded),
+            border: const OutlineInputBorder(borderRadius: AppRadius.brMd),
           ),
         ),
         AppSpacing.vGapMd,
@@ -132,10 +137,10 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
           controller: _passCtrl,
           obscureText: true,
           onChanged: (_) => setState(() {}),
-          decoration: const InputDecoration(
-            labelText: 'Şifre (en az 6 karakter)',
-            prefixIcon: Icon(Icons.lock_outline_rounded),
-            border: OutlineInputBorder(borderRadius: AppRadius.brMd),
+          decoration: InputDecoration(
+            labelText: l.cloudPassword,
+            prefixIcon: const Icon(Icons.lock_outline_rounded),
+            border: const OutlineInputBorder(borderRadius: AppRadius.brMd),
           ),
         ),
         if (_error != null) ...[
@@ -154,7 +159,7 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2))
-              : Text(_isLogin ? 'Giriş Yap' : 'Kayıt Ol'),
+              : Text(_isLogin ? l.cloudSignInBtn : l.cloudSignUpBtn),
         ),
         AppSpacing.vGapMd,
         OutlinedButton.icon(
@@ -162,7 +167,7 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
           style: OutlinedButton.styleFrom(
               minimumSize: const Size.fromHeight(52)),
           icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
-          label: const Text('Google ile devam et'),
+          label: Text(l.cloudGoogle),
         ),
         AppSpacing.vGapLg,
         TextButton(
@@ -172,9 +177,8 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
                     _isLogin = !_isLogin;
                     _error = null;
                   }),
-          child: Text(_isLogin
-              ? 'Hesabın yok mu? Kayıt ol'
-              : 'Zaten hesabın var mı? Giriş yap'),
+          child:
+              Text(_isLogin ? l.cloudNoAccount : l.cloudHaveAccount),
         ),
       ],
     );
@@ -218,13 +222,15 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
       await _refreshLast();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Buluta yedeklendi')),
+          SnackBar(content: Text(AppL10n.of(context).cloudBackedUp)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Yedeklenemedi: $e')),
+          SnackBar(
+              content: Text(AppL10n.of(context)
+                  .cloudBackupFailed(e.toString()))),
         );
       }
     } finally {
@@ -233,13 +239,12 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
   }
 
   Future<void> _restore() async {
+    final l = AppL10n.of(context);
     final ok = await confirmAction(
       context,
-      title: 'Buluttan geri yükle',
-      message:
-          'Cihazdaki tüm verinin yerine bulut yedeği yüklenecek. Bu işlem geri '
-          'alınamaz. Devam edilsin mi?',
-      confirmLabel: 'Geri Yükle',
+      title: l.cloudRestoreTitle,
+      message: l.cloudRestoreMsg,
+      confirmLabel: l.settingsRestoreConfirmAction,
       destructive: true,
     );
     if (!ok) return;
@@ -249,9 +254,8 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
       if (!mounted) return;
       await showRestartDialog(
         context,
-        title: 'Geri yüklendi',
-        message:
-            'Bulut yedeği yüklendi. Uygulama kapanacak — tekrar açman yeterli.',
+        title: l.settingsRestoredTitle,
+        message: l.cloudRestoredMsg,
       );
     } on FormatException catch (e) {
       // Doğrulama hatası — DB kapanmadan reddedildi, uygulama çalışır durumda.
@@ -265,15 +269,16 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
       if (mounted) {
         await showRestartDialog(
           context,
-          title: 'Geri yükleme başarısız',
-          message: 'Bir sorun oluştu, mevcut verin korundu. Uygulama '
-              'kapanacak — tekrar açman yeterli.',
+          title: l.settingsRestoreFailedTitle,
+          message: l.settingsRestoreFailedMessage,
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Geri yükleme başarısız: $e')),
+          SnackBar(
+              content:
+                  Text(l.settingsRestoreFailed(e.toString()))),
         );
       }
     } finally {
@@ -289,12 +294,13 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = AppL10n.of(context);
     final lastTxt = _loadingLast
         ? '…'
         : _lastBackup == null
-            ? 'Henüz bulut yedeği yok'
-            : 'Son bulut yedeği: '
-                '${DateFormat('d MMM y · HH:mm', 'tr_TR').format(_lastBackup!)}';
+            ? l.cloudNoBackup
+            : l.cloudLastBackup(
+                context.dateFmt('d MMM y · HH:mm').format(_lastBackup!));
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -312,7 +318,7 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Giriş yapıldı',
+                  Text(l.settingsCloudSignedInFallback,
                       style: context.texts.labelMedium
                           ?.copyWith(color: c.onSurfaceVariant)),
                   Text(widget.email,
@@ -355,7 +361,7 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
                   height: 18,
                   child: CircularProgressIndicator(strokeWidth: 2))
               : const Icon(Icons.cloud_upload_rounded),
-          label: const Text('Buluta Yedekle'),
+          label: Text(l.cloudBackupBtn),
         ),
         AppSpacing.vGapMd,
         OutlinedButton.icon(
@@ -363,13 +369,13 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
           style:
               OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
           icon: const Icon(Icons.cloud_download_rounded),
-          label: const Text('Buluttan Geri Yükle'),
+          label: Text(l.cloudRestoreBtn),
         ),
         AppSpacing.vGapxl_,
         TextButton.icon(
           onPressed: _busy ? null : _signOut,
           icon: Icon(Icons.logout_rounded, color: c.error),
-          label: Text('Çıkış Yap', style: TextStyle(color: c.error)),
+          label: Text(l.cloudSignOut, style: TextStyle(color: c.error)),
         ),
       ],
     );

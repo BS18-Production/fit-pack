@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import '../../core/i18n/formatting.dart';
 import '../../core/onboarding/first_run_hints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
+import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'routine_providers.dart';
 import 'workout_draft.dart';
@@ -54,7 +55,7 @@ class WorkoutListScreen extends ConsumerWidget {
                 Skeleton.card(height: 92),
               ]),
               error: (_, _) => ErrorState(
-                message: 'Rutinler yüklenemedi',
+                message: AppL10n.of(context).workoutLoadRoutinesError,
                 onRetry: () => ref.invalidate(activeRoutinesProvider),
               ),
               data: (routines) {
@@ -91,7 +92,7 @@ class WorkoutListScreen extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('Rutinlerim', style: context.texts.titleMedium),
+        Text(AppL10n.of(context).workoutMyRoutines, style: context.texts.titleMedium),
         if (count != null && count > 0)
           Text('$count rutin',
               style: context.texts.bodySmall?.copyWith(
@@ -111,7 +112,8 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today = DateFormat('EEEE, d MMMM', 'tr_TR').format(DateTime.now());
+    final l = AppL10n.of(context);
+    final today = context.dateFmt('EEEE, d MMMM').format(DateTime.now());
     final dateLabel = (today[0].toUpperCase() + today.substring(1)).toUpperCase();
     return SafeArea(
       bottom: false,
@@ -131,24 +133,24 @@ class _Header extends StatelessWidget {
                         letterSpacing: 1.4,
                       )),
                   const SizedBox(height: 5),
-                  Text('Antrenman', style: context.texts.headlineMedium),
+                  Text(l.navWorkout, style: context.texts.headlineMedium),
                 ],
               ),
             ),
             IconButton(
-              tooltip: 'Hareket Kütüphanesi',
+              tooltip: l.workoutLibrary,
               icon: const Icon(Icons.menu_book_rounded),
               color: context.colors.onSurfaceVariant,
               onPressed: () => context.push(AppRoutes.exercises),
             ),
             IconButton(
-              tooltip: 'Geçmiş Antrenman Ekle',
+              tooltip: l.workoutAddPast,
               icon: const Icon(Icons.edit_calendar_rounded),
               color: context.colors.onSurfaceVariant,
               onPressed: () => context.push(AppRoutes.workoutLogPast),
             ),
             IconButton(
-              tooltip: 'Antrenman Geçmişi',
+              tooltip: l.workoutHistory,
               icon: const Icon(Icons.history_rounded),
               color: context.colors.onSurfaceVariant,
               onPressed: () => context.push(AppRoutes.workoutHistory),
@@ -170,7 +172,8 @@ class _WeekStatsCard extends ConsumerWidget {
     final stats = ref.watch(weekWorkoutStatsProvider).valueOrNull;
     final sessions = stats?.sessions ?? 0;
     final volume = stats?.volumeKg ?? 0;
-    final volumeStr = NumberFormat.decimalPattern('tr_TR').format(volume);
+    final l = AppL10n.of(context);
+    final volumeStr = context.numFmt.format(volume);
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -180,9 +183,9 @@ class _WeekStatsCard extends ConsumerWidget {
             children: [
               Expanded(
                 child: _Stat(
-                  label: 'BU HAFTA',
+                  label: l.workoutThisWeekCaps,
                   value: '$sessions',
-                  unit: 'antrenman',
+                  unit: l.homeStatWorkouts,
                 ),
               ),
               VerticalDivider(
@@ -192,7 +195,7 @@ class _WeekStatsCard extends ConsumerWidget {
               ),
               Expanded(
                 child: _Stat(
-                  label: 'TOPLAM HACİM',
+                  label: l.workoutTotalVolumeCaps,
                   value: volumeStr,
                   unit: 'kg',
                 ),
@@ -276,7 +279,7 @@ class _EmptyWorkoutButton extends StatelessWidget {
               children: [
                 const Icon(Icons.add_rounded, color: AppColors.onGradient, size: 22),
                 AppSpacing.hGapSm,
-                Text('Boş Antrenman Başlat',
+                Text(AppL10n.of(context).workoutStartEmpty,
                     style: context.texts.titleMedium?.copyWith(
                       color: AppColors.onGradient,
                       fontWeight: FontWeight.w800,
@@ -313,7 +316,7 @@ class _NewRoutineButton extends StatelessWidget {
                 Icon(Icons.add_rounded,
                     color: context.colors.primary, size: AppIconSize.sm),
                 AppSpacing.hGapSm,
-                Text('Yeni Rutin Oluştur',
+                Text(AppL10n.of(context).workoutNewRoutine,
                     style: context.texts.labelLarge?.copyWith(
                       color: context.colors.primary,
                       fontWeight: FontWeight.w700,
@@ -337,12 +340,12 @@ class _NoRoutines extends StatelessWidget {
   Widget build(BuildContext context) {
     // Boş hal = öğretmen (docs/15 §C): onCreate zaten geliyordu ama
     // kullanılmıyordu — tek net aksiyon bağlandı.
+    final l = AppL10n.of(context);
     return EmptyState(
       icon: Icons.list_alt_rounded,
-      title: 'Henüz rutin yok',
-      message: 'Kendi antrenman rutinini oluştur — hareketleri seç, '
-          'hedef set ve tekrarları belirle.',
-      actionLabel: 'Rutin oluştur',
+      title: l.workoutNoRoutines,
+      message: l.workoutNoRoutinesMsg,
+      actionLabel: l.workoutCreateRoutine,
       onAction: onCreate,
       compact: true,
     );
@@ -358,7 +361,7 @@ class _RoutineCard extends ConsumerWidget {
     final exAsync = ref.watch(routineExercisesProvider(routine.id));
     final exercises = exAsync.valueOrNull ?? [];
     final dayShort = routine.scheduledWeekday != null
-        ? _weekdayShort[routine.scheduledWeekday]
+        ? context.weekdayShort(routine.scheduledWeekday!)
         : null;
 
     // Hareketlerden farklı kas gruplarını (İngilizce) topla.
@@ -418,7 +421,7 @@ class _RoutineCard extends ConsumerWidget {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Düzenle',
+                    tooltip: AppL10n.of(context).commonEdit,
                     visualDensity: VisualDensity.compact,
                     icon: Icon(Icons.edit_outlined,
                         size: AppIconSize.sm,
@@ -451,15 +454,6 @@ class _RoutineCard extends ConsumerWidget {
   }
 }
 
-const _weekdayShort = {
-  1: 'Pzt',
-  2: 'Sal',
-  3: 'Çar',
-  4: 'Per',
-  5: 'Cum',
-  6: 'Cmt',
-  7: 'Paz',
-};
 
 /// "Devam eden antrenman" banner'ı (docs/12). Kaydedilmiş canlı seans taslağı
 /// varsa en üstte gösterilir; arka planda öldürülmüş seansa kaldığı yerden döner.
@@ -476,8 +470,9 @@ class _ResumeBanner extends ConsumerWidget {
     final setCount = draft.exercises
         .fold<int>(0, (n, e) => n + e.sets.where((s) => s.done).length);
     final mins = DateTime.now().difference(draft.startedAt).inMinutes;
-    final sub = '${draft.exercises.length} hareket · $setCount set'
-        '${mins > 0 && mins < 600 ? ' · $mins dk' : ''}';
+    final l = AppL10n.of(context);
+    final sub = l.workoutResumeSub(draft.exercises.length, setCount) +
+        (mins > 0 && mins < 600 ? ' · $mins ${l.unitMinShort}' : '');
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.lg),
@@ -508,7 +503,7 @@ class _ResumeBanner extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Devam eden antrenman',
+                      Text(l.workoutResumeTitle,
                           style: context.texts.titleSmall?.copyWith(
                               color: c.onPrimaryContainer,
                               fontWeight: FontWeight.w800)),
@@ -526,14 +521,13 @@ class _ResumeBanner extends ConsumerWidget {
                       color:
                           c.onPrimaryContainer.withValues(alpha: 0.7),
                       size: AppIconSize.md),
-                  tooltip: 'Taslağı sil',
+                  tooltip: l.workoutDraftDelete,
                   onPressed: () async {
                     final ok = await confirmAction(
                       context,
-                      title: 'Taslağı sil',
-                      message:
-                          'Devam eden antrenman taslağı silinsin mi? Girdiğin setler kaydedilmeyecek.',
-                      confirmLabel: 'Sil',
+                      title: l.workoutDraftDelete,
+                      message: l.workoutDraftDeleteMsg,
+                      confirmLabel: l.commonDelete,
                       destructive: true,
                     );
                     if (ok) {

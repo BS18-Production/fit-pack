@@ -103,10 +103,10 @@ void main() {
       expect(WorkoutUi.defaultRestSec('flexibility'), 30);
     });
     test('restLabel: 0 → Yok, 90 → 1:30', () {
-      expect(WorkoutUi.restLabel(0), 'Yok');
-      expect(WorkoutUi.restLabel(null), 'Yok');
-      expect(WorkoutUi.restLabel(90), '1:30');
-      expect(WorkoutUi.restLabel(180), '3:00');
+      expect(WorkoutUi.restLabel(0, none: 'Yok'), 'Yok');
+      expect(WorkoutUi.restLabel(null, none: 'Yok'), 'Yok');
+      expect(WorkoutUi.restLabel(90, none: 'Yok'), '1:30');
+      expect(WorkoutUi.restLabel(180, none: 'Yok'), '3:00');
     });
   });
 

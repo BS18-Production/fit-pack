@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
 import '../../core/utils/format.dart';
 import '../../data/providers.dart';
+import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../home/providers/home_providers.dart';
 import 'exercise_detail_screen.dart';
@@ -148,7 +149,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _routineId = widget.routineId;
     _startedAt = widget.manualDate ?? now;
     _sessionDate = DateTime(_startedAt.year, _startedAt.month, _startedAt.day);
-    _title = _isManual ? 'Geçmiş Antrenman' : 'Boş Antrenman';
+    _title = ''; // ilk didChangeDependencies'te locale ile atanır
     if (!_isManual) {
       WakelockPlus.enable(); // antrenman boyunca ekran uyanık kalsın (docs/12)
       WidgetsBinding.instance.addObserver(this);
@@ -157,6 +158,23 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       });
     }
     _load();
+  }
+
+  bool _titleInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_titleInitialized) {
+      _titleInitialized = true;
+      // Rutin/taslak başlığı _load'da üzerine yazabilir; bu yalnız
+      // boş/manuel modun varsayılanı. Kayıtta workoutType olarak saklanır
+      // (oluşturma anındaki dil — bilinçli, docs/14).
+      if (_title.isEmpty) {
+        final l = AppL10n.of(context);
+        _title = _isManual ? l.asPastWorkout : l.asEmptyWorkout;
+      }
+    }
   }
 
   @override
@@ -274,7 +292,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (widget.routineId != null) {
       final routine = await dao.getRoutine(widget.routineId!);
       final exs = await dao.getRoutineExercises(widget.routineId!);
-      _title = routine?.name ?? 'Antrenman';
+      _title = routine?.name ??
+          (mounted ? AppL10n.of(context).navWorkout : 'Workout');
       for (final it in exs) {
         final last = await dao.getLastSetForExercise(it.exercise.id);
         final prev = prevLabel(last, it.exercise.measurementType);
@@ -336,9 +355,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (hasData) {
       final ok = await confirmAction(
         context,
-        title: 'Hareketi kaldır',
-        message: '${ex.exercise.name} ve girdiğin setler silinecek.',
-        confirmLabel: 'Kaldır',
+        title: AppL10n.of(context).asRemoveExercise,
+        message: AppL10n.of(context).asRemoveExerciseMsg(ex.exercise.name),
+        confirmLabel: AppL10n.of(context).asRemove,
         destructive: true,
       );
       if (!ok) return;
@@ -403,7 +422,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (_saving) return;
     if (!_hasData) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Önce en az bir set gir')));
+          SnackBar(content: Text(AppL10n.of(context).asNeedOneSet)));
       return;
     }
     setState(() => _saving = true);
@@ -462,8 +481,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       // bırak ki kullanıcı tekrar deneyebilsin.
       if (mounted) {
         setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Antrenman kaydedilemedi — tekrar dene')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppL10n.of(context).asSaveError)));
       }
       return;
     }
@@ -480,15 +499,15 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Antrenmandan çık?'),
-        content: const Text('Girdiğin setler kaydedilmeyecek.'),
+        title: Text(AppL10n.of(ctx).asExitTitle),
+        content: Text(AppL10n.of(ctx).asExitMsg),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Devam et')),
+              child: Text(AppL10n.of(ctx).asKeepGoing)),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Çık')),
+              child: Text(AppL10n.of(ctx).asLeave)),
         ],
       ),
     );
@@ -523,7 +542,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                   Icon(_isManual ? Icons.history_rounded : Icons.schedule_rounded,
                       size: 13, color: context.colors.primary),
                   const SizedBox(width: 4),
-                  Text(_isManual ? 'Geçmiş kayıt' : fmtDuration(_elapsed.inSeconds),
+                  Text(_isManual ? AppL10n.of(context).asPastEntry : fmtDuration(_elapsed.inSeconds),
                       style: context.texts.labelMedium?.copyWith(
                           color: context.colors.primary,
                           fontWeight: FontWeight.w700,
@@ -548,7 +567,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Bitir'),
+                    : Text(AppL10n.of(context).asFinish),
               ),
             ),
           ],
@@ -595,7 +614,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                                 onPressed: _addExercise,
                                 icon: const Icon(Icons.add_rounded,
                                     size: AppIconSize.sm),
-                                label: const Text('Hareket Ekle'),
+                                label: Text(AppL10n.of(context).workoutAddExercise),
                               ),
                             ],
                           ),
@@ -621,9 +640,10 @@ class _SessionDateBar extends StatelessWidget {
     final now = DateTime.now();
     final isToday =
         date.year == now.year && date.month == now.month && date.day == now.day;
+    final l = AppL10n.of(context);
     final label = isToday
-        ? 'Bugün'
-        : DateFormat('EEEE, d MMMM', 'tr_TR').format(date);
+        ? l.commonToday
+        : context.dateFmt('EEEE, d MMMM').format(date);
     final bg = highlight
         ? context.colors.primaryContainer
         : context.colors.surfaceContainerHighest;
@@ -639,7 +659,7 @@ class _SessionDateBar extends StatelessWidget {
             children: [
               Icon(Icons.event_rounded, size: AppIconSize.sm, color: fg),
               AppSpacing.gapSm,
-              Text(highlight ? 'Tarih seç' : 'Tarih',
+              Text(highlight ? l.nutritionPickDate : l.commonDate,
                   style: context.texts.labelLarge
                       ?.copyWith(color: context.colors.onSurfaceVariant)),
               const Spacer(),
@@ -668,11 +688,12 @@ class _EmptyActive extends StatelessWidget {
           Icon(Icons.bolt_rounded,
               size: AppIconSize.xxl, color: context.colors.primary),
           AppSpacing.vGapMd,
-          Text('Boş antrenman', style: context.texts.titleMedium),
+          Text(AppL10n.of(context).asEmptyWorkout,
+              style: context.texts.titleMedium),
           AppSpacing.vGapSm,
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
-            child: Text('Kütüphaneden hareket ekleyerek başla',
+            child: Text(AppL10n.of(context).asStartFromLibrary,
                 textAlign: TextAlign.center,
                 style: context.texts.bodyMedium
                     ?.copyWith(color: context.colors.onSurfaceVariant)),
@@ -681,7 +702,7 @@ class _EmptyActive extends StatelessWidget {
           FilledButton.icon(
             onPressed: onAdd,
             icon: const Icon(Icons.add_rounded),
-            label: const Text('Hareket Ekle'),
+            label: Text(AppL10n.of(context).workoutAddExercise),
           ),
         ],
       ),
@@ -729,7 +750,7 @@ class _RestBanner extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Dinlenme',
+                  Text(AppL10n.of(context).labelRest,
                       style: context.texts.labelSmall?.copyWith(
                           color: c.onPrimary.withValues(alpha: 0.8),
                           fontWeight: FontWeight.w600)),
@@ -746,7 +767,7 @@ class _RestBanner extends StatelessWidget {
             AppSpacing.hGapXs,
             _MiniBtn('+15s', onPlus),
             AppSpacing.hGapXs,
-            _MiniBtn('Atla', onSkip, strong: true),
+            _MiniBtn(AppL10n.of(context).asSkip, onSkip, strong: true),
           ],
         ),
       ),
@@ -795,25 +816,25 @@ class _ExerciseBlock extends StatelessWidget {
       required this.onChanged});
 
   /// Ölçüm tipine göre orta sütun başlıkları (SET ve ✓ arasındakiler).
-  static List<Widget> _headerCols(String measure) {
+  static List<Widget> _headerCols(AppL10n l, String measure) {
     switch (measure) {
       case 'reps':
-        return const [
-          Expanded(child: _H('TEKRAR', center: true)),
-          SizedBox(width: 44, child: _RpeHeader()),
+        return [
+          Expanded(child: _H(l.hdrReps, center: true)),
+          const SizedBox(width: 44, child: _RpeHeader()),
         ];
       case 'time':
-        return const [Expanded(child: _H('SÜRE', center: true))];
+        return [Expanded(child: _H(l.hdrTime, center: true))];
       case 'distance':
-        return const [
-          Expanded(child: _H('MESAFE', center: true)),
-          Expanded(child: _H('SÜRE', center: true)),
+        return [
+          Expanded(child: _H(l.hdrDistance, center: true)),
+          Expanded(child: _H(l.hdrTime, center: true)),
         ];
       default:
-        return const [
-          Expanded(child: _H('KG', center: true)),
-          Expanded(child: _H('TEKRAR', center: true)),
-          SizedBox(width: 44, child: _RpeHeader()),
+        return [
+          Expanded(child: _H(l.hdrKg, center: true)),
+          Expanded(child: _H(l.hdrReps, center: true)),
+          const SizedBox(width: 44, child: _RpeHeader()),
         ];
     }
   }
@@ -863,7 +884,7 @@ class _ExerciseBlock extends StatelessWidget {
                 IconButton(
                   icon: Icon(Icons.help_outline_rounded,
                       color: c.onSurfaceVariant, size: AppIconSize.md),
-                  tooltip: 'Nasıl yapılır',
+                  tooltip: AppL10n.of(context).asHowTo,
                   visualDensity: VisualDensity.compact,
                   onPressed: () =>
                       showExerciseHowToSheet(context, ex.exercise),
@@ -871,7 +892,7 @@ class _ExerciseBlock extends StatelessWidget {
                 PopupMenuButton<String>(
                   icon: Icon(Icons.more_vert_rounded,
                       color: c.onSurfaceVariant, size: AppIconSize.md),
-                  tooltip: 'Hareket seçenekleri',
+                  tooltip: AppL10n.of(context).asExerciseOptions,
                   onSelected: (v) {
                     if (v == 'remove') onRemoveExercise();
                   },
@@ -883,7 +904,7 @@ class _ExerciseBlock extends StatelessWidget {
                           Icon(Icons.delete_outline_rounded,
                               color: c.error, size: AppIconSize.sm),
                           AppSpacing.hGapSm,
-                          Text('Hareketi kaldır',
+                          Text(AppL10n.of(context).asRemoveExercise,
                               style: TextStyle(color: c.error)),
                         ],
                       ),
@@ -898,9 +919,12 @@ class _ExerciseBlock extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: AppSpacing.sm, left: 2),
               child: Row(
                 children: [
-                  const SizedBox(width: 30, child: _H('SET')),
-                  const SizedBox(width: 56, child: _H('ÖNCEKİ', center: true)),
-                  ..._headerCols(ex.measure),
+                  SizedBox(width: 30, child: _H(AppL10n.of(context).hdrSet)),
+                  SizedBox(
+                      width: 56,
+                      child:
+                          _H(AppL10n.of(context).hdrPrev, center: true)),
+                  ..._headerCols(AppL10n.of(context), ex.measure),
                   const SizedBox(width: 42),
                 ],
               ),
@@ -923,13 +947,13 @@ class _ExerciseBlock extends StatelessWidget {
                 TextButton.icon(
                   onPressed: onAddSet,
                   icon: const Icon(Icons.add_rounded, size: AppIconSize.sm),
-                  label: const Text('Set Ekle'),
+                  label: Text(AppL10n.of(context).asAddSet),
                 ),
                 if (ex.sets.length > 1)
                   TextButton.icon(
                     onPressed: onRemoveSet,
                     icon: const Icon(Icons.remove_rounded, size: AppIconSize.sm),
-                    label: const Text('Çıkar'),
+                    label: Text(AppL10n.of(context).asRemoveSet),
                   ),
               ],
             ),
@@ -1024,22 +1048,20 @@ void _showRpeInfo(BuildContext context) {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('RPE — Algılanan Zorluk',
+              Text(AppL10n.of(ctx).rpeTitle,
                   style: ctx.texts.titleMedium),
               AppSpacing.vGapSm,
               Text(
-                'Seti yaparken ne kadar zorlandığını 1-10 arası kendin '
-                'puanlarsın. "Kaç tekrar daha yapabilirdin?" sorusuna dayanır. '
-                'Opsiyoneldir — boş bırakabilirsin.',
+                AppL10n.of(ctx).rpeHelp,
                 style: ctx.texts.bodyMedium
                     ?.copyWith(color: ctx.colors.onSurfaceVariant),
               ),
               AppSpacing.vGapLg,
-              row('10', 'Son tekrar — bir tane daha yapamazdın'),
-              row('9', '1 tekrar daha yapabilirdin'),
-              row('8', '2 tekrar rezervde kaldı'),
-              row('7', '3-4 tekrar rezerv'),
-              row('≤6', 'Rahat / ısınma seti'),
+              row('10', AppL10n.of(ctx).rpe10),
+              row('9', AppL10n.of(ctx).rpe9),
+              row('8', AppL10n.of(ctx).rpe8),
+              row('7', AppL10n.of(ctx).rpe7),
+              row('≤6', AppL10n.of(ctx).rpe6),
             ],
           ),
         ),

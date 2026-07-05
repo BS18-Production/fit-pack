@@ -130,9 +130,10 @@ class WorkoutUi {
     }
   }
 
-  /// Dinlenme süresini etiketler: null/0 → "Yok", aksi halde "dk:sn".
-  static String restLabel(int? sec) =>
-      (sec == null || sec <= 0) ? 'Yok' : fmtDuration(sec);
+  /// Dinlenme süresini etiketler: null/0 → [none] ("Yok"/"None", locale'e
+  /// göre çağıran verir), aksi halde "dk:sn".
+  static String restLabel(int? sec, {required String none}) =>
+      (sec == null || sec <= 0) ? none : fmtDuration(sec);
 
   /// Rutin oluştururken sunulan dinlenme süresi seçenekleri (saniye).
   static const restOptions = <int>[

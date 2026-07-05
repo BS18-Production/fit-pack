@@ -560,7 +560,20 @@ class _PlanPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
       children: [
-        Text(l.onbPlanReadyTitle, style: context.texts.headlineSmall),
+        Text.rich(
+          TextSpan(children: [
+            TextSpan(text: l.onbPlanReadyTitle),
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: Icon(Icons.auto_awesome_rounded,
+                    size: 22, color: context.colors.secondary),
+              ),
+            ),
+          ]),
+          style: context.texts.headlineSmall,
+        ),
         AppSpacing.vGapSm,
         Text(l.onbPlanReadySubtitle,
             style: context.texts.bodyMedium?.copyWith(color: muted)),

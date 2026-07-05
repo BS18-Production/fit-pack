@@ -133,6 +133,12 @@ class _MomentumHero extends ConsumerWidget {
     final kicker = streak > 0 ? l.homeStreakKicker : l.homeStreakKickerZero;
     final title =
         streak > 0 ? l.homeStreakTitle(streak) : l.homeStreakTitleZero;
+    // Emoji yerine temalı ikon (docs/08 + emoji denetimi): sistem emojisi
+    // premium glass dile yabancı ve platforma göre değişken görünüyor.
+    final titleIcon = streak > 0
+        ? Icon(Icons.local_fire_department_rounded,
+            size: 30, color: context.semantic.warning)
+        : Icon(Icons.bolt_rounded, size: 30, color: c.primary);
 
     return _Card(
       child: Stack(
@@ -167,8 +173,19 @@ class _MomentumHero extends ConsumerWidget {
                   style: context.texts.bodySmall
                       ?.copyWith(color: c.onSurfaceVariant)),
               const SizedBox(height: 3),
-              Text(title,
-                  style: context.texts.displaySmall?.copyWith(height: 1.05)),
+              Text.rich(
+                TextSpan(children: [
+                  TextSpan(text: title),
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 6),
+                      child: titleIcon,
+                    ),
+                  ),
+                ]),
+                style: context.texts.displaySmall?.copyWith(height: 1.05),
+              ),
               AppSpacing.vGapLg,
               Row(
                 children: [
@@ -973,10 +990,23 @@ class _DeltaChip extends StatelessWidget {
         color: color.withValues(alpha: 0.16),
         borderRadius: AppRadius.brPill,
       ),
-      child: Text(
-        '${down ? '↓' : '↑'} ${delta.abs().toStringAsFixed(1)} kg',
-        style: context.texts.labelMedium
-            ?.copyWith(color: color, fontWeight: FontWeight.w700),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            down
+                ? Icons.arrow_downward_rounded
+                : Icons.arrow_upward_rounded,
+            size: 12,
+            color: color,
+          ),
+          const SizedBox(width: 2),
+          Text(
+            '${delta.abs().toStringAsFixed(1)} kg',
+            style: context.texts.labelMedium
+                ?.copyWith(color: color, fontWeight: FontWeight.w700),
+          ),
+        ],
       ),
     );
   }

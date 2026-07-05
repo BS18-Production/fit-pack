@@ -1,12 +1,13 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/utils/format.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
+import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../home/providers/home_providers.dart';
 import 'calorie_estimate.dart';
@@ -37,7 +38,7 @@ class WorkoutHistoryScreen extends ConsumerWidget {
     final sessionsAsync = ref.watch(_allSessionsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Antrenman Geçmişi')),
+      appBar: AppBar(title: Text(AppL10n.of(context).workoutHistory)),
       body: sessionsAsync.when(
         loading: () => ListView(
           padding: AppSpacing.screen,
@@ -50,16 +51,16 @@ class WorkoutHistoryScreen extends ConsumerWidget {
           ],
         ),
         error: (_, _) => ErrorState(
-          message: 'Geçmiş yüklenemedi',
+          message: AppL10n.of(context).whLoadError,
           onRetry: () => ref.invalidate(_allSessionsProvider),
         ),
         data: (sessions) {
           if (sessions.isEmpty) {
-            return const EmptyState(
+            final l = AppL10n.of(context);
+            return EmptyState(
               icon: Icons.history_rounded,
-              title: 'Henüz antrenman yok',
-              message:
-                  'İlk antrenmanını tamamladığında burada görünecek',
+              title: l.whEmptyTitle,
+              message: l.whEmptyMsg,
             );
           }
           return ListView.builder(
@@ -83,12 +84,13 @@ class _SessionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
     final dateTxt =
-        DateFormat('d MMMM EEEE', 'tr_TR').format(session.date);
+        context.dateFmt('d MMMM EEEE').format(session.date);
     final meta = <String>[
       dateTxt,
       if (session.durationMin != null && session.durationMin! > 0)
-        '${session.durationMin} dk',
+        '${session.durationMin} ${l.unitMinShort}',
       if (session.rpe != null) 'RPE ${session.rpe}',
     ].join('  ·  ');
 
@@ -120,19 +122,19 @@ class _SessionCard extends ConsumerWidget {
             if (v == 'date') _editDate(context, ref);
             if (v == 'delete') _delete(context, ref);
           },
-          itemBuilder: (_) => const [
+          itemBuilder: (_) => [
             PopupMenuItem(
               value: 'date',
               child: ListTile(
-                  leading: Icon(Icons.event_rounded),
-                  title: Text('Tarihi düzenle'),
+                  leading: const Icon(Icons.event_rounded),
+                  title: Text(l.whEditDate),
                   contentPadding: EdgeInsets.zero),
             ),
             PopupMenuItem(
               value: 'delete',
               child: ListTile(
-                  leading: Icon(Icons.delete_outline_rounded),
-                  title: Text('Sil'),
+                  leading: const Icon(Icons.delete_outline_rounded),
+                  title: Text(l.commonDelete),
                   contentPadding: EdgeInsets.zero),
             ),
           ],
@@ -168,9 +170,9 @@ class _SessionCard extends ConsumerWidget {
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
     final ok = await confirmAction(
       context,
-      title: 'Antrenmanı sil',
-      message: 'Bu seans ve tüm setleri silinecek. Geri alınamaz.',
-      confirmLabel: 'Sil',
+      title: AppL10n.of(context).whDeleteTitle,
+      message: AppL10n.of(context).whDeleteMsg,
+      confirmLabel: AppL10n.of(context).commonDelete,
       destructive: true,
     );
     if (!ok) return;
@@ -191,7 +193,7 @@ class _SessionDetail extends ConsumerWidget {
   const _SessionDetail({required this.session});
 
   /// Bir set'in değer metni — ölçüm tipini dolu alandan çıkarır (kayıtta yok).
-  String _fmtSet(WorkoutSet s) {
+  String _fmtSet(BuildContext context, WorkoutSet s) {
     if (s.durationSec != null || s.distanceM != null) {
       final parts = <String>[
         if (s.distanceM != null) '${fmtNum(s.distanceM! / 1000)} km',
@@ -199,7 +201,9 @@ class _SessionDetail extends ConsumerWidget {
       ];
       return parts.join(' · ');
     }
-    if (s.weightKg == null && s.reps != null) return '${s.reps} tekrar';
+    if (s.weightKg == null && s.reps != null) {
+      return '${s.reps} ${AppL10n.of(context).unitReps}';
+    }
     final wTxt = s.weightKg == null ? '—' : fmtNum(s.weightKg!);
     return '$wTxt kg × ${s.reps ?? '—'}';
   }
@@ -217,15 +221,15 @@ class _SessionDetail extends ConsumerWidget {
                 height: 20,
                 child: CircularProgressIndicator(strokeWidth: 2))),
       ),
-      error: (_, _) => const Padding(
-        padding: EdgeInsets.all(AppSpacing.lg),
-        child: Text('Setler yüklenemedi'),
+      error: (_, _) => Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Text(AppL10n.of(context).whSetsLoadError),
       ),
       data: (grouped) {
         if (grouped.isEmpty) {
           return Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Text('Set kaydı yok',
+            child: Text(AppL10n.of(context).whNoSets,
                 style: context.texts.bodySmall
                     ?.copyWith(color: context.colors.onSurfaceVariant)),
           );
@@ -274,14 +278,14 @@ class _SessionDetail extends ConsumerWidget {
                         (
                           no: i + 1,
                           type: e.value[i].setType,
-                          value: _fmtSet(e.value[i]),
+                          value: _fmtSet(context, e.value[i]),
                         ),
                     ],
                   )),
               if (kcal != null) ...[
                 AppSpacing.vGapSm,
                 Text(
-                  'Kalori tahminidir — kilo, süre ve yoğunluğa (RPE) dayanır.',
+                  AppL10n.of(context).whCalorieNote,
                   style: context.texts.bodySmall?.copyWith(
                       color: context.colors.onSurfaceVariant
                           .withValues(alpha: 0.7)),
@@ -311,10 +315,22 @@ class _StatStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = <(IconData, String, String)>[
       if (duration != null && duration! > 0)
-        (Icons.schedule_rounded, '$duration dk', 'Süre'),
+        (
+          Icons.schedule_rounded,
+          '$duration ${AppL10n.of(context).unitMinShort}',
+          AppL10n.of(context).labelDuration
+        ),
       if (volumeKg != null)
-        (Icons.fitness_center_rounded, '$volumeKg kg', 'Hacim'),
-      (Icons.format_list_numbered_rounded, '$setCount', 'Set'),
+        (
+          Icons.fitness_center_rounded,
+          '$volumeKg kg',
+          AppL10n.of(context).labelVolume
+        ),
+      (
+        Icons.format_list_numbered_rounded,
+        '$setCount',
+        AppL10n.of(context).labelSets
+      ),
       if (kcal != null)
         (Icons.local_fire_department_rounded, '~$kcal', 'kcal'),
     ];

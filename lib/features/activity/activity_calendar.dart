@@ -1,9 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../l10n/app_l10n.dart';
 import '../home/providers/home_providers.dart';
 import 'activity_providers.dart';
 
@@ -49,8 +50,7 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
   Widget build(BuildContext context) {
     final activityAsync = ref.watch(monthActivityProvider(_month));
     final goals = _goals();
-    final monthLabel =
-        DateFormat('MMMM yyyy', 'tr_TR').format(_month);
+    final monthLabel = context.dateFmt('MMMM yyyy').format(_month);
     final cap = monthLabel[0].toUpperCase() + monthLabel.substring(1);
 
     return Card(
@@ -62,7 +62,8 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
             // ay başlığı + gezinme
             Row(
               children: [
-                Text('Aktivite', style: context.texts.titleMedium),
+                Text(AppL10n.of(context).actTitle,
+                    style: context.texts.titleMedium),
                 const Spacer(),
                 IconButton(
                   visualDensity: VisualDensity.compact,
@@ -90,7 +91,7 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
               error: (_, _) => SizedBox(
                 height: 120,
                 child: Center(
-                  child: Text('Takvim yüklenemedi',
+                  child: Text(AppL10n.of(context).actLoadError,
                       style: context.texts.bodySmall),
                 ),
               ),
@@ -132,12 +133,13 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
 
 class _WeekdayLabels extends StatelessWidget {
   const _WeekdayLabels();
-  static const _days = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 
   @override
   Widget build(BuildContext context) {
+    // Pzt..Paz / Mon..Sun — locale'den (docs/14).
+    final days = [for (var d = 1; d <= 7; d++) context.weekdayShort(d)];
     return Row(
-      children: _days
+      children: days
           .map((d) => Expanded(
                 child: Center(
                   child: Text(d,
@@ -356,10 +358,10 @@ class _RingLegend extends StatelessWidget {
       spacing: AppSpacing.md,
       runSpacing: AppSpacing.xs,
       children: [
-        dot(s.macroCalories, 'Kalori'),
-        dot(s.macroProtein, 'Protein'),
-        dot(s.success, 'Antrenman'),
-        dot(s.info, 'Su'),
+        dot(s.macroCalories, AppL10n.of(context).macroCalories),
+        dot(s.macroProtein, AppL10n.of(context).macroProtein),
+        dot(s.success, AppL10n.of(context).navWorkout),
+        dot(s.info, AppL10n.of(context).homeWaterTitle),
       ],
     );
   }
@@ -381,7 +383,8 @@ class _DaySummarySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = DateFormat('d MMMM, EEEE', 'tr_TR').format(day);
+    final l = AppL10n.of(context);
+    final title = context.dateFmt('d MMMM, EEEE').format(day);
     final a = activity;
     final s = context.semantic;
 
@@ -398,7 +401,7 @@ class _DaySummarySheet extends StatelessWidget {
             if (a == null || a.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                child: Text('Bu gün için kayıt yok.',
+                child: Text(l.actNoEntry,
                     style: context.texts.bodyMedium
                         ?.copyWith(color: context.colors.onSurfaceVariant)),
               )
@@ -406,37 +409,37 @@ class _DaySummarySheet extends StatelessWidget {
               // Beslenme
               _SummaryRow(
                 color: s.macroCalories,
-                label: 'Kalori',
+                label: l.macroCalories,
                 value: '${a.kcal.round()} / $kcalGoal kcal',
               ),
               _SummaryRow(
                 color: s.macroProtein,
-                label: 'Protein',
+                label: l.macroProtein,
                 value: '${a.protein.round()} / $proteinGoal g',
               ),
               _SummaryRow(
                 color: s.macroCarbs,
-                label: 'Karbonhidrat',
+                label: l.macroCarbs,
                 value: '${a.carb.round()} g',
               ),
               _SummaryRow(
                 color: s.macroFat,
-                label: 'Yağ',
+                label: l.macroFat,
                 value: '${a.fat.round()} g',
               ),
               const Divider(height: AppSpacing.xl),
               // Antrenman
               _SummaryRow(
                 color: s.success,
-                label: 'Antrenman',
+                label: l.navWorkout,
                 value: a.hasWorkout
-                    ? '${a.workoutName ?? "Antrenman"} · ${a.setCount} set · ${a.volumeKg} kg'
-                    : 'Yok',
+                    ? '${a.workoutName ?? l.navWorkout} · ${l.workoutSetCount(a.setCount)} · ${a.volumeKg} kg'
+                    : l.commonNone,
               ),
               // Su
               _SummaryRow(
                 color: s.info,
-                label: 'Su',
+                label: l.homeWaterTitle,
                 value:
                     '${(a.waterMl / 1000).toStringAsFixed(1)} / ${(waterGoal / 1000).toStringAsFixed(1)} L',
               ),

@@ -3,12 +3,13 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import '../../core/i18n/formatting.dart';
 import '../../core/onboarding/first_run_hints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
+import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../activity/activity_calendar.dart';
 import '../home/providers/home_providers.dart';
@@ -24,8 +25,9 @@ class BodyMetricsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final measurementsAsync = ref.watch(allMeasurementsProvider);
 
+    final l = AppL10n.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('İlerleme')),
+      appBar: AppBar(title: Text(l.navProgress)),
       // İlk-kullanım ipucu (docs/15 §B): sekmeye ilk girişte kilo/ölçüm
       // girmeyi işaret eder; bir kez gösterilir.
       floatingActionButton: CoachMark(
@@ -34,7 +36,7 @@ class BodyMetricsScreen extends ConsumerWidget {
         child: FloatingActionButton.extended(
           onPressed: () => _showAddMeasurementDialog(context, ref),
           icon: const Icon(Icons.add_rounded),
-          label: const Text('Ölçüm Ekle'),
+          label: Text(l.bmAddMeasurement),
         ),
       ),
       body: ListView(
@@ -63,7 +65,7 @@ class BodyMetricsScreen extends ConsumerWidget {
       ],
       error: (_, _) => [
         ErrorState(
-          message: 'Ölçümler yüklenemedi',
+          message: AppL10n.of(context).bmLoadError,
           onRetry: () => ref.invalidate(allMeasurementsProvider),
         ),
       ],
@@ -73,9 +75,9 @@ class BodyMetricsScreen extends ConsumerWidget {
             // Boş hal = öğretmen (docs/15 §C): tek net aksiyonla yönlendir.
             EmptyState(
               icon: Icons.monitor_weight_outlined,
-              title: 'Henüz ölçüm yok',
-              message: 'İlk vücut ölçümünü ekleyerek ilerlemeni takip et',
-              actionLabel: 'İlk ölçümünü ekle',
+              title: AppL10n.of(context).bmEmptyTitle,
+              message: AppL10n.of(context).bmEmptyMsg,
+              actionLabel: AppL10n.of(context).bmAddFirst,
               onAction: () => _showAddMeasurementDialog(context, ref),
               compact: true,
             ),
@@ -97,7 +99,8 @@ class BodyMetricsScreen extends ConsumerWidget {
             _WeightChartCard(measurements: weighted, goalWeight: goalWeight),
             AppSpacing.vGapLg,
           ],
-          Text('Geçmiş Ölçümler', style: context.texts.titleMedium),
+          Text(AppL10n.of(context).bmPastMeasurements,
+              style: context.texts.titleMedium),
           AppSpacing.vGapSm,
           ...measurements.map((m) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -106,9 +109,9 @@ class BodyMetricsScreen extends ConsumerWidget {
                   onDelete: () async {
                     final ok = await confirmAction(
                       context,
-                      title: 'Ölçümü sil',
-                      message:
-                          '${DateFormat('d MMM yyyy', 'tr_TR').format(m.date)} tarihli ölçüm silinsin mi?',
+                      title: AppL10n.of(context).bmDeleteTitle,
+                      message: AppL10n.of(context).bmDeleteMsg(
+                          context.dateFmt('d MMM yyyy').format(m.date)),
                     );
                     if (!ok) return;
                     await ref.read(bodyDaoProvider).deleteMeasurement(m.id);
@@ -163,7 +166,7 @@ class _WeightChartCard extends StatelessWidget {
 
     final firstX = spots.first.x;
     final lastX = spots.last.x;
-    final dateFmt = DateFormat('d MMM', 'tr_TR');
+    final dateFmt = context.dateFmt('d MMM');
 
     return Card(
       child: Padding(
@@ -173,10 +176,13 @@ class _WeightChartCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text('Kilo Trendi', style: context.texts.titleSmall),
+                Text(AppL10n.of(context).bmWeightTrend,
+                    style: context.texts.titleSmall),
                 const Spacer(),
                 if (goalWeight != null)
-                  Text('Hedef ${goalWeight!.toStringAsFixed(0)} kg',
+                  Text(
+                      AppL10n.of(context)
+                          .bmGoalLine(goalWeight!.toStringAsFixed(0)),
                       style: context.texts.labelSmall?.copyWith(
                           color: context.semantic.success,
                           fontWeight: FontWeight.w600)),
@@ -329,13 +335,14 @@ class _SummaryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Son Ölçümler', style: context.texts.titleSmall),
+            Text(AppL10n.of(context).bmLatest,
+                style: context.texts.titleSmall),
             AppSpacing.vGapMd,
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _MetricTile(
-                  label: 'Kilo',
+                  label: AppL10n.of(context).bmWeight,
                   value: latest.weightKg != null
                       ? '${latest.weightKg!.toStringAsFixed(1)} kg'
                       : '—',
@@ -343,13 +350,13 @@ class _SummaryCard extends StatelessWidget {
                   unit: 'kg',
                 ),
                 _MetricTile(
-                  label: 'Bel',
+                  label: AppL10n.of(context).bmWaist,
                   value: latest.waistCm != null
                       ? '${latest.waistCm!.toStringAsFixed(1)} cm'
                       : '—',
                 ),
                 _MetricTile(
-                  label: 'Kol',
+                  label: AppL10n.of(context).bmArm,
                   value: latest.armCm != null
                       ? '${latest.armCm!.toStringAsFixed(1)} cm'
                       : '—',
@@ -422,7 +429,7 @@ class _MeasurementCard extends StatelessWidget {
     return Card(
       child: ListTile(
         title: Text(
-            DateFormat('d MMM yyyy', 'tr_TR').format(measurement.date)),
+            context.dateFmt('d MMM yyyy').format(measurement.date)),
         subtitle: Text(
           [
             if (measurement.weightKg != null)
@@ -432,11 +439,11 @@ class _MeasurementCard extends StatelessWidget {
             if (measurement.armCm != null)
               'Kol ${measurement.armCm!.toStringAsFixed(1)}',
             if (measurement.chestCm != null)
-              'Göğüs ${measurement.chestCm!.toStringAsFixed(1)}',
+              '${AppL10n.of(context).bmChest} ${measurement.chestCm!.toStringAsFixed(1)}',
           ].join('  ·  '),
         ),
         trailing: IconButton(
-          tooltip: 'Sil',
+          tooltip: AppL10n.of(context).commonDelete,
           icon: const Icon(Icons.delete_outline_rounded),
           onPressed: onDelete,
         ),
@@ -513,7 +520,7 @@ class _AddMeasurementSheetState extends ConsumerState<_AddMeasurementSheet> {
     if ([weight, waist, chest, arm, hip, neck, fat]
         .every((v) => v == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('En az bir değer gir')),
+        SnackBar(content: Text(AppL10n.of(context).bmNeedOneValue)),
       );
       return;
     }
@@ -542,7 +549,7 @@ class _AddMeasurementSheetState extends ConsumerState<_AddMeasurementSheet> {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Kaydedilemedi, tekrar dene'),
+            content: Text(AppL10n.of(context).bmSaveFailed),
             backgroundColor: context.colors.error,
           ),
         );
@@ -565,9 +572,9 @@ class _AddMeasurementSheetState extends ConsumerState<_AddMeasurementSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SheetHeader(
-                title: 'Yeni Ölçüm',
-                subtitle: 'Boş bıraktığın alan kaydedilmez',
+              SheetHeader(
+                title: AppL10n.of(context).bmNewMeasurement,
+                subtitle: AppL10n.of(context).bmSheetSubtitle,
               ),
               AppSpacing.vGapLg,
               _DateRow(
@@ -575,13 +582,41 @@ class _AddMeasurementSheetState extends ConsumerState<_AddMeasurementSheet> {
                 onTap: _saving ? null : _pickDate,
               ),
               AppSpacing.vGapMd,
-              _Field(label: 'Kilo (kg)', controller: _weightController, min: 30, max: 300),
-              _Field(label: 'Bel (cm)', controller: _waistController, min: 30, max: 250),
-              _Field(label: 'Göğüs (cm)', controller: _chestController, min: 30, max: 250),
-              _Field(label: 'Kol (cm)', controller: _armController, min: 10, max: 100),
-              _Field(label: 'Kalça (cm)', controller: _hipController, min: 30, max: 250),
-              _Field(label: 'Boyun (cm)', controller: _neckController, min: 10, max: 100),
-              _Field(label: 'Yağ Oranı (%)', controller: _fatController, min: 1, max: 70),
+              _Field(
+                  label: '${AppL10n.of(context).bmWeight} (kg)',
+                  controller: _weightController,
+                  min: 30,
+                  max: 300),
+              _Field(
+                  label: '${AppL10n.of(context).bmWaist} (cm)',
+                  controller: _waistController,
+                  min: 30,
+                  max: 250),
+              _Field(
+                  label: '${AppL10n.of(context).bmChest} (cm)',
+                  controller: _chestController,
+                  min: 30,
+                  max: 250),
+              _Field(
+                  label: '${AppL10n.of(context).bmArm} (cm)',
+                  controller: _armController,
+                  min: 10,
+                  max: 100),
+              _Field(
+                  label: '${AppL10n.of(context).bmHip} (cm)',
+                  controller: _hipController,
+                  min: 30,
+                  max: 250),
+              _Field(
+                  label: '${AppL10n.of(context).bmNeck} (cm)',
+                  controller: _neckController,
+                  min: 10,
+                  max: 100),
+              _Field(
+                  label: '${AppL10n.of(context).bmBodyFat} (%)',
+                  controller: _fatController,
+                  min: 1,
+                  max: 70),
               AppSpacing.vGapLg,
               FilledButton(
                 onPressed: _saving ? null : _save,
@@ -593,7 +628,7 @@ class _AddMeasurementSheetState extends ConsumerState<_AddMeasurementSheet> {
                             strokeWidth: 2,
                             color: context.colors.onPrimary),
                       )
-                    : const Text('Kaydet'),
+                    : Text(AppL10n.of(context).commonSave),
               ),
             ],
           ),
@@ -632,9 +667,9 @@ class _Field extends StatelessWidget {
           final t = (raw ?? '').trim().replaceAll(',', '.');
           if (t.isEmpty) return null; // opsiyonel alan
           final v = double.tryParse(t);
-          if (v == null) return 'Geçersiz sayı';
+          if (v == null) return AppL10n.of(context).commonInvalidNumber;
           if (v < min || v > max) {
-            return '$min – $max aralığında olmalı';
+            return AppL10n.of(context).commonRangeError('$min', '$max');
           }
           return null;
         },
@@ -656,8 +691,8 @@ class _DateRow extends StatelessWidget {
     final isToday =
         date.year == now.year && date.month == now.month && date.day == now.day;
     final label = isToday
-        ? 'Bugün'
-        : DateFormat('d MMMM yyyy', 'tr_TR').format(date);
+        ? AppL10n.of(context).commonToday
+        : context.dateFmt('d MMMM yyyy').format(date);
     return Material(
       color: context.colors.surfaceContainerHighest,
       borderRadius: AppRadius.brMd,
@@ -672,7 +707,7 @@ class _DateRow extends StatelessWidget {
               Icon(Icons.event_rounded,
                   size: AppIconSize.md, color: context.colors.primary),
               AppSpacing.gapMd,
-              Text('Tarih',
+              Text(AppL10n.of(context).commonDate,
                   style: Theme.of(context).textTheme.bodyMedium),
               const Spacer(),
               Text(label,

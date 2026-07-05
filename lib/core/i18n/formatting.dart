@@ -16,4 +16,13 @@ extension L10nFormatting on BuildContext {
 
   /// Aktif locale'de binlik ayraçlı sayı biçimi.
   NumberFormat get numFmt => NumberFormat.decimalPattern(localeName);
+
+  /// ISO haftaiçi (1=Pzt … 7=Paz) → aktif locale'de tam gün adı
+  /// ("Pazartesi"/"Monday"). 2024-01-01 Pazartesi'dir — sabit çapa.
+  String weekdayName(int weekday) =>
+      dateFmt('EEEE').format(DateTime(2024, 1, weekday));
+
+  /// ISO haftaiçi → kısa gün adı ("Pzt"/"Mon").
+  String weekdayShort(int weekday) =>
+      dateFmt('E').format(DateTime(2024, 1, weekday));
 }

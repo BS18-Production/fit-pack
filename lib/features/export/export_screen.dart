@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../l10n/app_l10n.dart';
 import '../../data/services/export_service.dart';
 import '../../data/providers.dart';
 
@@ -69,14 +70,14 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
       };
 
       if (content.trim().isEmpty) {
-        _snack('Seçilen aralıkta dışa aktarılacak veri yok');
+        if (mounted) _snack(AppL10n.of(context).exNoData);
         return;
       }
 
       await Share.share(content,
           subject: 'fit_pack_export.${_format.ext}');
     } catch (_) {
-      _snack('Paylaşım başarısız oldu, tekrar dene', error: true);
+      if (mounted) _snack(AppL10n.of(context).exShareFailed, error: true);
     } finally {
       if (mounted) setState(() => _exporting = false);
     }
@@ -84,8 +85,9 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Veri Dışa Aktar')),
+      appBar: AppBar(title: Text(l.exTitle)),
       body: Padding(
         padding: AppSpacing.screen,
         child: Column(
@@ -103,12 +105,12 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
               ),
             ),
             AppSpacing.vGapMd,
-            Text('Verini dışa aktar, yapay zekâ ile analiz et',
+            Text(l.exHeadline,
                 style: context.texts.titleMedium,
                 textAlign: TextAlign.center),
             AppSpacing.vGapXl,
             _Section(
-              title: 'Format',
+              title: l.exFormat,
               child: SegmentedButton<_Format>(
                 segments: const [
                   ButtonSegment(
@@ -122,26 +124,29 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
               ),
             ),
             _Section(
-              title: 'Tarih Aralığı',
+              title: l.exDateRange,
               child: SegmentedButton<_Range>(
-                segments: const [
-                  ButtonSegment(value: _Range.week, label: Text('1 Hafta')),
-                  ButtonSegment(value: _Range.month, label: Text('1 Ay')),
-                  ButtonSegment(value: _Range.all, label: Text('Tümü')),
+                segments: [
+                  ButtonSegment(value: _Range.week, label: Text(l.exWeek)),
+                  ButtonSegment(value: _Range.month, label: Text(l.exMonth)),
+                  ButtonSegment(value: _Range.all, label: Text(l.exAll)),
                 ],
                 selected: {_range},
                 onSelectionChanged: (v) => setState(() => _range = v.first),
               ),
             ),
             _Section(
-              title: 'Kapsam',
+              title: l.exScope,
               child: SegmentedButton<ExportScope>(
-                segments: const [
-                  ButtonSegment(value: ExportScope.all, label: Text('Hepsi')),
+                segments: [
                   ButtonSegment(
-                      value: ExportScope.workout, label: Text('Antrenman')),
+                      value: ExportScope.all, label: Text(l.exScopeAll)),
                   ButtonSegment(
-                      value: ExportScope.nutrition, label: Text('Beslenme')),
+                      value: ExportScope.workout,
+                      label: Text(l.navWorkout)),
+                  ButtonSegment(
+                      value: ExportScope.nutrition,
+                      label: Text(l.navNutrition)),
                 ],
                 selected: {_scope},
                 onSelectionChanged: (v) => setState(() => _scope = v.first),
@@ -159,7 +164,7 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
                           color: context.colors.onPrimary),
                     )
                   : const Icon(Icons.ios_share_rounded),
-              label: Text(_exporting ? 'Hazırlanıyor…' : 'Dışa Aktar & Paylaş'),
+              label: Text(_exporting ? l.exPreparing : l.exShareBtn),
             ),
             AppSpacing.vGapXl,
           ],

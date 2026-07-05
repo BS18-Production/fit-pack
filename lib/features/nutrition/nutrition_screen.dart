@@ -2,10 +2,11 @@ import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import '../../core/i18n/formatting.dart';
 import '../../core/onboarding/first_run_hints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../l10n/app_l10n.dart';
 import '../../core/utils/format.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
@@ -85,12 +86,13 @@ class NutritionScreen extends ConsumerWidget {
     final profileAsync = ref.watch(userProfileProvider);
     final isToday = DateUtils.isSameDay(date, DateTime.now());
 
+    final l = AppL10n.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Beslenme'),
+        title: Text(l.navNutrition),
         actions: [
           IconButton(
-            tooltip: 'Tarih seç',
+            tooltip: l.nutritionPickDate,
             icon: const Icon(Icons.calendar_today_rounded),
             onPressed: () async {
               final picked = await showDatePicker(
@@ -114,7 +116,7 @@ class NutritionScreen extends ConsumerWidget {
         child: FloatingActionButton.extended(
           onPressed: () => _showAddFoodSheet(context, ref),
           icon: const Icon(Icons.add_rounded),
-          label: const Text('Yemek Ekle'),
+          label: Text(l.nutritionAddFood),
         ),
       ),
       body: RefreshIndicator(
@@ -153,7 +155,7 @@ class NutritionScreen extends ConsumerWidget {
                 Skeleton.card(height: 96),
               ]),
               error: (_, _) => ErrorState(
-                message: 'Beslenme kayıtları yüklenemedi',
+                message: l.nutritionLoadError,
                 onRetry: () => _invalidateAll(ref),
               ),
               data: (logs) => Column(
@@ -167,8 +169,8 @@ class NutritionScreen extends ConsumerWidget {
                         icon: const Icon(Icons.content_copy_rounded,
                             size: AppIconSize.sm),
                         label: Text(isToday
-                            ? 'Dünün öğünlerini kopyala'
-                            : 'Önceki günün öğünlerini kopyala'),
+                            ? l.nutritionCopyYesterday
+                            : l.nutritionCopyPrevDay),
                       ),
                     ),
                   ...['breakfast', 'lunch', 'dinner', 'snack']
@@ -197,6 +199,7 @@ class NutritionScreen extends ConsumerWidget {
 
   /// Seçili gün boşsa bir önceki günün tüm kayıtlarını kopyalar.
   Future<void> _copyYesterday(BuildContext context, WidgetRef ref) async {
+    final l = AppL10n.of(context);
     final date = ref.read(selectedDateProvider);
     final from = date.subtract(const Duration(days: 1));
     final messenger = ScaffoldMessenger.of(context);
@@ -207,12 +210,12 @@ class NutritionScreen extends ConsumerWidget {
       messenger.clearSnackBars();
       messenger.showSnackBar(SnackBar(
         content: Text(copied == 0
-            ? 'Önceki günde kayıt yok'
-            : '$copied kayıt kopyalandı'),
+            ? l.nutritionCopyEmpty
+            : l.nutritionCopied(copied)),
       ));
     } catch (_) {
       messenger.showSnackBar(
-          const SnackBar(content: Text('Kopyalanamadı, tekrar dene')));
+          SnackBar(content: Text(l.nutritionCopyFailed)));
     }
   }
 
@@ -244,25 +247,26 @@ class _DateBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _DateNavButton(
-          tooltip: 'Önceki gün',
+          tooltip: l.nutritionPrevDay,
           icon: Icons.chevron_left_rounded,
           onPressed: onPrev,
         ),
         Column(
           children: [
-            Text(isToday ? 'Bugün' : DateFormat('EEEE', 'tr_TR').format(date),
+            Text(isToday ? l.commonToday : context.dateFmt('EEEE').format(date),
                 style: context.texts.titleMedium),
-            Text(DateFormat('d MMMM', 'tr_TR').format(date),
+            Text(context.dateFmt('d MMMM').format(date),
                 style: context.texts.bodySmall
                     ?.copyWith(color: context.colors.onSurfaceVariant)),
           ],
         ),
         _DateNavButton(
-          tooltip: 'Sonraki gün',
+          tooltip: l.nutritionNextDay,
           icon: Icons.chevron_right_rounded,
           onPressed: onNext,
         ),
@@ -350,7 +354,7 @@ class _SummaryHero extends StatelessWidget {
                     ?.copyWith(color: context.colors.onSurfaceVariant)),
             AppSpacing.vGapXl,
             MacroBar(
-              label: 'Protein',
+              label: AppL10n.of(context).macroProtein,
               current: totals.protein,
               goal: proteinGoal,
               unit: 'g',
@@ -358,7 +362,7 @@ class _SummaryHero extends StatelessWidget {
             ),
             AppSpacing.vGapMd,
             MacroBar(
-              label: 'Karbonhidrat',
+              label: AppL10n.of(context).macroCarbs,
               current: totals.carb,
               goal: derived.carb,
               unit: 'g',
@@ -366,7 +370,7 @@ class _SummaryHero extends StatelessWidget {
             ),
             AppSpacing.vGapMd,
             MacroBar(
-              label: 'Yağ',
+              label: AppL10n.of(context).macroFat,
               current: totals.fat,
               goal: derived.fat,
               unit: 'g',
@@ -380,11 +384,11 @@ class _SummaryHero extends StatelessWidget {
 }
 
 
-String _mealName(String type) => switch (type) {
-      'breakfast' => 'Kahvaltı',
-      'lunch' => 'Öğle',
-      'dinner' => 'Akşam',
-      'snack' => 'Atıştırma',
+String _mealName(AppL10n l, String type) => switch (type) {
+      'breakfast' => l.mealBreakfast,
+      'lunch' => l.mealLunch,
+      'dinner' => l.mealDinner,
+      'snack' => l.mealSnack,
       _ => type,
     };
 
@@ -411,6 +415,7 @@ class _MealSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     final totalKcal =
         items.fold<double>(0, (sum, i) => sum + i.log.computedKcal);
 
@@ -434,7 +439,7 @@ class _MealSection extends StatelessWidget {
                       color: context.colors.secondary),
                 ),
                 AppSpacing.hGapMd,
-                Text(_mealName(mealType),
+                Text(_mealName(l, mealType),
                     style: context.texts.titleSmall),
                 const Spacer(),
                 if (totalKcal > 0)
@@ -442,7 +447,7 @@ class _MealSection extends StatelessWidget {
                       style: context.texts.labelMedium?.copyWith(
                           color: context.colors.onSurfaceVariant)),
                 IconButton(
-                  tooltip: '${_mealName(mealType)} ekle',
+                  tooltip: l.nutritionAddTo(_mealName(l, mealType)),
                   icon: const Icon(Icons.add_rounded),
                   onPressed: onAddFood,
                   visualDensity: VisualDensity.compact,
@@ -453,7 +458,7 @@ class _MealSection extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(
                     left: AppSpacing.xs, bottom: AppSpacing.sm),
-                child: Text('Henüz kayıt yok',
+                child: Text(l.nutritionNoEntries,
                     style: context.texts.bodySmall?.copyWith(
                         color: context.colors.onSurfaceVariant)),
               )
@@ -521,7 +526,7 @@ class _FoodLogRow extends StatelessWidget {
             Text('${log.computedKcal.round()} kcal',
                 style: context.texts.titleSmall),
             IconButton(
-              tooltip: 'Sil',
+              tooltip: AppL10n.of(context).commonDelete,
               icon: const Icon(Icons.delete_outline_rounded),
               color: context.colors.onSurfaceVariant,
               visualDensity: VisualDensity.compact,
@@ -710,7 +715,7 @@ class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
         setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Eklenemedi, tekrar dene'),
+            content: Text(AppL10n.of(context).nutritionAddFailed),
             backgroundColor: context.colors.error,
           ),
         );
@@ -734,7 +739,7 @@ class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
     });
     if (results.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('OpenFoodFacts\'te sonuç yok. Elle ekleyebilirsin.')),
+        SnackBar(content: Text(AppL10n.of(context).nutritionOffNoResults)),
       );
     }
   }
@@ -805,9 +810,10 @@ class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     final subtitle = _sessionCount == 0
-        ? 'Birden fazla ekleyebilirsin'
-        : '$_sessionCount eklendi · son: $_lastAdded';
+        ? l.nutritionMultiAddHint
+        : l.nutritionSessionAdded(_sessionCount, _lastAdded ?? '');
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
       maxChildSize: 0.95,
@@ -822,15 +828,16 @@ class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
           ),
           child: Column(
             children: [
-              SheetHeader(title: 'Yemek Ekle', subtitle: subtitle),
+              SheetHeader(title: l.nutritionAddFood, subtitle: subtitle),
               AppSpacing.vGapSm,
               SegmentedButton<String>(
-                segments: const [
+                segments: [
                   ButtonSegment(
-                      value: 'breakfast', label: Text('Kahvaltı')),
-                  ButtonSegment(value: 'lunch', label: Text('Öğle')),
-                  ButtonSegment(value: 'dinner', label: Text('Akşam')),
-                  ButtonSegment(value: 'snack', label: Text('Atıştır.')),
+                      value: 'breakfast', label: Text(l.mealBreakfast)),
+                  ButtonSegment(value: 'lunch', label: Text(l.mealLunch)),
+                  ButtonSegment(value: 'dinner', label: Text(l.mealDinner)),
+                  ButtonSegment(
+                      value: 'snack', label: Text(l.mealSnackShort)),
                 ],
                 selected: {_currentMealType},
                 onSelectionChanged: (v) =>
@@ -844,7 +851,7 @@ class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
                       controller: _searchController,
                       autofocus: false,
                       decoration: InputDecoration(
-                        hintText: 'Yemek ara…',
+                        hintText: l.nutritionSearchHint,
                         prefixIcon: const Icon(Icons.search_rounded),
                         suffixIcon: _searchController.text.isEmpty
                             ? null
@@ -864,13 +871,13 @@ class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
                   ),
                   AppSpacing.hGapSm,
                   IconButton.filledTonal(
-                    tooltip: 'Barkod tara',
+                    tooltip: l.nutritionScanBarcode,
                     onPressed: _scanBarcode,
                     icon: const Icon(Icons.qr_code_scanner_rounded),
                   ),
                   AppSpacing.hGapSm,
                   IconButton.filledTonal(
-                    tooltip: 'Kendi yemeğini ekle',
+                    tooltip: l.nutritionAddCustom,
                     onPressed: _openCustomFood,
                     icon: const Icon(Icons.edit_note_rounded),
                   ),
@@ -891,8 +898,9 @@ class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
                         : const Icon(Icons.travel_explore_rounded,
                             size: AppIconSize.sm),
                     label: Text(_offSearching
-                        ? 'OpenFoodFacts aranıyor…'
-                        : 'Paketli ürünü internette ara: "${_searchController.text.trim()}"'),
+                        ? l.nutritionOffSearching
+                        : l.nutritionOffSearchFor(
+                            _searchController.text.trim())),
                   ),
                 ),
               ],
@@ -927,7 +935,7 @@ class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'OpenFoodFacts · "$_offQuery" (${_offResults.length})',
+                    l.nutritionOffHeader(_offQuery, _offResults.length),
                     style: context.texts.labelMedium
                         ?.copyWith(color: context.colors.onSurfaceVariant),
                   ),
@@ -1007,7 +1015,8 @@ class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
                                 if (food.unitLabel != null &&
                                     (food.defaultPortionGrams ?? 0) > 0)
                                   Text(
-                                    '1 ${food.unitLabel} ≈ ${food.defaultPortionGrams!.round()} g',
+                                    l.nutritionUnitApprox(food.unitLabel!,
+                                        food.defaultPortionGrams!.round()),
                                     style: context.texts.labelSmall
                                         ?.copyWith(
                                             color:
@@ -1059,11 +1068,12 @@ class _EmptyResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     return EmptyState(
       icon: Icons.no_food_rounded,
-      title: query.isEmpty ? 'Yemek yok' : '"$query" bulunamadı',
-      message: 'Listede yoksa kendin ekleyebilirsin',
-      actionLabel: 'Kendi yemeğini ekle',
+      title: query.isEmpty ? l.nutritionNoFoods : l.nutritionNotFound(query),
+      message: l.nutritionNotInListHint,
+      actionLabel: l.nutritionAddCustom,
       onAction: onCreate,
       compact: true,
     );
@@ -1091,20 +1101,34 @@ class _CustomFood {
   });
 }
 
-/// Custom yemek + Yemekler ekranında ortak birim seçenekleri.
-const kUnitOptions = <String>[
-  'porsiyon',
-  'adet',
-  'dilim',
-  'kâse',
-  'su bardağı',
-  'bardak',
-  'yemek kaşığı',
-  'avuç',
-  'diş',
-  'ölçek',
-  'kutu',
-];
+/// Custom yemek + Yemekler ekranında ortak birim seçenekleri (docs/14 —
+/// locale'e göre). Seçilen etiket yemeğin `unitLabel`'ına YAZILIR (içerik):
+/// eski/karışık dilde kayıtlı etiketler için çağıran taraf, mevcut değeri
+/// listeye ekleyerek dropdown'ı korur ([unitOptionsWith]).
+List<String> unitOptions(AppL10n l) => [
+      l.unitPortion,
+      l.unitPiece,
+      l.unitSlice,
+      l.unitBowl,
+      l.unitWaterGlass,
+      l.unitCup,
+      l.unitTablespoon,
+      l.unitHandful,
+      l.unitClove,
+      l.unitScoop,
+      l.unitCan,
+    ];
+
+/// Seçenekler + (listede olmayan) mevcut kayıtlı birim — dropdown value'su
+/// items'ta yoksa Flutter assert atar; farklı dilde kaydedilmiş birimler
+/// böyle korunur.
+List<String> unitOptionsWith(AppL10n l, String? current) {
+  final options = unitOptions(l);
+  if (current != null && !options.contains(current)) {
+    return [current, ...options];
+  }
+  return options;
+}
 
 /// Kullanıcı kendi yemeğini girer. "Yediğin porsiyon" mantığı: toplam
 /// gram + o porsiyonun toplam kcal/P/K/Y'si → /100g'a çevrilip kaydedilir
@@ -1124,8 +1148,19 @@ class _CustomFoodDialogState extends State<_CustomFoodDialog> {
   final _protein = TextEditingController();
   final _carb = TextEditingController();
   final _fat = TextEditingController();
-  // Birim: "porsiyon" varsayılan. null → "birim yok" (sadece gram).
-  String? _unit = 'porsiyon';
+  // Birim: "porsiyon" varsayılan (locale'e göre, ilk build'de atanır).
+  // null → "birim yok" (sadece gram).
+  String? _unit;
+  bool _unitInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_unitInitialized) {
+      _unitInitialized = true;
+      _unit = AppL10n.of(context).unitPortion;
+    }
+  }
 
   @override
   void dispose() {
@@ -1158,8 +1193,9 @@ class _CustomFoodDialogState extends State<_CustomFoodDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     return AlertDialog(
-      title: const Text('Kendi yemeğin'),
+      title: Text(l.nutritionCustomTitle),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -1167,9 +1203,7 @@ class _CustomFoodDialogState extends State<_CustomFoodDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Bir birimin (örn. 1 porsiyon "3 Yumurtalı Omlet") değerlerini '
-                'gir: kaç gram + o miktarın kcal/makrosu. /100g\'a çevrilip '
-                'kaydedilir, tekrar kullanılır. Birim yoksa "(birim yok)" seç.',
+                l.nutritionCustomHelp,
                 style: context.texts.bodySmall?.copyWith(
                     color: context.colors.onSurfaceVariant),
               ),
@@ -1177,21 +1211,21 @@ class _CustomFoodDialogState extends State<_CustomFoodDialog> {
               TextFormField(
                 controller: _name,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                    labelText: 'Yemek adı'),
+                decoration:
+                    InputDecoration(labelText: l.nutritionFoodName),
                 validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Ad gir'
+                    ? l.commonEnterName
                     : null,
               ),
               AppSpacing.vGapMd,
               DropdownButtonFormField<String?>(
                 initialValue: _unit,
-                decoration: const InputDecoration(labelText: 'Birim'),
+                decoration: InputDecoration(labelText: l.nutritionUnit),
                 items: [
-                  const DropdownMenuItem(
-                      value: null, child: Text('(birim yok — sadece gram)')),
-                  ...kUnitOptions.map((u) =>
-                      DropdownMenuItem(value: u, child: Text('1 $u'))),
+                  DropdownMenuItem(
+                      value: null, child: Text(l.nutritionNoUnitOption)),
+                  ...unitOptionsWith(l, _unit).map((u) => DropdownMenuItem(
+                      value: u, child: Text(l.nutritionOneUnit(u)))),
                 ],
                 onChanged: (v) => setState(() => _unit = v),
               ),
@@ -1199,20 +1233,22 @@ class _CustomFoodDialogState extends State<_CustomFoodDialog> {
               _NumberField(
                   controller: _grams,
                   label: _unit == null
-                      ? 'Porsiyon (g)'
-                      : '1 $_unit kaç gram?',
+                      ? l.nutritionPortionGrams
+                      : l.nutritionUnitGramsQuestion(_unit!),
                   requiredField: true),
               AppSpacing.vGapMd,
               _NumberField(
                   controller: _kcal,
-                  label: 'Toplam kcal',
+                  label: l.nutritionTotalKcal,
                   requiredField: true),
               AppSpacing.vGapMd,
-              _NumberField(controller: _protein, label: 'Protein (g)'),
+              _NumberField(
+                  controller: _protein, label: '${l.macroProtein} (g)'),
               AppSpacing.vGapMd,
-              _NumberField(controller: _carb, label: 'Karbonhidrat (g)'),
+              _NumberField(
+                  controller: _carb, label: '${l.macroCarbs} (g)'),
               AppSpacing.vGapMd,
-              _NumberField(controller: _fat, label: 'Yağ (g)'),
+              _NumberField(controller: _fat, label: '${l.macroFat} (g)'),
             ],
           ),
         ),
@@ -1220,9 +1256,9 @@ class _CustomFoodDialogState extends State<_CustomFoodDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Vazgeç'),
+          child: Text(l.commonCancel),
         ),
-        FilledButton(onPressed: _save, child: const Text('Kaydet')),
+        FilledButton(onPressed: _save, child: Text(l.commonSave)),
       ],
     );
   }
@@ -1250,12 +1286,13 @@ class _NumberField extends StatelessWidget {
       ],
       decoration: InputDecoration(labelText: label),
       validator: (raw) {
+        final l = AppL10n.of(context);
         final t = (raw ?? '').trim().replaceAll(',', '.');
-        if (t.isEmpty) return requiredField ? 'Zorunlu' : null;
+        if (t.isEmpty) return requiredField ? l.commonRequired : null;
         final v = double.tryParse(t);
-        if (v == null) return 'Geçersiz sayı';
-        if (requiredField && v <= 0) return '0\'dan büyük olmalı';
-        if (v < 0) return 'Negatif olamaz';
+        if (v == null) return l.commonInvalidNumber;
+        if (requiredField && v <= 0) return l.commonMustBePositive;
+        if (v < 0) return l.commonNotNegative;
         return null;
       },
     );
@@ -1299,10 +1336,11 @@ class _QuantityFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     final ratio = grams / 100;
     final kcal = (food.kcalPer100g * ratio).round();
     final unitMode = hasUnit && useUnit;
-    final unitLabel = food.unitLabel ?? 'adet';
+    final unitLabel = food.unitLabel ?? l.unitPiece;
     final summary = unitMode
         ? '$kcal kcal · ${fmtNum(units)} $unitLabel ≈ ${grams.round()} g'
         : '$kcal kcal · ${grams.round()} g';
@@ -1451,7 +1489,7 @@ class _QuantityFooter extends StatelessWidget {
                           color: context.colors.onPrimary),
                     )
                   : const Icon(Icons.check_rounded),
-              label: Text(saving ? 'Ekleniyor…' : 'Ekle'),
+              label: Text(saving ? l.nutritionAdding : l.commonAdd),
             ),
           ),
         ],

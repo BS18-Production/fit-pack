@@ -74,12 +74,6 @@ final weekWorkoutStatsProvider = FutureProvider<WeekStats>((ref) async {
   return (sessions: sessions.length, volumeKg: volume);
 });
 
-const kWeekdayTr = {
-  1: 'Pazartesi',
-  2: 'Salı',
-  3: 'Çarşamba',
-  4: 'Perşembe',
-  5: 'Cuma',
-  6: 'Cumartesi',
-  7: 'Pazar',
-};
+// Haftaiçi adları artık locale'den üretilir (docs/14):
+// `context.weekdayName/weekdayShort` — core/i18n/formatting.dart.
+

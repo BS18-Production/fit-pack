@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
+import '../../l10n/app_l10n.dart';
 import 'routine_providers.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
@@ -95,12 +97,12 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Rutine bir ad ver')));
+          SnackBar(content: Text(AppL10n.of(context).rbNameRequired)));
       return;
     }
     if (_items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('En az bir hareket ekle')));
+          SnackBar(content: Text(AppL10n.of(context).rbNeedExercise)));
       return;
     }
     setState(() => _saving = true);
@@ -142,8 +144,8 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
     } catch (_) {
       if (mounted) {
         setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Rutin kaydedilemedi — tekrar dene')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppL10n.of(context).rbSaveError)));
       }
       return;
     }
@@ -156,9 +158,10 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEdit ? 'Rutini Düzenle' : 'Yeni Rutin'),
+        title: Text(_isEdit ? l.rbEditTitle : l.rbNewTitle),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -170,7 +173,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('RUTİN ADI',
+                      Text(l.rbNameCaps,
                           style: context.texts.labelSmall?.copyWith(
                             color: context.colors.onSurfaceVariant,
                             fontWeight: FontWeight.w700,
@@ -183,8 +186,8 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                         inputFormatters: [
                           LengthLimitingTextInputFormatter(40)
                         ],
-                        decoration: const InputDecoration(
-                          hintText: 'örn. Push Day',
+                        decoration: InputDecoration(
+                          hintText: l.rbNameHint,
                         ),
                       ),
                       AppSpacing.vGapMd,
@@ -196,9 +199,9 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('${_items.length} hareket',
+                          Text(l.workoutExerciseCount(_items.length),
                               style: context.texts.titleSmall),
-                          Text('hedef set×tekrar',
+                          Text(l.rbTargetHint,
                               style: context.texts.bodySmall?.copyWith(
                                   color: context.colors.onSurfaceVariant
                                       .withValues(alpha: 0.7))),
@@ -218,7 +221,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     vertical: AppSpacing.xxl),
                                 child: Center(
-                                  child: Text('Henüz hareket yok',
+                                  child: Text(l.rbNoExercises,
                                       style: context.texts.bodyMedium?.copyWith(
                                           color: context
                                               .colors.onSurfaceVariant
@@ -262,7 +265,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
               minimum: const EdgeInsets.fromLTRB(
                   AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.md),
               child: GradientButton(
-                label: 'Rutini Kaydet',
+                label: l.rbSave,
                 busy: _saving,
                 onTap: _save,
               ),
@@ -292,7 +295,7 @@ class _AddExerciseButton extends StatelessWidget {
                 Icon(Icons.add_rounded,
                     color: context.colors.primary, size: AppIconSize.sm),
                 AppSpacing.hGapSm,
-                Text('Hareket Ekle',
+                Text(AppL10n.of(context).workoutAddExercise,
                     style: context.texts.labelLarge?.copyWith(
                       color: context.colors.primary,
                       fontWeight: FontWeight.w700,
@@ -315,14 +318,15 @@ class _WeekdayPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return DropdownButtonFormField<int?>(
       initialValue: value,
-      decoration: const InputDecoration(
-        labelText: 'Haftalık gün (opsiyonel)',
-        helperText: 'Atarsan ana sayfa o gün bu rutini önerir',
+      decoration: InputDecoration(
+        labelText: AppL10n.of(context).rbWeekday,
+        helperText: AppL10n.of(context).rbWeekdayHelper,
       ),
       items: [
-        const DropdownMenuItem(value: null, child: Text('Gün atama')),
-        ...kWeekdayTr.entries.map(
-            (e) => DropdownMenuItem(value: e.key, child: Text(e.value))),
+        DropdownMenuItem(
+            value: null, child: Text(AppL10n.of(context).rbNoDay)),
+        for (var d = 1; d <= 7; d++)
+          DropdownMenuItem(value: d, child: Text(context.weekdayName(d))),
       ],
       onChanged: onChanged,
     );
@@ -395,7 +399,7 @@ class _ItemCard extends StatelessWidget {
             Row(
               children: [
                 _Stepper(
-                  label: 'Set',
+                  label: AppL10n.of(context).labelSets,
                   value: item.sets,
                   min: 1,
                   max: 10,
@@ -451,13 +455,13 @@ class _RestRow extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(
                   AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.sm),
-              child: Text('Setler arası dinlenme',
+              child: Text(AppL10n.of(ctx).rbRestBetweenSets,
                   style: ctx.texts.titleMedium),
             ),
             ...WorkoutUi.restOptions.map((sec) {
               final selected = sec == restSec;
               return ListTile(
-                title: Text(WorkoutUi.restLabel(sec)),
+                title: Text(WorkoutUi.restLabel(sec, none: AppL10n.of(ctx).commonNone)),
                 trailing: selected
                     ? Icon(Icons.check_rounded, color: ctx.colors.primary)
                     : null,
@@ -484,11 +488,11 @@ class _RestRow extends StatelessWidget {
             Icon(Icons.timer_outlined,
                 size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
             AppSpacing.hGapSm,
-            Text('Dinlenme',
+            Text(AppL10n.of(context).labelRest,
                 style: context.texts.labelLarge?.copyWith(
                     color: context.colors.onSurfaceVariant)),
             const Spacer(),
-            Text(WorkoutUi.restLabel(restSec),
+            Text(WorkoutUi.restLabel(restSec, none: AppL10n.of(context).commonNone),
                 style: context.texts.labelLarge?.copyWith(
                     color: context.colors.primary,
                     fontWeight: FontWeight.w700)),
@@ -545,7 +549,7 @@ class _RepRange extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('Tekrar',
+        Text(AppL10n.of(context).labelReps,
             style: context.texts.labelMedium
                 ?.copyWith(color: context.colors.onSurfaceVariant)),
         AppSpacing.hGapSm,

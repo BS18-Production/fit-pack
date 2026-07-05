@@ -8,6 +8,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
+import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
@@ -42,12 +43,13 @@ const _muscleKeys = [
   'full_body',
 ];
 
-const kMeasurementTr = {
-  'weight_reps': 'kg × tekrar',
-  'reps': 'tekrar',
-  'time': 'süre',
-  'distance': 'mesafe',
-};
+/// Ölçüm tipi etiketleri (locale'e göre — docs/14).
+Map<String, String> measurementLabels(AppL10n l) => {
+      'weight_reps': l.measureWeightReps,
+      'reps': l.measureReps,
+      'time': l.measureTime,
+      'distance': l.measureDistance,
+    };
 
 class ExerciseLibraryScreen extends ConsumerStatefulWidget {
   /// Çoklu seçim modu (rutin oluşturucu / aktif seanstan açılınca).
@@ -105,9 +107,10 @@ class _ExerciseLibraryScreenState
   Widget build(BuildContext context) {
     final async = ref.watch(libraryExercisesProvider);
 
+    final l = AppL10n.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.selectionMode ? 'Hareket Seç' : 'Hareket Kütüphanesi'),
+        title: Text(widget.selectionMode ? l.elPickTitle : l.workoutLibrary),
       ),
       body: Column(
         children: [
@@ -118,7 +121,7 @@ class _ExerciseLibraryScreenState
               controller: _searchCtrl,
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
-                hintText: 'Hareket ara…',
+                hintText: l.elSearchHint,
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: _query.isEmpty
                     ? null
@@ -149,7 +152,7 @@ class _ExerciseLibraryScreenState
             child: async.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, _) => ErrorState(
-                message: 'Hareketler yüklenemedi',
+                message: l.elLoadError,
                 onRetry: () => ref.invalidate(libraryExercisesProvider),
               ),
               data: (all) {
@@ -162,10 +165,10 @@ class _ExerciseLibraryScreenState
                           ? EmptyState(
                               icon: Icons.search_off_rounded,
                               title: _query.isEmpty
-                                  ? 'Hareket bulunamadı'
-                                  : '"$_query" bulunamadı',
-                              message: 'Filtreyi değiştir ya da yeni hareket ekle',
-                              actionLabel: 'Yeni Hareket',
+                                  ? l.elNotFoundTitle
+                                  : l.nutritionNotFound(_query),
+                              message: l.elFilterHint,
+                              actionLabel: l.elNew,
                               onAction: _addCustom,
                               compact: true,
                             )
@@ -197,7 +200,7 @@ class _ExerciseLibraryScreenState
     ref.invalidate(libraryExercisesProvider);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Hareket eklendi')),
+        SnackBar(content: Text(AppL10n.of(context).elAdded)),
       );
     }
   }
@@ -223,7 +226,7 @@ class _CountRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('$count hareket',
+          Text(AppL10n.of(context).workoutExerciseCount(count),
               style: context.texts.bodySmall?.copyWith(
                 color: context.colors.onSurfaceVariant.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w600,
@@ -231,7 +234,7 @@ class _CountRow extends StatelessWidget {
           TextButton.icon(
             onPressed: onNew,
             icon: const Icon(Icons.add_rounded, size: AppIconSize.sm),
-            label: const Text('Yeni Hareket'),
+            label: Text(AppL10n.of(context).elNew),
           ),
         ],
       ),
@@ -589,8 +592,9 @@ class _CustomExerciseDialogState extends State<_CustomExerciseDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     return AlertDialog(
-      title: const Text('Yeni Hareket'),
+      title: Text(l.elNew),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -601,37 +605,37 @@ class _CustomExerciseDialogState extends State<_CustomExerciseDialog> {
                 controller: _name,
                 autofocus: true,
                 inputFormatters: [LengthLimitingTextInputFormatter(50)],
-                decoration: const InputDecoration(
-                    labelText: 'Hareket adı (örn. Cable Row)'),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Ad gir' : null,
+                decoration: InputDecoration(labelText: l.elNameLabel),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? l.commonEnterName
+                    : null,
               ),
               AppSpacing.vGapMd,
               _Dropdown(
-                label: 'Kategori',
+                label: l.elCategory,
                 value: _category,
                 items: _categoryItemsEn,
                 onChanged: (v) => setState(() => _category = v),
               ),
               AppSpacing.vGapMd,
               _Dropdown(
-                label: 'Ana kas',
+                label: l.elPrimaryMuscle,
                 value: _muscle,
                 items: _muscleItemsEn,
                 onChanged: (v) => setState(() => _muscle = v),
               ),
               AppSpacing.vGapMd,
               _Dropdown(
-                label: 'Ekipman',
+                label: l.elEquipment,
                 value: _equipment,
                 items: _equipmentItemsEn,
                 onChanged: (v) => setState(() => _equipment = v),
               ),
               AppSpacing.vGapMd,
               _Dropdown(
-                label: 'Ölçüm tipi',
+                label: l.elMeasureType,
                 value: _measurement,
-                items: kMeasurementTr,
+                items: measurementLabels(l),
                 onChanged: (v) => setState(() => _measurement = v),
               ),
             ],
@@ -641,8 +645,8 @@ class _CustomExerciseDialogState extends State<_CustomExerciseDialog> {
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Vazgeç')),
-        FilledButton(onPressed: _save, child: const Text('Ekle')),
+            child: Text(l.commonCancel)),
+        FilledButton(onPressed: _save, child: Text(l.commonAdd)),
       ],
     );
   }

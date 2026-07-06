@@ -291,6 +291,50 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
     if (mounted) Navigator.of(context).maybePop();
   }
 
+  /// Hesabı kalıcı sil (docs/16 §4) — çift onay + önce bulut yedeği temizle.
+  /// Cihazdaki yerel veri etkilenmez (local-first).
+  Future<void> _deleteAccount() async {
+    final l = AppL10n.of(context);
+    final ok1 = await confirmAction(
+      context,
+      title: l.cloudDeleteTitle,
+      message: l.cloudDeleteMsg,
+      confirmLabel: l.commonDelete,
+      destructive: true,
+    );
+    if (!ok1 || !mounted) return;
+    final ok2 = await confirmAction(
+      context,
+      title: l.cloudDeleteConfirm2Title,
+      message: l.cloudDeleteConfirm2Msg,
+      confirmLabel: l.cloudDeleteAccount,
+      destructive: true,
+    );
+    if (!ok2 || !mounted) return;
+
+    setState(() => _busy = true);
+    try {
+      // Sıra önemli: auth kullanıcısı silinince storage'a erişim düşer —
+      // önce yedek objesi silinir, sonra hesap.
+      await ref.read(cloudBackupServiceProvider).deleteCloudBackup();
+      await ref.read(authServiceProvider).deleteAccount();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.cloudDeleted)),
+        );
+        Navigator.of(context).maybePop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.cloudDeleteFailed(e.toString()))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -376,6 +420,12 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
           onPressed: _busy ? null : _signOut,
           icon: Icon(Icons.logout_rounded, color: c.error),
           label: Text(l.cloudSignOut, style: TextStyle(color: c.error)),
+        ),
+        AppSpacing.vGapSm,
+        TextButton.icon(
+          onPressed: _busy ? null : _deleteAccount,
+          icon: Icon(Icons.delete_forever_rounded, color: c.error),
+          label: Text(l.cloudDeleteAccount, style: TextStyle(color: c.error)),
         ),
       ],
     );

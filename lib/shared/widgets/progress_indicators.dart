@@ -147,6 +147,7 @@ class MacroInlineText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     final base = context.texts.labelSmall
         ?.copyWith(color: context.colors.onSurfaceVariant);
     TextSpan macro(String letter, double value, Color color) => TextSpan(
@@ -156,11 +157,11 @@ class MacroInlineText extends StatelessWidget {
     return Text.rich(
       TextSpan(style: base, children: [
         if (prefix != null) TextSpan(text: prefix),
-        macro('P', protein, context.semantic.macroProtein),
+        macro(l.macroProteinAbbr, protein, context.semantic.macroProtein),
         const TextSpan(text: ' '),
-        macro('K', carb, context.semantic.macroCarbs),
+        macro(l.macroCarbsAbbr, carb, context.semantic.macroCarbs),
         const TextSpan(text: ' '),
-        macro('Y', fat, context.semantic.macroFat),
+        macro(l.macroFatAbbr, fat, context.semantic.macroFat),
         if (suffix != null) TextSpan(text: suffix),
       ]),
       maxLines: 1,

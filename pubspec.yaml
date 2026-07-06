@@ -51,12 +51,17 @@ dependencies:
   # Utils
   share_plus: ^10.1.4
   csv: ^6.0.0
+  # Dış link + mailto (Ayarlar → Hakkında, docs/16 §6)
+  url_launcher: ^6.3.0
 
   # Beslenme V2 — OpenFoodFacts (REST) + barkod tarama (docs/07-nutrition-v2.md)
   http: ^1.2.0
   mobile_scanner: ^7.0.0
   cached_network_image: ^3.4.1
   flutter_svg: ^2.3.0
+  flutter_local_notifications: ^22.0.1
+  timezone: ^0.11.1
+  flutter_timezone: ^5.1.0
 
 dev_dependencies:
   flutter_test:

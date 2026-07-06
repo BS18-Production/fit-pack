@@ -8,6 +8,9 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/notifications/notification_prefs.dart';
+import '../../core/notifications/notification_service.dart';
+import '../../core/units/units.dart';
 import '../../data/database/app_database.dart';
 import '../../core/utils/format.dart';
 import '../../data/providers.dart';
@@ -82,8 +85,9 @@ int? parseDuration(String raw) {
   return mins == null ? null : (mins * 60).round();
 }
 
-/// Geçen seansın değerini ölçüm tipine göre formatlar ("60×8", "12", "12:30", "5.2 km").
-String? prevLabel(WorkoutSet? s, String measure) {
+/// Geçen seansın değerini ölçüm tipine göre GÖRÜNTÜ biriminde formatlar
+/// ("60×8", "12", "12:30", "5.2 km" / imperial'de "132×8", "3.2 mi").
+String? prevLabel(WorkoutSet? s, String measure, Units units) {
   if (s == null) return null;
   switch (measure) {
     case 'reps':
@@ -92,10 +96,10 @@ String? prevLabel(WorkoutSet? s, String measure) {
       return s.durationSec != null ? fmtDuration(s.durationSec!) : null;
     case 'distance':
       if (s.distanceM == null) return null;
-      return '${fmtNum(s.distanceM! / 1000)} km';
+      return '${units.distanceValue(s.distanceM!)} ${units.distanceUnit}';
     default:
       return (s.weightKg != null && s.reps != null)
-          ? '${fmtNum(s.weightKg!)}×${s.reps}'
+          ? '${units.weightValue(s.weightKg!)}×${s.reps}'
           : null;
   }
 }
@@ -186,6 +190,24 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       _saveDraft().then((_) {
         if (mounted) ref.invalidate(activeDraftProvider);
       });
+    }
+    // P-11 (docs/16 §5): dinlenme sürerken arka plana geçildiyse bitişe
+    // bildirim kur; öne dönünce iptal (uygulama içinde sayaç zaten görünür).
+    if (state == AppLifecycleState.paused) {
+      final deadline = _restDeadline;
+      if (deadline != null &&
+          deadline.isAfter(DateTime.now()) &&
+          ref.read(notificationPrefsProvider).restEnabled &&
+          mounted) {
+        final l = AppL10n.of(context);
+        ref.read(notificationServiceProvider).scheduleRestDone(
+              after: deadline.difference(DateTime.now()),
+              title: l.notifRestDoneTitle,
+              body: l.notifRestDoneBody,
+            );
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      ref.read(notificationServiceProvider).cancelRestDone();
     }
   }
 
@@ -296,7 +318,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
           (mounted ? AppL10n.of(context).navWorkout : 'Workout');
       for (final it in exs) {
         final last = await dao.getLastSetForExercise(it.exercise.id);
-        final prev = prevLabel(last, it.exercise.measurementType);
+        final prev = prevLabel(
+            last, it.exercise.measurementType, ref.read(unitsProvider));
         // Kardiyo/süre/mesafe hareketleri tek "set" ile başlar; ağırlık
         // hareketleri rutin hedefi kadar (varsayılan 3).
         final isCardioLike = it.exercise.measurementType == 'time' ||
@@ -370,7 +393,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     final ex = await context.push<Exercise>(AppRoutes.exercisesSelect);
     if (ex == null) return;
     final last = await ref.read(workoutDaoProvider).getLastSetForExercise(ex.id);
-    final prev = prevLabel(last, ex.measurementType);
+    final prev = prevLabel(last, ex.measurementType, ref.read(unitsProvider));
     setState(() => _exercises.add(_SessionExercise(
           ex,
           prev,
@@ -413,6 +436,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   void _skipRest() {
     _restTimer?.cancel();
     _restDeadline = null;
+    ref.read(notificationServiceProvider).cancelRestDone();
     setState(() => _restRemaining = 0);
   }
 
@@ -800,7 +824,7 @@ class _MiniBtn extends StatelessWidget {
   }
 }
 
-class _ExerciseBlock extends StatelessWidget {
+class _ExerciseBlock extends ConsumerWidget {
   final _SessionExercise ex;
   final void Function(_SetEntry) onToggle;
   final void Function(_SetEntry) onCycleType;
@@ -816,7 +840,8 @@ class _ExerciseBlock extends StatelessWidget {
       required this.onChanged});
 
   /// Ölçüm tipine göre orta sütun başlıkları (SET ve ✓ arasındakiler).
-  static List<Widget> _headerCols(AppL10n l, String measure) {
+  /// Ağırlık sütunu birim tercihine göre KG/LB yazar (docs/16 §3).
+  static List<Widget> _headerCols(AppL10n l, String measure, Units units) {
     switch (measure) {
       case 'reps':
         return [
@@ -832,7 +857,8 @@ class _ExerciseBlock extends StatelessWidget {
         ];
       default:
         return [
-          Expanded(child: _H(l.hdrKg, center: true)),
+          Expanded(
+              child: _H(units.weightUnit.toUpperCase(), center: true)),
           Expanded(child: _H(l.hdrReps, center: true)),
           const SizedBox(width: 44, child: _RpeHeader()),
         ];
@@ -840,9 +866,10 @@ class _ExerciseBlock extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final c = context.colors;
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final units = ref.watch(unitsProvider);
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Padding(
@@ -924,7 +951,7 @@ class _ExerciseBlock extends StatelessWidget {
                       width: 56,
                       child:
                           _H(AppL10n.of(context).hdrPrev, center: true)),
-                  ..._headerCols(AppL10n.of(context), ex.measure),
+                  ..._headerCols(AppL10n.of(context), ex.measure, units),
                   const SizedBox(width: 42),
                 ],
               ),
@@ -937,6 +964,7 @@ class _ExerciseBlock extends StatelessWidget {
                   set: e.value,
                   measure: ex.measure,
                   previous: ex.previous,
+                  units: units,
                   onToggle: () => onToggle(e.value),
                   onCycleType: () => onCycleType(e.value),
                   onChanged: onChanged,
@@ -1075,6 +1103,7 @@ class _SetRow extends StatelessWidget {
   final _SetEntry set;
   final String measure;
   final String? previous;
+  final Units units;
   final VoidCallback onToggle, onCycleType, onChanged;
   const _SetRow(
       {super.key,
@@ -1082,6 +1111,7 @@ class _SetRow extends StatelessWidget {
       required this.set,
       required this.measure,
       required this.previous,
+      required this.units,
       required this.onToggle,
       required this.onCycleType,
       required this.onChanged});
@@ -1124,11 +1154,14 @@ class _SetRow extends StatelessWidget {
         return [
           Expanded(
               child: _NumCell(
-                  value: set.distanceM == null ? null : set.distanceM! / 1000,
+                  value: set.distanceM == null
+                      ? null
+                      : units.distanceFromM(set.distanceM!),
                   decimal: true,
-                  hint: 'km',
+                  hint: units.distanceUnit,
                   onChanged: (v) {
-                    set.distanceM = v == null ? null : v * 1000;
+                    set.distanceM =
+                        v == null ? null : units.distanceToM(v);
                     onChanged();
                   })),
           Expanded(
@@ -1141,12 +1174,16 @@ class _SetRow extends StatelessWidget {
         ];
       default:
         return [
+          // Görüntü/giriş birim tercihinde; state ve DB kg (docs/16 §3).
           Expanded(
               child: _NumCell(
-                  value: set.weight,
+                  value: set.weight == null
+                      ? null
+                      : double.parse(
+                          units.weightFromKg(set.weight!).toStringAsFixed(1)),
                   decimal: true,
                   onChanged: (v) {
-                    set.weight = v;
+                    set.weight = v == null ? null : units.weightToKg(v);
                     onChanged();
                   })),
           Expanded(

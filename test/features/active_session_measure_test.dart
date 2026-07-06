@@ -1,4 +1,5 @@
 import 'package:fit_pack/data/database/app_database.dart';
+import 'package:fit_pack/core/units/units.dart';
 import 'package:fit_pack/core/utils/format.dart';
 import 'package:fit_pack/features/workout/active_session_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -46,21 +47,30 @@ void main() {
           isComplete: true,
         );
 
+    const metric = Units(UnitSystem.metric);
+    const imp = Units(UnitSystem.imperial);
     test('weight_reps → "60×8"', () {
-      expect(prevLabel(set(kg: 60, reps: 8), 'weight_reps'), '60×8');
+      expect(prevLabel(set(kg: 60, reps: 8), 'weight_reps', metric), '60×8');
     });
     test('reps → "12"', () {
-      expect(prevLabel(set(reps: 12), 'reps'), '12');
+      expect(prevLabel(set(reps: 12), 'reps', metric), '12');
     });
     test('time → "12:30"', () {
-      expect(prevLabel(set(dur: 750), 'time'), '12:30');
+      expect(prevLabel(set(dur: 750), 'time', metric), '12:30');
     });
     test('distance → "5.2 km"', () {
-      expect(prevLabel(set(dist: 5200), 'distance'), '5.2 km');
+      expect(prevLabel(set(dist: 5200), 'distance', metric), '5.2 km');
     });
     test('veri yoksa → null', () {
-      expect(prevLabel(null, 'time'), isNull);
-      expect(prevLabel(set(), 'distance'), isNull);
+      expect(prevLabel(null, 'time', metric), isNull);
+      expect(prevLabel(set(), 'distance', metric), isNull);
+    });
+    test('imperial: kg→lb ve m→mi görüntü dönüşümü (DB metrik kalır)', () {
+      // 60 kg ≈ 132.3 lb — fmtNum tam sayıya yuvarlamaz, tek ondalık korur.
+      expect(prevLabel(set(kg: 60, reps: 8), 'weight_reps', imp),
+          startsWith('132'));
+      expect(
+          prevLabel(set(dist: 1609.344), 'distance', imp), '1 mi');
     });
   });
 }

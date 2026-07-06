@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/i18n/formatting.dart';
+import '../../core/units/units.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/utils/format.dart';
@@ -193,10 +194,12 @@ class _SessionDetail extends ConsumerWidget {
   const _SessionDetail({required this.session});
 
   /// Bir set'in değer metni — ölçüm tipini dolu alandan çıkarır (kayıtta yok).
-  String _fmtSet(BuildContext context, WorkoutSet s) {
+  /// Görüntü birim tercihinde; DB metrik (docs/16 §3).
+  String _fmtSet(BuildContext context, WorkoutSet s, Units units) {
     if (s.durationSec != null || s.distanceM != null) {
       final parts = <String>[
-        if (s.distanceM != null) '${fmtNum(s.distanceM! / 1000)} km',
+        if (s.distanceM != null)
+          '${units.distanceValue(s.distanceM!)} ${units.distanceUnit}',
         if (s.durationSec != null) fmtDuration(s.durationSec!),
       ];
       return parts.join(' · ');
@@ -204,14 +207,15 @@ class _SessionDetail extends ConsumerWidget {
     if (s.weightKg == null && s.reps != null) {
       return '${s.reps} ${AppL10n.of(context).unitReps}';
     }
-    final wTxt = s.weightKg == null ? '—' : fmtNum(s.weightKg!);
-    return '$wTxt kg × ${s.reps ?? '—'}';
+    final wTxt = s.weightKg == null ? '—' : units.weightValue(s.weightKg!);
+    return '$wTxt ${units.weightUnit} × ${s.reps ?? '—'}';
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final setsAsync = ref.watch(_sessionSetsProvider(session.id));
     final bodyWeight = ref.watch(latestWeightProvider).valueOrNull?.weightKg;
+    final units = ref.watch(unitsProvider);
     return setsAsync.when(
       loading: () => const Padding(
         padding: EdgeInsets.all(AppSpacing.lg),
@@ -263,7 +267,9 @@ class _SessionDetail extends ConsumerWidget {
               // ── üst istatistik şeridi ──
               _StatStrip(
                 duration: session.durationMin,
-                volumeKg: volume > 0 ? volume.round() : null,
+                volume:
+                    volume > 0 ? units.weightFromKg(volume).round() : null,
+                volumeUnit: units.weightUnit,
                 setCount: setCount,
                 kcal: kcal?.round(),
               ),
@@ -278,7 +284,7 @@ class _SessionDetail extends ConsumerWidget {
                         (
                           no: i + 1,
                           type: e.value[i].setType,
-                          value: _fmtSet(context, e.value[i]),
+                          value: _fmtSet(context, e.value[i], units),
                         ),
                     ],
                   )),
@@ -302,12 +308,14 @@ class _SessionDetail extends ConsumerWidget {
 /// Seans üst istatistik şeridi: süre · hacim · set · ~kcal.
 class _StatStrip extends StatelessWidget {
   final int? duration;
-  final int? volumeKg;
+  final int? volume; // görüntü biriminde
+  final String volumeUnit;
   final int setCount;
   final int? kcal;
   const _StatStrip(
       {required this.duration,
-      required this.volumeKg,
+      required this.volume,
+      required this.volumeUnit,
       required this.setCount,
       required this.kcal});
 
@@ -320,10 +328,10 @@ class _StatStrip extends StatelessWidget {
           '$duration ${AppL10n.of(context).unitMinShort}',
           AppL10n.of(context).labelDuration
         ),
-      if (volumeKg != null)
+      if (volume != null)
         (
           Icons.fitness_center_rounded,
-          '$volumeKg kg',
+          '$volume $volumeUnit',
           AppL10n.of(context).labelVolume
         ),
       (

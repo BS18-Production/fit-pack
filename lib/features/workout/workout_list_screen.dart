@@ -5,6 +5,7 @@ import '../../core/i18n/formatting.dart';
 import '../../core/onboarding/first_run_hints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/units/units.dart';
 import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
@@ -65,19 +66,23 @@ class WorkoutListScreen extends ConsumerWidget {
                     _routinesHeader(context, routines.length),
                     AppSpacing.vGapSm,
                     if (routines.isEmpty)
+                      // Boş halde tek aksiyon yeter (EmptyState kendi
+                      // butonunu içeriyor) — altına ayrıca "Yeni Rutin"
+                      // eklemek aynı işi iki kez gösterirdi.
                       _NoRoutines(
                         onCreate: () => context.push(AppRoutes.routineNew),
                       )
-                    else
+                    else ...[
                       ...routines.map((r) => Padding(
                             padding:
                                 const EdgeInsets.only(bottom: AppSpacing.md),
                             child: _RoutineCard(routine: r),
                           )),
-                    AppSpacing.vGapXs,
-                    _NewRoutineButton(
-                      onTap: () => context.push(AppRoutes.routineNew),
-                    ),
+                      AppSpacing.vGapXs,
+                      _NewRoutineButton(
+                        onTap: () => context.push(AppRoutes.routineNew),
+                      ),
+                    ],
                   ],
                 );
               },
@@ -171,7 +176,8 @@ class _WeekStatsCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(weekWorkoutStatsProvider).valueOrNull;
     final sessions = stats?.sessions ?? 0;
-    final volume = stats?.volumeKg ?? 0;
+    final units = ref.watch(unitsProvider);
+    final volume = units.weightFromKg(stats?.volumeKg ?? 0).round();
     final l = AppL10n.of(context);
     final volumeStr = context.numFmt.format(volume);
     return Card(
@@ -197,7 +203,7 @@ class _WeekStatsCard extends ConsumerWidget {
                 child: _Stat(
                   label: l.workoutTotalVolumeCaps,
                   value: volumeStr,
-                  unit: 'kg',
+                  unit: units.weightUnit,
                 ),
               ),
             ],

@@ -199,6 +199,30 @@ abstract class AppL10n {
   /// **'Calories'**
   String get macroCalories;
 
+  /// No description provided for @macroProteinAbbr.
+  ///
+  /// In en, this message translates to:
+  /// **'P'**
+  String get macroProteinAbbr;
+
+  /// No description provided for @macroCarbsAbbr.
+  ///
+  /// In en, this message translates to:
+  /// **'C'**
+  String get macroCarbsAbbr;
+
+  /// No description provided for @macroFatAbbr.
+  ///
+  /// In en, this message translates to:
+  /// **'F'**
+  String get macroFatAbbr;
+
+  /// No description provided for @commonUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get commonUndo;
+
   /// No description provided for @navHome.
   ///
   /// In en, this message translates to:
@@ -235,12 +259,6 @@ abstract class AppL10n {
   /// **'Export data'**
   String get homeExportTooltip;
 
-  /// No description provided for @homeSettingsTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Settings'**
-  String get homeSettingsTooltip;
-
   /// No description provided for @homeStreakKicker.
   ///
   /// In en, this message translates to:
@@ -274,8 +292,8 @@ abstract class AppL10n {
   /// No description provided for @homeStatVolume.
   ///
   /// In en, this message translates to:
-  /// **'kg volume'**
-  String get homeStatVolume;
+  /// **'{unit} volume'**
+  String homeStatVolume(String unit);
 
   /// No description provided for @homeStatKcal.
   ///
@@ -1195,6 +1213,12 @@ abstract class AppL10n {
   /// **'Done'**
   String get wsDoneBtn;
 
+  /// No description provided for @wsUnknownExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise'**
+  String get wsUnknownExercise;
+
   /// No description provided for @rpFallback.
   ///
   /// In en, this message translates to:
@@ -1504,7 +1528,7 @@ abstract class AppL10n {
   /// No description provided for @measureWeightReps.
   ///
   /// In en, this message translates to:
-  /// **'kg × reps'**
+  /// **'weight × reps'**
   String get measureWeightReps;
 
   /// No description provided for @measureReps.
@@ -1666,7 +1690,7 @@ abstract class AppL10n {
   /// No description provided for @edChartEmptyMsg.
   ///
   /// In en, this message translates to:
-  /// **'Log kg×reps at least twice to see the progress chart'**
+  /// **'Log weight×reps at least twice to see the progress chart'**
   String get edChartEmptyMsg;
 
   /// No description provided for @edE1rmTitle.
@@ -1678,7 +1702,7 @@ abstract class AppL10n {
   /// No description provided for @edEpley.
   ///
   /// In en, this message translates to:
-  /// **'Epley: kg × (1 + reps/30)'**
+  /// **'Epley: weight × (1 + reps/30)'**
   String get edEpley;
 
   /// No description provided for @edNoPr.
@@ -1690,7 +1714,7 @@ abstract class AppL10n {
   /// No description provided for @edNoPrMsg.
   ///
   /// In en, this message translates to:
-  /// **'Your personal records collect here once you log kg×reps'**
+  /// **'Your personal records collect here once you log weight×reps'**
   String get edNoPrMsg;
 
   /// No description provided for @edBestE1rm.
@@ -1780,8 +1804,8 @@ abstract class AppL10n {
   /// No description provided for @bmGoalLine.
   ///
   /// In en, this message translates to:
-  /// **'Goal {kg} kg'**
-  String bmGoalLine(String kg);
+  /// **'Goal {value}'**
+  String bmGoalLine(String value);
 
   /// No description provided for @bmLatest.
   ///
@@ -2089,6 +2113,48 @@ abstract class AppL10n {
   /// **'Sign Out'**
   String get cloudSignOut;
 
+  /// No description provided for @cloudDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get cloudDeleteAccount;
+
+  /// No description provided for @cloudDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get cloudDeleteTitle;
+
+  /// No description provided for @cloudDeleteMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cloud account and cloud backup will be permanently deleted. Data on this device is not affected.'**
+  String get cloudDeleteMsg;
+
+  /// No description provided for @cloudDeleteConfirm2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure?'**
+  String get cloudDeleteConfirm2Title;
+
+  /// No description provided for @cloudDeleteConfirm2Msg.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the last step — your account can\'t be recovered afterwards.'**
+  String get cloudDeleteConfirm2Msg;
+
+  /// No description provided for @cloudDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been deleted'**
+  String get cloudDeleted;
+
+  /// No description provided for @cloudDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete account: {error}'**
+  String cloudDeleteFailed(String error);
+
   /// No description provided for @unitPortion.
   ///
   /// In en, this message translates to:
@@ -2245,11 +2311,11 @@ abstract class AppL10n {
   /// **'Body'**
   String get settingsSectionBody;
 
-  /// No description provided for @settingsSectionAppearance.
+  /// No description provided for @settingsSectionPreferences.
   ///
   /// In en, this message translates to:
-  /// **'Appearance'**
-  String get settingsSectionAppearance;
+  /// **'Preferences'**
+  String get settingsSectionPreferences;
 
   /// No description provided for @settingsSectionNutrition.
   ///
@@ -2260,7 +2326,7 @@ abstract class AppL10n {
   /// No description provided for @settingsSectionMyData.
   ///
   /// In en, this message translates to:
-  /// **'My Data'**
+  /// **'Data & Privacy'**
   String get settingsSectionMyData;
 
   /// No description provided for @settingsSectionAbout.
@@ -2268,6 +2334,204 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'About'**
   String get settingsSectionAbout;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profileTitle;
+
+  /// No description provided for @profileSectionIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity & Energy'**
+  String get profileSectionIdentity;
+
+  /// No description provided for @profileMeasurements.
+  ///
+  /// In en, this message translates to:
+  /// **'Measurements'**
+  String get profileMeasurements;
+
+  /// No description provided for @profileMeasurementsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight, waist, arm — tap to log'**
+  String get profileMeasurementsSubtitle;
+
+  /// No description provided for @homeProfileTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get homeProfileTooltip;
+
+  /// No description provided for @settingsLicenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-Source Licenses'**
+  String get settingsLicenses;
+
+  /// No description provided for @settingsAttribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Data Sources'**
+  String get settingsAttribution;
+
+  /// No description provided for @settingsAttributionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise & food databases the app builds on'**
+  String get settingsAttributionSubtitle;
+
+  /// No description provided for @settingsFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Feedback'**
+  String get settingsFeedback;
+
+  /// No description provided for @settingsFeedbackSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a problem or share an idea'**
+  String get settingsFeedbackSubtitle;
+
+  /// No description provided for @settingsWeekStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Week Starts On'**
+  String get settingsWeekStart;
+
+  /// No description provided for @settingsUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Units'**
+  String get settingsUnits;
+
+  /// No description provided for @settingsNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get settingsNotifications;
+
+  /// No description provided for @settingsNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest timer, workout & water reminders'**
+  String get settingsNotificationsSubtitle;
+
+  /// No description provided for @notifRestTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest timer alert'**
+  String get notifRestTimer;
+
+  /// No description provided for @notifRestTimerSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifies when rest ends while the app is in the background'**
+  String get notifRestTimerSub;
+
+  /// No description provided for @notifWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily workout reminder'**
+  String get notifWorkout;
+
+  /// No description provided for @notifWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily water reminder'**
+  String get notifWater;
+
+  /// No description provided for @notifTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get notifTime;
+
+  /// No description provided for @notifPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission denied — enable it in system settings.'**
+  String get notifPermissionDenied;
+
+  /// No description provided for @notifRestDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest over'**
+  String get notifRestDoneTitle;
+
+  /// No description provided for @notifRestDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Time for the next set'**
+  String get notifRestDoneBody;
+
+  /// No description provided for @notifWorkoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout time'**
+  String get notifWorkoutTitle;
+
+  /// No description provided for @notifWorkoutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan is waiting — a short session counts too.'**
+  String get notifWorkoutBody;
+
+  /// No description provided for @notifWaterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Water break'**
+  String get notifWaterTitle;
+
+  /// No description provided for @notifWaterBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A glass of water now keeps your ring on track.'**
+  String get notifWaterBody;
+
+  /// No description provided for @unitsMetric.
+  ///
+  /// In en, this message translates to:
+  /// **'Metric (kg, cm)'**
+  String get unitsMetric;
+
+  /// No description provided for @unitsImperial.
+  ///
+  /// In en, this message translates to:
+  /// **'Imperial (lb, ft)'**
+  String get unitsImperial;
+
+  /// No description provided for @attribIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit Pack is built on these open datasets and libraries. Thank you to their maintainers!'**
+  String get attribIntro;
+
+  /// No description provided for @attribOffDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Packaged food nutrition data (barcode & text search)'**
+  String get attribOffDesc;
+
+  /// No description provided for @attribFedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise library, instructions and demo photos'**
+  String get attribFedDesc;
+
+  /// No description provided for @attribMuscleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Body muscle map visual'**
+  String get attribMuscleDesc;
+
+  /// No description provided for @attribLicense.
+  ///
+  /// In en, this message translates to:
+  /// **'License: {name}'**
+  String attribLicense(String name);
 
   /// No description provided for @settingsKcalGoal.
   ///
@@ -2710,13 +2974,13 @@ abstract class AppL10n {
   /// No description provided for @onbProjectionCut.
   ///
   /// In en, this message translates to:
-  /// **'At this pace, you could reach {goal} kg in roughly {weeks} weeks.'**
+  /// **'At this pace, you could reach {goal} in roughly {weeks} weeks.'**
   String onbProjectionCut(String goal, int weeks);
 
   /// No description provided for @onbProjectionBulk.
   ///
   /// In en, this message translates to:
-  /// **'At this pace, you could build up to {goal} kg in roughly {weeks} weeks.'**
+  /// **'At this pace, you could build up to {goal} in roughly {weeks} weeks.'**
   String onbProjectionBulk(String goal, int weeks);
 
   /// No description provided for @onbProjectionNote.

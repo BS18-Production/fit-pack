@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
-import '../../core/utils/format.dart';
+import '../../core/units/units.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/workout_dao.dart';
 import '../../data/providers.dart';
@@ -301,6 +301,7 @@ class _HistoryTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(_historyProvider(exerciseId));
+    final units = ref.watch(unitsProvider);
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (_, _) =>
@@ -333,7 +334,7 @@ class _HistoryTab extends ConsumerWidget {
                                 color: context.colors.onSurfaceVariant)),
                         Text(
                           p.weightKg != null
-                              ? '${fmtNum(p.weightKg!)} kg × ${p.reps ?? '-'}'
+                              ? '${units.weight(p.weightKg!)} × ${p.reps ?? '-'}'
                               : '${p.reps ?? '-'} ${AppL10n.of(context).unitReps}',
                           style: context.texts.titleSmall,
                         ),
@@ -405,9 +406,11 @@ class _ChartTab extends ConsumerWidget {
       error: (_, _) =>
           Center(child: Text(AppL10n.of(context).edLoadError)),
       data: (points) {
+        final units = ref.watch(unitsProvider);
+        // Grafik görüntü biriminde çizilir (hesap kg — docs/16 §3).
         final e1rms = points
             .where((p) => p.e1rm != null)
-            .map((p) => p.e1rm!)
+            .map((p) => units.weightFromKg(p.e1rm!))
             .toList();
         if (e1rms.length < 2) {
           return EmptyState(
@@ -497,6 +500,7 @@ class _RecordsTab extends ConsumerWidget {
       error: (_, _) =>
           Center(child: Text(AppL10n.of(context).edLoadError)),
       data: (points) {
+        final units = ref.watch(unitsProvider);
         final withData = points.where((p) => p.e1rm != null).toList();
         if (withData.isEmpty) {
           return EmptyState(
@@ -519,13 +523,13 @@ class _RecordsTab extends ConsumerWidget {
                 Icons.emoji_events_rounded,
                 context.semantic.warning,
                 AppL10n.of(context).edBestE1rm,
-                '${bestE1rm.e1rm!.round()} kg',
-                '${fmtNum(bestE1rm.weightKg!)} kg × ${bestE1rm.reps}'),
+                units.weight(bestE1rm.e1rm!, frac: 0),
+                '${units.weight(bestE1rm.weightKg!)} × ${bestE1rm.reps}'),
             _Record(
                 Icons.fitness_center_rounded,
                 context.colors.primary,
                 AppL10n.of(context).edHeaviest,
-                '${fmtNum(maxWeight.weightKg!)} kg',
+                units.weight(maxWeight.weightKg!),
                 '${maxWeight.reps} ${AppL10n.of(context).unitReps}'),
             _Record(
                 Icons.insights_rounded,

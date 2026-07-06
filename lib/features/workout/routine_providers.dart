@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/prefs/week_start_provider.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/workout_dao.dart';
@@ -56,11 +57,9 @@ typedef WeekStats = ({int sessions, int volumeKg});
 
 final weekWorkoutStatsProvider = FutureProvider<WeekStats>((ref) async {
   final dao = ref.watch(workoutDaoProvider);
-  final now = DateTime.now();
-  final monday = DateTime(now.year, now.month, now.day)
-      .subtract(Duration(days: now.weekday - 1));
+  final start = startOfWeek(DateTime.now(), ref.watch(weekStartProvider));
   final sessions = await dao.getSessionsByDateRange(
-      monday, monday.add(const Duration(days: 7)));
+      start, start.add(const Duration(days: 7)));
   int volume = 0;
   if (sessions.isNotEmpty) {
     final setsBySession =

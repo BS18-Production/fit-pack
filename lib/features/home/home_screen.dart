@@ -5,6 +5,7 @@ import '../../core/i18n/formatting.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/units/units.dart';
 import '../../l10n/app_l10n.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
@@ -103,10 +104,10 @@ class _Header extends StatelessWidget {
               onPressed: () => context.push(AppRoutes.export),
             ),
             IconButton(
-              tooltip: l.homeSettingsTooltip,
-              icon: const Icon(Icons.tune_rounded),
+              tooltip: l.homeProfileTooltip,
+              icon: const Icon(Icons.person_outline_rounded),
               color: context.colors.onSurfaceVariant,
-              onPressed: () => context.push(AppRoutes.settings),
+              onPressed: () => context.push(AppRoutes.profile),
             ),
           ],
         ),
@@ -127,6 +128,7 @@ class _MomentumHero extends ConsumerWidget {
     final l = AppL10n.of(context);
     final streak = ref.watch(workoutStreakProvider).valueOrNull ?? 0;
     final month = ref.watch(last30WorkoutStatsProvider).valueOrNull;
+    final units = ref.watch(unitsProvider);
     final c = context.colors;
     final fmt = context.numFmt;
 
@@ -194,8 +196,9 @@ class _MomentumHero extends ConsumerWidget {
                       label: l.homeStatWorkouts),
                   AppSpacing.hGapSm,
                   _MomentumStat(
-                      value: fmt.format(month?.volumeKg ?? 0),
-                      label: l.homeStatVolume),
+                      value: fmt.format(
+                          units.weightFromKg(month?.volumeKg ?? 0).round()),
+                      label: l.homeStatVolume(units.weightUnit)),
                   AppSpacing.hGapSm,
                   _MomentumStat(
                       value: fmt.format(month?.kcalBurned ?? 0),
@@ -469,6 +472,7 @@ class _WeekDashboard extends ConsumerWidget {
     final l = AppL10n.of(context);
     final async = ref.watch(weekDashboardProvider);
     final data = async.valueOrNull;
+    final units = ref.watch(unitsProvider);
     final fmt = context.numFmt;
 
     final goalText = data == null
@@ -507,7 +511,8 @@ class _WeekDashboard extends ConsumerWidget {
             children: [
               _MetricCard(
                 icon: Icons.fitness_center_rounded,
-                value: '${fmt.format(data?.volumeKg ?? 0)} kg',
+                value:
+                    '${fmt.format(units.weightFromKg(data?.volumeKg ?? 0).round())} ${units.weightUnit}',
                 caption: l.homeMetricVolume,
                 change: data?.volumeDeltaPct == null
                     ? null
@@ -717,6 +722,7 @@ class _InsightCard extends ConsumerWidget {
     final l = AppL10n.of(context);
     final top = ref.watch(topProgressProvider).valueOrNull;
     if (top == null) return const SizedBox.shrink();
+    final units = ref.watch(unitsProvider);
     final c = context.colors;
     final success = context.semantic.success;
 
@@ -758,7 +764,7 @@ class _InsightCard extends ConsumerWidget {
               ),
             ),
             AppSpacing.hGapSm,
-            Text('+${top.deltaE1rm.round()} kg',
+            Text('+${units.weight(top.deltaE1rm)}',
                 style: context.texts.titleMedium?.copyWith(
                     color: success, fontWeight: FontWeight.w800)),
           ],
@@ -910,6 +916,7 @@ class _WeightMini extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
     final trend = ref.watch(weightTrendProvider).valueOrNull;
+    final units = ref.watch(unitsProvider);
     final c = context.colors;
     final success = context.semantic.success;
 
@@ -952,17 +959,17 @@ class _WeightMini extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Text(trend!.latest!.toStringAsFixed(1),
+                    Text(units.weightValue(trend!.latest!),
                         style: context.texts.headlineSmall),
                     AppSpacing.hGapXs,
-                    Text(l.unitKg,
+                    Text(units.weightUnit,
                         style: context.texts.bodySmall
                             ?.copyWith(color: c.onSurfaceVariant)),
                   ],
                 ),
                 if (trend.delta != null && trend.delta != 0) ...[
                   const SizedBox(height: 4),
-                  _DeltaChip(delta: trend.delta!),
+                  _DeltaChip(delta: trend.delta!, units: units),
                 ],
               ],
             ],
@@ -974,8 +981,9 @@ class _WeightMini extends ConsumerWidget {
 }
 
 class _DeltaChip extends StatelessWidget {
-  final double delta;
-  const _DeltaChip({required this.delta});
+  final double delta; // kg (DB kanonik)
+  final Units units;
+  const _DeltaChip({required this.delta, required this.units});
 
   @override
   Widget build(BuildContext context) {
@@ -1002,7 +1010,7 @@ class _DeltaChip extends StatelessWidget {
           ),
           const SizedBox(width: 2),
           Text(
-            '${delta.abs().toStringAsFixed(1)} kg',
+            units.weight(delta.abs()),
             style: context.texts.labelMedium
                 ?.copyWith(color: color, fontWeight: FontWeight.w700),
           ),

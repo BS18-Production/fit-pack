@@ -14,6 +14,9 @@ import 'package:fit_pack/features/nutrition/foods_screen.dart';
 import 'package:fit_pack/features/body_metrics/body_metrics_screen.dart';
 import 'package:fit_pack/features/export/export_screen.dart';
 import 'package:fit_pack/features/cloud/cloud_account_screen.dart';
+import 'package:fit_pack/features/profile/profile_screen.dart';
+import 'package:fit_pack/features/settings/attribution_screen.dart';
+import 'package:fit_pack/features/settings/notifications_screen.dart';
 import 'package:fit_pack/features/settings/settings_screen.dart';
 import 'package:fit_pack/features/onboarding/onboarding_screen.dart';
 import 'package:fit_pack/shared/widgets/app_shell.dart';
@@ -150,9 +153,24 @@ GoRouter createAppRouter({required bool onboarded}) => GoRouter(
       builder: (context, state) => const CloudAccountScreen(),
     ),
     GoRoute(
+      path: AppRoutes.profile,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const ProfileScreen(),
+    ),
+    GoRoute(
       path: AppRoutes.settings,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.attribution,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const AttributionScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.notifications,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const NotificationsScreen(),
     ),
   ],
 );

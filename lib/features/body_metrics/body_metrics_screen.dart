@@ -7,6 +7,7 @@ import '../../core/i18n/formatting.dart';
 import '../../core/onboarding/first_run_hints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/units/units.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
@@ -91,12 +92,14 @@ class BodyMetricsScreen extends ConsumerWidget {
           ..sort((a, b) => a.date.compareTo(b.date));
         final goalWeight =
             ref.watch(userProfileProvider).valueOrNull?.goalWeightKg;
+        final units = ref.watch(unitsProvider);
 
         return [
-          _SummaryCard(latest: latest, oldest: oldest),
+          _SummaryCard(latest: latest, oldest: oldest, units: units),
           AppSpacing.vGapLg,
           if (weighted.length >= 2) ...[
-            _WeightChartCard(measurements: weighted, goalWeight: goalWeight),
+            _WeightChartCard(
+                measurements: weighted, goalWeight: goalWeight, units: units),
             AppSpacing.vGapLg,
           ],
           Text(AppL10n.of(context).bmPastMeasurements,
@@ -106,6 +109,7 @@ class BodyMetricsScreen extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: _MeasurementCard(
                   measurement: m,
+                  units: units,
                   onDelete: () async {
                     final ok = await confirmAction(
                       context,
@@ -129,12 +133,20 @@ class BodyMetricsScreen extends ConsumerWidget {
   }
 
   void _showAddMeasurementDialog(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => const _AddMeasurementSheet(),
-    );
+    showAddMeasurementSheet(context);
   }
+}
+
+/// Ölçüm giriş formunu (kilo/bel/kol…) herhangi bir ekrandan açar. Profil'deki
+/// "Ölçümler" köprüsü de bunu kullanır — tek giriş noktası (aynı form + aynı
+/// DAO) korunur, kullanıcı tab'a fırlatılmadan yerinde giriş yapar (docs/16
+/// §2.1, S1). Kaydedince ilgili tüm provider'lar tazelenir (bkz. _save).
+Future<void> showAddMeasurementSheet(BuildContext context) {
+  return showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (ctx) => const _AddMeasurementSheet(),
+  );
 }
 
 /// Kilo trend grafiği — cut yolculuğunun kanıtı. Hedef kilo profile
@@ -142,24 +154,30 @@ class BodyMetricsScreen extends ConsumerWidget {
 class _WeightChartCard extends StatelessWidget {
   final List<BodyMeasurement> measurements; // eskiden yeniye, weightKg dolu
   final double? goalWeight;
+  final Units units;
 
-  const _WeightChartCard({required this.measurements, this.goalWeight});
+  const _WeightChartCard(
+      {required this.measurements, this.goalWeight, required this.units});
 
   @override
   Widget build(BuildContext context) {
     final color = context.colors.primary;
+    // Grafik görüntü biriminde çizilir (DB kg — docs/16 §3).
     final spots = measurements
-        .map((m) => FlSpot(
-            m.date.millisecondsSinceEpoch.toDouble(), m.weightKg!))
+        .map((m) => FlSpot(m.date.millisecondsSinceEpoch.toDouble(),
+            units.weightFromKg(m.weightKg!)))
         .toList();
 
-    final weights = measurements.map((m) => m.weightKg!).toList();
+    final weights =
+        measurements.map((m) => units.weightFromKg(m.weightKg!)).toList();
     var minY = weights.reduce((a, b) => a < b ? a : b);
     var maxY = weights.reduce((a, b) => a > b ? a : b);
     // Hedef görünür aralıkta kalsın, üst/alt nefes payı.
-    if (goalWeight != null) {
-      minY = minY < goalWeight! ? minY : goalWeight!;
-      maxY = maxY > goalWeight! ? maxY : goalWeight!;
+    final goalDisplay =
+        goalWeight == null ? null : units.weightFromKg(goalWeight!);
+    if (goalDisplay != null) {
+      minY = minY < goalDisplay ? minY : goalDisplay;
+      maxY = maxY > goalDisplay ? maxY : goalDisplay;
     }
     minY -= 1;
     maxY += 1;
@@ -181,8 +199,7 @@ class _WeightChartCard extends StatelessWidget {
                 const Spacer(),
                 if (goalWeight != null)
                   Text(
-                      AppL10n.of(context)
-                          .bmGoalLine(goalWeight!.toStringAsFixed(0)),
+                      AppL10n.of(context).bmGoalLine(units.weight(goalWeight!)),
                       style: context.texts.labelSmall?.copyWith(
                           color: context.semantic.success,
                           fontWeight: FontWeight.w600)),
@@ -252,11 +269,11 @@ class _WeightChartCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  extraLinesData: goalWeight == null
+                  extraLinesData: goalDisplay == null
                       ? const ExtraLinesData()
                       : ExtraLinesData(horizontalLines: [
                           HorizontalLine(
-                            y: goalWeight!,
+                            y: goalDisplay,
                             color: context.semantic.success
                                 .withValues(alpha: 0.6),
                             strokeWidth: 1.5,
@@ -267,7 +284,7 @@ class _WeightChartCard extends StatelessWidget {
                     touchTooltipData: LineTouchTooltipData(
                       getTooltipItems: (touched) => touched
                           .map((t) => LineTooltipItem(
-                                '${t.y.toStringAsFixed(1)} kg\n${dateFmt.format(DateTime.fromMillisecondsSinceEpoch(t.x.toInt()))}',
+                                '${t.y.toStringAsFixed(1)} ${units.weightUnit}\n${dateFmt.format(DateTime.fromMillisecondsSinceEpoch(t.x.toInt()))}',
                                 context.texts.labelMedium!.copyWith(
                                     color: context.colors.onPrimary),
                               ))
@@ -318,15 +335,18 @@ class _WeightChartCard extends StatelessWidget {
 class _SummaryCard extends StatelessWidget {
   final BodyMeasurement latest;
   final BodyMeasurement? oldest;
+  final Units units;
 
-  const _SummaryCard({required this.latest, required this.oldest});
+  const _SummaryCard(
+      {required this.latest, required this.oldest, required this.units});
 
   @override
   Widget build(BuildContext context) {
     final weightDiff = oldest != null &&
             latest.weightKg != null &&
             oldest!.weightKg != null
-        ? latest.weightKg! - oldest!.weightKg!
+        ? units.weightFromKg(latest.weightKg!) -
+            units.weightFromKg(oldest!.weightKg!)
         : null;
 
     return Card(
@@ -344,21 +364,21 @@ class _SummaryCard extends StatelessWidget {
                 _MetricTile(
                   label: AppL10n.of(context).bmWeight,
                   value: latest.weightKg != null
-                      ? '${latest.weightKg!.toStringAsFixed(1)} kg'
+                      ? units.weight(latest.weightKg!)
                       : '—',
                   diff: weightDiff,
-                  unit: 'kg',
+                  unit: units.weightUnit,
                 ),
                 _MetricTile(
                   label: AppL10n.of(context).bmWaist,
                   value: latest.waistCm != null
-                      ? '${latest.waistCm!.toStringAsFixed(1)} cm'
+                      ? units.length(latest.waistCm!)
                       : '—',
                 ),
                 _MetricTile(
                   label: AppL10n.of(context).bmArm,
                   value: latest.armCm != null
-                      ? '${latest.armCm!.toStringAsFixed(1)} cm'
+                      ? units.length(latest.armCm!)
                       : '—',
                 ),
               ],
@@ -420,12 +440,15 @@ class _MetricTile extends StatelessWidget {
 
 class _MeasurementCard extends StatelessWidget {
   final BodyMeasurement measurement;
+  final Units units;
   final Future<void> Function() onDelete;
 
-  const _MeasurementCard({required this.measurement, required this.onDelete});
+  const _MeasurementCard(
+      {required this.measurement, required this.units, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
     return Card(
       child: ListTile(
         title: Text(
@@ -433,13 +456,13 @@ class _MeasurementCard extends StatelessWidget {
         subtitle: Text(
           [
             if (measurement.weightKg != null)
-              '${measurement.weightKg!.toStringAsFixed(1)} kg',
+              units.weight(measurement.weightKg!),
             if (measurement.waistCm != null)
-              'Bel ${measurement.waistCm!.toStringAsFixed(1)}',
+              '${l.bmWaist} ${units.length(measurement.waistCm!)}',
             if (measurement.armCm != null)
-              'Kol ${measurement.armCm!.toStringAsFixed(1)}',
+              '${l.bmArm} ${units.length(measurement.armCm!)}',
             if (measurement.chestCm != null)
-              '${AppL10n.of(context).bmChest} ${measurement.chestCm!.toStringAsFixed(1)}',
+              '${l.bmChest} ${units.length(measurement.chestCm!)}',
           ].join('  ·  '),
         ),
         trailing: IconButton(
@@ -527,15 +550,19 @@ class _AddMeasurementSheetState extends ConsumerState<_AddMeasurementSheet> {
 
     setState(() => _saving = true);
     try {
+      // Girişler görüntü biriminde — DB'ye metrik yazılır (docs/16 §3).
+      final u = ref.read(unitsProvider);
+      double? kg(double? v) => v == null ? null : u.weightToKg(v);
+      double? cm(double? v) => v == null ? null : u.lengthToCm(v);
       await ref.read(bodyDaoProvider).insertMeasurement(
             BodyMeasurementsCompanion(
               date: Value(_selectedDate),
-              weightKg: Value(weight),
-              waistCm: Value(waist),
-              chestCm: Value(chest),
-              armCm: Value(arm),
-              hipCm: Value(hip),
-              neckCm: Value(neck),
+              weightKg: Value(kg(weight)),
+              waistCm: Value(cm(waist)),
+              chestCm: Value(cm(chest)),
+              armCm: Value(cm(arm)),
+              hipCm: Value(cm(hip)),
+              neckCm: Value(cm(neck)),
               bodyFatPct: Value(fat),
             ),
           );
@@ -559,6 +586,9 @@ class _AddMeasurementSheetState extends ConsumerState<_AddMeasurementSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final units = ref.watch(unitsProvider);
+    double w(num kg) => double.parse(units.weightFromKg(kg).toStringAsFixed(0));
+    double c(num cm) => double.parse(units.lengthFromCm(cm).toStringAsFixed(0));
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
@@ -583,35 +613,36 @@ class _AddMeasurementSheetState extends ConsumerState<_AddMeasurementSheet> {
               ),
               AppSpacing.vGapMd,
               _Field(
-                  label: '${AppL10n.of(context).bmWeight} (kg)',
+                  label:
+                      '${AppL10n.of(context).bmWeight} (${units.weightUnit})',
                   controller: _weightController,
-                  min: 30,
-                  max: 300),
+                  min: w(30),
+                  max: w(300)),
               _Field(
-                  label: '${AppL10n.of(context).bmWaist} (cm)',
+                  label: '${AppL10n.of(context).bmWaist} (${units.lengthUnit})',
                   controller: _waistController,
-                  min: 30,
-                  max: 250),
+                  min: c(30),
+                  max: c(250)),
               _Field(
-                  label: '${AppL10n.of(context).bmChest} (cm)',
+                  label: '${AppL10n.of(context).bmChest} (${units.lengthUnit})',
                   controller: _chestController,
-                  min: 30,
-                  max: 250),
+                  min: c(30),
+                  max: c(250)),
               _Field(
-                  label: '${AppL10n.of(context).bmArm} (cm)',
+                  label: '${AppL10n.of(context).bmArm} (${units.lengthUnit})',
                   controller: _armController,
-                  min: 10,
-                  max: 100),
+                  min: c(10),
+                  max: c(100)),
               _Field(
-                  label: '${AppL10n.of(context).bmHip} (cm)',
+                  label: '${AppL10n.of(context).bmHip} (${units.lengthUnit})',
                   controller: _hipController,
-                  min: 30,
-                  max: 250),
+                  min: c(30),
+                  max: c(250)),
               _Field(
-                  label: '${AppL10n.of(context).bmNeck} (cm)',
+                  label: '${AppL10n.of(context).bmNeck} (${units.lengthUnit})',
                   controller: _neckController,
-                  min: 10,
-                  max: 100),
+                  min: c(10),
+                  max: c(100)),
               _Field(
                   label: '${AppL10n.of(context).bmBodyFat} (%)',
                   controller: _fatController,

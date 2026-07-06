@@ -64,6 +64,18 @@ class AppL10nEn extends AppL10n {
   String get macroCalories => 'Calories';
 
   @override
+  String get macroProteinAbbr => 'P';
+
+  @override
+  String get macroCarbsAbbr => 'C';
+
+  @override
+  String get macroFatAbbr => 'F';
+
+  @override
+  String get commonUndo => 'Undo';
+
+  @override
   String get navHome => 'Home';
 
   @override
@@ -80,9 +92,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get homeExportTooltip => 'Export data';
-
-  @override
-  String get homeSettingsTooltip => 'Settings';
 
   @override
   String get homeStreakKicker => 'On a streak';
@@ -102,7 +111,9 @@ class AppL10nEn extends AppL10n {
   String get homeStatWorkouts => 'workouts';
 
   @override
-  String get homeStatVolume => 'kg volume';
+  String homeStatVolume(String unit) {
+    return '$unit volume';
+  }
 
   @override
   String get homeStatKcal => 'kcal';
@@ -630,6 +641,9 @@ class AppL10nEn extends AppL10n {
   String get wsDoneBtn => 'Done';
 
   @override
+  String get wsUnknownExercise => 'Exercise';
+
+  @override
   String get rpFallback => 'Routine';
 
   @override
@@ -787,7 +801,7 @@ class AppL10nEn extends AppL10n {
   String get elMeasureType => 'Measurement type';
 
   @override
-  String get measureWeightReps => 'kg × reps';
+  String get measureWeightReps => 'weight × reps';
 
   @override
   String get measureReps => 'reps';
@@ -872,20 +886,20 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get edChartEmptyMsg =>
-      'Log kg×reps at least twice to see the progress chart';
+      'Log weight×reps at least twice to see the progress chart';
 
   @override
   String get edE1rmTitle => 'Estimated 1RM progress';
 
   @override
-  String get edEpley => 'Epley: kg × (1 + reps/30)';
+  String get edEpley => 'Epley: weight × (1 + reps/30)';
 
   @override
   String get edNoPr => 'No records yet';
 
   @override
   String get edNoPrMsg =>
-      'Your personal records collect here once you log kg×reps';
+      'Your personal records collect here once you log weight×reps';
 
   @override
   String get edBestE1rm => 'Estimated 1RM';
@@ -933,8 +947,8 @@ class AppL10nEn extends AppL10n {
   String get bmWeightTrend => 'Weight Trend';
 
   @override
-  String bmGoalLine(String kg) {
-    return 'Goal $kg kg';
+  String bmGoalLine(String value) {
+    return 'Goal $value';
   }
 
   @override
@@ -1101,6 +1115,31 @@ class AppL10nEn extends AppL10n {
   String get cloudSignOut => 'Sign Out';
 
   @override
+  String get cloudDeleteAccount => 'Delete Account';
+
+  @override
+  String get cloudDeleteTitle => 'Delete account';
+
+  @override
+  String get cloudDeleteMsg =>
+      'Your cloud account and cloud backup will be permanently deleted. Data on this device is not affected.';
+
+  @override
+  String get cloudDeleteConfirm2Title => 'Are you sure?';
+
+  @override
+  String get cloudDeleteConfirm2Msg =>
+      'This is the last step — your account can\'t be recovered afterwards.';
+
+  @override
+  String get cloudDeleted => 'Your account has been deleted';
+
+  @override
+  String cloudDeleteFailed(String error) {
+    return 'Couldn\'t delete account: $error';
+  }
+
+  @override
   String get unitPortion => 'portion';
 
   @override
@@ -1184,16 +1223,124 @@ class AppL10nEn extends AppL10n {
   String get settingsSectionBody => 'Body';
 
   @override
-  String get settingsSectionAppearance => 'Appearance';
+  String get settingsSectionPreferences => 'Preferences';
 
   @override
   String get settingsSectionNutrition => 'Nutrition';
 
   @override
-  String get settingsSectionMyData => 'My Data';
+  String get settingsSectionMyData => 'Data & Privacy';
 
   @override
   String get settingsSectionAbout => 'About';
+
+  @override
+  String get profileTitle => 'Profile';
+
+  @override
+  String get profileSectionIdentity => 'Identity & Energy';
+
+  @override
+  String get profileMeasurements => 'Measurements';
+
+  @override
+  String get profileMeasurementsSubtitle => 'Weight, waist, arm — tap to log';
+
+  @override
+  String get homeProfileTooltip => 'Profile';
+
+  @override
+  String get settingsLicenses => 'Open-Source Licenses';
+
+  @override
+  String get settingsAttribution => 'Open Data Sources';
+
+  @override
+  String get settingsAttributionSubtitle =>
+      'Exercise & food databases the app builds on';
+
+  @override
+  String get settingsFeedback => 'Send Feedback';
+
+  @override
+  String get settingsFeedbackSubtitle => 'Report a problem or share an idea';
+
+  @override
+  String get settingsWeekStart => 'Week Starts On';
+
+  @override
+  String get settingsUnits => 'Units';
+
+  @override
+  String get settingsNotifications => 'Notifications';
+
+  @override
+  String get settingsNotificationsSubtitle =>
+      'Rest timer, workout & water reminders';
+
+  @override
+  String get notifRestTimer => 'Rest timer alert';
+
+  @override
+  String get notifRestTimerSub =>
+      'Notifies when rest ends while the app is in the background';
+
+  @override
+  String get notifWorkout => 'Daily workout reminder';
+
+  @override
+  String get notifWater => 'Daily water reminder';
+
+  @override
+  String get notifTime => 'Time';
+
+  @override
+  String get notifPermissionDenied =>
+      'Notification permission denied — enable it in system settings.';
+
+  @override
+  String get notifRestDoneTitle => 'Rest over';
+
+  @override
+  String get notifRestDoneBody => 'Time for the next set';
+
+  @override
+  String get notifWorkoutTitle => 'Workout time';
+
+  @override
+  String get notifWorkoutBody =>
+      'Your plan is waiting — a short session counts too.';
+
+  @override
+  String get notifWaterTitle => 'Water break';
+
+  @override
+  String get notifWaterBody => 'A glass of water now keeps your ring on track.';
+
+  @override
+  String get unitsMetric => 'Metric (kg, cm)';
+
+  @override
+  String get unitsImperial => 'Imperial (lb, ft)';
+
+  @override
+  String get attribIntro =>
+      'Fit Pack is built on these open datasets and libraries. Thank you to their maintainers!';
+
+  @override
+  String get attribOffDesc =>
+      'Packaged food nutrition data (barcode & text search)';
+
+  @override
+  String get attribFedDesc => 'Exercise library, instructions and demo photos';
+
+  @override
+  String get attribMuscleDesc => 'Body muscle map visual';
+
+  @override
+  String attribLicense(String name) {
+    return 'License: $name';
+  }
 
   @override
   String get settingsKcalGoal => 'Calorie Goal';
@@ -1442,12 +1589,12 @@ class AppL10nEn extends AppL10n {
 
   @override
   String onbProjectionCut(String goal, int weeks) {
-    return 'At this pace, you could reach $goal kg in roughly $weeks weeks.';
+    return 'At this pace, you could reach $goal in roughly $weeks weeks.';
   }
 
   @override
   String onbProjectionBulk(String goal, int weeks) {
-    return 'At this pace, you could build up to $goal kg in roughly $weeks weeks.';
+    return 'At this pace, you could build up to $goal in roughly $weeks weeks.';
   }
 
   @override

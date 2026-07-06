@@ -32,6 +32,11 @@
   "macroCarbs": "Carbs",
   "macroFat": "Fat",
   "macroCalories": "Calories",
+  "macroProteinAbbr": "P",
+  "macroCarbsAbbr": "C",
+  "macroFatAbbr": "F",
+
+  "commonUndo": "Undo",
 
   "navHome": "Home",
   "navWorkout": "Workout",
@@ -40,7 +45,6 @@
 
   "homeToday": "TODAY",
   "homeExportTooltip": "Export data",
-  "homeSettingsTooltip": "Settings",
   "homeStreakKicker": "On a streak",
   "homeStreakKickerZero": "New week, new rhythm",
   "homeStreakTitle": "{count}-day\nstreak",
@@ -51,7 +55,12 @@
   },
   "homeStreakTitleZero": "Start your streak",
   "homeStatWorkouts": "workouts",
-  "homeStatVolume": "kg volume",
+  "homeStatVolume": "{unit} volume",
+  "@homeStatVolume": {
+    "placeholders": {
+      "unit": { "type": "String" }
+    }
+  },
   "homeStatKcal": "kcal",
 
   "homeTodayRoutine": "Today: {name}",
@@ -301,6 +310,7 @@
   "wsDone": "Workout Complete",
   "wsExercises": "Exercises",
   "wsDoneBtn": "Done",
+  "wsUnknownExercise": "Exercise",
 
   "rpFallback": "Routine",
   "rpArchiveTitle": "Archive routine",
@@ -358,7 +368,7 @@
   "elPrimaryMuscle": "Primary muscle",
   "elEquipment": "Equipment",
   "elMeasureType": "Measurement type",
-  "measureWeightReps": "kg × reps",
+  "measureWeightReps": "weight × reps",
   "measureReps": "reps",
   "measureTime": "time",
   "measureDistance": "distance",
@@ -389,11 +399,11 @@
   "edAppearsHere": "Appears here once you use this exercise in a workout",
   "edSetHistory": "Set history",
   "edChartEmpty": "Not enough data for a chart",
-  "edChartEmptyMsg": "Log kg×reps at least twice to see the progress chart",
+  "edChartEmptyMsg": "Log weight×reps at least twice to see the progress chart",
   "edE1rmTitle": "Estimated 1RM progress",
-  "edEpley": "Epley: kg × (1 + reps/30)",
+  "edEpley": "Epley: weight × (1 + reps/30)",
   "edNoPr": "No records yet",
-  "edNoPrMsg": "Your personal records collect here once you log kg×reps",
+  "edNoPrMsg": "Your personal records collect here once you log weight×reps",
   "edBestE1rm": "Estimated 1RM",
   "edHeaviest": "Heaviest set",
   "edTotalLogs": "Total logged",
@@ -413,9 +423,9 @@
     "placeholders": { "date": { "type": "String" } }
   },
   "bmWeightTrend": "Weight Trend",
-  "bmGoalLine": "Goal {kg} kg",
+  "bmGoalLine": "Goal {value}",
   "@bmGoalLine": {
-    "placeholders": { "kg": { "type": "String" } }
+    "placeholders": { "value": { "type": "String" } }
   },
   "bmLatest": "Latest Measurements",
   "bmWeight": "Weight",
@@ -480,6 +490,18 @@
   "cloudBackupBtn": "Back Up to Cloud",
   "cloudRestoreBtn": "Restore from Cloud",
   "cloudSignOut": "Sign Out",
+  "cloudDeleteAccount": "Delete Account",
+  "cloudDeleteTitle": "Delete account",
+  "cloudDeleteMsg": "Your cloud account and cloud backup will be permanently deleted. Data on this device is not affected.",
+  "cloudDeleteConfirm2Title": "Are you sure?",
+  "cloudDeleteConfirm2Msg": "This is the last step — your account can't be recovered afterwards.",
+  "cloudDeleted": "Your account has been deleted",
+  "cloudDeleteFailed": "Couldn't delete account: {error}",
+  "@cloudDeleteFailed": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
 
   "unitPortion": "portion",
   "unitPiece": "piece",
@@ -522,10 +544,51 @@
 
   "settingsSectionGoals": "Goals",
   "settingsSectionBody": "Body",
-  "settingsSectionAppearance": "Appearance",
+  "settingsSectionPreferences": "Preferences",
   "settingsSectionNutrition": "Nutrition",
-  "settingsSectionMyData": "My Data",
+  "settingsSectionMyData": "Data & Privacy",
   "settingsSectionAbout": "About",
+
+  "profileTitle": "Profile",
+  "profileSectionIdentity": "Identity & Energy",
+  "profileMeasurements": "Measurements",
+  "profileMeasurementsSubtitle": "Weight, waist, arm — tap to log",
+  "homeProfileTooltip": "Profile",
+
+  "settingsLicenses": "Open-Source Licenses",
+  "settingsAttribution": "Open Data Sources",
+  "settingsAttributionSubtitle": "Exercise & food databases the app builds on",
+  "settingsFeedback": "Send Feedback",
+  "settingsFeedbackSubtitle": "Report a problem or share an idea",
+  "settingsWeekStart": "Week Starts On",
+  "settingsUnits": "Units",
+  "settingsNotifications": "Notifications",
+  "settingsNotificationsSubtitle": "Rest timer, workout & water reminders",
+  "notifRestTimer": "Rest timer alert",
+  "notifRestTimerSub": "Notifies when rest ends while the app is in the background",
+  "notifWorkout": "Daily workout reminder",
+  "notifWater": "Daily water reminder",
+  "notifTime": "Time",
+  "notifPermissionDenied": "Notification permission denied — enable it in system settings.",
+  "notifRestDoneTitle": "Rest over",
+  "notifRestDoneBody": "Time for the next set",
+  "notifWorkoutTitle": "Workout time",
+  "notifWorkoutBody": "Your plan is waiting — a short session counts too.",
+  "notifWaterTitle": "Water break",
+  "notifWaterBody": "A glass of water now keeps your ring on track.",
+  "unitsMetric": "Metric (kg, cm)",
+  "unitsImperial": "Imperial (lb, ft)",
+
+  "attribIntro": "Fit Pack is built on these open datasets and libraries. Thank you to their maintainers!",
+  "attribOffDesc": "Packaged food nutrition data (barcode & text search)",
+  "attribFedDesc": "Exercise library, instructions and demo photos",
+  "attribMuscleDesc": "Body muscle map visual",
+  "attribLicense": "License: {name}",
+  "@attribLicense": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
 
   "settingsKcalGoal": "Calorie Goal",
   "settingsProteinGoal": "Protein Goal",
@@ -644,14 +707,14 @@
   "onbPlanReadySubtitle": "Suggested from your goal — adjust freely. You can change these anytime in Settings.",
   "onbDailyKcal": "Daily calorie goal",
   "onbDailyProtein": "Daily protein goal",
-  "onbProjectionCut": "At this pace, you could reach {goal} kg in roughly {weeks} weeks.",
+  "onbProjectionCut": "At this pace, you could reach {goal} in roughly {weeks} weeks.",
   "@onbProjectionCut": {
     "placeholders": {
       "goal": { "type": "String" },
       "weeks": { "type": "int" }
     }
   },
-  "onbProjectionBulk": "At this pace, you could build up to {goal} kg in roughly {weeks} weeks.",
+  "onbProjectionBulk": "At this pace, you could build up to {goal} in roughly {weeks} weeks.",
   "@onbProjectionBulk": {
     "placeholders": {
       "goal": { "type": "String" },

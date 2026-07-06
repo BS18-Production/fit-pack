@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/prefs/week_start_provider.dart';
 import '../../../data/providers.dart';
 import '../dashboard_stats.dart';
 import 'home_providers.dart';
@@ -10,14 +11,13 @@ import 'home_providers.dart';
 /// `context.go` ile route değiştirir (IndexedStack yok) → ekran dispose olur.
 /// Ayrıca Home pull-to-refresh bunları elle invalidate eder.
 
-({DateTime monday, DateTime nextMonday, DateTime prevMonday}) _weekBounds(
-    DateTime now) {
-  final monday = DateTime(now.year, now.month, now.day)
-      .subtract(Duration(days: now.weekday - 1));
+({DateTime start, DateTime next, DateTime prev}) _weekBounds(
+    DateTime now, int weekStart) {
+  final start = startOfWeek(now, weekStart);
   return (
-    monday: monday,
-    nextMonday: monday.add(const Duration(days: 7)),
-    prevMonday: monday.subtract(const Duration(days: 7)),
+    start: start,
+    next: start.add(const Duration(days: 7)),
+    prev: start.subtract(const Duration(days: 7)),
   );
 }
 
@@ -56,15 +56,15 @@ final weekDashboardProvider =
   final profile = await ref.watch(userProfileProvider.future);
   final bw = (await ref.watch(latestWeightProvider.future))?.weightKg;
 
-  final b = _weekBounds(DateTime.now());
+  final b = _weekBounds(DateTime.now(), ref.watch(weekStartProvider));
 
-  final thisSessions = await wo.getSessionsByDateRange(b.monday, b.nextMonday);
+  final thisSessions = await wo.getSessionsByDateRange(b.start, b.next);
   final thisSets =
       await wo.getSetsForSessions(thisSessions.map((s) => s.id).toList());
   final thisAgg = aggregateWorkouts(
       sessions: thisSessions, setsBySession: thisSets, bodyWeightKg: bw);
 
-  final prevSessions = await wo.getSessionsByDateRange(b.prevMonday, b.monday);
+  final prevSessions = await wo.getSessionsByDateRange(b.prev, b.start);
   final prevSets =
       await wo.getSetsForSessions(prevSessions.map((s) => s.id).toList());
   final prevAgg = aggregateWorkouts(
@@ -76,7 +76,7 @@ final weekDashboardProvider =
   final scheduled =
       routines.map((r) => r.scheduledWeekday).whereType<int>().toSet();
 
-  final logs = await nut.getLogsInRange(b.monday, b.nextMonday);
+  final logs = await nut.getLogsInRange(b.start, b.next);
 
   return (
     workouts: thisAgg.sessions,

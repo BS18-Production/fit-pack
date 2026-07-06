@@ -114,7 +114,7 @@ class WorkoutDraft {
       };
 
   factory WorkoutDraft.fromJson(Map<String, dynamic> j) => WorkoutDraft(
-        title: (j['title'] as String?) ?? 'Antrenman',
+        title: (j['title'] as String?) ?? 'Workout',
         routineId: (j['routineId'] as num?)?.toInt(),
         startedAtMs: (j['startedAtMs'] as num).toInt(),
         sessionDateMs: (j['sessionDateMs'] as num).toInt(),

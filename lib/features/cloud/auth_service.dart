@@ -32,6 +32,15 @@ class AuthService {
     await _client.auth.signOut();
   }
 
+  /// Hesabı kalıcı olarak siler (docs/16 §4 — mağaza zorunluluğu).
+  /// Supabase tarafında `delete_user()` security-definer RPC fonksiyonu
+  /// kurulu olmalı (SQL: docs/16 §4). Fonksiyon yoksa PostgrestException
+  /// fırlar → UI hata gösterir, oturum açık kalır.
+  Future<void> deleteAccount() async {
+    await _client.rpc('delete_user');
+    await _client.auth.signOut();
+  }
+
   Future<void> sendPasswordReset(String email) async {
     await _client.auth.resetPasswordForEmail(email);
   }

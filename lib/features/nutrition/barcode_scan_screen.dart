@@ -121,7 +121,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
                       ?.copyWith(color: Colors.white),
                 ),
                 AppSpacing.vGapMd,
-                FilledButton.tonalIcon(
+                FilledButton.icon(
                   onPressed: () => Navigator.of(context).pop(),
                   icon: const Icon(Icons.edit_note_rounded),
                   label: Text(l.scanManualAdd),
@@ -156,7 +156,7 @@ class _ScanError extends StatelessWidget {
               style: context.texts.bodyMedium
                   ?.copyWith(color: Colors.white)),
           AppSpacing.vGapLg,
-          FilledButton.tonal(
+          FilledButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(AppL10n.of(context).scanManualAdd),
           ),

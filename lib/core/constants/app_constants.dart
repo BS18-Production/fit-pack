@@ -7,4 +7,9 @@ class AppConstants {
   /// `pubspec.yaml`'daki `version:` — buradaki değeri sürüm yükseltirken
   /// onunla ELLE eşitle (paket ekleme kaçınıldığı için otomatik okunmuyor).
   static const String appVersion = '1.0.0';
+
+  /// Geri bildirim e-postası (Ayarlar → Hakkında → Geri Bildirim Gönder).
+  /// Yayın öncesi özel bir destek adresiyle değiştir — tek yerden yönetilir
+  /// (docs/16 §6).
+  static const String supportEmail = 'samet.orhan@inveon.com';
 }

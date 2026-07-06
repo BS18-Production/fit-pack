@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/i18n/formatting.dart';
+import '../../core/prefs/week_start_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
@@ -50,6 +51,7 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
   Widget build(BuildContext context) {
     final activityAsync = ref.watch(monthActivityProvider(_month));
     final goals = _goals();
+    final weekStart = ref.watch(weekStartProvider);
     final monthLabel = context.dateFmt('MMMM yyyy').format(_month);
     final cap = monthLabel[0].toUpperCase() + monthLabel.substring(1);
 
@@ -82,7 +84,7 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
               ],
             ),
             AppSpacing.vGapSm,
-            const _WeekdayLabels(),
+            _WeekdayLabels(weekStart: weekStart),
             AppSpacing.vGapXs,
             activityAsync.when(
               loading: () => const SizedBox(
@@ -98,6 +100,7 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
               data: (activity) => _MonthGrid(
                 month: _month,
                 activity: activity,
+                weekStart: weekStart,
                 kcalGoal: goals.kcal,
                 proteinGoal: goals.protein,
                 waterGoal: goals.water,
@@ -132,12 +135,16 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
 // ───────────────────────────────────────────── Hafta günü başlıkları
 
 class _WeekdayLabels extends StatelessWidget {
-  const _WeekdayLabels();
+  final int weekStart;
+  const _WeekdayLabels({required this.weekStart});
 
   @override
   Widget build(BuildContext context) {
-    // Pzt..Paz / Mon..Sun — locale'den (docs/14).
-    final days = [for (var d = 1; d <= 7; d++) context.weekdayShort(d)];
+    // Adlar locale'den (docs/14); sıra hafta başı tercihine göre (docs/16).
+    final days = [
+      for (var i = 0; i < 7; i++)
+        context.weekdayShort((weekStart - 1 + i) % 7 + 1)
+    ];
     return Row(
       children: days
           .map((d) => Expanded(
@@ -159,11 +166,13 @@ class _WeekdayLabels extends StatelessWidget {
 class _MonthGrid extends StatelessWidget {
   final DateTime month;
   final Map<int, DayActivity> activity;
+  final int weekStart;
   final int kcalGoal, proteinGoal, waterGoal;
   final void Function(DateTime day, DayActivity? act) onTapDay;
   const _MonthGrid({
     required this.month,
     required this.activity,
+    required this.weekStart,
     required this.kcalGoal,
     required this.proteinGoal,
     required this.waterGoal,
@@ -173,8 +182,9 @@ class _MonthGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
-    final firstWeekday = DateTime(month.year, month.month, 1).weekday; // 1=Pzt
-    final leadingBlanks = firstWeekday - 1;
+    final firstWeekday = DateTime(month.year, month.month, 1).weekday;
+    // Ayın 1'i, hafta başı tercihine göre kaçıncı sütuna düşer (0..6).
+    final leadingBlanks = (firstWeekday - weekStart) % 7;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 

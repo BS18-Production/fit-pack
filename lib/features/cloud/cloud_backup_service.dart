@@ -62,6 +62,18 @@ class CloudBackupService {
       return null; // henüz yedek yok / liste başarısız
     }
   }
+
+  /// Buluttaki yedeği siler — hesap silme akışının ilk adımı (docs/16 §4).
+  /// auth kullanıcısı silinince storage objesi kendiliğinden silinmez; bu
+  /// yüzden hesap silinmeden ÖNCE çağrılır. Yedek yoksa sessizce geçer.
+  Future<void> deleteCloudBackup() async {
+    if (_uid == null) return;
+    try {
+      await _client.storage.from(_bucket).remove([_objectPath]);
+    } catch (_) {
+      // Yedek hiç alınmamış olabilir — hesap silmeyi engelleme.
+    }
+  }
 }
 
 final cloudBackupServiceProvider =

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/i18n/formatting.dart';
+import '../../core/units/units.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
@@ -19,6 +20,7 @@ class WorkoutSummaryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(_summaryProvider(sessionId));
+    final units = ref.watch(unitsProvider);
 
     return PopScope(
       canPop: false,
@@ -68,9 +70,13 @@ class WorkoutSummaryScreen extends ConsumerWidget {
               _StatsCard(
                 duration:
                     '${s.durationMin} ${AppL10n.of(context).unitMinShort}',
-                volume: s.volume >= 1000
-                    ? '${(s.volume / 1000).toStringAsFixed(1)}k'
-                    : '${s.volume}',
+                volume: () {
+                  final v = units.weightFromKg(s.volume).round();
+                  return v >= 1000
+                      ? '${(v / 1000).toStringAsFixed(1)}k'
+                      : '$v';
+                }(),
+                volumeUnit: units.weightUnit,
                 sets: '${s.totalSets}',
               ),
               AppSpacing.vGapxl_,
@@ -89,14 +95,16 @@ class WorkoutSummaryScreen extends ConsumerWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(e.name,
+                                Text(
+                                    e.name ??
+                                        AppL10n.of(context).wsUnknownExercise,
                                     style: context.texts.titleSmall,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis),
                                 const SizedBox(height: 2),
                                 Text(
                                     e.volume > 0
-                                        ? '${AppL10n.of(context).workoutSetCount(e.sets)} · ${e.volume} kg'
+                                        ? '${AppL10n.of(context).workoutSetCount(e.sets)} · ${units.weight(e.volume)}'
                                         : AppL10n.of(context)
                                             .workoutSetCount(e.sets),
                                     style: context.texts.bodySmall?.copyWith(
@@ -123,9 +131,12 @@ class WorkoutSummaryScreen extends ConsumerWidget {
 }
 
 class _StatsCard extends StatelessWidget {
-  final String duration, volume, sets;
+  final String duration, volume, volumeUnit, sets;
   const _StatsCard(
-      {required this.duration, required this.volume, required this.sets});
+      {required this.duration,
+      required this.volume,
+      required this.volumeUnit,
+      required this.sets});
 
   @override
   Widget build(BuildContext context) {
@@ -139,8 +150,8 @@ class _StatsCard extends StatelessWidget {
                   child: _Col(AppL10n.of(context).labelDuration, duration)),
               _div(context),
               Expanded(
-                  child:
-                      _Col(AppL10n.of(context).labelVolume, '$volume kg')),
+                  child: _Col(AppL10n.of(context).labelVolume,
+                      '$volume $volumeUnit')),
               _div(context),
               Expanded(child: _Col(AppL10n.of(context).labelSets, sets)),
             ],
@@ -178,7 +189,7 @@ class _Col extends StatelessWidget {
 // ───────── özet hesabı ─────────
 
 class _ExerciseRecap {
-  final String name;
+  final String? name;
   final int sets;
   final int volume;
   _ExerciseRecap(this.name, this.sets, this.volume);
@@ -214,7 +225,7 @@ final _summaryProvider =
   final recaps = byEx.entries.map((e) {
     final v = e.value
         .fold<int>(0, (a, s) => a + ((s.weightKg ?? 0) * (s.reps ?? 0)).round());
-    return _ExerciseRecap(allEx[e.key] ?? 'Hareket', e.value.length, v);
+    return _ExerciseRecap(allEx[e.key], e.value.length, v);
   }).toList();
 
   return _Summary(

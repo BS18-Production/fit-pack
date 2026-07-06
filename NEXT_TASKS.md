@@ -5,6 +5,116 @@
 
 ---
 
+## ✅ Profil + Ayarlar IA Yeniden Yapılanması (2026-07-05) — docs/16
+
+Samet "Ayarlar best practice mi?" diye sordu → analiz: tek ekran 3 iş yapıyordu
+(kişisel veri + konfigürasyon + veri araçları). Karar: ayrı Profil. Tasarım
+**[docs/16-settings-profile-ia.md](docs/16-settings-profile-ia.md)** →
+B1+B2+B3+B4 aynı gün kodlandı. analyze 0 · test **129/129** (6 yeni:
+`week_start_test`) · emülatörde EN+TR doğrulandı.
+
+- [x] **B1 — Profil ekranı** (`features/profile/profile_screen.dart`, `/profile`):
+      Hedefler + Vücut (+ İlerleme'ye Ölçümler köprüsü) + Kimlik & Enerji + TDEE
+      kartı Ayarlar'dan taşındı. Home app bar dişli → **kişi ikonu** (Profil'e),
+      Ayarlar'a Profil sağ üst ⚙️'den gidilir. Ortak tile'lar
+      `shared/widgets/setting_tiles.dart`'a çıkarıldı (SettingTile/SectionHeader/
+      pickOptionDialog/showNumberEditDialog — kopya yok).
+- [x] **B2 — Hakkında/Yasal:** Sürüm satırı → `showLicensePage` (tüm paket
+      lisansları); **Açık Veri Kaynakları** atıf ekranı (C-6 KAPANDI: OFF ODbL +
+      free-exercise-db public domain + muscle_selector MIT, dış linkli);
+      Geri Bildirim → mailto (`AppConstants.supportEmail` — yayın öncesi özel
+      adresle değiştirilebilir). `url_launcher` eklendi.
+- [x] **B4 — Haftanın İlk Günü** (Pzt/Paz): `core/prefs/week_start_provider.dart`
+      (+`startOfWeek` yardımcısı, 6 birim test). Bağlanan yerler: Home hafta
+      istatistikleri (dashboard_providers), Antrenman "bu hafta"
+      (routine_providers), Aktivite takvimi (başlık sırası + gün hizalama).
+      Emülatörde Pazar seçimiyle takvim doğrulandı.
+- [x] **B3 — Hesap Silme** (mağaza zorunluluğu): Bulut Hesabı ekranında (oturum
+      açıkken) kırmızı "Hesabı Sil" + çift onay → önce bulut yedeği silinir
+      (`deleteCloudBackup`) → `rpc('delete_user')` → çıkış. Yerel veri kalır.
+      ⚠️ **Samet'in işi:** Supabase SQL Editor'de `delete_user()` security-definer
+      fonksiyonunu bir kez çalıştır (SQL: docs/16 §4). Kurulmadan basılırsa
+      güvenli hata gösterilir. Gerçek hesapla uçtan uca test edilmedi (emülatörde
+      oturum yok).
+- [ ] **Yayın öncesi kalanlar (docs/16):** Gizlilik Politikası + Kullanım
+      Şartları URL'leri (metin yok — yazılınca About'a link eklenecek),
+      "Uygulamayı Puanla" (mağaza linki yayında belli olur), destek e-postası
+      kararı (şimdilik iş e-postası).
+- [x] **B5 — Birim sistemi (Metrik/İmperial) TAMAM (2026-07-06):**
+      `core/units/units.dart` (`unitSystemProvider` + `Units` dönüşüm/format
+      yüzeyi, 14 birim test). **DB hep metrik** — dönüşüm yalnız görüntü/giriş
+      sınırında, şema değişmedi. Ayarlar → Tercihler → **Birimler**
+      (Metrik/İmperial). Geçirilen yüzeyler: Profil (boy **ft-in çift alan**
+      `_FtInDialog`, hedef kilo lb + dönüştürülen aralık sınırları), Vücut
+      (özet/grafik/tooltip/hedef çizgisi/geçmiş kartları/giriş sheet'i lb-in;
+      girişler kg-cm'e çevrilip yazılır), Home (momentum hacim + Bu Hafta
+      hacim + kilo mini kart + delta chip + içgörü e1RM), Antrenman listesi
+      (haftalık hacim), aktif seans (**KG↔LB sütunu**, ağırlık/mesafe hücreleri,
+      PREV etiketi), özet + geçmiş (hacim/set metinleri), hareket detayı
+      (geçmiş/e1RM grafiği/rekorlar), Onboarding (kilo/boy/hedef girişleri +
+      projeksiyon metni). ARB'lerdeki hardcoded "kg" metinleri
+      nötrleştirildi/parametrelendi (`homeStatVolume{unit}`, `bmGoalLine{value}`,
+      `onbProjection*{goal}`). **Düzeltilen bug:** dönüşüm sonrası ham double
+      ("44.0924452436×10") — `Units.weightValue/distanceValue` yuvarlamalı
+      formatlayıcılar eklendi. Emülatörde imperial uçtan uca doğrulandı
+      (Profil 172 lb + 5'11", İlerleme 187.4 lb, seans LB + PREV 44.1×10).
+- [x] **B6 — Bildirimler TAMAM (2026-07-06, P-11 dahil):**
+      `flutter_local_notifications` 22 + `timezone` + `flutter_timezone`;
+      Android desugaring (`build.gradle.kts`) + manifest izinleri
+      (POST_NOTIFICATIONS, SCHEDULE_EXACT_ALARM, BOOT_COMPLETED + plugin
+      receiver'ları — boot sonrası hatırlatıcılar yeniden kurulur).
+      `core/notifications/notification_service.dart` (kanallar: rest_timer
+      high / reminders default; `scheduleRestDone` exact→inexact fallback,
+      `scheduleDaily` matchDateTimeComponents.time) +
+      `notification_prefs.dart` (kalıcı tercihler). Ayarlar → Tercihler →
+      **Bildirimler** ekranı: dinlenme sayacı anahtarı + antrenman/su günlük
+      hatırlatıcı (anahtar + saat seçici; açılışta Android 13 izin isteği).
+      **P-11:** aktif seansta dinlenme sürerken uygulama arka plana geçince
+      bitişe bildirim kurulur, öne dönünce/atlayınca iptal. Emülatörde
+      doğrulandı: izin dialog'u → sistem alarmı `dumpsys alarm`'da (18:00
+      günlük + dinlenme exact) + arka planda dinlenme bildirimi düştü.
+      **Sınır:** bildirim metinleri kurulum anındaki dille yazılır (statik);
+      dil değişince mevcut zamanlanmışlar eski dilde kalır (bilinen minor).
+- [x] **Düzeltme (2026-07-06) — Profil "Ölçümler" köprüsü tab'a ışınlıyordu:**
+      Samet bildirdi: imperial→metrik dönmek için Profil'de Ölçümler'e dokununca
+      Progress sekmesine fırlatıyordu. Kök neden: Ölçümler `context.go(progress)`
+      çağırıyordu; `go` push'lu Profil'i (root navigator) yok edip shell'in
+      Progress tab'ına geçiyordu. Düzeltme: ölçüm giriş sheet'i artık **yerinde**
+      açılıyor — `body_metrics_screen.dart`'a paylaşılan `showAddMeasurementSheet`
+      eklendi (İlerleme FAB'ı + Profil aynı formu kullanır, tek giriş noktası
+      korunur; `_save` tüm provider'ları invalidate ettiği için İlerleme de
+      tazelenir). Subtitle "İlerleme'de kaydedilir" → "girmek için dokun". Emülatörde
+      doğrulandı: Profil → Ölçümler → sheet Profil üstünde açıldı, tab değişmedi.
+      *Not: B5/B6 kalıcılığı sağlam — testte "imperial kaldı" görüntüsü, ayarı
+      değiştirdikten saniyeler sonra `am force-stop` yapmamdan (shared_preferences
+      Android'de asenkron flush); force-stop'suz senaryoda anında persist ediyor.*
+
+---
+
+## ✅ Buton/Renk Tutarlılığı Denetimi (2026-07-05)
+
+Samet ekran görüntüsüyle gösterdi: Antrenman boş halinde İKİ "rutin oluştur"
+butonu (EmptyState'in kendi + altındaki kesikli "Yeni Rutin") + buton renkleri
+tasarımla uyumsuz (mint/teal tonal, indigo marka rengiyle çakışıyor). Tüm
+buton/arka plan kullanımını taradım (gradient CTA'lar zaten hepsi tutarlı
+indigo — sorun sadece `FilledButton.tonal`'daydı):
+- [x] **Duplike buton düzeltildi:** `workout_list_screen.dart` — rutin listesi
+      boşken sadece `_NoRoutines` (EmptyState) aksiyonu gösteriliyor; kesikli
+      "Yeni Rutin" butonu artık yalnız EN AZ 1 rutin varken (listenin altında,
+      "bir tane daha ekle" amacıyla) görünüyor.
+- [x] **`EmptyState` paylaşılan bileşeni** (`shared/widgets/app_state_views.dart`)
+      — aksiyon butonu `FilledButton.tonal` (mint/teal) → `FilledButton`
+      (indigo, marka rengi). Bu TEK değişiklik uygulamadaki **9 ekranın
+      hepsindeki** boş-hal butonunu tutarlı hale getirdi (Antrenman, Beslenme,
+      Yemekler, Vücut, Antrenman Geçmişi, Hareket Detayı/Kütüphanesi, Rutin
+      Önizleme, Ayarlar).
+      barcode_scan_screen.dart'taki 2 "Elle gir" tonal butonu da aynı sebeple
+      indigo `FilledButton`'a çevrildi.
+analyze 0 · test 123/123 · emülatörde doğrulandı (Antrenman boş hal artık tek
+buton, indigo).
+
+---
+
 ## 🌐 Çok Dilli (EN/TR) — Faz A başladı (2026-07-05) — `feat/glass-redesign`
 
 Tasarım: [docs/14-localization.md](docs/14-localization.md). Yaklaşım: Flutter
@@ -48,8 +158,29 @@ Emülatörde doğrulandı.
 - [ ] `export_service` rapor içeriği Türkçe üretiliyor (başlıklar/gün adları)
       — dışa aktarım dili tercihi ayrı karar.
 
+**✅ Kaçan UI-chrome sızıntıları düzeltildi (2026-07-05, aynı gün, ikinci tur):**
+Samet "Antrenman/Beslenme/İlerleme Türkçe kalmış" dedi → emülatörde EN modda
+uçtan uca tekrar tarandı (üç tab + Add Food/custom food/barkod/aktif
+seans/özet). Kök neden 4 gerçek kod-seviyesi sızıntı (içerik değil):
+- `MacroInlineText` (`shared/widgets/progress_indicators.dart`) P/K/Y harfleri
+  hardcoded Türkçeydi → `macroProteinAbbr/CarbsAbbr/FatAbbr` ARB anahtarı
+  (EN: P/C/F, TR: P/K/Y). Beslenme'nin her yerinde makro rozeti etkiliyordu.
+- `nutrition_screen.dart` yemek silme SnackBar'ı ("... silindi" + "Geri al")
+  hardcoded Türkçeydi (var olan `foodsDeleted` + yeni `commonUndo` anahtarına
+  bağlandı — `foods_screen.dart` zaten doğru kullanıyordu, bu ekran atlanmış).
+- `workout_summary_screen.dart`: hareket adı bulunamazsa 'Hareket' fallback'i
+  hardcoded → `wsUnknownExercise` anahtarına taşındı (nullable `_ExerciseRecap.name`).
+- `workout_draft.dart`: bozuk taslak JSON'da başlık fallback'i 'Antrenman' →
+  'Workout' (context yok; diğer benzer fallback'lerle tutarlı).
+analyze 0 · test 123/123 · emülatörde EN modda doğrulandı (Add Food listesi
+P/C/F + silme "deleted"/"Undo", boş antrenman → set → Workout Summary).
+**Not:** Yemek adları + birim etiketleri (avuç/adet/bardak/porsiyon — "1 apple"
+yerine "1 adet ≈ 170 g") hâlâ Türkçe; bunlar `turkish_foods.json` içeriği,
+kod değil → **Faz B** kapsamında (aşağıda).
+
 **Faz B (içerik i18n — ertelendi, çok turlu):** şema v9 + çift dilli seed
-(egzersiz/besin adları). Detay docs/14 §Faz B. Ayrı PRD gerekir.
+(egzersiz/besin adları + birim etiketleri). Detay docs/14 §Faz B. Ayrı PRD
+gerekir. Samet'e bunun ayrı/büyük iş olduğu hatırlatılmalı.
 
 ---
 

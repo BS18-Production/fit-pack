@@ -32,7 +32,10 @@ class AppRoutes {
   static const foods = '/foods';
   static const export = '/export';
   static const cloud = '/cloud';
+  static const profile = '/profile';
   static const settings = '/settings';
+  static const attribution = '/settings/attribution';
+  static const notifications = '/settings/notifications';
 
   // ── Parametreli rotalar: `*Path` = router tanımı, fonksiyon = çağrı ──
   static const routineEditPath = '/workout/routine/:id/edit';

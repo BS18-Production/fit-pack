@@ -7,6 +7,7 @@ import '../../core/i18n/formatting.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/units/units.dart';
 import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
@@ -73,9 +74,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     super.dispose();
   }
 
-  double? get _weight => double.tryParse(_weightCtrl.text.replaceAll(',', '.'));
-  double? get _goalWeight =>
-      double.tryParse(_goalWeightCtrl.text.replaceAll(',', '.'));
+  // Girişler görüntü biriminde okunur, kg'a çevrilir (docs/16 §3) —
+  // suggestGoals/projectWeeks/DB hepsi kg bekler.
+  double? get _weight {
+    final v = double.tryParse(_weightCtrl.text.replaceAll(',', '.'));
+    return v == null ? null : ref.read(unitsProvider).weightToKg(v);
+  }
+
+  double? get _goalWeight {
+    final v = double.tryParse(_goalWeightCtrl.text.replaceAll(',', '.'));
+    return v == null ? null : ref.read(unitsProvider).weightToKg(v);
+  }
 
   /// Faz/kilo değişince hedefleri yeniden öner (kullanıcı elle dokunmadıysa).
   void _refreshSuggestedGoals() {
@@ -137,7 +146,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
     setState(() => _saving = true);
     try {
-      final height = double.tryParse(_heightCtrl.text.replaceAll(',', '.'));
+      final heightRaw =
+          double.tryParse(_heightCtrl.text.replaceAll(',', '.'));
+      final height = heightRaw == null
+          ? null
+          : ref.read(unitsProvider).lengthToCm(heightRaw);
       final goalWeight = _goalWeight;
 
       await ref.read(userProfileDaoProvider).completeOnboarding(
@@ -304,7 +317,7 @@ class _WelcomePage extends StatelessWidget {
 
 // ────────────────────────────────────────────── Sayfa 2: Seni tanıyalım
 
-class _AboutYouPage extends StatelessWidget {
+class _AboutYouPage extends ConsumerWidget {
   const _AboutYouPage({
     required this.heightCtrl,
     required this.weightCtrl,
@@ -342,8 +355,9 @@ class _AboutYouPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
+    final units = ref.watch(unitsProvider);
     return ListView(
       padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
@@ -363,7 +377,7 @@ class _AboutYouPage extends StatelessWidget {
                     child: _NumField(
                       controller: weightCtrl,
                       label: l.onbCurrentWeight,
-                      suffix: 'kg',
+                      suffix: units.weightUnit,
                       onChanged: (_) => onWeightChanged(),
                     ),
                   ),
@@ -372,7 +386,7 @@ class _AboutYouPage extends StatelessWidget {
                     child: _NumField(
                       controller: heightCtrl,
                       label: l.settingsHeight,
-                      suffix: 'cm',
+                      suffix: units.lengthUnit,
                     ),
                   ),
                 ],
@@ -381,7 +395,7 @@ class _AboutYouPage extends StatelessWidget {
               _NumField(
                 controller: goalWeightCtrl,
                 label: l.onbGoalWeightOptional,
-                suffix: 'kg',
+                suffix: units.weightUnit,
               ),
             ],
           ),
@@ -519,7 +533,7 @@ class _PhaseTile extends StatelessWidget {
 
 // ─────────────────────────────────────────────── Sayfa 3: Planın hazır
 
-class _PlanPage extends StatelessWidget {
+class _PlanPage extends ConsumerWidget {
   const _PlanPage({
     required this.kcalCtrl,
     required this.proteinCtrl,
@@ -537,9 +551,10 @@ class _PlanPage extends StatelessWidget {
   final VoidCallback onEdited;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
     final muted = context.colors.onSurfaceVariant;
+    final units = ref.watch(unitsProvider);
 
     // Projeksiyon — kullanıcının GİRDİĞİ kaloriyle hesaplanır (düzenledikçe
     // dürüstçe güncellenir). Veri tutarsızsa hiç gösterilmez (docs/15 §A3).
@@ -551,10 +566,9 @@ class _PlanPage extends StatelessWidget {
             phase: phase,
             kcalGoal: int.tryParse(kcalCtrl.text),
           );
-    final goalStr = goalWeightKg == null
-        ? ''
-        : goalWeightKg!.toStringAsFixed(
-            goalWeightKg!.truncateToDouble() == goalWeightKg! ? 0 : 1);
+    // Projeksiyon metni görüntü biriminde ("78 kg" / "172 lb").
+    final goalStr =
+        goalWeightKg == null ? '' : units.weight(goalWeightKg!);
 
     return ListView(
       padding: const EdgeInsets.symmetric(

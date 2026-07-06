@@ -48,15 +48,16 @@ class NutritionScreen extends ConsumerWidget {
     // önceden yakalanır — ikisi de ekranın yaşam döngüsünden bağımsız.
     final dao = ref.read(nutritionDaoProvider);
     final container = ProviderScope.containerOf(context, listen: false);
+    final l = AppL10n.of(context);
     await dao.deleteFoodLog(item.log.id);
     _invalidateAll(ref);
     if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     messenger.clearSnackBars();
     messenger.showSnackBar(SnackBar(
-      content: Text('${item.food.name} silindi'),
+      content: Text(l.foodsDeleted(item.food.name)),
       action: SnackBarAction(
-        label: 'Geri al',
+        label: l.commonUndo,
         onPressed: () async {
           await dao.insertFoodLog(
             FoodLogsCompanion(

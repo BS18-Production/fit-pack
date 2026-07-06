@@ -64,6 +64,18 @@ class AppL10nTr extends AppL10n {
   String get macroCalories => 'Kalori';
 
   @override
+  String get macroProteinAbbr => 'P';
+
+  @override
+  String get macroCarbsAbbr => 'K';
+
+  @override
+  String get macroFatAbbr => 'Y';
+
+  @override
+  String get commonUndo => 'Geri al';
+
+  @override
   String get navHome => 'Ana Sayfa';
 
   @override
@@ -80,9 +92,6 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get homeExportTooltip => 'Veri dışa aktar';
-
-  @override
-  String get homeSettingsTooltip => 'Ayarlar';
 
   @override
   String get homeStreakKicker => 'Seri korunuyor';
@@ -102,7 +111,9 @@ class AppL10nTr extends AppL10n {
   String get homeStatWorkouts => 'antrenman';
 
   @override
-  String get homeStatVolume => 'kg hacim';
+  String homeStatVolume(String unit) {
+    return '$unit hacim';
+  }
 
   @override
   String get homeStatKcal => 'kcal';
@@ -625,6 +636,9 @@ class AppL10nTr extends AppL10n {
   String get wsDoneBtn => 'Bitti';
 
   @override
+  String get wsUnknownExercise => 'Hareket';
+
+  @override
   String get rpFallback => 'Rutin';
 
   @override
@@ -782,7 +796,7 @@ class AppL10nTr extends AppL10n {
   String get elMeasureType => 'Ölçüm tipi';
 
   @override
-  String get measureWeightReps => 'kg × tekrar';
+  String get measureWeightReps => 'ağırlık × tekrar';
 
   @override
   String get measureReps => 'tekrar';
@@ -868,20 +882,20 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get edChartEmptyMsg =>
-      'En az iki kez kg×tekrar girince ilerleme grafiği çıkar';
+      'En az iki kez ağırlık×tekrar girince ilerleme grafiği çıkar';
 
   @override
   String get edE1rmTitle => 'Tahmini 1RM gelişimi';
 
   @override
-  String get edEpley => 'Epley: kg × (1 + tekrar/30)';
+  String get edEpley => 'Epley: ağırlık × (1 + tekrar/30)';
 
   @override
   String get edNoPr => 'Henüz rekor yok';
 
   @override
   String get edNoPrMsg =>
-      'kg×tekrar girince kişisel rekorların burada toplanır';
+      'Ağırlık×tekrar girince kişisel rekorların burada toplanır';
 
   @override
   String get edBestE1rm => 'Tahmini 1RM';
@@ -928,8 +942,8 @@ class AppL10nTr extends AppL10n {
   String get bmWeightTrend => 'Kilo Trendi';
 
   @override
-  String bmGoalLine(String kg) {
-    return 'Hedef $kg kg';
+  String bmGoalLine(String value) {
+    return 'Hedef $value';
   }
 
   @override
@@ -1097,6 +1111,31 @@ class AppL10nTr extends AppL10n {
   String get cloudSignOut => 'Çıkış Yap';
 
   @override
+  String get cloudDeleteAccount => 'Hesabı Sil';
+
+  @override
+  String get cloudDeleteTitle => 'Hesabı sil';
+
+  @override
+  String get cloudDeleteMsg =>
+      'Bulut hesabın ve buluttaki yedeğin kalıcı olarak silinir. Bu cihazdaki veriler etkilenmez.';
+
+  @override
+  String get cloudDeleteConfirm2Title => 'Emin misin?';
+
+  @override
+  String get cloudDeleteConfirm2Msg =>
+      'Bu son adım — sonrasında hesabın geri getirilemez.';
+
+  @override
+  String get cloudDeleted => 'Hesabın silindi';
+
+  @override
+  String cloudDeleteFailed(String error) {
+    return 'Hesap silinemedi: $error';
+  }
+
+  @override
   String get unitPortion => 'porsiyon';
 
   @override
@@ -1180,16 +1219,126 @@ class AppL10nTr extends AppL10n {
   String get settingsSectionBody => 'Vücut';
 
   @override
-  String get settingsSectionAppearance => 'Görünüm';
+  String get settingsSectionPreferences => 'Tercihler';
 
   @override
   String get settingsSectionNutrition => 'Beslenme';
 
   @override
-  String get settingsSectionMyData => 'Verilerim';
+  String get settingsSectionMyData => 'Veri & Gizlilik';
 
   @override
   String get settingsSectionAbout => 'Hakkında';
+
+  @override
+  String get profileTitle => 'Profil';
+
+  @override
+  String get profileSectionIdentity => 'Kimlik & Enerji';
+
+  @override
+  String get profileMeasurements => 'Ölçümler';
+
+  @override
+  String get profileMeasurementsSubtitle =>
+      'Kilo, bel, kol — girmek için dokun';
+
+  @override
+  String get homeProfileTooltip => 'Profil';
+
+  @override
+  String get settingsLicenses => 'Açık Kaynak Lisansları';
+
+  @override
+  String get settingsAttribution => 'Açık Veri Kaynakları';
+
+  @override
+  String get settingsAttributionSubtitle =>
+      'Uygulamanın üzerine kurulduğu egzersiz ve besin veritabanları';
+
+  @override
+  String get settingsFeedback => 'Geri Bildirim Gönder';
+
+  @override
+  String get settingsFeedbackSubtitle => 'Sorun bildir ya da fikir paylaş';
+
+  @override
+  String get settingsWeekStart => 'Haftanın İlk Günü';
+
+  @override
+  String get settingsUnits => 'Birimler';
+
+  @override
+  String get settingsNotifications => 'Bildirimler';
+
+  @override
+  String get settingsNotificationsSubtitle =>
+      'Dinlenme sayacı, antrenman ve su hatırlatıcıları';
+
+  @override
+  String get notifRestTimer => 'Dinlenme sayacı bildirimi';
+
+  @override
+  String get notifRestTimerSub =>
+      'Uygulama arka plandayken dinlenme bitince haber verir';
+
+  @override
+  String get notifWorkout => 'Günlük antrenman hatırlatıcı';
+
+  @override
+  String get notifWater => 'Günlük su hatırlatıcı';
+
+  @override
+  String get notifTime => 'Saat';
+
+  @override
+  String get notifPermissionDenied =>
+      'Bildirim izni verilmedi — sistem ayarlarından açabilirsin.';
+
+  @override
+  String get notifRestDoneTitle => 'Dinlenme bitti';
+
+  @override
+  String get notifRestDoneBody => 'Sıradaki set zamanı';
+
+  @override
+  String get notifWorkoutTitle => 'Antrenman zamanı';
+
+  @override
+  String get notifWorkoutBody =>
+      'Planın seni bekliyor — kısa bir seans da sayılır.';
+
+  @override
+  String get notifWaterTitle => 'Su molası';
+
+  @override
+  String get notifWaterBody => 'Şimdi bir bardak su halkanı yolda tutar.';
+
+  @override
+  String get unitsMetric => 'Metrik (kg, cm)';
+
+  @override
+  String get unitsImperial => 'İmperial (lb, ft)';
+
+  @override
+  String get attribIntro =>
+      'Fit Pack şu açık veri setleri ve kütüphaneler üzerine kuruludur. Emeği geçenlere teşekkürler!';
+
+  @override
+  String get attribOffDesc =>
+      'Paketli gıda besin verileri (barkod ve metin araması)';
+
+  @override
+  String get attribFedDesc =>
+      'Egzersiz kütüphanesi, talimatlar ve demo fotoğrafları';
+
+  @override
+  String get attribMuscleDesc => 'Vücut kas haritası görseli';
+
+  @override
+  String attribLicense(String name) {
+    return 'Lisans: $name';
+  }
 
   @override
   String get settingsKcalGoal => 'Kalori Hedefi';
@@ -1438,12 +1587,12 @@ class AppL10nTr extends AppL10n {
 
   @override
   String onbProjectionCut(String goal, int weeks) {
-    return 'Bu tempoyla tahmini $weeks haftada $goal kg hedefine ulaşabilirsin.';
+    return 'Bu tempoyla tahmini $weeks haftada $goal hedefine ulaşabilirsin.';
   }
 
   @override
   String onbProjectionBulk(String goal, int weeks) {
-    return 'Bu tempoyla tahmini $weeks haftada $goal kg\'a ulaşabilirsin.';
+    return 'Bu tempoyla tahmini $weeks haftada $goal hedefine ulaşabilirsin.';
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_l10n.dart';
@@ -55,25 +56,27 @@ class AppShell extends StatelessWidget {
                     context.go(AppRoutes.progress);
                 }
               },
+              // Phosphor ikonlar (premium set): seçili sekme dolgulu (fill) +
+              // indigo, seçili değil ince çizgi (regular) + gri → net hiyerarşi.
               destinations: [
                 NavigationDestination(
-                  icon: const Icon(Icons.home_outlined),
-                  selectedIcon: const Icon(Icons.home_rounded),
+                  icon: const Icon(PhosphorIconsRegular.house),
+                  selectedIcon: const Icon(PhosphorIconsFill.house),
                   label: l.navHome,
                 ),
                 NavigationDestination(
-                  icon: const Icon(Icons.fitness_center_outlined),
-                  selectedIcon: const Icon(Icons.fitness_center_rounded),
+                  icon: const Icon(PhosphorIconsRegular.barbell),
+                  selectedIcon: const Icon(PhosphorIconsFill.barbell),
                   label: l.navWorkout,
                 ),
                 NavigationDestination(
-                  icon: const Icon(Icons.restaurant_outlined),
-                  selectedIcon: const Icon(Icons.restaurant_rounded),
+                  icon: const Icon(PhosphorIconsRegular.forkKnife),
+                  selectedIcon: const Icon(PhosphorIconsFill.forkKnife),
                   label: l.navNutrition,
                 ),
                 NavigationDestination(
-                  icon: const Icon(Icons.trending_up_outlined),
-                  selectedIcon: const Icon(Icons.trending_up_rounded),
+                  icon: const Icon(PhosphorIconsRegular.chartLineUp),
+                  selectedIcon: const Icon(PhosphorIconsFill.chartLineUp),
                   label: l.navProgress,
                 ),
               ],

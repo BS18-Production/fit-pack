@@ -187,99 +187,118 @@ class SettingsScreen extends ConsumerWidget {
     final l = AppL10n.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l.settingsTitle)),
+      // Bölümler cam kartlarda gruplanır (liquid glass dili) — çıplak tile yok.
       body: ListView(
+        padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg,
+            context.bottomScrollInset),
         children: [
-          SettingsSectionHeader(l.settingsSectionPreferences),
-          SettingTile(
-            icon: Icons.brightness_6_rounded,
-            title: l.settingsTheme,
-            value: themeModeLabel(l, ref.watch(themeModeProvider)),
-            onTap: () => _editTheme(context, ref),
+          SettingsSection(
+            title: l.settingsSectionPreferences,
+            children: [
+              SettingTile(
+                icon: Icons.brightness_6_rounded,
+                title: l.settingsTheme,
+                value: themeModeLabel(l, ref.watch(themeModeProvider)),
+                onTap: () => _editTheme(context, ref),
+              ),
+              SettingTile(
+                icon: Icons.language_rounded,
+                title: l.settingsLanguage,
+                value: localeLabel(l, ref.watch(localeProvider)),
+                onTap: () => _editLanguage(context, ref),
+              ),
+              SettingTile(
+                icon: Icons.straighten_rounded,
+                title: l.settingsUnits,
+                value: ref.watch(unitSystemProvider) == UnitSystem.imperial
+                    ? l.unitsImperial
+                    : l.unitsMetric,
+                onTap: () => _editUnits(context, ref),
+              ),
+              SettingTile(
+                icon: Icons.calendar_view_week_rounded,
+                title: l.settingsWeekStart,
+                value: context.weekdayName(ref.watch(weekStartProvider)),
+                onTap: () => _editWeekStart(context, ref),
+              ),
+              SettingTile(
+                icon: Icons.notifications_outlined,
+                title: l.settingsNotifications,
+                subtitle: l.settingsNotificationsSubtitle,
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => context.push(AppRoutes.notifications),
+              ),
+            ],
           ),
-          SettingTile(
-            icon: Icons.language_rounded,
-            title: l.settingsLanguage,
-            value: localeLabel(l, ref.watch(localeProvider)),
-            onTap: () => _editLanguage(context, ref),
+          SettingsSection(
+            title: l.settingsSectionNutrition,
+            children: [
+              SettingTile(
+                icon: Icons.restaurant_menu_rounded,
+                title: l.settingsFoods,
+                subtitle: l.settingsFoodsSubtitle,
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => context.push(AppRoutes.foods),
+              ),
+            ],
           ),
-          SettingTile(
-            icon: Icons.straighten_rounded,
-            title: l.settingsUnits,
-            value: ref.watch(unitSystemProvider) == UnitSystem.imperial
-                ? l.unitsImperial
-                : l.unitsMetric,
-            onTap: () => _editUnits(context, ref),
+          SettingsSection(
+            title: l.settingsSectionMyData,
+            children: [
+              _CloudAccountTile(),
+              SettingTile(
+                icon: Icons.backup_rounded,
+                title: l.settingsBackup,
+                subtitle: l.settingsBackupSubtitle,
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _backup(context, ref),
+              ),
+              SettingTile(
+                icon: Icons.restore_rounded,
+                title: l.settingsRestore,
+                subtitle: l.settingsRestoreSubtitle,
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _restore(context, ref),
+              ),
+              SettingTile(
+                icon: Icons.ios_share_rounded,
+                title: l.settingsExport,
+                subtitle: l.settingsExportSubtitle,
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => context.push(AppRoutes.export),
+              ),
+            ],
           ),
-          SettingTile(
-            icon: Icons.calendar_view_week_rounded,
-            title: l.settingsWeekStart,
-            value: context.weekdayName(ref.watch(weekStartProvider)),
-            onTap: () => _editWeekStart(context, ref),
-          ),
-          SettingTile(
-            icon: Icons.notifications_outlined,
-            title: l.settingsNotifications,
-            subtitle: l.settingsNotificationsSubtitle,
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => context.push(AppRoutes.notifications),
-          ),
-          SettingsSectionHeader(l.settingsSectionNutrition),
-          SettingTile(
-            icon: Icons.restaurant_menu_rounded,
-            title: l.settingsFoods,
-            subtitle: l.settingsFoodsSubtitle,
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => context.push(AppRoutes.foods),
-          ),
-          SettingsSectionHeader(l.settingsSectionMyData),
-          _CloudAccountTile(),
-          SettingTile(
-            icon: Icons.backup_rounded,
-            title: l.settingsBackup,
-            subtitle: l.settingsBackupSubtitle,
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => _backup(context, ref),
-          ),
-          SettingTile(
-            icon: Icons.restore_rounded,
-            title: l.settingsRestore,
-            subtitle: l.settingsRestoreSubtitle,
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => _restore(context, ref),
-          ),
-          SettingTile(
-            icon: Icons.ios_share_rounded,
-            title: l.settingsExport,
-            subtitle: l.settingsExportSubtitle,
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => context.push(AppRoutes.export),
-          ),
-          SettingsSectionHeader(l.settingsSectionAbout),
-          SettingTile(
-            icon: Icons.info_outline_rounded,
-            title: AppConstants.appName,
-            subtitle: l.settingsAboutSubtitle(AppConstants.appVersion),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            // Flutter'ın hazır lisans sayfası — tüm paket lisansları (B2).
-            onTap: () => showLicensePage(
-              context: context,
-              applicationName: AppConstants.appName,
-              applicationVersion: AppConstants.appVersion,
-            ),
-          ),
-          SettingTile(
-            icon: Icons.public_rounded,
-            title: l.settingsAttribution,
-            subtitle: l.settingsAttributionSubtitle,
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => context.push(AppRoutes.attribution),
-          ),
-          SettingTile(
-            icon: Icons.chat_bubble_outline_rounded,
-            title: l.settingsFeedback,
-            subtitle: l.settingsFeedbackSubtitle,
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => _sendFeedback(context),
+          SettingsSection(
+            title: l.settingsSectionAbout,
+            children: [
+              SettingTile(
+                icon: Icons.info_outline_rounded,
+                title: AppConstants.appName,
+                subtitle: l.settingsAboutSubtitle(AppConstants.appVersion),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                // Flutter'ın hazır lisans sayfası — tüm paket lisansları (B2).
+                onTap: () => showLicensePage(
+                  context: context,
+                  applicationName: AppConstants.appName,
+                  applicationVersion: AppConstants.appVersion,
+                ),
+              ),
+              SettingTile(
+                icon: Icons.public_rounded,
+                title: l.settingsAttribution,
+                subtitle: l.settingsAttributionSubtitle,
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => context.push(AppRoutes.attribution),
+              ),
+              SettingTile(
+                icon: Icons.chat_bubble_outline_rounded,
+                title: l.settingsFeedback,
+                subtitle: l.settingsFeedbackSubtitle,
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _sendFeedback(context),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.xxl),
         ],

@@ -1,6 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/router/app_routes.dart';
+import '../../core/theme/app_colors.dart';
 import '../../l10n/app_l10n.dart';
 
 class AppShell extends StatelessWidget {
@@ -19,44 +21,65 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
+      // İçerik buzlu gezinme çubuğunun ALTINDAN akar (liquid glass).
+      // Sekme ekranları alt boşluğu MediaQuery.padding.bottom'dan alır.
+      extendBody: true,
       body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex(context),
-        onDestinationSelected: (index) {
-          switch (index) {
-            case 0:
-              context.go(AppRoutes.home);
-            case 1:
-              context.go(AppRoutes.workout);
-            case 2:
-              context.go(AppRoutes.nutrition);
-            case 3:
-              context.go(AppRoutes.progress);
-          }
-        },
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.home_outlined),
-            selectedIcon: const Icon(Icons.home_rounded),
-            label: l.navHome,
+      bottomNavigationBar: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: dark ? AppGlass.darkNavFill : AppGlass.lightNavFill,
+              border: Border(
+                top: BorderSide(
+                  color:
+                      dark ? AppGlass.darkHairline : AppGlass.lightHairline,
+                  width: 1,
+                ),
+              ),
+            ),
+            child: NavigationBar(
+              selectedIndex: _currentIndex(context),
+              onDestinationSelected: (index) {
+                switch (index) {
+                  case 0:
+                    context.go(AppRoutes.home);
+                  case 1:
+                    context.go(AppRoutes.workout);
+                  case 2:
+                    context.go(AppRoutes.nutrition);
+                  case 3:
+                    context.go(AppRoutes.progress);
+                }
+              },
+              destinations: [
+                NavigationDestination(
+                  icon: const Icon(Icons.home_outlined),
+                  selectedIcon: const Icon(Icons.home_rounded),
+                  label: l.navHome,
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.fitness_center_outlined),
+                  selectedIcon: const Icon(Icons.fitness_center_rounded),
+                  label: l.navWorkout,
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.restaurant_outlined),
+                  selectedIcon: const Icon(Icons.restaurant_rounded),
+                  label: l.navNutrition,
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.trending_up_outlined),
+                  selectedIcon: const Icon(Icons.trending_up_rounded),
+                  label: l.navProgress,
+                ),
+              ],
+            ),
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.fitness_center_outlined),
-            selectedIcon: const Icon(Icons.fitness_center_rounded),
-            label: l.navWorkout,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.restaurant_outlined),
-            selectedIcon: const Icon(Icons.restaurant_rounded),
-            label: l.navNutrition,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.trending_up_outlined),
-            selectedIcon: const Icon(Icons.trending_up_rounded),
-            label: l.navProgress,
-          ),
-        ],
+        ),
       ),
     );
   }

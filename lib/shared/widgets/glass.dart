@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 
 /// Apple "liquid glass" bileşenleri (premium reskin — 2026-07).
@@ -28,24 +29,26 @@ class _GlassPalette {
   const _GlassPalette(this.fill, this.hairline, this.hairlineTop, this.shadow,
       this.bgBase, this.glowIndigo, this.glowTeal);
 
+  // Renk değerleri tek yerden: [AppGlass] (core/theme/app_colors.dart) —
+  // tema (Card/NavigationBar) ile buradaki bileşenler aynı paleti paylaşır.
   static _GlassPalette of(Brightness b) => b == Brightness.dark
       ? const _GlassPalette(
-          [Color(0x14FFFFFF), Color(0x08FFFFFF)], // %8 → %3 beyaz
-          Color(0x1FFFFFFF), // hairline %12
-          Color(0x3AFFFFFF), // üst parlama %23
-          Color(0x66000000), // gölge
-          [Color(0xFF0C0E15), Color(0xFF0A0B12)],
-          Color(0x4D6366F1), // indigo %30 ışıma
-          Color(0x2E14B8A6), // teal %18 ışıma
+          AppGlass.darkFill,
+          AppGlass.darkHairline,
+          AppGlass.darkHairlineTop,
+          AppGlass.darkShadow,
+          AppGlass.darkBgBase,
+          AppGlass.darkGlowIndigo,
+          AppGlass.darkGlowTeal,
         )
       : const _GlassPalette(
-          [Color(0xE6FFFFFF), Color(0xB3FFFFFF)], // %90 → %70 beyaz (buzlu)
-          Color(0xCCFFFFFF), // hairline
-          Color(0xF2FFFFFF), // üst parlama
-          Color(0x1A1E2240), // yumuşak lacivert gölge
-          [Color(0xFFEFF1F6), Color(0xFFE6E9F1)],
-          Color(0x243B82F6), // indigo ışıma (açıkta daha soluk)
-          Color(0x1F14B8A6), // teal ışıma
+          AppGlass.lightFill,
+          AppGlass.lightHairline,
+          AppGlass.lightHairlineTop,
+          AppGlass.lightShadow,
+          AppGlass.lightBgBase,
+          AppGlass.lightGlowIndigo,
+          AppGlass.lightGlowTeal,
         );
 }
 

@@ -79,3 +79,14 @@ class AppA11y {
   AppA11y._();
   static const double minTapTarget = 48;
 }
+
+/// Kaydırma içeriği için güvenli alt boşluk.
+///
+/// Sekme ekranlarında içerik buzlu gezinme çubuğunun ALTINDAN akar
+/// (AppShell `extendBody: true`) → scroll sonunda son kart çubuğun altında
+/// kaybolmasın diye ListView `padding.bottom`'ı bu değeri kullanır:
+/// çubuk yüksekliği (MediaQuery.padding.bottom'a yansır) + nefes payı.
+extension AppInsetsX on BuildContext {
+  double get bottomScrollInset =>
+      MediaQuery.paddingOf(this).bottom + AppSpacing.xl;
+}

@@ -110,9 +110,6 @@ class AppColors {
     inversePrimary: indigoBright,
   );
 
-  static const Color darkScaffold = _dBg;
-  static const Color lightScaffold = _lBg;
-
   // ─── Semantik ek renkler (ThemeExtension) ────────────────────────
   static const AppSemanticColors darkSemantic = AppSemanticColors(
     success: Color(0xFF22C55E),
@@ -139,6 +136,42 @@ class AppColors {
     macroCarbs: Color(0xFF0284C7),
     macroFat: Color(0xFFD97706),
   );
+}
+
+/// Liquid glass yüzey token'ları (premium reskin — 2026-07).
+///
+/// Tek doğruluk kaynağı: hem `shared/widgets/glass.dart` (GlassBackground /
+/// GlassCard) hem tema (`app_theme.dart` — Card/NavigationBar) buradan okur.
+/// Böylece "cam" görünümü uygulamanın her yerinde aynı kalır.
+class AppGlass {
+  AppGlass._();
+
+  // ── DARK ──
+  /// Kart dolgu gradyanı (%8 → %3 beyaz).
+  static const darkFill = [Color(0x14FFFFFF), Color(0x08FFFFFF)];
+
+  /// Gradyansız yüzeyler (tema `Card`ı) için tek renk dolgu — gradyanın
+  /// ortalaması (%6 beyaz). GlassCard ile yan yana dursa bile uyumlu.
+  static const darkFillSolid = Color(0x0FFFFFFF);
+  static const darkHairline = Color(0x1FFFFFFF); // kenarlık %12
+  static const darkHairlineTop = Color(0x3AFFFFFF); // üst parlama %23
+  static const darkShadow = Color(0x66000000);
+  static const darkBgBase = [Color(0xFF0C0E15), Color(0xFF0A0B12)];
+  static const darkGlowIndigo = Color(0x4D6366F1); // indigo %30 ışıma
+  static const darkGlowTeal = Color(0x2E14B8A6); // teal %18 ışıma
+  /// Alt gezinme çubuğu buzlu dolgusu (blur arkasında).
+  static const darkNavFill = Color(0xB80A0C12);
+
+  // ── LIGHT ──
+  static const lightFill = [Color(0xE6FFFFFF), Color(0xB3FFFFFF)];
+  static const lightFillSolid = Color(0xCCFFFFFF); // %80 beyaz (buzlu)
+  static const lightHairline = Color(0xCCFFFFFF);
+  static const lightHairlineTop = Color(0xF2FFFFFF);
+  static const lightShadow = Color(0x1A1E2240); // yumuşak lacivert gölge
+  static const lightBgBase = [Color(0xFFEFF1F6), Color(0xFFE6E9F1)];
+  static const lightGlowIndigo = Color(0x243B82F6);
+  static const lightGlowTeal = Color(0x1F14B8A6);
+  static const lightNavFill = Color(0xC2F4F5F9);
 }
 
 /// Material 3 [ColorScheme]'de karşılığı olmayan, uygulamaya özgü renkler.

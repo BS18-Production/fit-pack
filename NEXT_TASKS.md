@@ -1,7 +1,50 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
-> **Son güncelleme:** 2026-07-05
+> **Son güncelleme:** 2026-07-07
 > **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [CODE_REVIEW.md](CODE_REVIEW.md), [docs/04-roadmap.md](docs/04-roadmap.md)
+
+---
+
+## ✅ Uygulama Geneli Liquid Glass Tutarlılığı (2026-07-07)
+
+Samet "tüm uygulamayı tasarım açısından kusursuz, birbiriyle uyumlu yap" dedi.
+Ekran ekran zemin kopyalamak yerine **üç merkezi kaldıraç** kuruldu — böylece
+18 ekranın tamamı tek hamlede aynı dile geçti:
+
+- [x] **Global zemin:** `GlassBackground` artık `MaterialApp.builder`'da
+      (app.dart) navigator'ın ALTINA bir kez çizilir → tab + push'lu tüm
+      ekranlar aynı ışıma zeminini paylaşır. Home/Onboarding'deki yerel
+      `GlassBackground` sarmalayıcıları kaldırıldı (çift zemin yok).
+      **Kural: yeni ekran kendi zeminini KURMAZ.**
+- [x] **Tema kaldıracı (app_theme):** `scaffoldBackgroundColor` + AppBar
+      transparan; `cardTheme` = ucuz cam yüzey (yarı saydam dolgu + hairline,
+      blur'suz GlassCard eşdeğeri) → temadaki `Card` kullanan HER ekran
+      otomatik glass oldu. Renk token'ları tek kaynakta: **`AppGlass`**
+      (app_colors.dart) — glass.dart da oradan okur.
+- [x] **Buzlu gezinme çubuğu:** AppShell `extendBody: true` + navbar
+      `BackdropFilter` blur + `AppGlass.navFill` + üst hairline — içerik
+      çubuğun altından akar. Tab ekranlarının ListView'ına
+      `context.bottomScrollInset` (app_dimens) alt boşluğu eklendi;
+      Beslenme/İlerleme FAB'ları `MediaQuery.padding.bottom` ile çubuğun
+      üstüne kaldırıldı (iç Scaffold extendBody'yi bilmez — bilinen tuzak).
+- [x] **Edge-to-edge:** `SystemUiMode.edgeToEdge` (main.dart) + builder'da
+      `AnnotatedRegion` (AppBar'sız ekranlar için) + appBarTheme
+      `systemOverlayStyle` transparan `.copyWith` + styles.xml (values +
+      values-night) transparan status/nav bar → gri status bandı ve siyah
+      gesture şeridi kalktı, zemin sistem çubuklarının arkasına uzanıyor.
+- [x] **Ayarlar/Profil/Bildirimler bölüm kartları:** `SettingsSection`
+      (setting_tiles.dart) — başlık + cam kartta gruplanmış satırlar, rozet
+      hizalı ince ayraçlar (iOS Settings dili). Üç ekran da geçirildi;
+      Profil TDEE kartının çift yatay margin'i düzeltildi.
+- [x] **Doğrulama:** analyze 0 · test 137/137 · emülatörde uçtan uca görsel
+      tur: 4 tab + Profil + Ayarlar + Bildirimler + Foods + Export + Atıf +
+      Kütüphane + Hareket Detayı (demo foto + kas haritası) + aktif seans
+      (set tablosu + dinlenme banner'ı) + özet + geçmiş — **açık VE koyu**
+      temada ekran görüntüleriyle. Emülatör temizlendi (test seansı silindi,
+      tema Sistem'e döndü).
+- [ ] **Gerçek cihaz performansı:** SM A075F'te blur (navbar + GlassCard)
+      akıcılığı test edilmeli; takılırsa `GlassCard.blur=false` +
+      navbar blur sigma düşürülebilir. APK kurulunca Samet baksın.
 
 ---
 

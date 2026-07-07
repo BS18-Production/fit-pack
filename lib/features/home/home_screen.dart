@@ -26,10 +26,11 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Zemin (GlassBackground) app.dart'ta TÜM ekranlara bir kez verilir;
+    // burada tekrar kurulmaz. Alt boşluk: içerik buzlu çubuğun altından
+    // aktığı için bottomScrollInset.
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: GlassBackground(
-        child: RefreshIndicator(
+      body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(userProfileProvider);
           ref.invalidate(todayNutritionProvider);
@@ -42,8 +43,8 @@ class HomeScreen extends ConsumerWidget {
           ref.invalidate(topProgressProvider);
         },
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xl, AppSpacing.sm, AppSpacing.xl, AppSpacing.xxxl),
+          padding: EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.sm,
+              AppSpacing.xl, context.bottomScrollInset),
           children: const [
             _Header(),
             SizedBox(height: 26),
@@ -59,7 +60,6 @@ class HomeScreen extends ConsumerWidget {
             _CompactHealthRow(),
           ],
         ),
-      ),
       ),
     );
   }

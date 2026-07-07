@@ -133,43 +133,58 @@ class NotificationsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l.settingsNotifications)),
+      // Anahtarlar cam bölüm kartlarında (liquid glass dili) — Ayarlar ile aynı.
       body: ListView(
+        padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm,
+            AppSpacing.lg, context.bottomScrollInset),
         children: [
-          SwitchListTile(
-            secondary: const Icon(Icons.timer_outlined),
-            title: Text(l.notifRestTimer),
-            subtitle: Text(l.notifRestTimerSub),
-            value: prefs.restEnabled,
-            onChanged: (v) => _setRest(context, ref, v),
+          SettingsSection(
+            children: [
+              SwitchListTile(
+                secondary: const Icon(Icons.timer_outlined),
+                title: Text(l.notifRestTimer),
+                subtitle: Text(l.notifRestTimerSub),
+                value: prefs.restEnabled,
+                onChanged: (v) => _setRest(context, ref, v),
+              ),
+            ],
           ),
-          const Divider(height: 1),
-          SwitchListTile(
-            secondary: const Icon(Icons.fitness_center_rounded),
-            title: Text(l.notifWorkout),
-            value: prefs.workoutEnabled,
-            onChanged: (v) => _setWorkout(context, ref, v),
+          AppSpacing.vGapLg,
+          SettingsSection(
+            children: [
+              SwitchListTile(
+                secondary: const Icon(Icons.fitness_center_rounded),
+                title: Text(l.notifWorkout),
+                value: prefs.workoutEnabled,
+                onChanged: (v) => _setWorkout(context, ref, v),
+              ),
+              if (prefs.workoutEnabled)
+                SettingTile(
+                  icon: Icons.schedule_rounded,
+                  title: l.notifTime,
+                  value: _fmt(prefs.workoutHour, prefs.workoutMinute),
+                  onTap: () => _pickTime(context, ref, isWorkout: true),
+                ),
+            ],
           ),
-          if (prefs.workoutEnabled)
-            SettingTile(
-              icon: Icons.schedule_rounded,
-              title: l.notifTime,
-              value: _fmt(prefs.workoutHour, prefs.workoutMinute),
-              onTap: () => _pickTime(context, ref, isWorkout: true),
-            ),
-          const Divider(height: 1),
-          SwitchListTile(
-            secondary: const Icon(Icons.water_drop_outlined),
-            title: Text(l.notifWater),
-            value: prefs.waterEnabled,
-            onChanged: (v) => _setWater(context, ref, v),
+          AppSpacing.vGapLg,
+          SettingsSection(
+            children: [
+              SwitchListTile(
+                secondary: const Icon(Icons.water_drop_outlined),
+                title: Text(l.notifWater),
+                value: prefs.waterEnabled,
+                onChanged: (v) => _setWater(context, ref, v),
+              ),
+              if (prefs.waterEnabled)
+                SettingTile(
+                  icon: Icons.schedule_rounded,
+                  title: l.notifTime,
+                  value: _fmt(prefs.waterHour, prefs.waterMinute),
+                  onTap: () => _pickTime(context, ref, isWorkout: false),
+                ),
+            ],
           ),
-          if (prefs.waterEnabled)
-            SettingTile(
-              icon: Icons.schedule_rounded,
-              title: l.notifTime,
-              value: _fmt(prefs.waterHour, prefs.waterMinute),
-              onTap: () => _pickTime(context, ref, isWorkout: false),
-            ),
           const SizedBox(height: AppSpacing.xxl),
         ],
       ),

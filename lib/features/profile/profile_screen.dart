@@ -189,92 +189,109 @@ class _ProfileBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
     final units = ref.watch(unitsProvider);
+    // Bölümler cam kartlarda gruplanır (liquid glass dili) — Ayarlar ile aynı.
     return ListView(
+      padding: EdgeInsets.fromLTRB(
+          AppSpacing.lg, 0, AppSpacing.lg, context.bottomScrollInset),
       children: [
-        SettingsSectionHeader(l.settingsSectionGoals),
-        SettingTile(
-          icon: Icons.local_fire_department_rounded,
-          title: l.settingsKcalGoal,
-          value: '${profile.kcalGoal} kcal',
-          onTap: () => _editNumber(context, ref,
+        SettingsSection(
+          title: l.settingsSectionGoals,
+          children: [
+            SettingTile(
+              icon: Icons.local_fire_department_rounded,
               title: l.settingsKcalGoal,
-              unit: 'kcal',
-              initial: profile.kcalGoal,
-              isInt: true,
-              min: 800,
-              max: 6000,
-              apply: (v) => profile.copyWith(kcalGoal: v.toInt())),
-        ),
-        SettingTile(
-          icon: Icons.egg_alt_outlined,
-          title: l.settingsProteinGoal,
-          value: '${profile.proteinGoal} g',
-          onTap: () => _editNumber(context, ref,
+              value: '${profile.kcalGoal} kcal',
+              onTap: () => _editNumber(context, ref,
+                  title: l.settingsKcalGoal,
+                  unit: 'kcal',
+                  initial: profile.kcalGoal,
+                  isInt: true,
+                  min: 800,
+                  max: 6000,
+                  apply: (v) => profile.copyWith(kcalGoal: v.toInt())),
+            ),
+            SettingTile(
+              icon: Icons.egg_alt_outlined,
               title: l.settingsProteinGoal,
-              unit: 'g',
-              initial: profile.proteinGoal,
-              isInt: true,
-              min: 30,
-              max: 400,
-              apply: (v) => profile.copyWith(proteinGoal: v.toInt())),
+              value: '${profile.proteinGoal} g',
+              onTap: () => _editNumber(context, ref,
+                  title: l.settingsProteinGoal,
+                  unit: 'g',
+                  initial: profile.proteinGoal,
+                  isInt: true,
+                  min: 30,
+                  max: 400,
+                  apply: (v) => profile.copyWith(proteinGoal: v.toInt())),
+            ),
+          ],
         ),
-        SettingsSectionHeader(l.settingsSectionBody),
-        SettingTile(
-          icon: Icons.height_rounded,
-          title: l.settingsHeight,
-          value:
-              profile.heightCm != null ? units.height(profile.heightCm!) : '—',
-          onTap: () => _editHeight(context, ref, units),
-        ),
-        SettingTile(
-          icon: Icons.flag_outlined,
-          title: l.settingsGoalWeight,
-          value: profile.goalWeightKg != null
-              ? units.weight(profile.goalWeightKg!)
-              : '—',
-          onTap: () => _editNumber(context, ref,
+        SettingsSection(
+          title: l.settingsSectionBody,
+          children: [
+            SettingTile(
+              icon: Icons.height_rounded,
+              title: l.settingsHeight,
+              value: profile.heightCm != null
+                  ? units.height(profile.heightCm!)
+                  : '—',
+              onTap: () => _editHeight(context, ref, units),
+            ),
+            SettingTile(
+              icon: Icons.flag_outlined,
               title: l.settingsGoalWeight,
-              unit: units.weightUnit,
-              initial: double.parse(units
-                  .weightFromKg(profile.goalWeightKg ?? 80)
-                  .toStringAsFixed(1)),
-              isInt: false,
-              min: units.weightFromKg(40).floor(),
-              max: units.weightFromKg(250).ceil(),
-              apply: (v) => profile.copyWith(
-                  goalWeightKg: Value(units.weightToKg(v)))),
+              value: profile.goalWeightKg != null
+                  ? units.weight(profile.goalWeightKg!)
+                  : '—',
+              onTap: () => _editNumber(context, ref,
+                  title: l.settingsGoalWeight,
+                  unit: units.weightUnit,
+                  initial: double.parse(units
+                      .weightFromKg(profile.goalWeightKg ?? 80)
+                      .toStringAsFixed(1)),
+                  isInt: false,
+                  min: units.weightFromKg(40).floor(),
+                  max: units.weightFromKg(250).ceil(),
+                  apply: (v) => profile.copyWith(
+                      goalWeightKg: Value(units.weightToKg(v)))),
+            ),
+            // Güncel kilo/bel/kol tek form üzerinden girilir (İlerleme'deki ile
+            // aynı sheet). Eskiden `context.go(progress)` idi; push'lu Profil'i
+            // yok edip tab'a ışınlıyordu — formu yerinde açıyoruz (docs/16 §2.1).
+            SettingTile(
+              icon: Icons.straighten_rounded,
+              title: l.profileMeasurements,
+              subtitle: l.profileMeasurementsSubtitle,
+              onTap: () => showAddMeasurementSheet(context),
+            ),
+          ],
         ),
-        // Güncel kilo/bel/kol tek form üzerinden girilir (İlerleme'deki ile aynı
-        // sheet). Eskiden `context.go(progress)` idi; push'lu Profil'i yok edip
-        // tab'a ışınlıyordu — formu yerinde açıyoruz (docs/16 §2.1, S1).
-        SettingTile(
-          icon: Icons.straighten_rounded,
-          title: l.profileMeasurements,
-          subtitle: l.profileMeasurementsSubtitle,
-          onTap: () => showAddMeasurementSheet(context),
+        SettingsSection(
+          title: l.profileSectionIdentity,
+          children: [
+            SettingTile(
+              icon: Icons.wc_rounded,
+              title: l.settingsGender,
+              value: genderLabel(l, profile.gender),
+              onTap: () => _editGender(context, ref),
+            ),
+            SettingTile(
+              icon: Icons.cake_outlined,
+              title: l.settingsBirthDate,
+              value: profile.birthDate != null
+                  ? l.settingsBirthDateValue(_fmtDate(profile.birthDate!),
+                      ageFromBirthDate(profile.birthDate) ?? 0)
+                  : '—',
+              onTap: () => _editBirthDate(context, ref),
+            ),
+            SettingTile(
+              icon: Icons.directions_walk_rounded,
+              title: l.settingsActivityLevel,
+              value: activityLabel(l, profile.activityLevel),
+              onTap: () => _editActivity(context, ref),
+            ),
+          ],
         ),
-        SettingsSectionHeader(l.profileSectionIdentity),
-        SettingTile(
-          icon: Icons.wc_rounded,
-          title: l.settingsGender,
-          value: genderLabel(l, profile.gender),
-          onTap: () => _editGender(context, ref),
-        ),
-        SettingTile(
-          icon: Icons.cake_outlined,
-          title: l.settingsBirthDate,
-          value: profile.birthDate != null
-              ? l.settingsBirthDateValue(_fmtDate(profile.birthDate!),
-                  ageFromBirthDate(profile.birthDate) ?? 0)
-              : '—',
-          onTap: () => _editBirthDate(context, ref),
-        ),
-        SettingTile(
-          icon: Icons.directions_walk_rounded,
-          title: l.settingsActivityLevel,
-          value: activityLabel(l, profile.activityLevel),
-          onTap: () => _editActivity(context, ref),
-        ),
+        AppSpacing.vGapLg,
         _DailyEnergyTile(profile: profile),
         const SizedBox(height: AppSpacing.xxl),
       ],
@@ -311,9 +328,8 @@ class _DailyEnergyTile extends ConsumerWidget {
         l.settingsMissingGender,
     ];
 
+    // Yatay boşluk üst ListView padding'inden gelir (çift margin olmasın).
     return Container(
-      margin: const EdgeInsets.fromLTRB(
-          AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: c.primaryContainer.withValues(alpha: ready ? 1 : 0.5),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -10,6 +11,15 @@ import 'data/seed/seed_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Liquid glass zemin sistem çubuklarının ARKASINA uzansın (edge-to-edge):
+  // status bar + gesture çubuğu transparan; yoksa gri/siyah bant zemini keser.
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarContrastEnforced: false,
+  ));
 
   // Tarih biçimlendirme verisini yükle (docs/14 — çok dilli). Desteklenen her
   // dil için gerekir; olmadan DateFormat(..., locale) LocaleDataException

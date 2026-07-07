@@ -111,19 +111,27 @@ class NutritionScreen extends ConsumerWidget {
       ),
       // İlk-kullanım ipucu (docs/15 §B): sekmeye ilk girişte öğün eklemeyi
       // işaret eder; bir kez gösterilir.
-      floatingActionButton: CoachMark(
-        hint: FirstRunHint.nutrition,
-        message: (l) => l.hintNutrition,
-        child: FloatingActionButton.extended(
-          onPressed: () => _showAddFoodSheet(context, ref),
-          icon: const Icon(Icons.add_rounded),
-          label: Text(l.nutritionAddFood),
+      // Alt boşluk: içerik buzlu gezinme çubuğunun altından aktığı için
+      // (extendBody) iç Scaffold FAB'ı çubuğun arkasına koyar — yukarı kaldır.
+      floatingActionButton: Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+        child: CoachMark(
+          hint: FirstRunHint.nutrition,
+          message: (l) => l.hintNutrition,
+          child: FloatingActionButton.extended(
+            onPressed: () => _showAddFoodSheet(context, ref),
+            icon: const Icon(Icons.add_rounded),
+            label: Text(l.nutritionAddFood),
+          ),
         ),
       ),
       body: RefreshIndicator(
         onRefresh: () async => _invalidateAll(ref),
         child: ListView(
-          padding: AppSpacing.screen,
+          // Alt boşluk: içerik buzlu gezinme çubuğunun altından akar.
+          padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg,
+              AppSpacing.lg, context.bottomScrollInset),
           children: [
             _DateBar(
               date: date,

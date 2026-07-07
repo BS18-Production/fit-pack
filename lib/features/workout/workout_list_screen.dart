@@ -31,8 +31,9 @@ class WorkoutListScreen extends ConsumerWidget {
           ref.invalidate(weekWorkoutStatsProvider);
         },
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xl, AppSpacing.sm, AppSpacing.xl, AppSpacing.xxxl),
+          // Alt boşluk: içerik buzlu gezinme çubuğunun altından akar.
+          padding: EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.sm,
+              AppSpacing.xl, context.bottomScrollInset),
           children: [
             const _Header(),
             AppSpacing.vGapLg,

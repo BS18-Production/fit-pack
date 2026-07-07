@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_mode_provider.dart';
+import 'shared/widgets/glass.dart';
 import 'core/i18n/locale_provider.dart';
 import 'core/router/app_router.dart';
 import 'l10n/app_l10n.dart';
@@ -42,8 +44,28 @@ class _FitPackAppState extends ConsumerState<FitPackApp> {
       localizationsDelegates: AppL10n.localizationsDelegates,
       supportedLocales: AppL10n.supportedLocales,
       routerConfig: _router,
-      builder: (context, child) =>
-          _DayRolloverGuard(child: child ?? const SizedBox.shrink()),
+      // GlassBackground BURADA, navigator'ın altında bir kez çizilir →
+      // her ekran (tab + push'lu) aynı zemini paylaşır; scaffold'lar
+      // transparan (app_theme). Ekranlar kendi zeminini KURMAZ.
+      // AnnotatedRegion: AppBar'sız ekranlarda da sistem çubukları transparan
+      // kalsın (edge-to-edge) — yalnız main()'deki tek seferlik çağrıya
+      // güvenmek yetmez, ilk kare sonrası ezilebiliyor.
+      builder: (context, child) {
+        final brightness = Theme.of(context).brightness;
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: (brightness == Brightness.dark
+                  ? SystemUiOverlayStyle.light
+                  : SystemUiOverlayStyle.dark)
+              .copyWith(
+            statusBarColor: Colors.transparent,
+            systemNavigationBarColor: Colors.transparent,
+            systemNavigationBarContrastEnforced: false,
+          ),
+          child: GlassBackground(
+            child: _DayRolloverGuard(child: child ?? const SizedBox.shrink()),
+          ),
+        );
+      },
     );
   }
 }

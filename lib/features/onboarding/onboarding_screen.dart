@@ -197,10 +197,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Zemin (GlassBackground) app.dart'ta tüm ekranlara bir kez verilir.
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: GlassBackground(
-        child: SafeArea(
+      body: SafeArea(
           child: Column(
             children: [
               _ProgressDots(current: _page, total: _lastPage + 1),
@@ -250,7 +249,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ],
           ),
         ),
-      ),
     );
   }
 }

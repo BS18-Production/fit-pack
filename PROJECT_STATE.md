@@ -1,8 +1,20 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-07-05
-> **Faz:** V2 Geliştirme — **Çok Dilli (EN/TR) Faz A** başladı
+> **Son güncelleme:** 2026-07-07
+> **Faz:** V2 Geliştirme — **Liquid Glass uygulama geneli tutarlılık** tamam
 > **Sahibi:** Samet Orhan
+
+## 🎨 Uygulama Geneli Liquid Glass (2026-07-07)
+
+Tüm ekranlar (18 ekran: tab'lar + push'lu ekranlar) tek tasarım diline geçti.
+Üç merkezi kaldıraç: (1) `GlassBackground` `MaterialApp.builder`'da bir kez —
+ekranlar kendi zeminini kurmaz; (2) tema `Card`'ı cam yüzey (`AppGlass`
+token'ları, app_colors.dart) — Card kullanan her ekran otomatik uyumlu;
+(3) buzlu alt gezinme çubuğu (`extendBody` + blur) + edge-to-edge sistem
+çubukları. Ayarlar/Profil/Bildirimler `SettingsSection` cam bölüm kartlarına
+geçti. analyze 0 · test 137/137 · açık+koyu emülatör turuyla doğrulandı.
+Detay: **[NEXT_TASKS.md](NEXT_TASKS.md)** §Liquid Glass Tutarlılığı.
+**Kalan risk:** gerçek cihazda (SM A075F) blur performansı — APK testi bekliyor.
 
 ## 🌐 Çok Dilli (EN/TR) — Faz A (2026-07-05)
 

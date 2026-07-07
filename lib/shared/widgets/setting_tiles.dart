@@ -61,6 +61,46 @@ class SettingTile extends StatelessWidget {
   }
 }
 
+/// Bölüm kartı: başlık + cam yüzeyde gruplanmış satırlar (liquid glass dili).
+/// Tile'lar çıplak zeminde yüzmez; Home'daki kart diliyle aynı hiyerarşi.
+/// Satır araları ince ayraç (ikon rozetinden sonra hizalı).
+class SettingsSection extends StatelessWidget {
+  final String? title;
+  final List<Widget> children;
+  const SettingsSection({super.key, this.title, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (title != null) SettingsSectionHeader(title!),
+        Card(
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+            child: Column(
+              children: [
+                for (var i = 0; i < children.length; i++) ...[
+                  if (i > 0)
+                    Divider(
+                      height: 1,
+                      // Rozet (40) + ListTile yatay padding hizası.
+                      indent: AppSpacing.lg + 40 + AppSpacing.lg,
+                      color: context.colors.outlineVariant
+                          .withValues(alpha: 0.5),
+                    ),
+                  children[i],
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// Bölüm başlığı (BÜYÜK HARF, geniş letter-spacing).
 class SettingsSectionHeader extends StatelessWidget {
   final String title;

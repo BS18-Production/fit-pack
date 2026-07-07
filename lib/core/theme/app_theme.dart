@@ -14,17 +14,14 @@ class AppTheme {
   AppTheme._();
 
   static ThemeData get dark =>
-      _build(AppColors.darkScheme, AppColors.darkSemantic,
-          AppColors.darkScaffold, Brightness.dark);
+      _build(AppColors.darkScheme, AppColors.darkSemantic, Brightness.dark);
 
   static ThemeData get light =>
-      _build(AppColors.lightScheme, AppColors.lightSemantic,
-          AppColors.lightScaffold, Brightness.light);
+      _build(AppColors.lightScheme, AppColors.lightSemantic, Brightness.light);
 
   static ThemeData _build(
     ColorScheme scheme,
     AppSemanticColors semantic,
-    Color scaffold,
     Brightness brightness,
   ) {
     final base = ThemeData(
@@ -56,33 +53,54 @@ class AppTheme {
       displayColor: scheme.onSurface,
     );
 
+    // Liquid glass zemin: GlassBackground TÜM ekranların arkasına
+    // MaterialApp.builder ile bir kez çizilir (app.dart). Scaffold ve AppBar
+    // bu yüzden transparan — ışıma her ekranda kesintisiz görünür.
     return base.copyWith(
-      scaffoldBackgroundColor: scaffold,
+      scaffoldBackgroundColor: Colors.transparent,
       textTheme: text,
       extensions: [semantic],
       splashFactory: InkSparkle.splashFactory,
 
       appBarTheme: AppBarTheme(
-        backgroundColor: scaffold,
+        backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
         titleTextStyle: text.titleLarge,
         iconTheme: IconThemeData(color: scheme.onSurface),
-        systemOverlayStyle: brightness == Brightness.dark
-            ? SystemUiOverlayStyle.light
-            : SystemUiOverlayStyle.dark,
+        // Hazır .light/.dark sabitleri gesture çubuğunu SİYAH boyar —
+        // edge-to-edge glass zemin için ikisi de transparan kalmalı.
+        systemOverlayStyle: (brightness == Brightness.dark
+                ? SystemUiOverlayStyle.light
+                : SystemUiOverlayStyle.dark)
+            .copyWith(
+          statusBarColor: Colors.transparent,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarContrastEnforced: false,
+        ),
       ),
 
+      // Tema `Card`ı = ucuz cam yüzey (blur'suz GlassCard eşdeğeri): yarı
+      // saydam dolgu + ince hairline. GlassBackground'un ışıması altından
+      // sızar → GlassCard ile yan yana tutarlı. Blur gereken kahraman
+      // kartlarda GlassCard kullanılır (shared/widgets/glass.dart).
       cardTheme: CardThemeData(
-        color: scheme.surface,
+        color: brightness == Brightness.dark
+            ? AppGlass.darkFillSolid
+            : AppGlass.lightFillSolid,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: AppRadius.brLg,
-          side: BorderSide(color: scheme.outlineVariant, width: 1),
+          side: BorderSide(
+            color: brightness == Brightness.dark
+                ? AppGlass.darkHairline
+                : AppGlass.lightHairline,
+            width: 1,
+          ),
         ),
       ),
 
@@ -171,10 +189,10 @@ class AppTheme {
         ),
       ),
 
+      // Arka plan transparan: buzlu dolgu + blur, AppShell'deki sarmalayıcıda
+      // (içerik çubuğun ALTINDAN akar — extendBody).
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: brightness == Brightness.dark
-            ? AppColors.darkScaffold
-            : AppColors.lightScaffold,
+        backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         indicatorColor: scheme.primary.withValues(alpha: 0.16),
         elevation: 0,

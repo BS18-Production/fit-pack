@@ -31,17 +31,26 @@ class BodyMetricsScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l.navProgress)),
       // İlk-kullanım ipucu (docs/15 §B): sekmeye ilk girişte kilo/ölçüm
       // girmeyi işaret eder; bir kez gösterilir.
-      floatingActionButton: CoachMark(
-        hint: FirstRunHint.progress,
-        message: (l) => l.hintProgress,
-        child: FloatingActionButton.extended(
-          onPressed: () => _showAddMeasurementDialog(context, ref),
-          icon: const Icon(Icons.add_rounded),
-          label: Text(l.bmAddMeasurement),
+      // Alt boşluk: içerik buzlu gezinme çubuğunun altından aktığı için
+      // (extendBody) iç Scaffold FAB'ı çubuğun arkasına koyar — yukarı kaldır.
+      floatingActionButton: Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+        child: CoachMark(
+          hint: FirstRunHint.progress,
+          message: (l) => l.hintProgress,
+          child: FloatingActionButton.extended(
+            onPressed: () => _showAddMeasurementDialog(context, ref),
+            icon: const Icon(Icons.add_rounded),
+            label: Text(l.bmAddMeasurement),
+          ),
         ),
       ),
       body: ListView(
-        padding: AppSpacing.screen,
+        // Alt boşluk: içerik buzlu gezinme çubuğunun altından akar; 80 = FAB
+        // payı, bottomScrollInset = çubuk + nefes.
+        padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg,
+            AppSpacing.lg, context.bottomScrollInset),
         children: [
           // Aktivite takvimi — ölçüm olsun olmasın her zaman görünür.
           const ActivityCalendar(),

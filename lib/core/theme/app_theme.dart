@@ -62,6 +62,20 @@ class AppTheme {
       extensions: [semantic],
       splashFactory: InkSparkle.splashFactory,
 
+      // Push edilen sayfa geçişi: TÜM platformlarda tek, hafif Cupertino
+      // yatay kaydırma. Android varsayılanı (Zoom = ölçek + opaklık fade)
+      // canlı cam/blur zeminiyle compose edilince ağır görünüyordu — sayfa
+      // saliselik "soluk açılıyor" hissi veriyordu. Kaydırma opaklık fade'i
+      // yapmaz + blur'la ucuz compose edilir → her push sayfası (Profil,
+      // Ayarlar, seans, kütüphane, detay…) aynı pürüzsüz his. Sekmeler
+      // NoTransitionPage kullandığı için etkilenmez (anlık kalır).
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
+
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,

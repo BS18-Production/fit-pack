@@ -66,12 +66,27 @@ class ExerciseDetailScreen extends ConsumerWidget {
             Tab(text: l.edTabRecords),
           ]),
         ),
-        body: TabBarView(children: [
-          ExerciseHowToContent(exercise: ex),
-          _HistoryTab(exerciseId: exerciseId, exercise: ex),
-          _ChartTab(exerciseId: exerciseId),
-          _RecordsTab(exerciseId: exerciseId),
-        ]),
+        // TabBarView yerine IndexedStack: sekmeye dokununca içerik yatay
+        // KAYMADAN anlık değişir (Samet "slayt gibi kaymasın" dedi). Tüm
+        // sekmeler canlı kalır → durum/scroll korunur, tekrar fetch yok.
+        // Başlık altı çizgi göstergesi TabBar'da normal şekilde kayar.
+        body: Builder(
+          builder: (context) {
+            final controller = DefaultTabController.of(context);
+            return AnimatedBuilder(
+              animation: controller,
+              builder: (context, _) => IndexedStack(
+                index: controller.index,
+                children: [
+                  ExerciseHowToContent(exercise: ex),
+                  _HistoryTab(exerciseId: exerciseId, exercise: ex),
+                  _ChartTab(exerciseId: exerciseId),
+                  _RecordsTab(exerciseId: exerciseId),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }

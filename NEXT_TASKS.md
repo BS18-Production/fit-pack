@@ -48,6 +48,67 @@ Ekran ekran zemin kopyalamak yerine **üç merkezi kaldıraç** kuruldu — böy
 
 ---
 
+## ✅ Geçiş Pürüzsüzlüğü — Tüm Ekranlar (2026-07-07)
+
+Samet fark etti: ekranlar arası geçişte bileşenler saliselik geç yükleniyordu
+(pürüzsüz değil). İki ayrı kök neden, iki gezinme türü:
+
+**A) Sekmeler (tab) — `StatefulShellRoute.indexedStack`:**
+Router düz `ShellRoute` + `context.go` idi → her geçişte önceki sekme ekranı
+yok edilip yenisi sıfırdan inşa ediliyordu; Home dashboard gibi `autoDispose`
+provider'lar dispose olup DB'den yeniden (asenkron) fetch ediyordu → o boşlukta
+iskelet görünüp gerçek veri "pat" diye geliyordu.
+- [x] `StatefulShellRoute.indexedStack`'e geçildi (`app_router.dart`): 4 sekme
+      4 `StatefulShellBranch`, her biri kendi navigator'ında, `IndexedStack`
+      ile canlı kalır → yeniden inşa yok, autoDispose provider'lar dinleyici
+      bağlı kaldığı için dispose olmaz (yeniden fetch yok), scroll korunur.
+- [x] `AppShell` artık `Widget child` yerine `StatefulNavigationShell` alır;
+      seçili index `navigationShell.currentIndex`, geçiş `goBranch(index)`
+      (aynı sekmeye tekrar dokununca `initialLocation:true` ile dalın köküne
+      döner). Kullanılmayan `_shellNavigatorKey` kaldırıldı.
+
+**B) Push edilen sayfalar (Profil/Ayarlar/seans/kütüphane/detay…) — geçiş
+animasyonu + zemin sızıntısı:** Samet "Ayarlar ve Profil'de aynı sorun sürüyor"
+dedi. Bunlar sekme değil, root navigator'a push ediliyor → IndexedStack kapsamaz.
+İki katmanlı sorun çıktı:
+1. **Geçiş animasyonu:** Android varsayılan Zoom (ölçek + opaklık fade) canlı
+   cam (blur) zeminiyle compose edilince ağır + sayfa soluk/gri açılıyordu.
+2. **Zemin sızıntısı (bleed-through) — asıl kusur:** Samet ekran kaydı gönderdi;
+   geçiş sırasında **eski sayfanın elementleri yeni sayfanın arkasından
+   görünüyordu**. Kök neden mimari: `GlassBackground` navigator'ın ALTINDA
+   global çizilir + TÜM scaffold'lar transparan → kayan yeni sayfa saydam
+   olduğundan altındaki eski sayfa içeriği görünüyordu. (Zoom'da fade
+   maskeliyordu; kaydırma açığa çıkardı — "daha kötü" bunun için.)
+- [x] Tema seviyesinde tek geçiş: `app_theme.dart` `pageTransitionsTheme` →
+      tüm platformlarda `CupertinoPageTransitionsBuilder` (yatay kaydırma,
+      iOS diline uygun, opaklık fade'i yok).
+- [x] **Sızıntı düzeltmesi:** push edilen her route (+onboarding) `app_router.dart`
+      `_glass(...)` helper'ı ile kendi OPAK `GlassBackground`'ıyla sarıldı →
+      kayarken alttaki sayfayı kapatır, sızıntı biter. Palet tek kaynak
+      (`AppGlass`) olduğundan görsel birebir aynı, dikiş yok. Global zemin
+      shell/sekmeler için kalır (onlar kaymaz + NoTransitionPage). Sekmeler
+      etkilenmez.
+- [x] **Doğrulama:** analyze 0 · test 137/137 · emülatörde ekran kaydı alınıp
+      kareler çıkarıldı: (A) 4 sekme ısındıktan sonra hızlı geçişte içerik
+      anında dolu, scroll korunuyor; (B) Home→Profil geçiş-ortası karesinde
+      Profil artık TAM OPAK sağdan kayıyor + iOS kenar gölgesi; eski sayfa
+      yalnız arkada parallax şeridinde, İÇERİ SIZMIYOR.
+
+**C) Ekran içi sekmeler (Hareket Detayı) yatay kayıyordu:** Samet "sekmeler arası
+git gel yaparken slayt değiştirir gibi kayıyor, direkt açılsın" dedi. Teşhis
+(timeDilation=8 ile emülatörde yavaşlatıp kare kare): alt navbar içeriği ZATEN
+anlık (IndexedStack) — kayan yer `exercise_detail_screen.dart`'taki `TabBarView`
+(How/History/Chart/Records) idi; TabBarView sekmeye dokununca içeriği yatay
+kaydırır.
+- [x] `TabBarView` → `IndexedStack` (controller.index'e bağlı, `AnimatedBuilder`
+      ile). Sekmeye dokununca içerik KAYMADAN anlık değişir; tüm sekmeler canlı
+      kalır (durum/scroll korunur, tekrar fetch yok). TabBar başlık altı çizgisi
+      normal kayar (küçük, sorun değil). Emülatörde doğrulandı: Records'a
+      dokununca içerik anında geldi, yatay kayma yok. (Onboarding `PageView`
+      kasıtlı kaydırmalı — dokunulmadı.)
+
+---
+
 ## ✅ Profil + Ayarlar IA Yeniden Yapılanması (2026-07-05) — docs/16
 
 Samet "Ayarlar best practice mi?" diye sordu → analiz: tek ekran 3 iş yapıyordu

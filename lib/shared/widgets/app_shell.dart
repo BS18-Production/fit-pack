@@ -2,22 +2,16 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_l10n.dart';
 
+/// Alt sekmeli kabuk. `StatefulShellRoute.indexedStack` ile beslenir: 4 sekme
+/// ekranı `IndexedStack` içinde canlı kalır → sekme geçişinde yeniden inşa ve
+/// (autoDispose) provider yeniden-fetch olmaz, geçiş pürüzsüz + scroll korunur.
 class AppShell extends StatelessWidget {
-  final Widget child;
+  final StatefulNavigationShell navigationShell;
 
-  const AppShell({super.key, required this.child});
-
-  int _currentIndex(BuildContext context) {
-    final location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith(AppRoutes.workout)) return 1;
-    if (location.startsWith(AppRoutes.nutrition)) return 2;
-    if (location.startsWith(AppRoutes.progress)) return 3;
-    return 0;
-  }
+  const AppShell({super.key, required this.navigationShell});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +21,7 @@ class AppShell extends StatelessWidget {
       // İçerik buzlu gezinme çubuğunun ALTINDAN akar (liquid glass).
       // Sekme ekranları alt boşluğu MediaQuery.padding.bottom'dan alır.
       extendBody: true,
-      body: child,
+      body: navigationShell,
       bottomNavigationBar: ClipRect(
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
@@ -43,18 +37,14 @@ class AppShell extends StatelessWidget {
               ),
             ),
             child: NavigationBar(
-              selectedIndex: _currentIndex(context),
+              selectedIndex: navigationShell.currentIndex,
               onDestinationSelected: (index) {
-                switch (index) {
-                  case 0:
-                    context.go(AppRoutes.home);
-                  case 1:
-                    context.go(AppRoutes.workout);
-                  case 2:
-                    context.go(AppRoutes.nutrition);
-                  case 3:
-                    context.go(AppRoutes.progress);
-                }
+                // Aynı sekmeye tekrar dokununca o dalın köküne dön (standart
+                // davranış); farklı sekmede sadece görünen dal değişir.
+                navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
+                );
               },
               // Phosphor ikonlar (premium set): seçili sekme dolgulu (fill) +
               // indigo, seçili değil ince çizgi (regular) + gri → net hiyerarşi.

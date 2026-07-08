@@ -543,5 +543,40 @@
 
   "emptyRestartHint": "Uygulamayı yeniden başlatmayı dene",
 
-  "unitAge": "{age} yaş"
+  "unitAge": "{age} yaş",
+
+  "workoutRoutineCount": "{count, plural, other{{count} rutin}}",
+  "workoutExerciseCount": "{count, plural, other{{count} hareket}}",
+
+  "backupErrorInvalidFile": "Geçerli bir Fit Pack yedeği değil.",
+  "backupErrorNewerVersion": "Bu yedek daha yeni bir Fit Pack sürümüyle alınmış. Önce uygulamayı güncelle.",
+  "backupErrorSignIn": "Önce giriş yapmalısın.",
+  "backupShareText": "Fit Pack veri yedeği — geri yüklemek için saklayın.",
+
+  "exportRptRange": "Aralık: {start} → {end}",
+  "exportRptGenerated": "Oluşturulma: {ts}",
+  "exportRptProfile": "Profil",
+  "exportRptPhaseWeek": "Faz: {phase}, Hafta: {week}",
+  "exportRptCalorieGoal": "Kalori hedefi: {kcal} kcal",
+  "exportRptProteinGoal": "Protein hedefi: {g} g",
+  "exportRptHeight": "Boy: {cm} cm",
+  "exportRptGoalWeight": "Hedef kilo: {kg} kg",
+  "exportRptWorkoutsTitle": "Antrenmanlar ({count} seans)",
+  "exportRptNoWorkouts": "Bu aralıkta antrenman yok.",
+  "exportRptDuration": "Süre: {min} dk",
+  "exportRptNote": "Not: {note}",
+  "exportRptWorkoutTable": "| Egzersiz | Set | Kg | Tekrar | RPE | Süre | Mesafe | Tip |",
+  "exportRptSetWarmup": "Isınma",
+  "exportRptSetDrop": "Drop",
+  "exportRptSetFail": "Fail",
+  "exportRptRoutinesTitle": "Rutinler ({count})",
+  "exportRptNutritionTitle": "Beslenme ({count} kayıt)",
+  "exportRptNoNutrition": "Bu aralıkta beslenme kaydı yok.",
+  "exportRptDayTotal": "Toplam: {kcal} kcal · P {p}g · K {c}g · Y {f}g",
+  "exportRptNutritionTable": "| Öğün | Yemek | Gram | Kcal | Protein |",
+  "exportRptWaterTitle": "Su ({count} gün)",
+  "exportRptWaterTable": "| Tarih | ml |",
+  "exportRptBodyTitle": "Vücut Ölçüleri ({count} kayıt)",
+  "exportRptNoBody": "Bu aralıkta ölçüm yok.",
+  "exportRptBodyTable": "| Tarih | Kilo | Bel | Göğüs | Kol | Kalça | Boyun | YY% |"
 }

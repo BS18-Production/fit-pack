@@ -56,6 +56,9 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
   }
 
   Future<void> _export() async {
+    // Rapor dili aktif locale'i takip eder — async'ten önce oku (context köprüsü).
+    final l = AppL10n.of(context);
+    final localeName = Localizations.localeOf(context).toString();
     setState(() => _exporting = true);
     try {
       final service = ExportService(ref.read(databaseProvider));
@@ -64,9 +67,10 @@ class _ExportScreenState extends ConsumerState<ExportScreen> {
 
       final content = switch (_format) {
         _Format.markdown =>
-          await service.exportMarkdown(start, now, scope: _scope),
+          await service.exportMarkdown(start, now, l, localeName, scope: _scope),
         _Format.json => await service.exportJson(start, now, scope: _scope),
-        _Format.csv => await service.exportCsv(start, now, scope: _scope),
+        _Format.csv =>
+          await service.exportCsv(start, now, localeName, scope: _scope),
       };
 
       if (content.trim().isEmpty) {

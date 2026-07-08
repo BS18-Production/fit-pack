@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:fit_pack/data/database/app_database.dart';
 import 'package:fit_pack/data/services/export_service.dart';
+import 'package:fit_pack/l10n/app_l10n.dart';
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/test_database.dart';
@@ -44,7 +46,7 @@ void main() {
     );
 
     final csv = await ExportService(db)
-        .exportCsv(start, end, scope: ExportScope.workout);
+        .exportCsv(start, end, 'en', scope: ExportScope.workout);
     expect(csv, contains('rpe'));
     expect(csv, contains('setType'));
     expect(csv, contains('8.5'));
@@ -79,9 +81,10 @@ void main() {
 
   test('Markdown: su bölümü + rutin bölümü başlıkları', () async {
     await db.nutritionDao.addWater(DateTime(2026, 7, 4), 2000);
-    final md =
-        await ExportService(db).exportMarkdown(start, end, scope: ExportScope.all);
-    expect(md, contains('## Su'));
+    final md = await ExportService(db).exportMarkdown(
+        start, end, lookupAppL10n(const Locale('en')), 'en',
+        scope: ExportScope.all);
+    expect(md, contains('## Water'));
     expect(md, contains('2000'));
   });
 }

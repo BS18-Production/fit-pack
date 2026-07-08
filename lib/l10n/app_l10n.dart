@@ -1030,7 +1030,7 @@ abstract class AppL10n {
   /// No description provided for @workoutExerciseCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} exercises'**
+  /// **'{count, plural, =1{1 exercise} other{{count} exercises}}'**
   String workoutExerciseCount(int count);
 
   /// No description provided for @workoutSetCount.
@@ -3078,6 +3078,192 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'{age} yr'**
   String unitAge(int age);
+
+  /// No description provided for @workoutRoutineCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 routine} other{{count} routines}}'**
+  String workoutRoutineCount(int count);
+
+  /// No description provided for @backupErrorInvalidFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a valid Fit Pack backup.'**
+  String get backupErrorInvalidFile;
+
+  /// No description provided for @backupErrorNewerVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'This backup is from a newer version of Fit Pack. Update the app first.'**
+  String get backupErrorNewerVersion;
+
+  /// No description provided for @backupErrorSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in first.'**
+  String get backupErrorSignIn;
+
+  /// No description provided for @backupShareText.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit Pack data backup — keep it to restore.'**
+  String get backupShareText;
+
+  /// No description provided for @exportRptRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Range: {start} → {end}'**
+  String exportRptRange(String start, String end);
+
+  /// No description provided for @exportRptGenerated.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated: {ts}'**
+  String exportRptGenerated(String ts);
+
+  /// No description provided for @exportRptProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get exportRptProfile;
+
+  /// No description provided for @exportRptPhaseWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Phase: {phase}, Week: {week}'**
+  String exportRptPhaseWeek(int phase, int week);
+
+  /// No description provided for @exportRptCalorieGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie goal: {kcal} kcal'**
+  String exportRptCalorieGoal(int kcal);
+
+  /// No description provided for @exportRptProteinGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein goal: {g} g'**
+  String exportRptProteinGoal(int g);
+
+  /// No description provided for @exportRptHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Height: {cm} cm'**
+  String exportRptHeight(String cm);
+
+  /// No description provided for @exportRptGoalWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal weight: {kg} kg'**
+  String exportRptGoalWeight(String kg);
+
+  /// No description provided for @exportRptWorkoutsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts ({count} sessions)'**
+  String exportRptWorkoutsTitle(int count);
+
+  /// No description provided for @exportRptNoWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'No workouts in this range.'**
+  String get exportRptNoWorkouts;
+
+  /// No description provided for @exportRptDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration: {min} min'**
+  String exportRptDuration(int min);
+
+  /// No description provided for @exportRptNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: {note}'**
+  String exportRptNote(String note);
+
+  /// No description provided for @exportRptWorkoutTable.
+  ///
+  /// In en, this message translates to:
+  /// **'| Exercise | Set | Kg | Reps | RPE | Duration | Distance | Type |'**
+  String get exportRptWorkoutTable;
+
+  /// No description provided for @exportRptSetWarmup.
+  ///
+  /// In en, this message translates to:
+  /// **'Warmup'**
+  String get exportRptSetWarmup;
+
+  /// No description provided for @exportRptSetDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop'**
+  String get exportRptSetDrop;
+
+  /// No description provided for @exportRptSetFail.
+  ///
+  /// In en, this message translates to:
+  /// **'Fail'**
+  String get exportRptSetFail;
+
+  /// No description provided for @exportRptRoutinesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Routines ({count})'**
+  String exportRptRoutinesTitle(int count);
+
+  /// No description provided for @exportRptNutritionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition ({count} entries)'**
+  String exportRptNutritionTitle(int count);
+
+  /// No description provided for @exportRptNoNutrition.
+  ///
+  /// In en, this message translates to:
+  /// **'No nutrition entries in this range.'**
+  String get exportRptNoNutrition;
+
+  /// No description provided for @exportRptDayTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total: {kcal} kcal · P {p}g · C {c}g · F {f}g'**
+  String exportRptDayTotal(String kcal, String p, String c, String f);
+
+  /// No description provided for @exportRptNutritionTable.
+  ///
+  /// In en, this message translates to:
+  /// **'| Meal | Food | Grams | Kcal | Protein |'**
+  String get exportRptNutritionTable;
+
+  /// No description provided for @exportRptWaterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Water ({count} days)'**
+  String exportRptWaterTitle(int count);
+
+  /// No description provided for @exportRptWaterTable.
+  ///
+  /// In en, this message translates to:
+  /// **'| Date | ml |'**
+  String get exportRptWaterTable;
+
+  /// No description provided for @exportRptBodyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Body measurements ({count} entries)'**
+  String exportRptBodyTitle(int count);
+
+  /// No description provided for @exportRptNoBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No measurements in this range.'**
+  String get exportRptNoBody;
+
+  /// No description provided for @exportRptBodyTable.
+  ///
+  /// In en, this message translates to:
+  /// **'| Date | Weight | Waist | Chest | Arm | Hip | Neck | BF% |'**
+  String get exportRptBodyTable;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

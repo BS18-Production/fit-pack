@@ -100,7 +100,7 @@ class WorkoutListScreen extends ConsumerWidget {
       children: [
         Text(AppL10n.of(context).workoutMyRoutines, style: context.texts.titleMedium),
         if (count != null && count > 0)
-          Text('$count rutin',
+          Text(AppL10n.of(context).workoutRoutineCount(count),
               style: context.texts.bodySmall?.copyWith(
                 color: context.colors.onSurfaceVariant
                     .withValues(alpha: 0.7),
@@ -421,7 +421,7 @@ class _RoutineCard extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 2),
-                        Text('${exercises.length} hareket',
+                        Text(AppL10n.of(context).workoutExerciseCount(exercises.length),
                             style: context.texts.bodySmall?.copyWith(
                                 color: context.colors.onSurfaceVariant)),
                       ],

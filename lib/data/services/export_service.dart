@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:csv/csv.dart';
 import 'package:intl/intl.dart';
+import '../../l10n/app_l10n.dart';
 import '../database/app_database.dart';
 import '../database/daos/workout_dao.dart' show RoutineExerciseWithExercise;
 
@@ -55,11 +56,10 @@ class ExportService {
   static final DateFormat _isoDate = DateFormat('yyyy-MM-dd');
   static final DateFormat _isoDateTime = DateFormat('yyyy-MM-dd HH:mm');
 
-  // Rutin haftalık gün etiketi — data katmanı feature koduna bağlanmasın diye
-  // yerel tutulur (kWeekdayTr'nin kopyası değil, export'a özgü kısa biçim).
-  static const _weekdayTr = {
-    1: 'Pzt', 2: 'Sal', 3: 'Çar', 4: 'Per', 5: 'Cum', 6: 'Cmt', 7: 'Paz',
-  };
+  // Rutin haftalık gün kısa adı, aktif locale'de ("Pzt"/"Mon"). 2024-01-01
+  // Pazartesi'dir — formatting.dart'la aynı sabit çapa.
+  static String _weekdayShort(String localeName, int weekday) =>
+      DateFormat('E', localeName).format(DateTime(2024, 1, weekday));
 
   /// Süre saniye → "m:ss"; null → "-". Ölçüm-tipli setlerin (plank/kardiyo)
   /// dışa aktarımı için.
@@ -70,11 +70,11 @@ class ExportService {
   static String _dist(double? m) =>
       m == null ? '-' : '${(m / 1000).toStringAsFixed(2)} km';
 
-  /// Set tipi kodunu okunur etikete çevirir (normal → boş).
-  static String _setTypeTr(String t) => switch (t) {
-        'warmup' => 'Isınma',
-        'drop' => 'Drop',
-        'failure' => 'Fail',
+  /// Set tipi kodunu aktif dilde okunur etikete çevirir (normal → boş).
+  static String _setType(AppL10n l, String t) => switch (t) {
+        'warmup' => l.exportRptSetWarmup,
+        'drop' => l.exportRptSetDrop,
+        'failure' => l.exportRptSetFail,
         _ => '',
       };
 
@@ -152,61 +152,71 @@ class ExportService {
 
   Future<String> exportMarkdown(
     DateTime start,
-    DateTime end, {
+    DateTime end,
+    AppL10n l,
+    String localeName, {
     ExportScope scope = ExportScope.all,
   }) async {
     final snap = await _snapshot(start, end, scope);
     final buffer = StringBuffer()
       ..writeln('# Fit Pack Export')
       ..writeln()
-      ..writeln('Aralık: ${_isoDate.format(snap.start)} → ${_isoDate.format(snap.end)}')
-      ..writeln('Oluşturulma: ${_isoDateTime.format(DateTime.now())}')
+      ..writeln(l.exportRptRange(
+          _isoDate.format(snap.start), _isoDate.format(snap.end)))
+      ..writeln(l.exportRptGenerated(_isoDateTime.format(DateTime.now())))
       ..writeln();
 
     final profile = snap.profile;
     if (profile != null) {
       buffer
-        ..writeln('## Profil')
-        ..writeln('- Faz: ${profile.currentPhase}, Hafta: ${profile.currentWeek}')
-        ..writeln('- Kalori hedefi: ${profile.kcalGoal} kcal')
-        ..writeln('- Protein hedefi: ${profile.proteinGoal} g');
-      if (profile.heightCm != null) buffer.writeln('- Boy: ${profile.heightCm} cm');
+        ..writeln('## ${l.exportRptProfile}')
+        ..writeln(
+            '- ${l.exportRptPhaseWeek(profile.currentPhase, profile.currentWeek)}')
+        ..writeln('- ${l.exportRptCalorieGoal(profile.kcalGoal)}')
+        ..writeln('- ${l.exportRptProteinGoal(profile.proteinGoal)}');
+      if (profile.heightCm != null) {
+        buffer.writeln('- ${l.exportRptHeight('${profile.heightCm}')}');
+      }
       if (profile.goalWeightKg != null) {
-        buffer.writeln('- Hedef kilo: ${profile.goalWeightKg} kg');
+        buffer.writeln('- ${l.exportRptGoalWeight('${profile.goalWeightKg}')}');
       }
       buffer.writeln();
     }
 
     if (snap.includesWorkout) {
-      _workoutsMarkdown(buffer, snap);
-      _routinesMarkdown(buffer, snap);
+      _workoutsMarkdown(buffer, snap, l);
+      _routinesMarkdown(buffer, snap, l, localeName);
     }
     if (snap.includesNutrition) {
-      _nutritionMarkdown(buffer, snap);
-      _waterMarkdown(buffer, snap);
+      _nutritionMarkdown(buffer, snap, l);
+      _waterMarkdown(buffer, snap, l);
     }
-    if (snap.includesBody) _bodyMarkdown(buffer, snap);
+    if (snap.includesBody) _bodyMarkdown(buffer, snap, l);
     return buffer.toString();
   }
 
-  void _workoutsMarkdown(StringBuffer buffer, _ExportSnapshot snap) {
-    buffer..writeln('## Antrenmanlar (${snap.sessions.length} seans)')..writeln();
+  void _workoutsMarkdown(StringBuffer buffer, _ExportSnapshot snap, AppL10n l) {
+    buffer
+      ..writeln('## ${l.exportRptWorkoutsTitle(snap.sessions.length)}')
+      ..writeln();
     if (snap.sessions.isEmpty) {
-      buffer..writeln('_Bu aralıkta antrenman yok._')..writeln();
+      buffer..writeln('_${l.exportRptNoWorkouts}_')..writeln();
       return;
     }
     for (final s in snap.sessions) {
       buffer.writeln('### ${_isoDate.format(s.date)} — ${s.workoutType}');
-      if (s.durationMin != null) buffer.writeln('- Süre: ${s.durationMin} dk');
+      if (s.durationMin != null) {
+        buffer.writeln('- ${l.exportRptDuration(s.durationMin!)}');
+      }
       if (s.rpe != null) buffer.writeln('- RPE: ${s.rpe}/10');
       if (s.notes != null && s.notes!.isNotEmpty) {
-        buffer.writeln('- Not: ${s.notes}');
+        buffer.writeln('- ${l.exportRptNote(s.notes!)}');
       }
       final sets = snap.setsBySession[s.id] ?? const [];
       if (sets.isNotEmpty) {
         buffer
           ..writeln()
-          ..writeln('| Egzersiz | Set | Kg | Tekrar | RPE | Süre | Mesafe | Tip |')
+          ..writeln(l.exportRptWorkoutTable)
           ..writeln('|---|---|---|---|---|---|---|---|');
         for (final set in sets) {
           final name = snap.exerciseNames[set.exerciseId] ?? '?';
@@ -216,20 +226,23 @@ class ExportService {
           final dur = set.durationSec == null ? '-' : _dur(set.durationSec);
           final dist = set.distanceM == null ? '-' : _dist(set.distanceM);
           buffer.writeln('| $name | ${set.setNumber} | $kg | $reps | '
-              '$rpe | $dur | $dist | ${_setTypeTr(set.setType)} |');
+              '$rpe | $dur | $dist | ${_setType(l, set.setType)} |');
         }
       }
       buffer.writeln();
     }
   }
 
-  void _routinesMarkdown(StringBuffer buffer, _ExportSnapshot snap) {
+  void _routinesMarkdown(
+      StringBuffer buffer, _ExportSnapshot snap, AppL10n l, String localeName) {
     if (snap.routines.isEmpty) return;
-    buffer..writeln('## Rutinler (${snap.routines.length})')..writeln();
+    buffer
+      ..writeln('## ${l.exportRptRoutinesTitle(snap.routines.length)}')
+      ..writeln();
     for (final r in snap.routines) {
       final day = r.scheduledWeekday == null
           ? ''
-          : ' (${_weekdayTr[r.scheduledWeekday]})';
+          : ' (${_weekdayShort(localeName, r.scheduledWeekday!)})';
       buffer.writeln('### ${r.name}$day');
       for (final re in snap.routineExercises[r.id] ?? const []) {
         final t = re.routineExercise;
@@ -242,10 +255,12 @@ class ExportService {
     }
   }
 
-  void _nutritionMarkdown(StringBuffer buffer, _ExportSnapshot snap) {
-    buffer..writeln('## Beslenme (${snap.foodLogs.length} kayıt)')..writeln();
+  void _nutritionMarkdown(StringBuffer buffer, _ExportSnapshot snap, AppL10n l) {
+    buffer
+      ..writeln('## ${l.exportRptNutritionTitle(snap.foodLogs.length)}')
+      ..writeln();
     if (snap.foodLogs.isEmpty) {
-      buffer..writeln('_Bu aralıkta beslenme kaydı yok._')..writeln();
+      buffer..writeln('_${l.exportRptNoNutrition}_')..writeln();
       return;
     }
 
@@ -266,14 +281,14 @@ class ExportService {
       }
       buffer
         ..writeln('### $dateKey')
-        ..writeln(
-          '- Toplam: ${kcal.toStringAsFixed(0)} kcal · '
-          'P ${protein.toStringAsFixed(0)}g · '
-          'K ${carb.toStringAsFixed(0)}g · '
-          'Y ${fat.toStringAsFixed(0)}g',
-        )
+        ..writeln('- ${l.exportRptDayTotal(
+          kcal.toStringAsFixed(0),
+          protein.toStringAsFixed(0),
+          carb.toStringAsFixed(0),
+          fat.toStringAsFixed(0),
+        )}')
         ..writeln()
-        ..writeln('| Öğün | Yemek | Gram | Kcal | Protein |')
+        ..writeln(l.exportRptNutritionTable)
         ..writeln('|---|---|---|---|---|');
       for (final l in dayLogs) {
         final name = snap.foodNames[l.foodId] ?? '?';
@@ -287,25 +302,27 @@ class ExportService {
     }
   }
 
-  void _waterMarkdown(StringBuffer buffer, _ExportSnapshot snap) {
+  void _waterMarkdown(StringBuffer buffer, _ExportSnapshot snap, AppL10n l) {
     if (snap.water.isEmpty) return;
     final days = snap.water.keys.toList()..sort((a, b) => b.compareTo(a));
-    buffer..writeln('## Su (${days.length} gün)')..writeln();
-    buffer..writeln('| Tarih | ml |')..writeln('|---|---|');
+    buffer..writeln('## ${l.exportRptWaterTitle(days.length)}')..writeln();
+    buffer..writeln(l.exportRptWaterTable)..writeln('|---|---|');
     for (final d in days) {
       buffer.writeln('| ${_isoDate.format(d)} | ${snap.water[d]} |');
     }
     buffer.writeln();
   }
 
-  void _bodyMarkdown(StringBuffer buffer, _ExportSnapshot snap) {
-    buffer..writeln('## Vücut Ölçüleri (${snap.measurements.length} kayıt)')..writeln();
+  void _bodyMarkdown(StringBuffer buffer, _ExportSnapshot snap, AppL10n l) {
+    buffer
+      ..writeln('## ${l.exportRptBodyTitle(snap.measurements.length)}')
+      ..writeln();
     if (snap.measurements.isEmpty) {
-      buffer..writeln('_Bu aralıkta ölçüm yok._')..writeln();
+      buffer..writeln('_${l.exportRptNoBody}_')..writeln();
       return;
     }
     buffer
-      ..writeln('| Tarih | Kilo | Bel | Göğüs | Kol | Kalça | Boyun | YY% |')
+      ..writeln(l.exportRptBodyTable)
       ..writeln('|---|---|---|---|---|---|---|---|');
     for (final m in snap.measurements) {
       buffer.writeln(
@@ -447,7 +464,8 @@ class ExportService {
   /// Excel/Sheets/pandas can read each chunk independently.
   Future<String> exportCsv(
     DateTime start,
-    DateTime end, {
+    DateTime end,
+    String localeName, {
     ExportScope scope = ExportScope.all,
   }) async {
     final snap = await _snapshot(start, end, scope);
@@ -500,7 +518,7 @@ class ExportService {
               r.name,
               r.scheduledWeekday == null
                   ? ''
-                  : _weekdayTr[r.scheduledWeekday] ?? '',
+                  : _weekdayShort(localeName, r.scheduledWeekday!),
               re.exercise.name,
               t.orderIndex,
               t.targetSets ?? '',

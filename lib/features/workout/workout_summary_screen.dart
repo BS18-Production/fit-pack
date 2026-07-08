@@ -211,7 +211,7 @@ final _summaryProvider =
   final dao = ref.watch(workoutDaoProvider);
   final session = await dao.getSessionById(sessionId);
   if (session == null) {
-    throw StateError('Seans bulunamadı: $sessionId');
+    throw StateError('Session not found: $sessionId');
   }
   final sets = await dao.getSetsForSession(sessionId);
   final allEx = {for (final e in await dao.getAllExercises()) e.id: e.name};

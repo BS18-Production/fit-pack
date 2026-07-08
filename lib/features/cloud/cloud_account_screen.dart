@@ -6,7 +6,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
-import '../settings/backup_service.dart' show RestoreNeedsRestartException;
+import '../settings/backup_service.dart'
+    show RestoreNeedsRestartException, BackupException, backupErrorMessage;
 import 'auth_service.dart';
 import 'cloud_backup_service.dart';
 
@@ -225,6 +226,13 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
           SnackBar(content: Text(AppL10n.of(context).cloudBackedUp)),
         );
       }
+    } on BackupException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(backupErrorMessage(AppL10n.of(context), e.kind))),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -257,11 +265,11 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
         title: l.settingsRestoredTitle,
         message: l.cloudRestoredMsg,
       );
-    } on FormatException catch (e) {
+    } on BackupException catch (e) {
       // Doğrulama hatası — DB kapanmadan reddedildi, uygulama çalışır durumda.
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
+          SnackBar(content: Text(backupErrorMessage(l, e.kind))),
         );
       }
     } on RestoreNeedsRestartException {

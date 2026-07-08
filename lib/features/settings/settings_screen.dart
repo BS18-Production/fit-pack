@@ -100,7 +100,9 @@ class SettingsScreen extends ConsumerWidget {
   /// e-postaya kaydet. Geri yüklenebilir tam yedek (rapor dışa aktarımından farklı).
   Future<void> _backup(BuildContext context, WidgetRef ref) async {
     try {
-      await ref.read(backupServiceProvider).shareBackup();
+      await ref
+          .read(backupServiceProvider)
+          .shareBackup(AppL10n.of(context).backupShareText);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -131,11 +133,11 @@ class SettingsScreen extends ConsumerWidget {
 
     try {
       await ref.read(backupServiceProvider).restoreFromFile(file);
-    } on FormatException catch (e) {
+    } on BackupException catch (e) {
       // Doğrulama hatası — DB kapanmadan reddedildi, uygulama çalışır durumda.
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
+          SnackBar(content: Text(backupErrorMessage(l, e.kind))),
         );
       }
       return;

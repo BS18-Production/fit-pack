@@ -542,7 +542,13 @@ class AppL10nEn extends AppL10n {
 
   @override
   String workoutExerciseCount(int count) {
-    return '$count exercises';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count exercises',
+      one: '1 exercise',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1654,4 +1660,139 @@ class AppL10nEn extends AppL10n {
   String unitAge(int age) {
     return '$age yr';
   }
+
+  @override
+  String workoutRoutineCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count routines',
+      one: '1 routine',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get backupErrorInvalidFile => 'Not a valid Fit Pack backup.';
+
+  @override
+  String get backupErrorNewerVersion =>
+      'This backup is from a newer version of Fit Pack. Update the app first.';
+
+  @override
+  String get backupErrorSignIn => 'Sign in first.';
+
+  @override
+  String get backupShareText => 'Fit Pack data backup — keep it to restore.';
+
+  @override
+  String exportRptRange(String start, String end) {
+    return 'Range: $start → $end';
+  }
+
+  @override
+  String exportRptGenerated(String ts) {
+    return 'Generated: $ts';
+  }
+
+  @override
+  String get exportRptProfile => 'Profile';
+
+  @override
+  String exportRptPhaseWeek(int phase, int week) {
+    return 'Phase: $phase, Week: $week';
+  }
+
+  @override
+  String exportRptCalorieGoal(int kcal) {
+    return 'Calorie goal: $kcal kcal';
+  }
+
+  @override
+  String exportRptProteinGoal(int g) {
+    return 'Protein goal: $g g';
+  }
+
+  @override
+  String exportRptHeight(String cm) {
+    return 'Height: $cm cm';
+  }
+
+  @override
+  String exportRptGoalWeight(String kg) {
+    return 'Goal weight: $kg kg';
+  }
+
+  @override
+  String exportRptWorkoutsTitle(int count) {
+    return 'Workouts ($count sessions)';
+  }
+
+  @override
+  String get exportRptNoWorkouts => 'No workouts in this range.';
+
+  @override
+  String exportRptDuration(int min) {
+    return 'Duration: $min min';
+  }
+
+  @override
+  String exportRptNote(String note) {
+    return 'Note: $note';
+  }
+
+  @override
+  String get exportRptWorkoutTable =>
+      '| Exercise | Set | Kg | Reps | RPE | Duration | Distance | Type |';
+
+  @override
+  String get exportRptSetWarmup => 'Warmup';
+
+  @override
+  String get exportRptSetDrop => 'Drop';
+
+  @override
+  String get exportRptSetFail => 'Fail';
+
+  @override
+  String exportRptRoutinesTitle(int count) {
+    return 'Routines ($count)';
+  }
+
+  @override
+  String exportRptNutritionTitle(int count) {
+    return 'Nutrition ($count entries)';
+  }
+
+  @override
+  String get exportRptNoNutrition => 'No nutrition entries in this range.';
+
+  @override
+  String exportRptDayTotal(String kcal, String p, String c, String f) {
+    return 'Total: $kcal kcal · P ${p}g · C ${c}g · F ${f}g';
+  }
+
+  @override
+  String get exportRptNutritionTable =>
+      '| Meal | Food | Grams | Kcal | Protein |';
+
+  @override
+  String exportRptWaterTitle(int count) {
+    return 'Water ($count days)';
+  }
+
+  @override
+  String get exportRptWaterTable => '| Date | ml |';
+
+  @override
+  String exportRptBodyTitle(int count) {
+    return 'Body measurements ($count entries)';
+  }
+
+  @override
+  String get exportRptNoBody => 'No measurements in this range.';
+
+  @override
+  String get exportRptBodyTable =>
+      '| Date | Weight | Waist | Chest | Arm | Hip | Neck | BF% |';
 }

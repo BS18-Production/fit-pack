@@ -255,12 +255,28 @@ analyze 0 · test 123/123 · EN+TR emülatörde doğrulandı (Antrenman, Beslenm
 arrow ikonları. Kural CONVENTIONS §5b'ye eklendi (emoji yasak).
 Emülatörde doğrulandı.
 
-**Kalan küçük işler (i18n):**
-- [ ] Servis katmanı istisna/paylaşım metinleri (context yok): `backup_service`
-      (FormatException mesajları + paylaşım metni), `cloud_backup_service`
-      (StateError). Doğru yol: tipli exception → UI'da eşle.
-- [ ] `export_service` rapor içeriği Türkçe üretiliyor (başlıklar/gün adları)
-      — dışa aktarım dili tercihi ayrı karar.
+**Kalan küçük işler (i18n) — TAMAM (2026-07-08):** Samet "tüm metinleri incele,
+hardcoded var mı, kapsayan düzenlemeyi yap" dedi. Türkçe-karakterli string
+literal taraması + Text/label/hint/tooltip/throw taraması yapıldı; kalan tüm
+UI-seviyesi sızıntılar kapandı:
+- [x] `workout_list`: "N rutin"/"N hareket" → ICU plural (`workoutRoutineCount`,
+      `workoutExerciseCount`). EN "1 routine/1 exercise" + TR "1 rutin/1 hareket"
+      emülatörde doğrulandı.
+- [x] Servis istisnaları → **tipli** `BackupException(BackupErrorKind)` +
+      `backupErrorMessage(l, kind)` UI eşlemesi (`backup_service` invalidFile/
+      newerVersion, `cloud_backup_service` notSignedIn). settings + cloud
+      ekranları `on BackupException` yakalar. Paylaşım metni param'la
+      yerelleştirildi (`backupShareText`). `workout_summary` iç StateError →
+      İngilizce (UI'a düşmüyor, hijyen).
+- [x] `export_service` **Markdown raporu** tamamen yerelleştirildi: `exportMarkdown`
+      artık `(…, AppL10n l, String localeName)` alır; ~30 `exportRpt*` ARB anahtarı
+      (başlıklar, tablo başlıkları, gün adları locale'den, set tipleri, boş-hal
+      metinleri). CSV weekday da locale'e bağlandı. JSON/CSV veri anahtarları
+      İngilizce kalır (makine-okunur — doğru). export test EN'e güncellendi.
+- Kalan hardcoded: yalnız `MaterialApp.title='Fit Pack'` (marka) ve iç hata
+  mesajı (görünmez) — kabul edilebilir. analyze 0 · test 137/137.
+  **Not:** yemek/egzersiz adları + birim etiketleri (avuç/adet/bardak) hâlâ
+  tek dilli — bunlar KOD değil DB içeriği → ayrı **Faz B** (şema v9, aşağıda).
 
 **✅ Kaçan UI-chrome sızıntıları düzeltildi (2026-07-05, aynı gün, ikinci tur):**
 Samet "Antrenman/Beslenme/İlerleme Türkçe kalmış" dedi → emülatörde EN modda

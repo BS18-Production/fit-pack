@@ -23,7 +23,7 @@ class CloudBackupService {
   /// Cihazdaki veriyi buluta yükle (üzerine yazar). Oturum şart.
   Future<void> backupToCloud() async {
     if (_uid == null) {
-      throw StateError('Bulut yedek için giriş yapmalısın.');
+      throw const BackupException(BackupErrorKind.notSignedIn);
     }
     final file = await _ref.read(backupServiceProvider).exportToTemp();
     final bytes = await file.readAsBytes();
@@ -40,7 +40,7 @@ class CloudBackupService {
   /// Buluttaki yedeği indirip cihazın üstüne yaz. Dönüş sonrası yeniden başlat.
   Future<void> restoreFromCloud() async {
     if (_uid == null) {
-      throw StateError('Geri yükleme için giriş yapmalısın.');
+      throw const BackupException(BackupErrorKind.notSignedIn);
     }
     final Uint8List bytes =
         await _client.storage.from(_bucket).download(_objectPath);

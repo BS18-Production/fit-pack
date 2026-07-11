@@ -1,7 +1,40 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
-> **Son güncelleme:** 2026-07-07
-> **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [CODE_REVIEW.md](CODE_REVIEW.md), [docs/04-roadmap.md](docs/04-roadmap.md)
+> **Son güncelleme:** 2026-07-11
+> **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [CODE_REVIEW.md](CODE_REVIEW.md), [docs/04-roadmap.md](docs/04-roadmap.md), [docs/17-improvement-analysis.md](docs/17-improvement-analysis.md)
+
+---
+
+## ✅ Haftalık Seri + Kişisel Rekor (PR) Kutlaması (2026-07-11)
+
+[docs/17-improvement-analysis.md](docs/17-improvement-analysis.md) analizinin
+1. adımı. (Not: yayın konuları Samet kararıyla uygulama hazır olana kadar
+gündem dışı — analiz doc'undaki nota bak.)
+
+- [x] **Seri artık haftalık hedef bazlı** (`features/home/streak_calc.dart`
+      saf mantık + `weeklyStreakProvider`): eski seri ardışık takvim günü
+      sayıyordu — dinlenme günü seriyi kırıyordu (dinlenme günü zekasıyla
+      çelişki). Yeni: hafta içinde hedef kadar antrenman günü = hafta tamam;
+      seri = ardışık tamam hafta. Hedef = planlanmış rutin günü sayısı
+      (plan yoksa 1); hafta sınırı "haftanın ilk günü" tercihine uyar; devam
+      eden hafta seriyi kırmaz, tamamlanınca dahil olur. Ana Sayfa hero 3
+      durumlu: "{n} haftadır ritimdesin" + "Bu hafta 2/4 antrenman" /
+      "İlk haftanı tamamla" / "Serini başlat". `homeStreakKicker` anahtarı
+      kaldırıldı, `homeStreakTitle` gün→hafta anlamına döndü.
+- [x] **PR kutlaması** (`features/workout/record_calc.dart` saf mantık):
+      canlı seansta set tamamlanınca e1RM (Epley) ya da en ağır kilo, seans
+      öncesi geçmişin en iyisini aşarsa sol set rozeti KUPAYA döner + güçlü
+      titreşim; geri alınca rozet kalkar. Geçmişi olmayan hareket rozetlenmez
+      (ilk seansın her seti "rekor" olmasın — Rekorlar sekmesi kuralı).
+      Taslak `pr` alanıyla rozetleri resume'da korur (eski taslak uyumlu).
+      Özet ekranında "N yeni rekor" kartı — seans TARİHİNDEN önceki geçmişe
+      göre hesaplanır (deterministik; geçmişe girilen manuel seans sonraki
+      seansları yanlış "rekor" göstermez). Geçmiş kayıt modunda anlık rozet
+      yok (özet kartı tarihe göre doğru çalışır).
+- [x] analyze 0 · test **154/154** (17 yeni: streak_calc + record_calc)
+- [ ] **Emülatör görsel doğrulaması YAPILMADI** (adb install hatası + hızlı
+      commit istendi): sonraki oturumda gözle doğrula — Ana Sayfa seri
+      metinleri (3 durum), seans kupa rozeti (ağır set), özet rekor kartı.
 
 ---
 

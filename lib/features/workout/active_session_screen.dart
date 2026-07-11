@@ -18,6 +18,7 @@ import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../home/providers/home_providers.dart';
 import 'exercise_detail_screen.dart';
+import 'record_calc.dart';
 import 'routine_providers.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
@@ -43,6 +44,7 @@ class _SetEntry {
   double? distanceM; // mesafe ölçümlü hareket (koşu, yüzme)
   String type = 'normal';
   bool done = false;
+  bool isRecord = false; // bu set tamamlanınca kişisel rekor kırdı (rozet)
 
   /// Ölçüm tipine göre set'te anlamlı bir veri girilmiş mi.
   bool hasInput(String measure) {
@@ -64,6 +66,12 @@ class _SessionExercise {
   final String? previous; // geçen seans ipucu (tipe göre format)
   final List<_SetEntry> sets;
   final int restSec; // setler arası dinlenme (rutinden ya da kategoriye göre)
+  // Seans öncesi kişisel rekorlar (record_calc) — canlı modda, yalnız ağırlık
+  // ölçümlü hareketlerde yüklenir. 0 = geçmiş yok → anlık rozet üretilmez.
+  // Seans içinde rekor kırılınca güncellenir ki aynı seansta yalnız gerçek
+  // artışlar yeniden rozetlensin.
+  double bestE1rm = 0;
+  double bestWeightKg = 0;
   _SessionExercise(this.exercise, this.previous, this.sets,
       {required this.restSec});
 
@@ -232,6 +240,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                             distanceM: s.distanceM,
                             type: s.type,
                             done: s.done,
+                            isRecord: s.isRecord,
                           ))
                       .toList(),
                 ))
@@ -259,7 +268,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     for (final de in d.exercises) {
       final ex = await dao.getExerciseById(de.exerciseId);
       if (ex == null) continue; // silinmiş/arşivlenmiş hareketi atla
-      _exercises.add(_SessionExercise(
+      final se = _SessionExercise(
         ex,
         de.previous,
         de.sets
@@ -270,10 +279,13 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
               ..durationSec = s.durationSec
               ..distanceM = s.distanceM
               ..type = s.type
-              ..done = s.done)
+              ..done = s.done
+              ..isRecord = s.isRecord)
             .toList(),
         restSec: de.restSec,
-      ));
+      );
+      await _loadBests(se);
+      _exercises.add(se);
     }
   }
 
@@ -325,13 +337,15 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         final isCardioLike = it.exercise.measurementType == 'time' ||
             it.exercise.measurementType == 'distance';
         final count = isCardioLike ? 1 : (it.routineExercise.targetSets ?? 3);
-        _exercises.add(_SessionExercise(
+        final se = _SessionExercise(
           it.exercise,
           prev,
           List.generate(count, (_) => _SetEntry()),
           restSec: it.routineExercise.targetRestSec ??
               WorkoutUi.defaultRestSec(it.exercise.category),
-        ));
+        );
+        await _loadBests(se); // anlık rekor rozeti için seans öncesi en iyiler
+        _exercises.add(se);
       }
     }
     if (mounted) setState(() => _loading = false);
@@ -341,10 +355,55 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   bool get _hasData => _exercises
       .any((e) => e.sets.any((s) => s.hasInput(e.measure) || s.done));
 
+  /// Hareketin seans öncesi en iyi değerlerini yükler (anlık rekor rozeti).
+  /// Geçmiş kayıt modunda anlamsız (rekoru özet ekranı tarihe göre hesaplar);
+  /// ağırlık dışı ölçümlerde rekor tanımı yok (Rekorlar sekmesiyle tutarlı).
+  Future<void> _loadBests(_SessionExercise ex) async {
+    if (_isManual) return;
+    final m = ex.measure;
+    if (m == 'time' || m == 'distance' || m == 'reps') return;
+    final history =
+        await ref.read(workoutDaoProvider).getExerciseHistory(ex.exercise.id);
+    final b = bestsOf(history);
+    ex.bestE1rm = b.e1rm;
+    ex.bestWeightKg = b.weightKg;
+  }
+
   // ───────── set işlemleri ─────────
 
+  /// Tamamlanan set kişisel rekor mu? (canlı mod; geçmişi olmayan hareket
+  /// rozetlenmez — record_calc kuralı). Rekorsa işaretle + güçlü titreşim.
+  void _checkRecord(_SessionExercise ex, _SetEntry set) {
+    if (_isManual || set.type == 'warmup') return;
+    if (ex.bestE1rm <= 0 && ex.bestWeightKg <= 0) return; // geçmiş yok
+    final w = set.weight;
+    final e1 = epley(w, set.reps);
+    var record = false;
+    if (e1 != null && e1 > ex.bestE1rm) {
+      ex.bestE1rm = e1;
+      record = true;
+    }
+    if (w != null && w > ex.bestWeightKg) {
+      ex.bestWeightKg = w;
+      record = true;
+    }
+    if (record) {
+      set.isRecord = true;
+      HapticFeedback.heavyImpact();
+    }
+  }
+
   void _toggleDone(_SessionExercise ex, _SetEntry set) {
-    setState(() => set.done = !set.done);
+    setState(() {
+      set.done = !set.done;
+      if (set.done) {
+        _checkRecord(ex, set);
+      } else {
+        // Geri alındı: rozeti kaldır. ex.best* bilerek düşürülmez — aynı
+        // değer yeniden girilirse tekrar rozetlenmez (güvenli taraf).
+        set.isRecord = false;
+      }
+    });
     if (set.done) {
       HapticFeedback.lightImpact();
       // Hareketin kullanıcı tarafından belirlenen dinlenme süresi (0 = yok).
@@ -394,12 +453,15 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (ex == null) return;
     final last = await ref.read(workoutDaoProvider).getLastSetForExercise(ex.id);
     final prev = prevLabel(last, ex.measurementType, ref.read(unitsProvider));
-    setState(() => _exercises.add(_SessionExercise(
-          ex,
-          prev,
-          List.generate(1, (_) => _SetEntry()),
-          restSec: WorkoutUi.defaultRestSec(ex.category),
-        )));
+    final se = _SessionExercise(
+      ex,
+      prev,
+      List.generate(1, (_) => _SetEntry()),
+      restSec: WorkoutUi.defaultRestSec(ex.category),
+    );
+    await _loadBests(se);
+    if (!mounted) return;
+    setState(() => _exercises.add(se));
     _saveDraft();
   }
 
@@ -514,7 +576,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _clearDraft(); // seans DB'ye yazıldı — taslağı sil
     ref.invalidate(weekWorkoutStatsProvider);
     ref.invalidate(lastWorkoutSessionProvider);
-    ref.invalidate(workoutStreakProvider);
+    ref.invalidate(weeklyStreakProvider);
     if (mounted) context.pushReplacement(AppRoutes.summary(sessionId));
   }
 
@@ -1218,6 +1280,9 @@ class _SetRow extends StatelessWidget {
       'failure' => c.error,
       _ => c.onSurfaceVariant,
     };
+    // Rekor seti: sol rozet numara/tip yerine kupa — "kişisel rekor" bilgisi
+    // set tipinden öncelikli.
+    final showTrophy = set.done && set.isRecord;
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
@@ -1238,15 +1303,22 @@ class _SetRow extends StatelessWidget {
                 height: 32,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: badge.isEmpty
-                      ? c.onSurface.withValues(alpha: 0.06)
-                      : badgeColor.withValues(alpha: 0.14),
+                  color: showTrophy
+                      ? context.semantic.warning.withValues(alpha: 0.14)
+                      : badge.isEmpty
+                          ? c.onSurface.withValues(alpha: 0.06)
+                          : badgeColor.withValues(alpha: 0.14),
                   borderRadius: AppRadius.brSm,
                 ),
-                child: Text(badge.isEmpty ? '${index + 1}' : badge,
-                    style: context.texts.labelLarge?.copyWith(
-                        color: badge.isEmpty ? c.onSurface : badgeColor,
-                        fontWeight: FontWeight.w800)),
+                child: showTrophy
+                    ? Icon(Icons.emoji_events_rounded,
+                        size: 16,
+                        color: context.semantic.warning,
+                        semanticLabel: AppL10n.of(context).asNewRecord)
+                    : Text(badge.isEmpty ? '${index + 1}' : badge,
+                        style: context.texts.labelLarge?.copyWith(
+                            color: badge.isEmpty ? c.onSurface : badgeColor,
+                            fontWeight: FontWeight.w800)),
               ),
             ),
           ),

@@ -94,18 +94,28 @@ class AppL10nTr extends AppL10n {
   String get homeExportTooltip => 'Veri dışa aktar';
 
   @override
-  String get homeStreakKicker => 'Seri korunuyor';
-
-  @override
   String get homeStreakKickerZero => 'Yeni hafta, yeni ritim';
 
   @override
   String homeStreakTitle(int count) {
-    return '$count gündür\nritimdesin';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count haftadır\nritimdesin',
+    );
+    return '$_temp0';
   }
 
   @override
   String get homeStreakTitleZero => 'Serini başlat';
+
+  @override
+  String get homeStreakTitleFirstWeek => 'İlk haftanı\ntamamla';
+
+  @override
+  String homeStreakWeekProgress(int done, int goal) {
+    return 'Bu hafta $done/$goal antrenman';
+  }
 
   @override
   String get homeStatWorkouts => 'antrenman';
@@ -638,6 +648,16 @@ class AppL10nTr extends AppL10n {
   String get wsExercises => 'Hareketler';
 
   @override
+  String wsNewRecords(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count yeni rekor',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get wsDoneBtn => 'Bitti';
 
   @override
@@ -702,6 +722,9 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get asNeedOneSet => 'Önce en az bir set gir';
+
+  @override
+  String get asNewRecord => 'Yeni rekor';
 
   @override
   String get asSaveError => 'Antrenman kaydedilemedi — tekrar dene';

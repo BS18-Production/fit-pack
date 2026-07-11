@@ -94,18 +94,29 @@ class AppL10nEn extends AppL10n {
   String get homeExportTooltip => 'Export data';
 
   @override
-  String get homeStreakKicker => 'On a streak';
-
-  @override
   String get homeStreakKickerZero => 'New week, new rhythm';
 
   @override
   String homeStreakTitle(int count) {
-    return '$count-day\nstreak';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count-week\nstreak',
+      one: '1-week\nstreak',
+    );
+    return '$_temp0';
   }
 
   @override
   String get homeStreakTitleZero => 'Start your streak';
+
+  @override
+  String get homeStreakTitleFirstWeek => 'Finish your\nfirst week';
+
+  @override
+  String homeStreakWeekProgress(int done, int goal) {
+    return 'This week: $done/$goal workouts';
+  }
 
   @override
   String get homeStatWorkouts => 'workouts';
@@ -644,6 +655,17 @@ class AppL10nEn extends AppL10n {
   String get wsExercises => 'Exercises';
 
   @override
+  String wsNewRecords(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new records',
+      one: 'New record',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get wsDoneBtn => 'Done';
 
   @override
@@ -708,6 +730,9 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get asNeedOneSet => 'Enter at least one set first';
+
+  @override
+  String get asNewRecord => 'New record';
 
   @override
   String get asSaveError => 'Couldn\'t save workout — try again';

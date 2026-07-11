@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/prefs/week_start_provider.dart';
 import '../../../data/providers.dart';
 import '../../../data/database/app_database.dart';
 import '../../../data/database/daos/nutrition_dao.dart';
+import '../../workout/routine_providers.dart';
+import '../streak_calc.dart';
 
 final userProfileProvider = FutureProvider<UserProfileData?>((ref) {
   return ref.watch(userProfileDaoProvider).getProfile();
@@ -38,40 +41,25 @@ final weightTrendProvider = FutureProvider<WeightTrend>((ref) async {
   return (latest: latest, delta: delta);
 });
 
-/// Simple workout streak: count consecutive days with a workout session
-final workoutStreakProvider = FutureProvider<int>((ref) async {
-  final dao = ref.watch(workoutDaoProvider);
-  final sessions = await dao.getAllSessions();
-  if (sessions.isEmpty) return 0;
+/// Haftalık hedef bazlı antrenman serisi (streak_calc). Hedef = planlanmış
+/// rutin günü sayısı (benzersiz haftalık gün); plan kurulmamışsa 1 — haftada
+/// en az bir antrenman seriyi sürdürür. Hafta sınırı kullanıcının "haftanın
+/// ilk günü" tercihine göre.
+final weeklyStreakProvider = FutureProvider<WeeklyStreak>((ref) async {
+  final sessions = await ref.watch(workoutDaoProvider).getAllSessions();
+  final routines = await ref.watch(activeRoutinesProvider.future);
+  final weekStart = ref.watch(weekStartProvider);
 
-  int streak = 0;
-  var checkDate = DateTime.now();
+  final scheduledDays = routines
+      .where((r) => r.scheduledWeekday != null)
+      .map((r) => r.scheduledWeekday!)
+      .toSet()
+      .length;
 
-  // If no session today, start checking from yesterday
-  final todayStart = DateTime(checkDate.year, checkDate.month, checkDate.day);
-  final hasToday = sessions.any((s) =>
-      s.date.year == todayStart.year &&
-      s.date.month == todayStart.month &&
-      s.date.day == todayStart.day);
-
-  if (!hasToday) {
-    checkDate = checkDate.subtract(const Duration(days: 1));
-  }
-
-  while (true) {
-    final dayStart = DateTime(checkDate.year, checkDate.month, checkDate.day);
-    final hasSession = sessions.any((s) =>
-        s.date.year == dayStart.year &&
-        s.date.month == dayStart.month &&
-        s.date.day == dayStart.day);
-
-    if (hasSession) {
-      streak++;
-      checkDate = checkDate.subtract(const Duration(days: 1));
-    } else {
-      break;
-    }
-  }
-
-  return streak;
+  return computeWeeklyStreak(
+    sessionDates: sessions.map((s) => s.date),
+    weeklyGoal: scheduledDays == 0 ? 1 : scheduledDays,
+    now: DateTime.now(),
+    weekStart: weekStart,
+  );
 });

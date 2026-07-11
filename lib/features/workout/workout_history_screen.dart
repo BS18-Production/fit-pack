@@ -184,7 +184,7 @@ class _SessionCard extends ConsumerWidget {
   void _invalidateAll(WidgetRef ref) {
     ref.invalidate(_allSessionsProvider);
     ref.invalidate(weekWorkoutStatsProvider);
-    ref.invalidate(workoutStreakProvider);
+    ref.invalidate(weeklyStreakProvider);
     ref.invalidate(lastWorkoutSessionProvider);
   }
 }

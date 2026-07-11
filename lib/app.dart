@@ -115,7 +115,7 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     ref.invalidate(todayNutritionProvider);
     ref.invalidate(todayWaterProvider);
     ref.invalidate(todayRoutineProvider);
-    ref.invalidate(workoutStreakProvider);
+    ref.invalidate(weeklyStreakProvider);
     ref.invalidate(weekWorkoutStatsProvider);
     ref.read(selectedDateProvider.notifier).state = DateTime.now();
   }

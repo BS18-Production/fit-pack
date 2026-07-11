@@ -17,6 +17,7 @@ class DraftSet {
   double? distanceM;
   String type;
   bool done;
+  bool isRecord; // set tamamlanınca kişisel rekor rozeti aldı (resume korur)
   DraftSet({
     this.weight,
     this.reps,
@@ -25,6 +26,7 @@ class DraftSet {
     this.distanceM,
     this.type = 'normal',
     this.done = false,
+    this.isRecord = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -35,6 +37,7 @@ class DraftSet {
         'm': distanceM,
         't': type,
         'done': done,
+        'pr': isRecord,
       };
 
   factory DraftSet.fromJson(Map<String, dynamic> j) => DraftSet(
@@ -45,6 +48,7 @@ class DraftSet {
         distanceM: (j['m'] as num?)?.toDouble(),
         type: (j['t'] as String?) ?? 'normal',
         done: (j['done'] as bool?) ?? false,
+        isRecord: (j['pr'] as bool?) ?? false, // eski taslak: alan yok → false
       );
 }
 

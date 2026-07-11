@@ -1,8 +1,19 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-07-07
-> **Faz:** V2 Geliştirme — **Liquid Glass uygulama geneli tutarlılık** tamam
+> **Son güncelleme:** 2026-07-11
+> **Faz:** V2 Geliştirme — **Haftalık seri + PR kutlaması** tamam (docs/17 adım 1)
 > **Sahibi:** Samet Orhan
+
+## 🏆 Haftalık Seri + Kişisel Rekor Kutlaması (2026-07-11)
+
+[docs/17-improvement-analysis.md](docs/17-improvement-analysis.md) (kapsamlı
+iyileştirme analizi: özellik/teknik/monetizasyon/pazar) yazıldı; 1. adımı
+kodlandı: seri artık haftalık hedef bazlı (dinlenme günü KIRMAZ —
+`streak_calc.dart` + `weeklyStreakProvider`, hafta-başı tercihi destekli) ve
+canlı seansta kişisel rekor kupası + özet ekranında "N yeni rekor" kartı
+(`record_calc.dart`, e1RM/en ağır — seans tarihi öncesi geçmişe göre).
+analyze 0 · test 154/154. **Emülatör görsel turu bekliyor** (NEXT_TASKS).
+Not: yayın konuları Samet kararıyla uygulama hazır olana kadar gündem dışı.
 
 ## 🎨 Uygulama Geneli Liquid Glass (2026-07-07)
 

@@ -16,6 +16,7 @@ import '../workout/routine_providers.dart';
 import '../nutrition/macro_goals.dart';
 import 'providers/dashboard_providers.dart';
 import 'providers/home_providers.dart';
+import 'streak_calc.dart';
 
 /// Ana Sayfa — dashboard reskin (2026-07-04). Momentum hero (seri + son 30 gün),
 /// durum-duyarlı antrenman CTA, "Bu Hafta" metrik grid, kompakt beslenme,
@@ -35,7 +36,7 @@ class HomeScreen extends ConsumerWidget {
           ref.invalidate(userProfileProvider);
           ref.invalidate(todayNutritionProvider);
           ref.invalidate(weightTrendProvider);
-          ref.invalidate(workoutStreakProvider);
+          ref.invalidate(weeklyStreakProvider);
           ref.invalidate(todayWaterProvider);
           ref.invalidate(todayRoutineProvider);
           ref.invalidate(last30WorkoutStatsProvider);
@@ -119,25 +120,34 @@ class _Header extends StatelessWidget {
 // ─────────────────────────────────────────────────────── Momentum hero
 
 /// Seri + son 30 günün özeti (antrenman / hacim / kcal). Seri verisi
-/// [workoutStreakProvider], özet [last30WorkoutStatsProvider].
+/// [weeklyStreakProvider] (haftalık hedef bazlı — dinlenme günü seriyi
+/// kırmaz), özet [last30WorkoutStatsProvider].
 class _MomentumHero extends ConsumerWidget {
   const _MomentumHero();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
-    final streak = ref.watch(workoutStreakProvider).valueOrNull ?? 0;
+    final streak = ref.watch(weeklyStreakProvider).valueOrNull ??
+        const WeeklyStreak(weeks: 0, thisWeekDone: 0, weeklyGoal: 1);
     final month = ref.watch(last30WorkoutStatsProvider).valueOrNull;
     final units = ref.watch(unitsProvider);
     final c = context.colors;
     final fmt = context.numFmt;
 
-    final kicker = streak > 0 ? l.homeStreakKicker : l.homeStreakKickerZero;
-    final title =
-        streak > 0 ? l.homeStreakTitle(streak) : l.homeStreakTitleZero;
+    // Üç durum: seri var (hafta sayısı + bu haftanın ilerlemesi) · seri yok
+    // ama bu hafta başlandı (ilk haftayı tamamla) · hiç yok (başlat).
+    final hasWeeks = streak.weeks > 0;
+    final started = streak.thisWeekDone > 0;
+    final kicker = (hasWeeks || started)
+        ? l.homeStreakWeekProgress(streak.thisWeekDone, streak.weeklyGoal)
+        : l.homeStreakKickerZero;
+    final title = hasWeeks
+        ? l.homeStreakTitle(streak.weeks)
+        : (started ? l.homeStreakTitleFirstWeek : l.homeStreakTitleZero);
     // Emoji yerine temalı ikon (docs/08 + emoji denetimi): sistem emojisi
     // premium glass dile yabancı ve platforma göre değişken görünüyor.
-    final titleIcon = streak > 0
+    final titleIcon = hasWeeks
         ? Icon(Icons.local_fire_department_rounded,
             size: 30, color: context.semantic.warning)
         : Icon(Icons.bolt_rounded, size: 30, color: c.primary);

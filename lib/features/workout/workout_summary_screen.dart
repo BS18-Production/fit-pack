@@ -6,8 +6,10 @@ import '../../core/units/units.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
+import '../../data/database/daos/workout_dao.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
+import 'record_calc.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
 
@@ -79,6 +81,10 @@ class WorkoutSummaryScreen extends ConsumerWidget {
                 volumeUnit: units.weightUnit,
                 sets: '${s.totalSets}',
               ),
+              if (s.records.isNotEmpty) ...[
+                AppSpacing.vGapxl_,
+                _RecordsCard(records: s.records, units: units),
+              ],
               AppSpacing.vGapxl_,
               Text(AppL10n.of(context).wsExercises,
                   style: context.texts.titleMedium),
@@ -165,6 +171,72 @@ class _StatsCard extends StatelessWidget {
       width: 1, thickness: 1, color: context.colors.outlineVariant);
 }
 
+/// Bu seansta kırılan kişisel rekorlar — kupa rozetli kutlama kartı.
+class _RecordsCard extends StatelessWidget {
+  final List<NewRecord> records;
+  final Units units;
+  const _RecordsCard({required this.records, required this.units});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    final warn = context.semantic.warning;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md + 1),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: warn.withValues(alpha: 0.16),
+                    borderRadius: AppRadius.brMd,
+                  ),
+                  child:
+                      Icon(Icons.emoji_events_rounded, size: 19, color: warn),
+                ),
+                AppSpacing.hGapSm,
+                Text(l.wsNewRecords(records.length),
+                    style: context.texts.titleMedium),
+              ],
+            ),
+            AppSpacing.vGapSm,
+            ...records.map((r) {
+              // e1RM rekoru: "Tahmini 1RM 92 kg · 82.5×8" — en ağır: "En ağır
+              // set 85 kg". Etiketler Rekorlar sekmesiyle aynı anahtarlar.
+              final label = r.isE1rm
+                  ? '${l.edBestE1rm} ${units.weight(r.value, frac: 0)}'
+                      ' · ${units.weightValue(r.weightKg)}×${r.reps}'
+                  : '${l.edHeaviest} ${units.weight(r.value)}';
+              return Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xs),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(r.name,
+                          style: context.texts.titleSmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                    ),
+                    Text(label,
+                        style: context.texts.bodySmall?.copyWith(
+                            color: context.colors.onSurfaceVariant,
+                            fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _Col extends StatelessWidget {
   final String label, value;
   const _Col(this.label, this.value);
@@ -202,8 +274,9 @@ class _Summary {
   final int volume;
   final int totalSets;
   final List<_ExerciseRecap> perExercise;
+  final List<NewRecord> records; // bu seansta kırılan kişisel rekorlar
   _Summary(this.title, this.date, this.durationMin, this.volume, this.totalSets,
-      this.perExercise);
+      this.perExercise, this.records);
 }
 
 final _summaryProvider =
@@ -228,6 +301,25 @@ final _summaryProvider =
     return _ExerciseRecap(allEx[e.key], e.value.length, v);
   }).toList();
 
+  // Yeni rekorlar (record_calc): hareket başına, seans TARİHİNDEN ÖNCEKİ
+  // geçmişin en iyisi vs bu seansın setleri. Tarih filtresi sayesinde
+  // deterministik — özet geçmişten tekrar açılsa da aynı sonucu verir ve
+  // geçmişe eklenen manuel seanslar sonraki seansları "rekor" göstermez.
+  final records = <NewRecord>[];
+  for (final e in byEx.entries) {
+    final name = allEx[e.key];
+    if (name == null) continue;
+    final history = await dao.getExerciseHistory(e.key);
+    final rec = newRecordFor(
+      name: name,
+      priorHistory: history.where((p) => p.date.isBefore(session.date)),
+      sessionPoints: e.value.where((s) => !s.isWarmup).map((s) =>
+          ExerciseSetPoint(
+              date: session.date, weightKg: s.weightKg, reps: s.reps)),
+    );
+    if (rec != null) records.add(rec);
+  }
+
   return _Summary(
     session.workoutType,
     session.date,
@@ -235,6 +327,7 @@ final _summaryProvider =
     volume,
     sets.length,
     recaps,
+    records,
   );
 });
 

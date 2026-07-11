@@ -259,12 +259,6 @@ abstract class AppL10n {
   /// **'Export data'**
   String get homeExportTooltip;
 
-  /// No description provided for @homeStreakKicker.
-  ///
-  /// In en, this message translates to:
-  /// **'On a streak'**
-  String get homeStreakKicker;
-
   /// No description provided for @homeStreakKickerZero.
   ///
   /// In en, this message translates to:
@@ -274,7 +268,7 @@ abstract class AppL10n {
   /// No description provided for @homeStreakTitle.
   ///
   /// In en, this message translates to:
-  /// **'{count}-day\nstreak'**
+  /// **'{count, plural, =1{1-week\nstreak} other{{count}-week\nstreak}}'**
   String homeStreakTitle(int count);
 
   /// No description provided for @homeStreakTitleZero.
@@ -282,6 +276,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Start your streak'**
   String get homeStreakTitleZero;
+
+  /// No description provided for @homeStreakTitleFirstWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish your\nfirst week'**
+  String get homeStreakTitleFirstWeek;
+
+  /// No description provided for @homeStreakWeekProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'This week: {done}/{goal} workouts'**
+  String homeStreakWeekProgress(int done, int goal);
 
   /// No description provided for @homeStatWorkouts.
   ///
@@ -1207,6 +1213,12 @@ abstract class AppL10n {
   /// **'Exercises'**
   String get wsExercises;
 
+  /// No description provided for @wsNewRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{New record} other{{count} new records}}'**
+  String wsNewRecords(int count);
+
   /// No description provided for @wsDoneBtn.
   ///
   /// In en, this message translates to:
@@ -1332,6 +1344,12 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Enter at least one set first'**
   String get asNeedOneSet;
+
+  /// No description provided for @asNewRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'New record'**
+  String get asNewRecord;
 
   /// No description provided for @asSaveError.
   ///

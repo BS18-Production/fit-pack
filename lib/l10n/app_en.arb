@@ -45,15 +45,22 @@
 
   "homeToday": "TODAY",
   "homeExportTooltip": "Export data",
-  "homeStreakKicker": "On a streak",
   "homeStreakKickerZero": "New week, new rhythm",
-  "homeStreakTitle": "{count}-day\nstreak",
+  "homeStreakTitle": "{count, plural, =1{1-week\nstreak} other{{count}-week\nstreak}}",
   "@homeStreakTitle": {
     "placeholders": {
       "count": { "type": "int" }
     }
   },
   "homeStreakTitleZero": "Start your streak",
+  "homeStreakTitleFirstWeek": "Finish your\nfirst week",
+  "homeStreakWeekProgress": "This week: {done}/{goal} workouts",
+  "@homeStreakWeekProgress": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "goal": { "type": "int" }
+    }
+  },
   "homeStatWorkouts": "workouts",
   "homeStatVolume": "{unit} volume",
   "@homeStatVolume": {
@@ -309,6 +316,12 @@
   "wsLoadError": "Couldn't load summary",
   "wsDone": "Workout Complete",
   "wsExercises": "Exercises",
+  "wsNewRecords": "{count, plural, =1{New record} other{{count} new records}}",
+  "@wsNewRecords": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "wsDoneBtn": "Done",
   "wsUnknownExercise": "Exercise",
 
@@ -335,6 +348,7 @@
   },
   "asRemove": "Remove",
   "asNeedOneSet": "Enter at least one set first",
+  "asNewRecord": "New record",
   "asSaveError": "Couldn't save workout — try again",
   "asStartFromLibrary": "Start by adding exercises from the library",
   "asAddSet": "Add Set",

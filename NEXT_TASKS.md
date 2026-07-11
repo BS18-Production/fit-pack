@@ -32,9 +32,18 @@ gündem dışı — analiz doc'undaki nota bak.)
       seansları yanlış "rekor" göstermez). Geçmiş kayıt modunda anlık rozet
       yok (özet kartı tarihe göre doğru çalışır).
 - [x] analyze 0 · test **154/154** (17 yeni: streak_calc + record_calc)
-- [ ] **Emülatör görsel doğrulaması YAPILMADI** (adb install hatası + hızlı
-      commit istendi): sonraki oturumda gözle doğrula — Ana Sayfa seri
-      metinleri (3 durum), seans kupa rozeti (ağır set), özet rekor kartı.
+- [x] **Emülatör görsel doğrulaması TAMAM** (2026-07-11, release APK):
+      sıfır durum ("Serini başlat") · seans kayıtla "Bu hafta 1/1" + "1
+      haftalık seri"+alev · geçmişi olmayan harekette kupa YOK (kural) ·
+      ikinci seansta PREV 60×8 ghost + 70×8 tamamlanınca set rozeti KUPA ·
+      özette "New record — Estimated 1RM 89 kg · 70×8" kartı. Test
+      seansları emülatörden silindi.
+- [ ] **Yan bulgu (H-05 kanıtı):** seans bitişi `_finish` yalnız 3 provider
+      invalidate ediyor — `last30WorkoutStatsProvider` / `weekDashboardProvider`
+      tazelenmiyor (Ana Sayfa momentum istatistikleri seans sonrası eski
+      kalıyor; uygulama yeniden açılınca düzeliyor). Tek tek invalidate
+      eklemek yerine **reaktif veri katmanı** (docs/17 adım 2, drift
+      `watch()`) bunu kökten çözecek — o işte ele al.
 
 ---
 

@@ -12,7 +12,11 @@ kodlandı: seri artık haftalık hedef bazlı (dinlenme günü KIRMAZ —
 `streak_calc.dart` + `weeklyStreakProvider`, hafta-başı tercihi destekli) ve
 canlı seansta kişisel rekor kupası + özet ekranında "N yeni rekor" kartı
 (`record_calc.dart`, e1RM/en ağır — seans tarihi öncesi geçmişe göre).
-analyze 0 · test 154/154. **Emülatör görsel turu bekliyor** (NEXT_TASKS).
+analyze 0 · test 154/154 · **emülatörde uçtan uca görsel doğrulama TAMAM**
+(sıfır durum → ilk seans kupasız → haftalık seri kartı → ikinci seansta canlı
+kupa rozeti → özette "New record" kartı; test verisi temizlendi). Yan bulgu:
+`_finish` sonrası momentum istatistikleri bayat kalıyor (H-05) — reaktif veri
+katmanı (docs/17 adım 2) çözecek, NEXT_TASKS'te notlu.
 Not: yayın konuları Samet kararıyla uygulama hazır olana kadar gündem dışı.
 
 ## 🎨 Uygulama Geneli Liquid Glass (2026-07-07)

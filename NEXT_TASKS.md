@@ -1,7 +1,24 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
-> **Son güncelleme:** 2026-07-11
+> **Son güncelleme:** 2026-07-12
 > **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [CODE_REVIEW.md](CODE_REVIEW.md), [docs/04-roadmap.md](docs/04-roadmap.md), [docs/17-improvement-analysis.md](docs/17-improvement-analysis.md)
+
+---
+
+## ✅ Sayfa Geçişi Cilası — FadeOver (2026-07-12)
+
+Samet: (1) iOS yatay kaydırma Android'de yabancı duruyordu; (2) FadeForwards'a
+geçince sekmeye dönüşte glass ışık/gölge "geç yükleniyor" gibi görünüyordu.
+
+- [x] `app_theme.dart` Android push geçişi → özel **`_FadeOverPageTransitionsBuilder`**:
+      yalnız ÜSTTEKİ sayfa fade + süptil ileri hareket (300ms, pop'ta
+      easeInCubic); **`delegatedTransition = null`** → alttaki sekme
+      (Home/Workout/Nutrition/Progress) geçiş boyunca tam opak/net kalır.
+      FadeForwards elendi çünkü delegated transition dönülen sekmeyi de
+      soldurup kaydırıyordu (ışık/gölge geç görünme sebebi buydu — yükleme
+      değil, animasyon). iOS Cupertino kaydırma korundu (orada standart).
+- [x] analyze 0 · test 154/154 · emülatörde push+pop kare kare doğrulandı
+      (alttaki sekme ilk kareden itibaren net; glow/gölge/navbar sabit).
 
 ---
 

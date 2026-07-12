@@ -62,16 +62,19 @@ class AppTheme {
       extensions: [semantic],
       splashFactory: InkSparkle.splashFactory,
 
-      // Push edilen sayfa geçişi: TÜM platformlarda tek, hafif Cupertino
-      // yatay kaydırma. Android varsayılanı (Zoom = ölçek + opaklık fade)
-      // canlı cam/blur zeminiyle compose edilince ağır görünüyordu — sayfa
-      // saliselik "soluk açılıyor" hissi veriyordu. Kaydırma opaklık fade'i
-      // yapmaz + blur'la ucuz compose edilir → her push sayfası (Profil,
-      // Ayarlar, seans, kütüphane, detay…) aynı pürüzsüz his. Sekmeler
-      // NoTransitionPage kullandığı için etkilenmez (anlık kalır).
+      // Push edilen sayfa geçişi — platformun kendi dili (Samet 2026-07-12:
+      // tam ekran sağdan-sola kaydırma Android'de yabancı/rahatsız edici):
+      // • Android: _FadeOverPageTransitionsBuilder (aşağıda) — FadeForwards
+      //   dili (yumuşak fade + süptil ileri hareket) ama alttaki route'a HİÇ
+      //   animasyon uygulanmaz. FadeForwards'ın kendisi elendi çünkü
+      //   delegatedTransition'ı dönülen sekmeyi de soldurup kaydırıyordu →
+      //   glow'lu/gölgeli glass zemin pop sırasında "geç yükleniyor" gibi
+      //   görünüyordu (Samet 2026-07-12 geri bildirimi).
+      // • iOS: Cupertino yatay kaydırma (orada platform standardı budur).
+      // Sekmeler NoTransitionPage kullandığı için etkilenmez (anlık kalır).
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.android: _FadeOverPageTransitionsBuilder(),
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },
       ),
@@ -323,6 +326,48 @@ class AppTheme {
             states.contains(WidgetState.selected)
                 ? scheme.primary
                 : scheme.surfaceContainerHigh),
+      ),
+    );
+  }
+}
+
+/// Android push geçişi: "üstüne fade" — yeni sayfa yumuşak fade + süptil
+/// ileri hareketle üste gelir; ALTTAKİ route'a hiç animasyon uygulanmaz
+/// (delegatedTransition bilerek null). Böylece push'lu sayfadan sekmeye
+/// dönüşte glow'lu/gölgeli glass zemin ANINDA net durur — FadeForwards'ın
+/// alttaki sayfayı da soldurması "ışıklar geç yükleniyor" hissi veriyordu
+/// (Samet 2026-07-12). Süre: Material varsayılanı (300ms) — FadeForwards'ın
+/// 450ms'inden kısa, dönüş daha çevik hissettirir.
+class _FadeOverPageTransitionsBuilder extends PageTransitionsBuilder {
+  const _FadeOverPageTransitionsBuilder();
+
+  // Alttaki route'a uygulanan geçiş YOK — dönülen sekme hep tam opak/net.
+  @override
+  DelegatedTransitionBuilder? get delegatedTransition => null;
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    // Push'ta yumuşak varış (easeOutCubic); pop'ta hızlı kaybolma
+    // (easeInCubic tersten) → alttaki sekme bir an önce tam görünür.
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0.04, 0), // süptil ileri hareket (M3 dili)
+          end: Offset.zero,
+        ).animate(curved),
+        child: child,
       ),
     );
   }

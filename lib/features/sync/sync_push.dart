@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../data/database/app_database.dart';
 import '../../data/database/tables/sync_columns.dart';
+import 'sync_controller.dart' show syncLog;
 
 /// Bir gönderim turunun sonucu — arayüz ve testler bunu okur.
 class PushResult {
@@ -55,7 +56,18 @@ class SyncPush {
     var failed = 0;
     Object? firstError;
 
-    // Ön geçiş: bekleyen satırların işaret ettiği KATALOG satırlarını kuyruğa
+    // Ön geçiş 1: KİMLİKSİZ satırları onar. Tetikleyiciler (v10) her yeni
+    // satıra `uid` verir, ama v10 ÖNCESİ oluşmuş satırlarda NULL kalmış
+    // olabilir (canlıda tam bunu yaşadık: seed hareketleri uid'siz kalınca
+    // onlara bakan 6 set de sessizce gönderilemedi).
+    //
+    // Kendi kendini onarır ve tekrar çalıştırmak güvenlidir — yalnız NULL
+    // olanlara dokunur. Katalog satırlarında tetikleyici `sync_state`'i
+    // sıfırlayabilir; sorun değil, sıradaki adım referans verilenleri
+    // yeniden kuyruğa alıyor.
+    await _repairMissingUids();
+
+    // Ön geçiş 2: bekleyen satırların işaret ettiği KATALOG satırlarını kuyruğa
     // al (tembel katalog senkronu — docs/18 §3.2 seçenek A). Bunu yapmazsak
     // sunucudaki set, orada olmayan bir harekete referans verir.
     await _queueReferencedCatalogRows();
@@ -64,9 +76,10 @@ class SyncPush {
     for (final table in syncPushOrder) {
       try {
         pushed += await _pushTable(table, userId);
-      } catch (e) {
+      } catch (e, st) {
         firstError ??= e;
         failed += await _pendingCount(table);
+        syncLog('$table gönderilemedi: $e\n$st', error: e);
         // Sonraki tablolar bu tabloya referans verebilir → tur burada biter,
         // kuyruk korunur, bir sonraki denemede baştan alınır.
         break;
@@ -74,6 +87,20 @@ class SyncPush {
     }
 
     return PushResult(pushed: pushed, failed: failed, error: firstError);
+  }
+
+  /// `uid`'i olmayan satırlara kimlik üretir. Kimliksiz satır gönderilemez —
+  /// ve daha kötüsü, ona referans veren her satır da gönderilemez.
+  Future<void> _repairMissingUids() async {
+    for (final table in syncPushOrder) {
+      final missing = await db
+          .customSelect('SELECT COUNT(*) c FROM $table WHERE uid IS NULL')
+          .getSingle();
+      final count = missing.read<int>('c');
+      if (count == 0) continue;
+      syncLog('$table: $count satırın kimliği yok → üretiliyor');
+      await db.customStatement(backfillUidSql(table));
+    }
   }
 
   /// Bekleyen satırların referans verdiği katalog satırlarını kuyruğa alır.
@@ -120,16 +147,28 @@ class SyncPush {
       // dokunmayız (yoksa o değişiklik sessizce kaybolur).
       final stamps = <String, Object?>{};
 
+      var skipped = 0;
       for (final row in rows) {
         final json = await _rowToJson(table, row.data, userId);
-        if (json == null) continue; // çevrilemedi (eksik referans) → beklet
+        if (json == null) {
+          // Çevrilemedi (kimlik yok ya da ebeveyn referansı çözülemedi) →
+          // kuyrukta bekletilir. SESSİZ BIRAKMA: canlıda 13 satır böyle
+          // atlandı ve "gönderilen 0, kalan 0" yüzünden sorun görünmedi.
+          skipped++;
+          continue;
+        }
         payload.add(json);
         stamps[json['uid']! as String] = row.data['updated_at'];
+      }
+      if (skipped > 0) {
+        syncLog('$table: $skipped satır atlandı (kimlik/referans eksik) '
+            '→ kuyrukta bekliyor');
       }
       if (payload.isEmpty) return total;
 
       // ⚠️ Sunucu onayı burada. Hata fırlarsa aşağıya inilmez → temiz
       // işaretleme YAPILMAZ, satırlar kuyrukta kalır.
+      syncLog('$table → ${payload.length} satır gönderiliyor');
       await remote.upsert(table, payload);
 
       await _markClean(table, stamps, userId);

@@ -510,9 +510,30 @@ damgalamak yerine veritabanı garantisi.
 FK çevirisi + bağımlılık sırası + zamanlama (döngü koruması, eşzamanlılık,
 artan bekleme, oturumsuz çalışmama).
 
-> ⚠️ **Kalan:** gerçek Supabase'e karşı uçtan uca tur (emülatör diski dolduğu
-> için yapılamadı). İlk canlı denemede bakılacaklar: RLS reddi var mı, tarih
-> biçimi (`timestamptz`) kabul ediliyor mu, `onConflict: 'uid'` çalışıyor mu.
+### 6.7 Canlı doğrulama ✅ TAMAM (2026-07-22) — telefonda gerçek veri gitti
+
+`tur bitti — gönderilen 15, kalan 0`. Samet'in telefonundaki (SM A075F) gerçek
+antrenman ve beslenme verisi Supabase'e ulaştı. Katalog kuralı da canlıda
+doğrulandı: 1015 harekete kimlik üretildi ama sunucuya **yalnız kullanılan 2
+tanesi** gitti.
+
+**Yol boyunca dört arıza — hepsinde SIFIR veri kaybı.** Kuyruk her seferinde
+korundu; "sunucu onaylamadan temiz işaretleme" kuralı gerçek arızalarda sınandı.
+
+| # | Belirti | Kök neden | Çözüm |
+|---|---|---|---|
+| 1 | Hiç senkron logu yok | `dart:developer`'ın `log()`'u VM servis kanalına gider, **logcat'te görünmez** | `debugPrint` |
+| 2 | `permission denied for table X (42501)` | **RLS ≠ GRANT.** Postgres'te ikisi ayrı katman; RLS satırı, GRANT tabloyu açar. Supabase panelinden oluşturulan tablolara yetki otomatik verilir, **ham SQL ile oluşturulanlara verilmez** | `supabase/02_grants.sql` |
+| 3 | `Failed host lookup` | Ofis Wi-Fi'si (kurumsal DNS) alan adını çözmedi | Mobil veri |
+| 4 | `gönderilen 0, kalan 0` — satırlar **sessizce** atlanıyor | v10 öncesi oluşmuş katalog satırlarının `uid`'i NULL; kimliksiz satır gönderilemiyor, **ona referans veren 6 set de** gönderilemiyor | `_repairMissingUids()` + atlanan satır artık log basıyor |
+
+**4 numara en sinsisiydi:** hata yoktu, sayaç sıfırdı, hiçbir şey olmuyordu.
+Ders: **sessiz atlama = görünmez veri kaybı.** Artık her atlanan satır loglanıyor
+ve gönderim öncesi kimlik onarımı yapılıyor (kendi kendini iyileştirir).
+
+**Operatör panelleri:** `tools/admin/` — Supabase verisini okuyan iki HTML sayfası
+(kullanıcı listesi + profil, kişisel pano). claude.ai artifact olarak çalışırlar;
+gerçek ürüne dönüştürme notu README'de.
 
 ## 7. RLS politikaları
 

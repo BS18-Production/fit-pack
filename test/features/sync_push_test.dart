@@ -202,6 +202,38 @@ void main() {
     expect(sent['is_complete'], isTrue, reason: 'SQLite 1 → Postgres true');
   });
 
+  test('KİMLİKSİZ satır onarılır — canlıda 13 satır bu yüzden takılmıştı',
+      () async {
+    // v10 ÖNCESİ oluşmuş bir katalog satırını taklit et: uid yok.
+    await db.customStatement(
+      "INSERT INTO exercises (name, category, muscle_groups, is_custom) "
+      "VALUES ('Eski Hareket', 'compound', '[\"chest\"]', 0)",
+    );
+    await db.customStatement('UPDATE exercises SET uid = NULL WHERE id = 1');
+
+    await db.customStatement(
+      "INSERT INTO workout_sessions (date, phase, workout_type, knee_status, "
+      "is_deload) VALUES (1700000000, 0, 'Push', 'normal', 0)",
+    );
+    await db.customStatement(
+      "INSERT INTO workout_sets (session_id, exercise_id, set_number, "
+      "is_warmup, set_type, is_complete) VALUES (1, 1, 1, 0, 'normal', 1)",
+    );
+
+    final result = await push.pushAll(userId: user);
+
+    // Onarım olmasaydı: hareket kimliksiz → gönderilemez → ona bakan set de
+    // gönderilemez → ikisi de SESSİZCE kuyrukta kalırdı.
+    expect(result.pushed, greaterThan(0));
+    expect(remote.rowCount('exercises'), 1, reason: 'kimlik üretilip gönderildi');
+    expect(remote.rowCount('workout_sets'), 1, reason: 'bağımlı satır da gitti');
+
+    final left = await db
+        .customSelect('SELECT COUNT(*) c FROM workout_sets WHERE sync_state = 1')
+        .getSingle();
+    expect(left.read<int>('c'), 0, reason: 'kuyruk boşalmalı');
+  });
+
   test('gönderim bağımlılık sırasında: önce ebeveyn, sonra çocuk', () async {
     await db.customStatement(
       "INSERT INTO workout_sessions (date, phase, workout_type, knee_status, "

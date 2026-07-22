@@ -1,0 +1,420 @@
+<title>Fit Pack — Veri Panosu</title>
+<style>
+  :root {
+    --bg: #F6F6FB;
+    --surface: #FFFFFF;
+    --surface-2: #FAFAFE;
+    --ink: #1B1B2E;
+    --ink-soft: #56566E;
+    --ink-faint: #8A8AA2;
+    --line: #E7E7F1;
+    --brand: #4F46E5;
+    --brand-soft: #EEEDFB;
+    --accent: #0D9488;
+    --data: #4F46E5;      /* tek seri — magnitude */
+    --data-track: #EDEDF6;
+    --warn: #B45309;
+    --warn-bg: #FBF0DC;
+    --bad: #B91C1C;
+    --bad-bg: #FBE9E9;
+    --ok: #0D9488;
+    --shadow: 0 1px 2px rgba(27,27,46,.04), 0 6px 20px rgba(27,27,46,.05);
+    --r: 14px;
+    --font: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0C0C16; --surface: #15152A; --surface-2: #111120;
+      --ink: #ECECF6; --ink-soft: #A6A6C0; --ink-faint: #6E6E88;
+      --line: #26263F; --brand: #8B93F8; --brand-soft: #201E3C;
+      --accent: #2DD4BF; --data: #8B93F8; --data-track: #23233A;
+      --warn: #E9A94A; --warn-bg: #2E2413;
+      --bad: #F87171; --bad-bg: #331A1A; --ok: #2DD4BF;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 26px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg:#F6F6FB;--surface:#FFFFFF;--surface-2:#FAFAFE;--ink:#1B1B2E;--ink-soft:#56566E;
+    --ink-faint:#8A8AA2;--line:#E7E7F1;--brand:#4F46E5;--brand-soft:#EEEDFB;--accent:#0D9488;
+    --data:#4F46E5;--data-track:#EDEDF6;--warn:#B45309;--warn-bg:#FBF0DC;--bad:#B91C1C;
+    --bad-bg:#FBE9E9;--ok:#0D9488;--shadow:0 1px 2px rgba(27,27,46,.04),0 6px 20px rgba(27,27,46,.05);
+  }
+  :root[data-theme="dark"] {
+    --bg:#0C0C16;--surface:#15152A;--surface-2:#111120;--ink:#ECECF6;--ink-soft:#A6A6C0;
+    --ink-faint:#6E6E88;--line:#26263F;--brand:#8B93F8;--brand-soft:#201E3C;--accent:#2DD4BF;
+    --data:#8B93F8;--data-track:#23233A;--warn:#E9A94A;--warn-bg:#2E2413;--bad:#F87171;
+    --bad-bg:#331A1A;--ok:#2DD4BF;--shadow:0 1px 2px rgba(0,0,0,.3),0 8px 26px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--font); line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: clamp(1rem, 3vw, 2rem); }
+  h1, h2 { margin: 0; letter-spacing: -.02em; line-height: 1.15; }
+  p { margin: 0; }
+
+  /* header */
+  header { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.6rem; }
+  .eyebrow { font-size: .7rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+  h1 { font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.1rem); font-weight: 800; margin-top: .35rem; }
+  .meta { margin-left: auto; display: flex; align-items: center; gap: .7rem; }
+  .stamp { font-size: .78rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+  button.refresh {
+    font: inherit; font-size: .82rem; font-weight: 600; cursor: pointer;
+    background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 999px; padding: .42rem .9rem; box-shadow: var(--shadow);
+  }
+  button.refresh:hover { border-color: var(--brand); color: var(--brand); }
+  button.refresh:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  button.refresh[disabled] { opacity: .55; cursor: default; }
+
+  section { margin-bottom: 1.5rem; }
+  .sec-title { display: flex; align-items: baseline; gap: .6rem; margin-bottom: .8rem; }
+  h2 { font-size: 1.02rem; font-weight: 700; }
+  .sec-note { font-size: .78rem; color: var(--ink-faint); }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
+
+  /* stat tiles */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: .8rem; }
+  .tile { padding: 1rem 1.1rem; }
+  .tile .k { font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+  .tile .v { font-size: 1.9rem; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: .3rem; line-height: 1.05; }
+  .tile .u { font-size: .82rem; font-weight: 600; color: var(--ink-soft); margin-left: .18rem; }
+
+  /* bar chart — tek seri, magnitude */
+  .chart { padding: 1.1rem 1.2rem 1.3rem; }
+  .bars { display: flex; flex-direction: column; gap: 2px; }
+  .row { display: grid; grid-template-columns: minmax(0,1fr); gap: .25rem; padding: .45rem 0; position: relative; }
+  .row .lbl { display: flex; align-items: baseline; gap: .5rem; font-size: .86rem; }
+  .row .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .sub { font-size: .72rem; color: var(--ink-faint); flex: none; }
+  .row .val { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 700; font-size: .84rem; flex: none; }
+  .track { height: 10px; background: var(--data-track); border-radius: 4px; overflow: hidden; }
+  .fill { height: 100%; background: var(--data); border-radius: 4px; min-width: 3px; transition: width .35s ease; }
+  @media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+  .row:hover .track { outline: 2px solid var(--brand-soft); outline-offset: 2px; border-radius: 5px; }
+
+  /* table */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .87rem; }
+  th, td { text-align: left; padding: .65rem .9rem; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-size: .7rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-faint); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  th.num { text-align: right; }
+
+  /* states */
+  .state { padding: 1.1rem 1.2rem; font-size: .88rem; border-radius: var(--r); }
+  .state.load { color: var(--ink-faint); }
+  .state.empty { color: var(--ink-soft); background: var(--surface-2); border: 1px dashed var(--line); }
+  .state.warn { color: var(--warn); background: var(--warn-bg); }
+  .state.bad  { color: var(--bad);  background: var(--bad-bg); }
+  .state b { display: block; margin-bottom: .25rem; font-weight: 700; }
+  .skel { height: 1.9rem; border-radius: 6px; background: var(--data-track); }
+
+  footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .76rem; color: var(--ink-faint); }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Fit Pack · Supabase</div>
+      <h1>Veri Panosu</h1>
+    </div>
+    <div class="meta">
+      <span class="stamp" id="stamp"></span>
+      <button class="refresh" id="refresh" type="button">Yenile</button>
+    </div>
+  </header>
+
+  <div id="pagestate"></div>
+
+  <section id="sec-summary">
+    <div class="sec-title"><h2>Özet</h2><span class="sec-note">senkron edilmiş kayıtlar</span></div>
+    <div class="tiles" id="tiles">
+      <div class="card tile"><div class="k">Antrenman</div><div class="skel" style="margin-top:.5rem"></div></div>
+      <div class="card tile"><div class="k">Tamamlanan set</div><div class="skel" style="margin-top:.5rem"></div></div>
+      <div class="card tile"><div class="k">Toplam hacim</div><div class="skel" style="margin-top:.5rem"></div></div>
+      <div class="card tile"><div class="k">Öğün kaydı</div><div class="skel" style="margin-top:.5rem"></div></div>
+    </div>
+  </section>
+
+  <section id="sec-vol">
+    <div class="sec-title"><h2>Harekete göre hacim</h2><span class="sec-note">kg · ısınma setleri hariç</span></div>
+    <div class="card chart" id="vol"><div class="state load">Yükleniyor…</div></div>
+  </section>
+
+  <section id="sec-sess">
+    <div class="sec-title"><h2>Son antrenmanlar</h2></div>
+    <div class="card tbl-wrap" id="sess"><div class="state load">Yükleniyor…</div></div>
+  </section>
+
+  <footer>
+    Veriler Supabase'den canlı okunur. Hacim = ağırlık × tekrar (yalnız tamamlanan,
+    ısınma olmayan setler). Bu sayfa yalnız okuma sorguları çalıştırır.
+  </footer>
+</div>
+
+<script type="module">
+const TOOL = 'execute_sql';
+const PROJECT = 'jkviihbyogktwboreydn';
+
+/* Bağlayıcının ÇAĞRI adı manifestteki ön ekle aynı olmak zorunda değil —
+   çalışma zamanı "görünen ad" ister. Tahmin yerine keşfet. */
+let SERVER = null;
+async function resolveServer() {
+  if (SERVER) return SERVER;
+  const { servers = [] } = await window.claude.mcp.listTools();
+  const hit = servers.find(s => (s.tools || []).some(t => t.name === TOOL));
+  if (!hit) {
+    const names = servers.map(s => s.server).join(', ') || 'yok';
+    throw { code: 'server_not_connected',
+            message: `execute_sql sunan bağlayıcı bulunamadı. Görünenler: ${names}` };
+  }
+  SERVER = hit.server;
+  if (hit.authStatus === 'needs_reauth') throw { code: 'needs_reauth', server: SERVER };
+  return SERVER;
+}
+
+const Q = {
+  summary: `select
+      (select count(*)::int from public.workout_sessions) as seans,
+      (select count(*)::int from public.workout_sets where is_complete) as setler,
+      (select coalesce(sum(weight_kg*reps),0)::int from public.workout_sets
+        where is_complete and not is_warmup) as hacim,
+      (select count(*)::int from public.food_logs) as ogun`,
+  volume: `select coalesce(e.name,'Bilinmeyen hareket') as hareket,
+      coalesce(e.primary_muscle,'—') as kas,
+      count(*)::int as setler,
+      coalesce(sum(ws.weight_kg*ws.reps) filter (where ws.is_complete and not ws.is_warmup),0)::int as hacim
+    from public.workout_sets ws
+    left join public.exercises e on e.uid = ws.exercise_uid
+    group by e.name, e.primary_muscle
+    order by hacim desc limit 12`,
+  sessions: `select to_char(s.date,'DD.MM.YYYY') as tarih,
+      coalesce(s.workout_type,'—') as tur,
+      count(ws.uid)::int as setler,
+      coalesce(sum(ws.weight_kg*ws.reps) filter (where ws.is_complete and not ws.is_warmup),0)::int as hacim
+    from public.workout_sessions s
+    left join public.workout_sets ws on ws.session_uid = s.uid
+    group by s.uid, s.date, s.workout_type
+    order by s.date desc limit 8`,
+};
+
+const $ = (id) => document.getElementById(id);
+const nf = new Intl.NumberFormat('tr-TR');
+
+/* Bağlayıcı cevabı: metin gövdesi içinde <untrusted-data-…> sınırları arasında
+   JSON dizisi geliyor. İki olası zarfı da (düz metin / {result: metin}) karşıla. */
+function extractRows(payload){
+  let t=payload;
+  if(t && typeof t==='object') t = t.result ?? t.text ?? JSON.stringify(t);
+  if(typeof t!=='string') return [];
+  // DİKKAT: <untrusted-data-…> etiketi cevabın UYARI CÜMLESİNDE de geçiyor
+  // ("…within the below <untrusted-data-…> boundaries"). İlk eşleşmeden
+  // başlamak JSON'un başına düz metin karıştırıyor ve ayrıştırma sessizce
+  // patlıyordu. Bu yüzden SON açılış etiketi baz alınır.
+  let body=t;
+  const close=t.lastIndexOf('</untrusted-data');
+  const head=close>-1 ? t.slice(0,close) : t;
+  const open=head.lastIndexOf('<untrusted-data');
+  if(open>-1){ const gt=head.indexOf('>',open); if(gt>-1) body=head.slice(gt+1); }
+  else if(close>-1) body=head;
+  body=body.trim();
+  try{ const v=JSON.parse(body); return Array.isArray(v)?v:[v]; }catch{}
+  // Son çare: ilk [ ile son ] arasını dene (zarf değişirse diye)
+  const a=body.indexOf('['), b=body.lastIndexOf(']');
+  if(a>-1&&b>a){ try{ const v=JSON.parse(body.slice(a,b+1)); return Array.isArray(v)?v:[v]; }catch{} }
+  return [];
+}
+
+/* Hata koduna göre AYRI davranış — hepsini tek "bir şeyler ters gitti"ye
+   toplamak, düzeltecek eylemi gizler. */
+function describe(err) {
+  const code = err?.code ?? 'upstream_error';
+  switch (code) {
+    case 'needs_reauth':
+      return { t: 'Supabase bağlantısının süresi doldu',
+               d: 'claude.ai → Ayarlar → Connectors üzerinden yeniden bağlan.', k: 'warn' };
+    case 'server_not_connected':
+      return { t: 'Supabase bağlayıcısı yok',
+               d: 'claude.ai → Ayarlar → Connectors üzerinden Supabase’i ekle.', k: 'warn' };
+    case 'selection_required':
+      return { t: 'Birden fazla Supabase bağlantısı var',
+               d: 'Hangisini kullanacağını seçmen isteniyor.', k: 'warn' };
+    case 'not_in_manifest':
+    case 'blocked_by_policy':
+      return { t: 'Bu sorguya izin yok',
+               d: 'Sayfanın izin listesi bu aracı kapsamıyor.', k: 'bad' };
+    case 'approval_required':
+      return { t: 'Onay gerekiyor', d: 'Bu çağrı için kurum onayı bekleniyor.', k: 'warn' };
+    case 'server_unavailable':
+      return { t: 'Supabase şu an yanıt vermiyor', d: 'Geçici olabilir — Yenile’yi dene.', k: 'warn', retry: true };
+    case 'tool_error':
+      return { t: 'Sorgu çalışmadı', d: err?.message ?? 'Veritabanı hata döndürdü.', k: 'bad' };
+    case 'not_granted':
+    case 'capability_disabled':
+    case 'capability_removed':
+      return { t: 'Canlı veri bu görünümde kullanılamıyor',
+               d: 'Sayfayı claude.ai üzerinde açtığında veriler gelir.', k: 'warn' };
+    default:
+      return { t: 'Veri alınamadı', d: err?.message ?? 'Bilinmeyen hata.', k: 'bad' };
+  }
+}
+
+function renderState(el, err) {
+  const s = describe(err);
+  el.innerHTML = '';
+  const box = document.createElement('div');
+  box.className = 'state ' + s.k;
+  const b = document.createElement('b'); b.textContent = s.t;
+  const p = document.createElement('p'); p.textContent = s.d;
+  box.append(b, p); el.append(box);
+  return s;
+}
+
+function emptyBox(el, msg) {
+  el.innerHTML = '';
+  const d = document.createElement('div');
+  d.className = 'state empty';
+  d.textContent = msg;
+  el.append(d);
+}
+
+async function run(sql, refresh) {
+  if (!window.claude?.mcp) {
+    throw { code: 'capability_disabled', message: 'MCP yok' };
+  }
+  const server = await resolveServer();
+  const res = await window.claude.mcp.callTool(
+    server, TOOL, { project_id: PROJECT, query: sql },
+    { cache: { staleTime: 60000, ...(refresh ? { refresh: true } : {}) } },
+  );
+  return { rows: extractRows(res.payload), cache: res.cache };
+}
+
+/* ---------- bölüm çizicileri ---------- */
+
+function drawTiles(r) {
+  const t = [
+    ['Antrenman', nf.format(r.seans ?? 0), ''],
+    ['Tamamlanan set', nf.format(r.setler ?? 0), ''],
+    ['Toplam hacim', nf.format(r.hacim ?? 0), 'kg'],
+    ['Öğün kaydı', nf.format(r.ogun ?? 0), ''],
+  ];
+  const host = $('tiles'); host.innerHTML = '';
+  for (const [k, v, u] of t) {
+    const c = document.createElement('div'); c.className = 'card tile';
+    const kk = document.createElement('div'); kk.className = 'k'; kk.textContent = k;
+    const vv = document.createElement('div'); vv.className = 'v'; vv.textContent = v;
+    if (u) { const uu = document.createElement('span'); uu.className = 'u'; uu.textContent = u; vv.append(uu); }
+    c.append(kk, vv); host.append(c);
+  }
+}
+
+function drawVolume(rows) {
+  const host = $('vol');
+  const data = rows.filter(r => Number(r.hacim) > 0);
+  if (!data.length) { emptyBox(host, 'Henüz hacim kaydı yok — bir antrenman tamamlandığında burada görünür.'); return; }
+  const max = Math.max(...data.map(r => Number(r.hacim)));
+  host.innerHTML = '';
+  const bars = document.createElement('div'); bars.className = 'bars';
+  for (const r of data) {
+    const v = Number(r.hacim);
+    const row = document.createElement('div'); row.className = 'row';
+    row.title = `${r.hareket} · ${r.setler} set · ${nf.format(v)} kg`;
+
+    const lbl = document.createElement('div'); lbl.className = 'lbl';
+    const nm = document.createElement('span'); nm.className = 'name'; nm.textContent = r.hareket;
+    const sub = document.createElement('span'); sub.className = 'sub';
+    sub.textContent = `${r.kas} · ${r.setler} set`;
+    const val = document.createElement('span'); val.className = 'val';
+    val.textContent = nf.format(v) + ' kg';
+    lbl.append(nm, sub, val);
+
+    const track = document.createElement('div'); track.className = 'track';
+    const fill = document.createElement('div'); fill.className = 'fill';
+    fill.style.width = Math.max(2, (v / max) * 100) + '%';
+    track.append(fill);
+
+    row.append(lbl, track); bars.append(row);
+  }
+  host.append(bars);
+}
+
+function drawSessions(rows) {
+  const host = $('sess');
+  if (!rows.length) { emptyBox(host, 'Henüz senkron edilmiş antrenman yok.'); return; }
+  host.innerHTML = '';
+  const tb = document.createElement('table');
+  const head = document.createElement('thead');
+  head.innerHTML = '<tr><th>Tarih</th><th>Tür</th><th class="num">Set</th><th class="num">Hacim (kg)</th></tr>';
+  const body = document.createElement('tbody');
+  for (const r of rows) {
+    const tr = document.createElement('tr');
+    const c = (txt, num) => { const td = document.createElement('td'); if (num) td.className = 'num'; td.textContent = txt; return td; };
+    tr.append(c(r.tarih ?? '—'), c(r.tur ?? '—'), c(nf.format(r.setler ?? 0), true), c(nf.format(r.hacim ?? 0), true));
+    body.append(tr);
+  }
+  tb.append(head, body); host.append(tb);
+}
+
+/* ---------- yükleme ---------- */
+
+let retried = false;
+
+function setStamp(cache) {
+  const when = cache?.storedAt ? new Date(cache.storedAt) : new Date();
+  $('stamp').textContent = 'Güncellendi ' +
+    when.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+}
+
+async function load(refresh = false) {
+  const btn = $('refresh');
+  btn.disabled = true; btn.textContent = 'Yenileniyor…';
+  $('pagestate').innerHTML = '';
+
+  const jobs = [
+    ['summary', $('tiles'),  (rows, c) => { drawTiles(rows[0] ?? {}); setStamp(c); }],
+    ['volume',  $('vol'),    (rows) => drawVolume(rows)],
+    ['sessions', $('sess'),  (rows) => drawSessions(rows)],
+  ];
+
+  const results = await Promise.allSettled(
+    jobs.map(([k]) => run(Q[k], refresh)),
+  );
+
+  const errs = [];
+  results.forEach((res, i) => {
+    const [, el, draw] = jobs[i];
+    if (res.status === 'fulfilled') { draw(res.value.rows, res.value.cache); }
+    else { errs.push(renderState(el, res.reason)); }
+  });
+
+  // Hepsi aynı sebeple düştüyse bölüm bölüm tekrarlamak yerine tek mesaj.
+  if (errs.length === jobs.length) {
+    const s = errs[0];
+    const box = document.createElement('div');
+    box.className = 'state ' + s.k;
+    const b = document.createElement('b'); b.textContent = s.t;
+    const p = document.createElement('p'); p.textContent = s.d;
+    box.append(b, p);
+    $('pagestate').append(box);
+    // Yalnız geçici hatada, yalnız bir kez, kısa gecikmeyle.
+    if (s.retry && !retried) {
+      retried = true;
+      setTimeout(() => load(true), 1200 + Math.random() * 800);
+    }
+  } else {
+    retried = false;
+  }
+
+  btn.disabled = false; btn.textContent = 'Yenile';
+}
+
+$('refresh').addEventListener('click', () => load(true));
+load();
+</script>

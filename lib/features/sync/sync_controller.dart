@@ -1,8 +1,20 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
 import '../../data/database/app_database.dart';
 import '../../data/database/tables/sync_columns.dart';
 import 'sync_push.dart';
+
+/// Senkron günlüğü. Hatalar sessizce yutulursa "neden gitmiyor" sorusuna
+/// cevap veremeyiz — ilk canlı turda tam bunu yaşadık.
+///
+/// `debugPrint` kullanılıyor çünkü `dart:developer`'ın `log()`'u VM servis
+/// kanalına gider ve **logcat'te görünmez** — cihazda hata ayıklarken işe
+/// yaramaz. `debugPrint` stdout'a yazar, `adb logcat` yakalar.
+void syncLog(String message, {Object? error}) {
+  debugPrint('[fitpack.sync] $message${error != null ? ' | HATA: $error' : ''}');
+}
 
 /// Senkronun ne zaman çalışacağını yöneten katman (docs/18 §6).
 ///
@@ -51,6 +63,7 @@ class SyncController {
 
   /// Yazmaları dinlemeye başlar. Giriş yapıldığında çağrılır.
   void start() {
+    syncLog('senkron başlatıldı (yazma dinleyicisi kuruldu)');
     _writes ??= db
         .tableUpdates()
         .listen((_) => schedule());
@@ -76,7 +89,10 @@ class SyncController {
   Future<void> syncNow() async {
     if (_running) return;
     final userId = currentUserId();
-    if (userId == null) return; // oturum yok → kuyrukta bekle
+    if (userId == null) {
+      syncLog('atlandı: oturum yok — kuyruk bekliyor');
+      return;
+    }
 
     // ⚠️ Bayrak İLK await'ten ÖNCE set edilmeli. Sonra set edilirse eşzamanlı
     // çağrıların hepsi kontrolden geçer (hepsi `hasPending`i beklerken hiçbiri
@@ -85,9 +101,16 @@ class SyncController {
     try {
       // Boşa tur atma: bekleyen yoksa çık. Bu aynı zamanda döngü korumasıdır —
       // temiz işaretleme de bir yazmadır ve `tableUpdates` tetikler.
-      if (!await hasPending()) return;
+      final waiting = await pendingCount();
+      if (waiting == 0) {
+        syncLog('atlandı: kuyruk boş');
+        return;
+      }
+      syncLog('tur başlıyor — $waiting satır bekliyor, kullanıcı $userId');
       final result = await push.pushAll(userId: userId);
       last.value = result;
+      syncLog('tur bitti — gönderilen ${result.pushed}, '
+          'kalan ${result.failed}', error: result.error);
 
       if (result.ok) {
         _failures = 0;
@@ -95,8 +118,9 @@ class SyncController {
       } else {
         _scheduleRetry();
       }
-    } catch (e) {
+    } catch (e, st) {
       last.value = PushResult(failed: 1, error: e);
+      syncLog('TUR HATASI: $e\n$st', error: e);
       _scheduleRetry();
     } finally {
       _running = false;

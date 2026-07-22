@@ -11,7 +11,7 @@ void main() {
   group('aggregateWorkouts', () {
     test('hacim = Σ kg×tekrar, boş seans 0', () {
       final sessions = [
-        WorkoutSession(
+        WorkoutSession(syncState: 0, 
             id: 1,
             date: DateTime(2026, 7, 1),
             phase: 0,
@@ -19,7 +19,7 @@ void main() {
             kneeStatus: 'normal',
             isDeload: false),
       ];
-      WorkoutSet set(int id, double kg, int reps) => WorkoutSet(
+      WorkoutSet set(int id, double kg, int reps) => WorkoutSet(syncState: 0, 
             id: id,
             sessionId: 1,
             exerciseId: 1,
@@ -54,6 +54,7 @@ void main() {
 
   group('weeklyProteinAdherencePct', () {
     FoodLog log(DateTime d, double protein) => FoodLog(
+          syncState: 0,
           id: d.millisecondsSinceEpoch,
           date: d,
           mealType: 'lunch',

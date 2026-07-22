@@ -1,15 +1,11 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart' hide isNull;
-import 'package:drift/native.dart';
 import 'package:fit_pack/data/database/app_database.dart';
-import 'package:fit_pack/features/settings/backup_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/test_database.dart';
 
 /// Batch 1 — Veri güvenliği regresyonları (CODE_REVIEW.md: C-01, H-06, M-05).
-/// Seans/rutin yazımlarının atomikliği + yedek şema sürümü okuyucusu.
+/// Seans/rutin yazımlarının atomikliği.
 void main() {
   late AppDatabase db;
 
@@ -132,25 +128,4 @@ void main() {
     });
   });
 
-  group('readSqliteUserVersion (C-01/L-07)', () {
-    test('gerçek DB dosyasından şema sürümünü okur', () async {
-      final dir = await Directory.systemTemp.createTemp('fit_pack_test');
-      final file = File('${dir.path}/version_probe.sqlite');
-      // Gerçek bir drift DB'si oluştur → user_version = schemaVersion yazılır.
-      final probe = AppDatabase.forTesting(NativeDatabase(file));
-      await probe.customSelect('SELECT 1').get(); // aç + migration
-      await probe.close();
-
-      expect(await readSqliteUserVersion(file), db.schemaVersion);
-      await dir.delete(recursive: true);
-    });
-
-    test('kısa/bozuk dosyada 0 döner', () async {
-      final dir = await Directory.systemTemp.createTemp('fit_pack_test');
-      final file = File('${dir.path}/short.bin');
-      await file.writeAsBytes([1, 2, 3]);
-      expect(await readSqliteUserVersion(file), 0);
-      await dir.delete(recursive: true);
-    });
-  });
 }

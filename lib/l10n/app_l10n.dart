@@ -253,12 +253,6 @@ abstract class AppL10n {
   /// **'TODAY'**
   String get homeToday;
 
-  /// No description provided for @homeExportTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Export data'**
-  String get homeExportTooltip;
-
   /// No description provided for @homeStreakKickerZero.
   ///
   /// In en, this message translates to:
@@ -2026,7 +2020,7 @@ abstract class AppL10n {
   /// No description provided for @cloudIntro.
   ///
   /// In en, this message translates to:
-  /// **'Back your data up to the cloud, sign in on a new device and restore. Your data still lives primarily on your device.'**
+  /// **'Sign in — your workouts, meals and measurements are saved to your account automatically.'**
   String get cloudIntro;
 
   /// No description provided for @cloudEmail.
@@ -2070,60 +2064,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Already have an account? Sign in'**
   String get cloudHaveAccount;
-
-  /// No description provided for @cloudBackedUp.
-  ///
-  /// In en, this message translates to:
-  /// **'Backed up to cloud'**
-  String get cloudBackedUp;
-
-  /// No description provided for @cloudBackupFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup failed: {err}'**
-  String cloudBackupFailed(String err);
-
-  /// No description provided for @cloudRestoreTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore from cloud'**
-  String get cloudRestoreTitle;
-
-  /// No description provided for @cloudRestoreMsg.
-  ///
-  /// In en, this message translates to:
-  /// **'This will replace all data on this device with the cloud backup. This can\'t be undone. Continue?'**
-  String get cloudRestoreMsg;
-
-  /// No description provided for @cloudRestoredMsg.
-  ///
-  /// In en, this message translates to:
-  /// **'Cloud backup loaded. The app will close — just reopen it.'**
-  String get cloudRestoredMsg;
-
-  /// No description provided for @cloudNoBackup.
-  ///
-  /// In en, this message translates to:
-  /// **'No cloud backup yet'**
-  String get cloudNoBackup;
-
-  /// No description provided for @cloudLastBackup.
-  ///
-  /// In en, this message translates to:
-  /// **'Last cloud backup: {date}'**
-  String cloudLastBackup(String date);
-
-  /// No description provided for @cloudBackupBtn.
-  ///
-  /// In en, this message translates to:
-  /// **'Back Up to Cloud'**
-  String get cloudBackupBtn;
-
-  /// No description provided for @cloudRestoreBtn.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore from Cloud'**
-  String get cloudRestoreBtn;
 
   /// No description provided for @cloudSignOut.
   ///
@@ -2340,12 +2280,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Nutrition'**
   String get settingsSectionNutrition;
-
-  /// No description provided for @settingsSectionMyData.
-  ///
-  /// In en, this message translates to:
-  /// **'Data & Privacy'**
-  String get settingsSectionMyData;
 
   /// No description provided for @settingsSectionAbout.
   ///
@@ -2617,52 +2551,16 @@ abstract class AppL10n {
   /// **'Food database — view, edit and add values'**
   String get settingsFoodsSubtitle;
 
-  /// No description provided for @settingsBackup.
-  ///
-  /// In en, this message translates to:
-  /// **'Back Up to Device'**
-  String get settingsBackup;
-
-  /// No description provided for @settingsBackupSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Save your data as a file (Drive/Files) — restorable'**
-  String get settingsBackupSubtitle;
-
-  /// No description provided for @settingsRestore.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore from Backup'**
-  String get settingsRestore;
-
-  /// No description provided for @settingsRestoreSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore a backup file you saved earlier'**
-  String get settingsRestoreSubtitle;
-
-  /// No description provided for @settingsExport.
-  ///
-  /// In en, this message translates to:
-  /// **'Export Data (report)'**
-  String get settingsExport;
-
-  /// No description provided for @settingsExportSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Readable report — Markdown / JSON / CSV'**
-  String get settingsExportSubtitle;
-
   /// No description provided for @settingsCloudAccount.
   ///
   /// In en, this message translates to:
-  /// **'Cloud Account'**
+  /// **'Account'**
   String get settingsCloudAccount;
 
   /// No description provided for @settingsCloudSignedIn.
   ///
   /// In en, this message translates to:
-  /// **'{email} · back up / restore to cloud'**
+  /// **'{email}'**
   String settingsCloudSignedIn(String email);
 
   /// No description provided for @settingsCloudSignedInFallback.
@@ -2674,7 +2572,7 @@ abstract class AppL10n {
   /// No description provided for @settingsCloudSignedOut.
   ///
   /// In en, this message translates to:
-  /// **'Sign in → back up to cloud, restore on a new device'**
+  /// **'Sign in to save your data to your account'**
   String get settingsCloudSignedOut;
 
   /// No description provided for @settingsAboutSubtitle.
@@ -2748,60 +2646,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'gender'**
   String get settingsMissingGender;
-
-  /// No description provided for @settingsBackupFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Couldn\'t create backup: {error}'**
-  String settingsBackupFailed(String error);
-
-  /// No description provided for @settingsRestoreConfirmTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore from backup'**
-  String get settingsRestoreConfirmTitle;
-
-  /// No description provided for @settingsRestoreConfirmMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'This will replace all your current data with this backup. This can\'t be undone. Continue?'**
-  String get settingsRestoreConfirmMessage;
-
-  /// No description provided for @settingsRestoreConfirmAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore'**
-  String get settingsRestoreConfirmAction;
-
-  /// No description provided for @settingsRestoreFailedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore failed'**
-  String get settingsRestoreFailedTitle;
-
-  /// No description provided for @settingsRestoreFailedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Something went wrong, your current data is safe. The app will close — just reopen it.'**
-  String get settingsRestoreFailedMessage;
-
-  /// No description provided for @settingsRestoreFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore failed: {error}'**
-  String settingsRestoreFailed(String error);
-
-  /// No description provided for @settingsRestoredTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Restored'**
-  String get settingsRestoredTitle;
-
-  /// No description provided for @settingsRestoredMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Your data has been restored. The app will close so changes take effect — just reopen it.'**
-  String get settingsRestoredMessage;
 
   /// No description provided for @themeSystem.
   ///
@@ -3120,12 +2964,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Sign in first.'**
   String get backupErrorSignIn;
-
-  /// No description provided for @backupShareText.
-  ///
-  /// In en, this message translates to:
-  /// **'Fit Pack data backup — keep it to restore.'**
-  String get backupShareText;
 
   /// No description provided for @exportRptRange.
   ///

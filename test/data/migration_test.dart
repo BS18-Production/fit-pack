@@ -26,8 +26,8 @@ void main() {
     'user_profile',
   };
 
-  group('Schema v8', () {
-    test('schemaVersion 8\'de (artırınca bu test bilinçli kırılır)',
+  group('Schema v9', () {
+    test('schemaVersion 9\'de (artırınca bu test bilinçli kırılır)',
         () async {
       // Bu assertion bir TRIPWIRE'dır: biri schemaVersion'ı artırınca
       // burası kırılır → onUpgrade adımı + yeni göç testi eklemeden
@@ -39,7 +39,7 @@ void main() {
       // Lossless göç testleri: migrations/migration_v*_to_v*_test.dart.
       final db = newTestDatabase();
       addTearDown(db.close);
-      expect(db.schemaVersion, 8);
+      expect(db.schemaVersion, 9);
     });
 
     test('temiz kurulum (onCreate) beklenen 10 tabloyu yaratır', () async {

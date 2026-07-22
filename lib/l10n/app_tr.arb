@@ -1,8 +1,6 @@
 {
   "@@locale": "tr",
-
   "appTitle": "Fit Pack",
-
   "commonSave": "Kaydet",
   "commonCancel": "İptal",
   "commonSaved": "Kaydedildi",
@@ -15,7 +13,6 @@
   "commonInvalidNumber": "Geçersiz sayı",
   "commonRangeHint": "Aralık: {min} – {max}",
   "commonRangeError": "{min} – {max} aralığında olmalı",
-
   "macroProtein": "Protein",
   "macroCarbs": "Karbonhidrat",
   "macroFat": "Yağ",
@@ -23,16 +20,12 @@
   "macroProteinAbbr": "P",
   "macroCarbsAbbr": "K",
   "macroFatAbbr": "Y",
-
   "commonUndo": "Geri al",
-
   "navHome": "Ana Sayfa",
   "navWorkout": "Antrenman",
   "navNutrition": "Beslenme",
   "navProgress": "İlerleme",
-
   "homeToday": "BUGÜN",
-  "homeExportTooltip": "Veri dışa aktar",
   "homeStreakKickerZero": "Yeni hafta, yeni ritim",
   "homeStreakTitle": "{count, plural, other{{count} haftadır\nritimdesin}}",
   "homeStreakTitleZero": "Serini başlat",
@@ -41,7 +34,6 @@
   "homeStatWorkouts": "antrenman",
   "homeStatVolume": "{unit} hacim",
   "homeStatKcal": "kcal",
-
   "homeTodayRoutine": "Bugün: {name}",
   "homeStartWithCount": "Antrenmanı başlat · {count} hareket",
   "homeStart": "Antrenmanı başlat",
@@ -50,7 +42,6 @@
   "homeRestTitle": "Bugün dinlenme günü",
   "homeRestNext": "Sıradaki: {name}",
   "homeWorkoutAnyway": "Yine de antrenman yap",
-
   "homeThisWeek": "Bu Hafta",
   "homeWeekGoalDone": "{done}/{total} antrenman tamam",
   "homeWeekGoalCount": "{count, plural, other{{count} antrenman}}",
@@ -58,12 +49,9 @@
   "homeMetricKcal": "kcal yakıldı",
   "homeMetricWorkouts": "antrenman tamamlandı",
   "homeMetricProtein": "protein hedefi ort.",
-
   "homeNutritionTitle": "Bugünkü Beslenme",
-
   "nutritionKcalLeft": "kcal kaldı",
   "nutritionKcalOver": "kcal fazla",
-
   "commonToday": "Bugün",
   "commonAdd": "Ekle",
   "commonClose": "Kapat",
@@ -71,7 +59,6 @@
   "commonMustBePositive": "0'dan büyük olmalı",
   "commonNotNegative": "Negatif olamaz",
   "commonEnterName": "Ad gir",
-
   "nutritionPickDate": "Tarih seç",
   "nutritionAddFood": "Yemek Ekle",
   "nutritionLoadError": "Beslenme kayıtları yüklenemedi",
@@ -117,7 +104,6 @@
   "nutritionOffQuerying": "OpenFoodFacts sorgulanıyor…",
   "nutritionProductNotFound": "Ürün bulunamadı ({code}). Elle ekleyebilirsin.",
   "nutritionAddedFromOff": "{name} eklendi (OpenFoodFacts)",
-
   "scanTitle": "Barkod Tara",
   "scanTorchOn": "Fener",
   "scanTorchOff": "Feneri kapat",
@@ -125,7 +111,6 @@
   "scanCameraError": "Kamera açılamadı. Yemeği elle ekleyebilirsin.",
   "scanFrameHint": "Barkodu çerçeveye getir",
   "scanManualAdd": "Elle ekle",
-
   "foodsNew": "Yeni yemek",
   "foodsAdded": "{name} eklendi",
   "foodsUpdated": "Güncellendi",
@@ -143,7 +128,6 @@
   "foodsProteinPer100": "Protein /100g (g)",
   "foodsCarbPer100": "Karbonhidrat /100g (g)",
   "foodsFatPer100": "Yağ /100g (g)",
-
   "commonYesterday": "Dün",
   "commonDate": "Tarih",
   "commonArchive": "Arşivle",
@@ -155,7 +139,6 @@
   "labelRest": "Dinlenme",
   "labelDuration": "Süre",
   "labelVolume": "Hacim",
-
   "workoutLoadRoutinesError": "Rutinler yüklenemedi",
   "workoutLibrary": "Hareket Kütüphanesi",
   "workoutAddPast": "Geçmiş Antrenman Ekle",
@@ -172,10 +155,9 @@
   "workoutResumeSub": "{ex} hareket · {sets} set",
   "workoutDraftDelete": "Taslağı sil",
   "workoutDraftDeleteMsg": "Devam eden antrenman taslağı silinsin mi? Girdiğin setler kaydedilmeyecek.",
-  "workoutExerciseCount": "{count} hareket",
+  "workoutExerciseCount": "{count, plural, other{{count} hareket}}",
   "workoutSetCount": "{count} set",
   "workoutAddExercise": "Hareket Ekle",
-
   "rbEditTitle": "Rutini Düzenle",
   "rbNewTitle": "Yeni Rutin",
   "rbNameCaps": "RUTİN ADI",
@@ -190,7 +172,6 @@
   "rbSaveError": "Rutin kaydedilemedi — tekrar dene",
   "rbTargetHint": "hedef set×tekrar",
   "rbSave": "Rutini Kaydet",
-
   "whLoadError": "Geçmiş yüklenemedi",
   "whEmptyTitle": "Henüz antrenman yok",
   "whEmptyMsg": "İlk antrenmanını tamamladığında burada görünecek",
@@ -200,7 +181,6 @@
   "whSetsLoadError": "Setler yüklenemedi",
   "whNoSets": "Set kaydı yok",
   "whCalorieNote": "Kalori tahminidir — kilo, süre ve yoğunluğa (RPE) dayanır.",
-
   "wsTitle": "Antrenman Özeti",
   "wsLoadError": "Özet yüklenemedi",
   "wsDone": "Antrenman Tamamlandı",
@@ -208,7 +188,6 @@
   "wsNewRecords": "{count, plural, other{{count} yeni rekor}}",
   "wsDoneBtn": "Bitti",
   "wsUnknownExercise": "Hareket",
-
   "rpFallback": "Rutin",
   "rpArchiveTitle": "Rutini arşivle",
   "rpArchiveMsg": "Bu rutin listeden kaldırılsın mı? Geçmiş antrenmanlar korunur.",
@@ -216,7 +195,6 @@
   "rpLoadError": "Rutin yüklenemedi",
   "rpEmptyTitle": "Bu rutin boş",
   "rpEmptyMsg": "Düzenle ile hareket ekle",
-
   "asPastWorkout": "Geçmiş Antrenman",
   "asEmptyWorkout": "Boş Antrenman",
   "asPastEntry": "Geçmiş kayıt",
@@ -250,7 +228,6 @@
   "rpe8": "2 tekrar rezervde kaldı",
   "rpe7": "3-4 tekrar rezerv",
   "rpe6": "Rahat / ısınma seti",
-
   "elPickTitle": "Hareket Seç",
   "elSearchHint": "Hareket ara…",
   "elLoadError": "Hareketler yüklenemedi",
@@ -267,7 +244,6 @@
   "measureReps": "tekrar",
   "measureTime": "süre",
   "measureDistance": "mesafe",
-
   "edFallbackTitle": "Hareket",
   "edArchiveTitle": "Hareketi arşivle",
   "edArchiveMsg": "{name} kütüphaneden kaldırılsın mı? Geçmiş kayıtlar korunur.",
@@ -299,10 +275,8 @@
   "edBestE1rm": "Tahmini 1RM",
   "edHeaviest": "En ağır set",
   "edTotalLogs": "Toplam kayıt",
-
   "errorGeneric": "Bir şeyler ters gitti",
   "commonCloseApp": "Uygulamayı Kapat",
-
   "bmAddMeasurement": "Ölçüm Ekle",
   "bmLoadError": "Ölçümler yüklenemedi",
   "bmEmptyTitle": "Henüz ölçüm yok",
@@ -325,11 +299,9 @@
   "bmSaveFailed": "Kaydedilemedi, tekrar dene",
   "bmNewMeasurement": "Yeni Ölçüm",
   "bmSheetSubtitle": "Boş bıraktığın alan kaydedilmez",
-
   "actTitle": "Aktivite",
   "actLoadError": "Takvim yüklenemedi",
   "actNoEntry": "Bu gün için kayıt yok.",
-
   "exTitle": "Veri Dışa Aktar",
   "exNoData": "Seçilen aralıkta dışa aktarılacak veri yok",
   "exShareFailed": "Paylaşım başarısız oldu, tekrar dene",
@@ -343,13 +315,12 @@
   "exScopeAll": "Hepsi",
   "exPreparing": "Hazırlanıyor…",
   "exShareBtn": "Dışa Aktar & Paylaş",
-
   "cloudSignupOk": "Kayıt alındı. E-postanı doğrulayıp giriş yapabilirsin.",
   "cloudConnErr": "Bağlanılamadı: {err}",
   "cloudGoogleErr": "Google girişi henüz yapılandırılmadı ya da iptal edildi.",
   "cloudSignIn": "Giriş yap",
   "cloudCreateAccount": "Hesap oluştur",
-  "cloudIntro": "Verini buluta yedekle, yeni cihazda giriş yapıp geri yükle. Verin yine öncelikle cihazında tutulur.",
+  "cloudIntro": "Giriş yap — antrenmanların, öğünlerin ve ölçümlerin hesabına otomatik kaydedilir.",
   "cloudEmail": "E-posta",
   "cloudPassword": "Şifre (en az 6 karakter)",
   "cloudSignInBtn": "Giriş Yap",
@@ -357,15 +328,6 @@
   "cloudGoogle": "Google ile devam et",
   "cloudNoAccount": "Hesabın yok mu? Kayıt ol",
   "cloudHaveAccount": "Zaten hesabın var mı? Giriş yap",
-  "cloudBackedUp": "Buluta yedeklendi",
-  "cloudBackupFailed": "Yedeklenemedi: {err}",
-  "cloudRestoreTitle": "Buluttan geri yükle",
-  "cloudRestoreMsg": "Cihazdaki tüm verinin yerine bulut yedeği yüklenecek. Bu işlem geri alınamaz. Devam edilsin mi?",
-  "cloudRestoredMsg": "Bulut yedeği yüklendi. Uygulama kapanacak — tekrar açman yeterli.",
-  "cloudNoBackup": "Henüz bulut yedeği yok",
-  "cloudLastBackup": "Son bulut yedeği: {date}",
-  "cloudBackupBtn": "Buluta Yedekle",
-  "cloudRestoreBtn": "Buluttan Geri Yükle",
   "cloudSignOut": "Çıkış Yap",
   "cloudDeleteAccount": "Hesabı Sil",
   "cloudDeleteTitle": "Hesabı sil",
@@ -374,7 +336,6 @@
   "cloudDeleteConfirm2Msg": "Bu son adım — sonrasında hesabın geri getirilemez.",
   "cloudDeleted": "Hesabın silindi",
   "cloudDeleteFailed": "Hesap silinemedi: {error}",
-
   "unitPortion": "porsiyon",
   "unitPiece": "adet",
   "unitSlice": "dilim",
@@ -386,36 +347,29 @@
   "unitClove": "diş",
   "unitScoop": "ölçek",
   "unitCan": "kutu",
-
   "homeInsightLabel": "İÇGÖRÜ",
   "homeInsightMostImproved": "En çok gelişen: {name}",
   "homeInsightSubtitle": "Son 6 haftada tahmini 1RM'in arttı",
-
   "homeWaterTitle": "Su",
   "homeWaterAmount": "{current} / {goal} L",
   "homeWaterAdd": "+250 ml",
   "homeWeightTitle": "Son kilo",
   "homeWeightEmpty": "İlk kilonu gir",
   "unitKg": "kg",
-
   "settingsTitle": "Ayarlar",
   "settingsProfileNotFound": "Profil bulunamadı",
   "settingsProfileNotFoundHint": "Uygulamayı yeniden başlatmayı dene",
   "settingsLoadError": "Ayarlar yüklenemedi",
-
   "settingsSectionGoals": "Hedefler",
   "settingsSectionBody": "Vücut",
   "settingsSectionPreferences": "Tercihler",
   "settingsSectionNutrition": "Beslenme",
-  "settingsSectionMyData": "Veri & Gizlilik",
   "settingsSectionAbout": "Hakkında",
-
   "profileTitle": "Profil",
   "profileSectionIdentity": "Kimlik & Enerji",
   "profileMeasurements": "Ölçümler",
   "profileMeasurementsSubtitle": "Kilo, bel, kol — girmek için dokun",
   "homeProfileTooltip": "Profil",
-
   "settingsLicenses": "Açık Kaynak Lisansları",
   "settingsAttribution": "Açık Veri Kaynakları",
   "settingsAttributionSubtitle": "Uygulamanın üzerine kurulduğu egzersiz ve besin veritabanları",
@@ -439,13 +393,11 @@
   "notifWaterBody": "Şimdi bir bardak su halkanı yolda tutar.",
   "unitsMetric": "Metrik (kg, cm)",
   "unitsImperial": "İmperial (lb, ft)",
-
   "attribIntro": "Fit Pack şu açık veri setleri ve kütüphaneler üzerine kuruludur. Emeği geçenlere teşekkürler!",
   "attribOffDesc": "Paketli gıda besin verileri (barkod ve metin araması)",
   "attribFedDesc": "Egzersiz kütüphanesi, talimatlar ve demo fotoğrafları",
   "attribMuscleDesc": "Vücut kas haritası görseli",
   "attribLicense": "Lisans: {name}",
-
   "settingsKcalGoal": "Kalori Hedefi",
   "settingsProteinGoal": "Protein Hedefi",
   "settingsHeight": "Boy",
@@ -457,23 +409,15 @@
   "settingsLanguage": "Dil",
   "settingsFoods": "Yemekler",
   "settingsFoodsSubtitle": "Besin veritabanı — değerleri gör, düzenle, ekle",
-  "settingsBackup": "Cihaza Yedekle",
-  "settingsBackupSubtitle": "Verini dosya olarak kaydet (Drive/Dosyalar) — geri yüklenebilir",
-  "settingsRestore": "Yedekten Geri Yükle",
-  "settingsRestoreSubtitle": "Daha önce aldığın yedek dosyasını geri yükle",
-  "settingsExport": "Veri Dışa Aktar (rapor)",
-  "settingsExportSubtitle": "Okunabilir rapor — Markdown / JSON / CSV",
-  "settingsCloudAccount": "Bulut Hesabı",
-  "settingsCloudSignedIn": "{email} · buluta yedekle / geri yükle",
+  "settingsCloudAccount": "Hesap",
+  "settingsCloudSignedIn": "{email}",
   "settingsCloudSignedInFallback": "Giriş yapıldı",
-  "settingsCloudSignedOut": "Giriş yap → verini buluta yedekle, yeni cihazda geri yükle",
+  "settingsCloudSignedOut": "Verilerini hesabına kaydetmek için giriş yap",
   "settingsAboutSubtitle": "Sürüm {version} · Kişisel fitness takibi",
-
   "settingsGenderMale": "Erkek",
   "settingsGenderFemale": "Kadın",
   "settingsBirthDateValue": "{date} · {age} yaş",
   "settingsPickBirthDate": "Doğum tarihini seç",
-
   "settingsDailyEnergyTitle": "Tahmini Günlük Harcama",
   "settingsDailyEnergyValue": "~{total} kcal/gün  ·  dinlenme {bmr}",
   "settingsDailyEnergyMissing": "Hesaplamak için gir: {fields}",
@@ -481,31 +425,17 @@
   "settingsMissingHeight": "boy",
   "settingsMissingBirthDate": "doğum tarihi",
   "settingsMissingGender": "cinsiyet",
-
-  "settingsBackupFailed": "Yedek oluşturulamadı: {error}",
-  "settingsRestoreConfirmTitle": "Yedekten geri yükle",
-  "settingsRestoreConfirmMessage": "Şu anki tüm verinin yerine bu yedek yüklenecek. Bu işlem geri alınamaz. Devam edilsin mi?",
-  "settingsRestoreConfirmAction": "Geri Yükle",
-  "settingsRestoreFailedTitle": "Geri yükleme başarısız",
-  "settingsRestoreFailedMessage": "Bir sorun oluştu, mevcut verin korundu. Uygulama kapanacak — tekrar açman yeterli.",
-  "settingsRestoreFailed": "Geri yükleme başarısız: {error}",
-  "settingsRestoredTitle": "Geri yüklendi",
-  "settingsRestoredMessage": "Veriler geri yüklendi. Değişikliklerin görünmesi için uygulama kapanacak — tekrar açman yeterli.",
-
   "themeSystem": "Sistem (cihaz)",
   "themeLight": "Açık",
   "themeDark": "Koyu",
-
   "languageSystem": "Sistem (cihaz)",
   "languageEnglish": "English",
   "languageTurkish": "Türkçe",
-
   "activitySedentary": "Hareketsiz",
   "activityLight": "Az hareketli",
   "activityModerate": "Orta",
   "activityActive": "Aktif",
   "activityVeryActive": "Çok aktif",
-
   "onbWelcomeTitle": "Fit Pack'e hoş geldin",
   "onbWelcomeTagline": "Antrenmanını, beslenmeni ve gelişimini tek yerde topla.",
   "onbWelcomeHint": "Birkaç hızlı soruyla planını kuralım — 1 dakikadan az sürer.",
@@ -538,24 +468,16 @@
   "onbStart": "Başlayalım",
   "onbGoalsNumberError": "Kalori ve protein hedefini sayı olarak gir",
   "onbSaveError": "Kaydedilemedi — tekrar dene",
-
   "hintWorkout": "İlk rutinini buradan kur — ya da hemen boş antrenman başlat.",
   "hintNutrition": "İlk öğününü ekle: yazarak ara ya da barkod okut.",
   "hintProgress": "İlk kilonu gir — grafiğin buradan başlar.",
   "hintGotIt": "Anladım",
-
   "emptyRestartHint": "Uygulamayı yeniden başlatmayı dene",
-
   "unitAge": "{age} yaş",
-
   "workoutRoutineCount": "{count, plural, other{{count} rutin}}",
-  "workoutExerciseCount": "{count, plural, other{{count} hareket}}",
-
   "backupErrorInvalidFile": "Geçerli bir Fit Pack yedeği değil.",
   "backupErrorNewerVersion": "Bu yedek daha yeni bir Fit Pack sürümüyle alınmış. Önce uygulamayı güncelle.",
   "backupErrorSignIn": "Önce giriş yapmalısın.",
-  "backupShareText": "Fit Pack veri yedeği — geri yüklemek için saklayın.",
-
   "exportRptRange": "Aralık: {start} → {end}",
   "exportRptGenerated": "Oluşturulma: {ts}",
   "exportRptProfile": "Profil",

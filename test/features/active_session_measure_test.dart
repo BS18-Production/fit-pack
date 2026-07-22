@@ -33,7 +33,7 @@ void main() {
   });
 
   group('Geçen seans etiketi (prevLabel) ölçüm tipine göre', () {
-    WorkoutSet set({double? kg, int? reps, int? dur, double? dist}) => WorkoutSet(
+    WorkoutSet set({double? kg, int? reps, int? dur, double? dist}) => WorkoutSet(syncState: 0, 
           id: 1,
           sessionId: 1,
           exerciseId: 1,

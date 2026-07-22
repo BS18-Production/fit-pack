@@ -1,5 +1,27 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## 🔐 Zorunlu Hesap + Senkron (docs/18) — SIRADAKİ İŞ
+
+Tasarım: **[docs/18-auth-and-sync.md](docs/18-auth-and-sync.md)**. Aşama sırası:
+A → B → C → E → G → F → D.
+
+- [x] **Aşama A — Şema v9** (2026-07-22): `SyncColumns` mixin 12 tabloda,
+      migration + 4 test, gerçek cihazda v8→v9 doğrulandı.
+- [ ] **Aşama C — Zorunlu giriş kapısı** ⬅️ **TASARIM HAZIR (§5.1), KOD BEKLİYOR**
+      Akış: ① Karşılama → ② Giriş/Kayıt → ③ Onboarding → ④ Uygulama.
+      Dokunulacak: `main.dart`/`app.dart` (kapı durumu), `app_router.dart`
+      (`redirect` + `refreshListenable`, `/welcome`+`/auth`), `onboarding_screen`
+      (A1 çıkar, 4→3 sayfa), `cloud_account_screen` (form tam ekran kapıya).
+      **3 kural:** kapı ağı değil oturumu kontrol eder · kapı kararı gevşek
+      provider'dan okunmaz · hesap değişince yerel veri temizlenir.
+- [ ] **Aşama B — Supabase mirror tabloları + RLS** (Samet: SQL panelden)
+- [ ] **Aşama E — Outbox senkron katmanı** + 6 arıza testi (§10)
+- [ ] **Aşama G** senkron durumu UI · **F** pull/çakışma · **D** Google native akış
+
+**Samet'in manuel işleri:** Google Cloud → **Branding** doldur (izin ekranında ham
+`...supabase.co` görünüyor, B-1) · mirror tablo SQL'i · `delete_user()` fonksiyonu.
+
+
 > **Son güncelleme:** 2026-07-12
 > **Bağlı doküman:** [PROJECT_STATE.md](PROJECT_STATE.md), [CODE_REVIEW.md](CODE_REVIEW.md), [docs/04-roadmap.md](docs/04-roadmap.md), [docs/17-improvement-analysis.md](docs/17-improvement-analysis.md)
 

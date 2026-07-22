@@ -12,9 +12,7 @@ class SeedManager {
 
   /// Seed/backfill içeriği değişince ARTIR (M-04). Sürüm eşleşiyorsa açılışta
   /// tablo taramaları + 1022 kayıtlık JSON parse tamamen atlanır (runApp'ten
-  /// önce koştuğu için ilk kareyi geciktiriyordu). Yedekten geri yükleme bu
-  /// bayrağı siler ([BackupService.restoreFromFile]) → eski yedeğe backfill
-  /// yeniden uygulanır.
+  /// önce koştuğu için ilk kareyi geciktiriyordu).
   static const seedVersion = 1;
   static const seedVersionKey = 'seed_version';
 

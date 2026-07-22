@@ -91,9 +91,6 @@ class AppL10nTr extends AppL10n {
   String get homeToday => 'BUGÜN';
 
   @override
-  String get homeExportTooltip => 'Veri dışa aktar';
-
-  @override
   String get homeStreakKickerZero => 'Yeni hafta, yeni ritim';
 
   @override
@@ -1079,7 +1076,7 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get cloudIntro =>
-      'Verini buluta yedekle, yeni cihazda giriş yapıp geri yükle. Verin yine öncelikle cihazında tutulur.';
+      'Giriş yap — antrenmanların, öğünlerin ve ölçümlerin hesabına otomatik kaydedilir.';
 
   @override
   String get cloudEmail => 'E-posta';
@@ -1101,39 +1098,6 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get cloudHaveAccount => 'Zaten hesabın var mı? Giriş yap';
-
-  @override
-  String get cloudBackedUp => 'Buluta yedeklendi';
-
-  @override
-  String cloudBackupFailed(String err) {
-    return 'Yedeklenemedi: $err';
-  }
-
-  @override
-  String get cloudRestoreTitle => 'Buluttan geri yükle';
-
-  @override
-  String get cloudRestoreMsg =>
-      'Cihazdaki tüm verinin yerine bulut yedeği yüklenecek. Bu işlem geri alınamaz. Devam edilsin mi?';
-
-  @override
-  String get cloudRestoredMsg =>
-      'Bulut yedeği yüklendi. Uygulama kapanacak — tekrar açman yeterli.';
-
-  @override
-  String get cloudNoBackup => 'Henüz bulut yedeği yok';
-
-  @override
-  String cloudLastBackup(String date) {
-    return 'Son bulut yedeği: $date';
-  }
-
-  @override
-  String get cloudBackupBtn => 'Buluta Yedekle';
-
-  @override
-  String get cloudRestoreBtn => 'Buluttan Geri Yükle';
 
   @override
   String get cloudSignOut => 'Çıkış Yap';
@@ -1251,9 +1215,6 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get settingsSectionNutrition => 'Beslenme';
-
-  @override
-  String get settingsSectionMyData => 'Veri & Gizlilik';
 
   @override
   String get settingsSectionAbout => 'Hakkında';
@@ -1403,32 +1364,11 @@ class AppL10nTr extends AppL10n {
       'Besin veritabanı — değerleri gör, düzenle, ekle';
 
   @override
-  String get settingsBackup => 'Cihaza Yedekle';
-
-  @override
-  String get settingsBackupSubtitle =>
-      'Verini dosya olarak kaydet (Drive/Dosyalar) — geri yüklenebilir';
-
-  @override
-  String get settingsRestore => 'Yedekten Geri Yükle';
-
-  @override
-  String get settingsRestoreSubtitle =>
-      'Daha önce aldığın yedek dosyasını geri yükle';
-
-  @override
-  String get settingsExport => 'Veri Dışa Aktar (rapor)';
-
-  @override
-  String get settingsExportSubtitle =>
-      'Okunabilir rapor — Markdown / JSON / CSV';
-
-  @override
-  String get settingsCloudAccount => 'Bulut Hesabı';
+  String get settingsCloudAccount => 'Hesap';
 
   @override
   String settingsCloudSignedIn(String email) {
-    return '$email · buluta yedekle / geri yükle';
+    return '$email';
   }
 
   @override
@@ -1436,7 +1376,7 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get settingsCloudSignedOut =>
-      'Giriş yap → verini buluta yedekle, yeni cihazda geri yükle';
+      'Verilerini hesabına kaydetmek için giriş yap';
 
   @override
   String settingsAboutSubtitle(String version) {
@@ -1481,40 +1421,6 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get settingsMissingGender => 'cinsiyet';
-
-  @override
-  String settingsBackupFailed(String error) {
-    return 'Yedek oluşturulamadı: $error';
-  }
-
-  @override
-  String get settingsRestoreConfirmTitle => 'Yedekten geri yükle';
-
-  @override
-  String get settingsRestoreConfirmMessage =>
-      'Şu anki tüm verinin yerine bu yedek yüklenecek. Bu işlem geri alınamaz. Devam edilsin mi?';
-
-  @override
-  String get settingsRestoreConfirmAction => 'Geri Yükle';
-
-  @override
-  String get settingsRestoreFailedTitle => 'Geri yükleme başarısız';
-
-  @override
-  String get settingsRestoreFailedMessage =>
-      'Bir sorun oluştu, mevcut verin korundu. Uygulama kapanacak — tekrar açman yeterli.';
-
-  @override
-  String settingsRestoreFailed(String error) {
-    return 'Geri yükleme başarısız: $error';
-  }
-
-  @override
-  String get settingsRestoredTitle => 'Geri yüklendi';
-
-  @override
-  String get settingsRestoredMessage =>
-      'Veriler geri yüklendi. Değişikliklerin görünmesi için uygulama kapanacak — tekrar açman yeterli.';
 
   @override
   String get themeSystem => 'Sistem (cihaz)';
@@ -1697,10 +1603,6 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get backupErrorSignIn => 'Önce giriş yapmalısın.';
-
-  @override
-  String get backupShareText =>
-      'Fit Pack veri yedeği — geri yüklemek için saklayın.';
 
   @override
   String exportRptRange(String start, String end) {

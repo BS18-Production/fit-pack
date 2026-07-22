@@ -72,7 +72,7 @@ void main() {
       };
       final water = {DateTime(2026, 6, 19): 1500};
       final sessions = [
-        WorkoutSession(
+        WorkoutSession(syncState: 0, 
           id: 1,
           date: DateTime(2026, 6, 19, 18),
           phase: 0,
@@ -83,7 +83,7 @@ void main() {
       ];
       final sets = {
         1: [
-          WorkoutSet(
+          WorkoutSet(syncState: 0, 
               id: 1,
               sessionId: 1,
               exerciseId: 1,
@@ -131,7 +131,7 @@ void main() {
 
     test('farklı ayın seansı sızmaz', () {
       final sessions = [
-        WorkoutSession(
+        WorkoutSession(syncState: 0, 
           id: 1,
           date: DateTime(2026, 5, 19),
           phase: 0,

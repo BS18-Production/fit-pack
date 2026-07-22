@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
+import 'sync_columns.dart';
 
-class Foods extends Table {
+class Foods extends Table with SyncColumns {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
   TextColumn get barcode => text().nullable()();
@@ -23,7 +24,7 @@ class Foods extends Table {
   TextColumn get category => text().nullable()(); // et, sebze, tahıl, süt...
 }
 
-class FoodLogs extends Table {
+class FoodLogs extends Table with SyncColumns {
   IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get date => dateTime()();
   TextColumn get mealType => text()(); // breakfast, lunch, dinner, snack
@@ -35,7 +36,7 @@ class FoodLogs extends Table {
   RealColumn get computedFat => real()();
 }
 
-class RecipeItems extends Table {
+class RecipeItems extends Table with SyncColumns {
   IntColumn get id => integer().autoIncrement()();
   @ReferenceName('recipe')
   IntColumn get recipeId => integer().references(Foods, #id)();
@@ -47,7 +48,7 @@ class RecipeItems extends Table {
 /// v4 (2026-06-21, Home su takibi): günlük su tüketimi. Gün başına TEK satır
 /// (`date` 00:00'a normalize), `amountMl` kümülatif artırılır/sıfırlanır.
 /// Hedef `user_profile.waterGoalMl`'de tutulur (varsayılan 2500 ml).
-class WaterIntake extends Table {
+class WaterIntake extends Table with SyncColumns {
   IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get date => dateTime()();
   IntColumn get amountMl => integer().withDefault(const Constant(0))();

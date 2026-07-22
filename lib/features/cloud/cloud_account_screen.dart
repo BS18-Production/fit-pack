@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
-import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
-import '../settings/backup_service.dart'
-    show RestoreNeedsRestartException, BackupException, backupErrorMessage;
 import 'auth_service.dart';
-import 'cloud_backup_service.dart';
 
-/// Bulut hesabı + yedek ekranı (docs/13-cloud-backup.md).
-/// Oturum yoksa giriş/kayıt; oturum varsa hesap paneli (Buluta Yedekle /
-/// Buluttan Geri Yükle / Çıkış).
+/// Hesap ekranı (docs/18-auth-and-sync.md).
+/// Oturum yoksa giriş/kayıt; oturum varsa hesap paneli (Çıkış / Hesabı Sil).
+///
+/// **Elle bulut yedekleme KALDIRILDI (2026-07-21, docs/18 §1).** Veriler
+/// hesaba otomatik senkron edilir (outbox deseni, docs/18 §6) — kullanıcının
+/// "yedekle"/"geri yükle" düğmelerine basmasına gerek yok. Senkron durumu
+/// göstergesi Aşama G'de bu ekrana eklenecek.
 class CloudAccountScreen extends ConsumerWidget {
   const CloudAccountScreen({super.key});
 
@@ -197,110 +197,15 @@ class _AccountPanel extends ConsumerStatefulWidget {
 
 class _AccountPanelState extends ConsumerState<_AccountPanel> {
   bool _busy = false;
-  DateTime? _lastBackup;
-  bool _loadingLast = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _refreshLast();
-  }
-
-  Future<void> _refreshLast() async {
-    final at = await ref.read(cloudBackupServiceProvider).lastBackupAt();
-    if (mounted) {
-      setState(() {
-        _lastBackup = at;
-        _loadingLast = false;
-      });
-    }
-  }
-
-  Future<void> _backup() async {
-    setState(() => _busy = true);
-    try {
-      await ref.read(cloudBackupServiceProvider).backupToCloud();
-      await _refreshLast();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppL10n.of(context).cloudBackedUp)),
-        );
-      }
-    } on BackupException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(backupErrorMessage(AppL10n.of(context), e.kind))),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(AppL10n.of(context)
-                  .cloudBackupFailed(e.toString()))),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  Future<void> _restore() async {
-    final l = AppL10n.of(context);
-    final ok = await confirmAction(
-      context,
-      title: l.cloudRestoreTitle,
-      message: l.cloudRestoreMsg,
-      confirmLabel: l.settingsRestoreConfirmAction,
-      destructive: true,
-    );
-    if (!ok) return;
-    setState(() => _busy = true);
-    try {
-      await ref.read(cloudBackupServiceProvider).restoreFromCloud();
-      if (!mounted) return;
-      await showRestartDialog(
-        context,
-        title: l.settingsRestoredTitle,
-        message: l.cloudRestoredMsg,
-      );
-    } on BackupException catch (e) {
-      // Doğrulama hatası — DB kapanmadan reddedildi, uygulama çalışır durumda.
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(backupErrorMessage(l, e.kind))),
-        );
-      }
-    } on RestoreNeedsRestartException {
-      // Kopyalama yarıda kesildi; mevcut veri korundu ama bağlantı kapalı.
-      if (mounted) {
-        await showRestartDialog(
-          context,
-          title: l.settingsRestoreFailedTitle,
-          message: l.settingsRestoreFailedMessage,
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text(l.settingsRestoreFailed(e.toString()))),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
 
   Future<void> _signOut() async {
     await ref.read(authServiceProvider).signOut();
     if (mounted) Navigator.of(context).maybePop();
   }
 
-  /// Hesabı kalıcı sil (docs/16 §4) — çift onay + önce bulut yedeği temizle.
-  /// Cihazdaki yerel veri etkilenmez (local-first).
+  /// Hesabı kalıcı sil (docs/16 §4) — çift onay.
+  /// Sunucudaki veriler `on delete cascade` ile hesapla birlikte silinir
+  /// (docs/18 §7). Cihazdaki yerel veri etkilenmez.
   Future<void> _deleteAccount() async {
     final l = AppL10n.of(context);
     final ok1 = await confirmAction(
@@ -322,9 +227,6 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
 
     setState(() => _busy = true);
     try {
-      // Sıra önemli: auth kullanıcısı silinince storage'a erişim düşer —
-      // önce yedek objesi silinir, sonra hesap.
-      await ref.read(cloudBackupServiceProvider).deleteCloudBackup();
       await ref.read(authServiceProvider).deleteAccount();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -347,12 +249,6 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final l = AppL10n.of(context);
-    final lastTxt = _loadingLast
-        ? '…'
-        : _lastBackup == null
-            ? l.cloudNoBackup
-            : l.cloudLastBackup(
-                context.dateFmt('d MMM y · HH:mm').format(_lastBackup!));
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -381,47 +277,6 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
               ),
             ),
           ],
-        ),
-        AppSpacing.vGapLg,
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: c.surfaceContainerHighest,
-            borderRadius: AppRadius.brMd,
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.history_rounded,
-                  size: AppIconSize.sm, color: c.onSurfaceVariant),
-              AppSpacing.hGapSm,
-              Expanded(
-                child: Text(lastTxt,
-                    style: context.texts.bodySmall
-                        ?.copyWith(color: c.onSurfaceVariant)),
-              ),
-            ],
-          ),
-        ),
-        AppSpacing.vGapLg,
-        FilledButton.icon(
-          onPressed: _busy ? null : _backup,
-          style:
-              FilledButton.styleFrom(minimumSize: const Size.fromHeight(52)),
-          icon: _busy
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2))
-              : const Icon(Icons.cloud_upload_rounded),
-          label: Text(l.cloudBackupBtn),
-        ),
-        AppSpacing.vGapMd,
-        OutlinedButton.icon(
-          onPressed: _busy ? null : _restore,
-          style:
-              OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
-          icon: const Icon(Icons.cloud_download_rounded),
-          label: Text(l.cloudRestoreBtn),
         ),
         AppSpacing.vGapxl_,
         TextButton.icon(

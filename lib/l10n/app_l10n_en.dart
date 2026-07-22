@@ -91,9 +91,6 @@ class AppL10nEn extends AppL10n {
   String get homeToday => 'TODAY';
 
   @override
-  String get homeExportTooltip => 'Export data';
-
-  @override
   String get homeStreakKickerZero => 'New week, new rhythm';
 
   @override
@@ -1086,7 +1083,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get cloudIntro =>
-      'Back your data up to the cloud, sign in on a new device and restore. Your data still lives primarily on your device.';
+      'Sign in — your workouts, meals and measurements are saved to your account automatically.';
 
   @override
   String get cloudEmail => 'Email';
@@ -1108,39 +1105,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get cloudHaveAccount => 'Already have an account? Sign in';
-
-  @override
-  String get cloudBackedUp => 'Backed up to cloud';
-
-  @override
-  String cloudBackupFailed(String err) {
-    return 'Backup failed: $err';
-  }
-
-  @override
-  String get cloudRestoreTitle => 'Restore from cloud';
-
-  @override
-  String get cloudRestoreMsg =>
-      'This will replace all data on this device with the cloud backup. This can\'t be undone. Continue?';
-
-  @override
-  String get cloudRestoredMsg =>
-      'Cloud backup loaded. The app will close — just reopen it.';
-
-  @override
-  String get cloudNoBackup => 'No cloud backup yet';
-
-  @override
-  String cloudLastBackup(String date) {
-    return 'Last cloud backup: $date';
-  }
-
-  @override
-  String get cloudBackupBtn => 'Back Up to Cloud';
-
-  @override
-  String get cloudRestoreBtn => 'Restore from Cloud';
 
   @override
   String get cloudSignOut => 'Sign Out';
@@ -1258,9 +1222,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get settingsSectionNutrition => 'Nutrition';
-
-  @override
-  String get settingsSectionMyData => 'Data & Privacy';
 
   @override
   String get settingsSectionAbout => 'About';
@@ -1408,32 +1369,11 @@ class AppL10nEn extends AppL10n {
       'Food database — view, edit and add values';
 
   @override
-  String get settingsBackup => 'Back Up to Device';
-
-  @override
-  String get settingsBackupSubtitle =>
-      'Save your data as a file (Drive/Files) — restorable';
-
-  @override
-  String get settingsRestore => 'Restore from Backup';
-
-  @override
-  String get settingsRestoreSubtitle =>
-      'Restore a backup file you saved earlier';
-
-  @override
-  String get settingsExport => 'Export Data (report)';
-
-  @override
-  String get settingsExportSubtitle =>
-      'Readable report — Markdown / JSON / CSV';
-
-  @override
-  String get settingsCloudAccount => 'Cloud Account';
+  String get settingsCloudAccount => 'Account';
 
   @override
   String settingsCloudSignedIn(String email) {
-    return '$email · back up / restore to cloud';
+    return '$email';
   }
 
   @override
@@ -1441,7 +1381,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get settingsCloudSignedOut =>
-      'Sign in → back up to cloud, restore on a new device';
+      'Sign in to save your data to your account';
 
   @override
   String settingsAboutSubtitle(String version) {
@@ -1486,40 +1426,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get settingsMissingGender => 'gender';
-
-  @override
-  String settingsBackupFailed(String error) {
-    return 'Couldn\'t create backup: $error';
-  }
-
-  @override
-  String get settingsRestoreConfirmTitle => 'Restore from backup';
-
-  @override
-  String get settingsRestoreConfirmMessage =>
-      'This will replace all your current data with this backup. This can\'t be undone. Continue?';
-
-  @override
-  String get settingsRestoreConfirmAction => 'Restore';
-
-  @override
-  String get settingsRestoreFailedTitle => 'Restore failed';
-
-  @override
-  String get settingsRestoreFailedMessage =>
-      'Something went wrong, your current data is safe. The app will close — just reopen it.';
-
-  @override
-  String settingsRestoreFailed(String error) {
-    return 'Restore failed: $error';
-  }
-
-  @override
-  String get settingsRestoredTitle => 'Restored';
-
-  @override
-  String get settingsRestoredMessage =>
-      'Your data has been restored. The app will close so changes take effect — just reopen it.';
 
   @override
   String get themeSystem => 'System (device)';
@@ -1706,9 +1612,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get backupErrorSignIn => 'Sign in first.';
-
-  @override
-  String get backupShareText => 'Fit Pack data backup — keep it to restore.';
 
   @override
   String exportRptRange(String start, String end) {

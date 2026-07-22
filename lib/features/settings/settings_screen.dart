@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/i18n/enum_labels.dart';
@@ -13,10 +11,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../core/units/units.dart';
 import '../../core/theme/theme_mode_provider.dart';
 import '../../l10n/app_l10n.dart';
-import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/setting_tiles.dart';
-import '../cloud/auth_service.dart';
-import 'backup_service.dart';
 import '../../core/router/app_routes.dart';
 
 /// Ayarlar (docs/16) — yalnız uygulama konfigürasyonu + veri araçları +
@@ -96,78 +91,6 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  /// Tüm veritabanını (.sqlite) paylaşım sayfasıyla dışa aktar — Drive/Dosyalar/
-  /// e-postaya kaydet. Geri yüklenebilir tam yedek (rapor dışa aktarımından farklı).
-  Future<void> _backup(BuildContext context, WidgetRef ref) async {
-    try {
-      await ref
-          .read(backupServiceProvider)
-          .shareBackup(AppL10n.of(context).backupShareText);
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content:
-                  Text(AppL10n.of(context).settingsBackupFailed(e.toString()))),
-        );
-      }
-    }
-  }
-
-  /// Bir yedek dosyası seç → onay → canlı DB'nin üstüne yaz → uygulamayı kapat.
-  Future<void> _restore(BuildContext context, WidgetRef ref) async {
-    final l = AppL10n.of(context);
-    final picked = await FilePicker.platform.pickFiles(type: FileType.any);
-    if (picked == null || picked.files.single.path == null) return;
-    final file = File(picked.files.single.path!);
-
-    if (!context.mounted) return;
-    final ok = await confirmAction(
-      context,
-      title: l.settingsRestoreConfirmTitle,
-      message: l.settingsRestoreConfirmMessage,
-      confirmLabel: l.settingsRestoreConfirmAction,
-      destructive: true,
-    );
-    if (!ok) return;
-
-    try {
-      await ref.read(backupServiceProvider).restoreFromFile(file);
-    } on BackupException catch (e) {
-      // Doğrulama hatası — DB kapanmadan reddedildi, uygulama çalışır durumda.
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(backupErrorMessage(l, e.kind))),
-        );
-      }
-      return;
-    } on RestoreNeedsRestartException {
-      // Kopyalama yarıda kesildi; mevcut veri korundu ama bağlantı kapalı.
-      if (context.mounted) {
-        await showRestartDialog(
-          context,
-          title: l.settingsRestoreFailedTitle,
-          message: l.settingsRestoreFailedMessage,
-        );
-      }
-      return;
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l.settingsRestoreFailed(e.toString()))),
-        );
-      }
-      return;
-    }
-
-    if (!context.mounted) return;
-    await showRestartDialog(
-      context,
-      title: l.settingsRestoredTitle,
-      message: l.settingsRestoredMessage,
-    );
-  }
-
   /// Geri bildirim: e-posta uygulamasını konu satırı doldurulmuş açar.
   Future<void> _sendFeedback(BuildContext context) async {
     final uri = Uri(
@@ -244,33 +167,10 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ],
           ),
-          SettingsSection(
-            title: l.settingsSectionMyData,
-            children: [
-              _CloudAccountTile(),
-              SettingTile(
-                icon: Icons.backup_rounded,
-                title: l.settingsBackup,
-                subtitle: l.settingsBackupSubtitle,
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => _backup(context, ref),
-              ),
-              SettingTile(
-                icon: Icons.restore_rounded,
-                title: l.settingsRestore,
-                subtitle: l.settingsRestoreSubtitle,
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => _restore(context, ref),
-              ),
-              SettingTile(
-                icon: Icons.ios_share_rounded,
-                title: l.settingsExport,
-                subtitle: l.settingsExportSubtitle,
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => context.push(AppRoutes.export),
-              ),
-            ],
-          ),
+          // "Veri & Gizlilik" bölümü KALDIRILDI (2026-07-21, docs/18 §1.2):
+          // elle yedekleme/geri yükleme/dışa aktarma — otomatik senkron varken
+          // gereksiz. Hesap satırı **Profil'e taşındı** (mağaza hesap-silme
+          // zorunluluğu, docs/16 §4 — yok edilemez).
           SettingsSection(
             title: l.settingsSectionAbout,
             children: [
@@ -310,20 +210,3 @@ class SettingsScreen extends ConsumerWidget {
 }
 
 /// Bulut hesabı satırı — oturum durumuna göre e-posta ya da "Giriş yap" gösterir.
-class _CloudAccountTile extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppL10n.of(context);
-    final user = ref.watch(currentUserProvider);
-    final signedIn = user != null;
-    return SettingTile(
-      icon: signedIn ? Icons.cloud_done_rounded : Icons.cloud_outlined,
-      title: l.settingsCloudAccount,
-      subtitle: signedIn
-          ? l.settingsCloudSignedIn(user.email ?? l.settingsCloudSignedInFallback)
-          : l.settingsCloudSignedOut,
-      trailing: const Icon(Icons.chevron_right_rounded),
-      onTap: () => context.push(AppRoutes.cloud),
-    );
-  }
-}

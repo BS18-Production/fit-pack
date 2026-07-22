@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
+import 'sync_columns.dart';
 
-class BodyMeasurements extends Table {
+class BodyMeasurements extends Table with SyncColumns {
   IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get date => dateTime()();
   RealColumn get weightKg => real().nullable()();
@@ -12,7 +13,7 @@ class BodyMeasurements extends Table {
   RealColumn get bodyFatPct => real().nullable()();
 }
 
-class ProgressPhotos extends Table {
+class ProgressPhotos extends Table with SyncColumns {
   IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get date => dateTime()();
   TextColumn get angle => text()(); // front, side, back

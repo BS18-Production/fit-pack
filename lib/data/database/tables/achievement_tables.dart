@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'sync_columns.dart';
 
 class Achievements extends Table {
   IntColumn get id => integer().autoIncrement()();
@@ -7,7 +8,7 @@ class Achievements extends Table {
   TextColumn get metadataJson => text().nullable()();
 }
 
-class UserProfile extends Table {
+class UserProfile extends Table with SyncColumns {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get currentPhase => integer().withDefault(const Constant(1))();
   IntColumn get currentWeek => integer().withDefault(const Constant(1))();

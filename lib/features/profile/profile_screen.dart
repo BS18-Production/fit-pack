@@ -14,6 +14,7 @@ import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/setting_tiles.dart';
 import '../body_metrics/body_metrics_screen.dart';
+import '../cloud/auth_service.dart';
 import '../home/providers/home_providers.dart';
 import '../workout/calorie_estimate.dart';
 
@@ -293,7 +294,41 @@ class _ProfileBody extends ConsumerWidget {
         ),
         AppSpacing.vGapLg,
         _DailyEnergyTile(profile: profile),
+        AppSpacing.vGapLg,
+        // Hesap — Ayarlar'daki "Veri & Gizlilik" bölümü kaldırılınca buraya
+        // taşındı (docs/18 §1.2). Çıkış + Hesabı Sil buradan erişilir;
+        // hesap silme mağaza zorunluluğu (docs/16 §4), yok edilemez.
+        const _AccountSection(),
         const SizedBox(height: AppSpacing.xxl),
+      ],
+    );
+  }
+}
+
+/// Hesap satırı — oturum durumunu gösterir, Hesap ekranına götürür.
+class _AccountSection extends ConsumerWidget {
+  const _AccountSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
+    final user = ref.watch(currentUserProvider);
+    final signedIn = user != null;
+    return SettingsSection(
+      title: l.settingsCloudAccount,
+      children: [
+        SettingTile(
+          icon: signedIn
+              ? Icons.account_circle_rounded
+              : Icons.account_circle_outlined,
+          title: l.settingsCloudAccount,
+          subtitle: signedIn
+              ? l.settingsCloudSignedIn(
+                  user.email ?? l.settingsCloudSignedInFallback)
+              : l.settingsCloudSignedOut,
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: () => context.push(AppRoutes.cloud),
+        ),
       ],
     );
   }

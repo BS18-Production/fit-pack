@@ -30,7 +30,6 @@ class AppRoutes {
   static const exercises = '/exercises';
   static const exercisesSelect = '/exercises/select';
   static const foods = '/foods';
-  static const export = '/export';
   static const cloud = '/cloud';
   static const profile = '/profile';
   static const settings = '/settings';

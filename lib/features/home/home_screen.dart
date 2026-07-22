@@ -99,12 +99,6 @@ class _Header extends StatelessWidget {
               ),
             ),
             IconButton(
-              tooltip: l.homeExportTooltip,
-              icon: const Icon(Icons.ios_share_rounded),
-              color: context.colors.onSurfaceVariant,
-              onPressed: () => context.push(AppRoutes.export),
-            ),
-            IconButton(
               tooltip: l.homeProfileTooltip,
               icon: const Icon(Icons.person_outline_rounded),
               color: context.colors.onSurfaceVariant,

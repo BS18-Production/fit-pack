@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
+import 'sync_columns.dart';
 
-class Exercises extends Table {
+class Exercises extends Table with SyncColumns {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
   // v1: compound, isolation. v5 (Antrenman V2): + calisthenics, cardio, flexibility.
@@ -29,7 +30,7 @@ class Exercises extends Table {
   TextColumn get force => text().nullable()(); // push, pull, static
 }
 
-class WorkoutSessions extends Table {
+class WorkoutSessions extends Table with SyncColumns {
   IntColumn get id => integer().autoIncrement()();
   DateTimeColumn get date => dateTime()();
   // V1: faz/program. V2 (Antrenman V2): faz=0, workoutType=seans adı (rutin
@@ -49,7 +50,7 @@ class WorkoutSessions extends Table {
   DateTimeColumn get endedAt => dateTime().nullable()();
 }
 
-class WorkoutSets extends Table {
+class WorkoutSets extends Table with SyncColumns {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get sessionId => integer().references(WorkoutSessions, #id)();
   IntColumn get exerciseId => integer().references(Exercises, #id)();
@@ -68,7 +69,7 @@ class WorkoutSets extends Table {
 }
 
 /// v6 (Antrenman V2 — docs/09-workout-v2.md): kullanıcı rutinleri.
-class Routines extends Table {
+class Routines extends Table with SyncColumns {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
   TextColumn get note => text().nullable()();
@@ -80,7 +81,7 @@ class Routines extends Table {
 }
 
 /// Bir rutindeki hareketler + hedef set×tekrar (sürükle-bırak sıralı).
-class RoutineExercises extends Table {
+class RoutineExercises extends Table with SyncColumns {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get routineId => integer().references(Routines, #id)();
   IntColumn get exerciseId => integer().references(Exercises, #id)();

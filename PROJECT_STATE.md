@@ -1,8 +1,39 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-07-11
-> **Faz:** V2 Geliştirme — **Haftalık seri + PR kutlaması** tamam (docs/17 adım 1)
+> **Son güncelleme:** 2026-07-22
+> **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A (şema v9) TAMAM,
+> Aşama C tasarımı hazır, kod bekliyor.
 > **Sahibi:** Samet Orhan
+
+## 🔐 Zorunlu Hesap + Senkron — Aşama A (2026-07-22)
+
+Mimari kararı: uygulama **yerel-öncelikli kalır** (Drift doğruluk kaynağı,
+salonda sinyalsiz çalışır) ama **hesap zorunlu** olur ve tüm kullanıcı verisi
+Supabase'e otomatik senkron edilir. Tasarım: **[docs/18-auth-and-sync.md](docs/18-auth-and-sync.md)**.
+Bu, docs/13'ün öngördüğü "Faz 2"dir — docs/13 (Storage blob yedek) yürürlükten
+kalktı.
+
+**Bu oturumda biten:**
+- **Google girişi uçtan uca çalışıyor** — OAuth kurulumu (Web + Android client),
+  Supabase provider, manifest deep link. Test sırasında iki bulgu: giriş sonrası
+  "Page Not Found" (GoRouter `onException` ile çözüldü) ve izin ekranında ham
+  Supabase alan adı görünmesi (Branding doldurulacak — docs/18 §5.3 B-1 açık).
+- **Elle bulut yedekleme KALDIRILDI** — otomatik senkron varken gereksiz.
+  `cloud_backup_service.dart` silindi.
+- **Ayarlar "Veri & Gizlilik" bölümü komple kaldırıldı** (yedekle/geri yükle/dışa
+  aktar + Ana Sayfa'daki dışa aktar butonu + `features/export/`). **Hesap satırı
+  Profil'e taşındı** — mağaza hesap-silme zorunluluğu (docs/16 §4) nedeniyle yok
+  edilemez.
+- **Şema v8 → v9:** 12 tabloya `uid`/`userId`/`updatedAt`/`syncState`
+  (`SyncColumns` mixin). Integer PK yerelde korundu, `uid` yalnız sunucu kimliği
+  → mevcut kod ve 7 yabancı anahtar dokunulmadı (haftalar yerine gün).
+- ⚠️ **Yakalanan üretim hatası:** `m.createTable()` güncel tanımı kullandığı için
+  v6 öncesinden yükselen kullanıcı "duplicate column" ile çökerdi. Üç tablo
+  artık tarihsel şekliyle oluşuyor + v9 adımında varlık kontrolü var.
+
+**Doğrulama:** analyze 0 · test **156/156** · **emülatörde gerçek v8→v9 göçü**
+(profil birebir korundu, 1015 hareket, 1015 benzersiz UUID, katalog kuyruğa
+girmedi, 12 unique index) · **telefonda (SM A075F) release APK ile doğrulandı**.
 
 ## 🏆 Haftalık Seri + Kişisel Rekor Kutlaması (2026-07-11)
 

@@ -1,6 +1,20 @@
 # docs/13 — Bulut Yedek + Hesap (Supabase)
 
-> **Durum:** Tasarım v1.0 — 2026-06-30
+> ## ⛔ YÜRÜRLÜKTEN KALKTI — 2026-07-21
+> Bu dokümanın **Faz 1 (Storage blob yedek)** yaklaşımı terk edildi. Yerine
+> **[docs/18-auth-and-sync.md](18-auth-and-sync.md)** geçti: zorunlu hesap +
+> mirror tablolar + otomatik senkron.
+>
+> **Kaldırılanlar:** elle "Buluta Yedekle" / "Buluttan Geri Yükle" düğmeleri,
+> `cloud_backup_service.dart`, `backups` Storage bucket'ı. Samet kararı: hesap
+> açan kullanıcının verisi zaten otomatik saklanacağı için elle yedekleme hem
+> gereksiz hem kafa karıştırıcı.
+>
+> **Hâlâ geçerli olan:** §3.1 Auth kurulumu (e-posta + Google) — docs/18
+> bunun üstüne inşa ediliyor. Storage/RLS bölümleri yalnız `ProgressPhotos`
+> görselleri için referans niteliğinde.
+
+> **Durum:** Tasarım v1.0 — 2026-06-30 (SÜPERSEDE EDİLDİ)
 > **Karar:** Samet — Supabase free tier · kapsam = **bulut yedek (tek yön)** ·
 > giriş = **e-posta/şifre + Google** · local-first KORUNUR
 > **Bağlı:** [docs/12](12-session-resilience.md) (yerel yedek), [docs/02-architecture.md](02-architecture.md)

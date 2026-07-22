@@ -12,7 +12,6 @@ import 'package:fit_pack/features/workout/workout_summary_screen.dart';
 import 'package:fit_pack/features/nutrition/nutrition_screen.dart';
 import 'package:fit_pack/features/nutrition/foods_screen.dart';
 import 'package:fit_pack/features/body_metrics/body_metrics_screen.dart';
-import 'package:fit_pack/features/export/export_screen.dart';
 import 'package:fit_pack/features/cloud/cloud_account_screen.dart';
 import 'package:fit_pack/features/profile/profile_screen.dart';
 import 'package:fit_pack/features/settings/attribution_screen.dart';
@@ -40,6 +39,19 @@ Widget _glass(Widget child) => GlassBackground(child: child);
 GoRouter createAppRouter({required bool onboarded}) => GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: onboarded ? AppRoutes.home : AppRoutes.onboarding,
+  // OAuth (Google) dönüşü — docs/18 §5.2. Supabase, `fitpack://login-callback`
+  // deep link'ini KENDİ dinleyicisiyle işler (kod → oturum takası; logta
+  // "handle deeplink uri"). Ama aynı URI GoRouter'a da düşüyor ve bir sayfa
+  // adresi olmadığı için "no routes for location" fırlatıp kullanıcıya giriş
+  // sonrası "Page Not Found" gösteriyordu. Çözüm: bu URI'yi yut ve Bulut
+  // Hesabı ekranına dön — oturum orada zaten açılmış görünür.
+  onException: (context, state, router) {
+    if (state.uri.toString().contains('login-callback')) {
+      router.go(AppRoutes.cloud);
+      return;
+    }
+    router.go(AppRoutes.home);
+  },
   routes: [
     GoRoute(
       path: AppRoutes.onboarding,
@@ -168,11 +180,6 @@ GoRouter createAppRouter({required bool onboarded}) => GoRouter(
       path: AppRoutes.foods,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => _glass(const FoodsScreen()),
-    ),
-    GoRoute(
-      path: AppRoutes.export,
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(const ExportScreen()),
     ),
     GoRoute(
       path: AppRoutes.cloud,

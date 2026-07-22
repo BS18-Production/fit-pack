@@ -85,8 +85,16 @@ class AppDatabase extends _$AppDatabase {
   /// veri kayıpsız (ADR-007). Göç ayrıca eski satırlara `uid` backfill eder,
   /// `uid` unique index'lerini kurar ve mevcut satırları kuyruğa alır (katalog
   /// tablolarında yalnız `is_custom = 1` olanları — 1022 seed hareket girmez).
+  ///
+  /// v9 → v10 (2026-07-22, Giden kutusu tetikleyicileri — docs/18 §6):
+  /// 12 tabloya INSERT/UPDATE tetikleyicisi. Yazılan her satır otomatik
+  /// `uid` alır, zaman damgalanır ve kuyruğa girer (`sync_state = 1`).
+  /// 23 DAO yazma noktasını tek tek damgalamak yerine veritabanı seviyesinde
+  /// garanti: atlanan bir yazma = sessizce senkron edilmeyen veri.
+  /// Katalog satırları (seed hareket/besin) hariç — onlar kullanılınca elle
+  /// kuyruğa alınır. Tablo/kolon değişmez, yalnız tetikleyici eklenir.
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   /// v5→v6 gibi ARA göç adımları `m.createTable()` ile GÜNCEL tanımı kullanır —
   /// yani o adımda doğan tablo (routines, routine_exercises, water_intake)
@@ -114,6 +122,8 @@ class AppDatabase extends _$AppDatabase {
         // da elle kuruluyor.
         for (final t in syncedTableNames) {
           await m.database.customStatement(createUidIndexSql(t));
+          await m.database.customStatement(createInsertTriggerSql(t));
+          await m.database.customStatement(createUpdateTriggerSql(t));
         }
       },
 
@@ -277,6 +287,14 @@ class AppDatabase extends _$AppDatabase {
             await m.database.customStatement(backfillUidSql(name));
             await m.database.customStatement(createUidIndexSql(name));
             await m.database.customStatement(queueExistingRowsSql(name));
+          }
+        }
+        // v9 → v10: giden kutusu tetikleyicileri (docs/18 §6). Tablo/kolon
+        // değişmez → şema doğrulaması etkilenmez; yalnız tetikleyici eklenir.
+        if (from < 10 && to >= 10) {
+          for (final name in syncedTableNames) {
+            await m.database.customStatement(createInsertTriggerSql(name));
+            await m.database.customStatement(createUpdateTriggerSql(name));
           }
         }
       },

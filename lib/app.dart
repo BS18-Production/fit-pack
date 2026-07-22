@@ -11,6 +11,7 @@ import 'l10n/app_l10n.dart';
 import 'features/home/providers/home_providers.dart';
 import 'features/nutrition/nutrition_screen.dart' show selectedDateProvider;
 import 'features/workout/routine_providers.dart';
+import 'features/sync/sync_providers.dart';
 
 class FitPackApp extends ConsumerStatefulWidget {
   /// İlk açılış (P-10) tamamlandı mı? Router başlangıç konumunu belirler.
@@ -29,6 +30,10 @@ class _FitPackAppState extends ConsumerState<FitPackApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Senkron yaşam döngüsü: oturum açıldığında giden kutusu işlemeye başlar,
+    // çıkışta durur (docs/18 §6). Burada `watch` edilmesi provider'ı canlı
+    // tutar — ekran değişimlerinden etkilenmez.
+    ref.watch(syncLifecycleProvider);
     // Kullanıcı tema tercihi (Sistem/Açık/Koyu) — Ayarlar'dan değişir.
     final themeMode = ref.watch(themeModeProvider);
     // Dil tercihi (docs/14). null = cihazı takip et; supportedLocales'te

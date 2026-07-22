@@ -482,6 +482,38 @@ olarak *ekleme* (append) olduğu için çakışma nadir; daha karmaşık bir str
 
 ---
 
+### 6.6 Aşama E uygulandı 🟡 (2026-07-22) — canlı doğrulama bekliyor
+
+**Kod tamam, birim testleri yeşil, gerçek Supabase'e karşı HENÜZ denenmedi.**
+
+| Dosya | İş |
+|---|---|
+| `tables/sync_columns.dart` | Tetikleyici SQL'leri + gönderim sırası + FK haritası |
+| `features/sync/sync_push.dart` | Gönderim hattı (kimlik çevirisi, sıra, onaylı işaretleme) |
+| `features/sync/supabase_sync_remote.dart` | Gerçek Supabase yazıcı (`onConflict: 'uid'`) |
+| `features/sync/sync_controller.dart` | Zamanlama: geciktirme, artan bekleme, eşzamanlılık kilidi |
+| `features/sync/sync_providers.dart` | Oturum açılınca başlat / çıkınca durdur |
+
+**Şema v10:** 12 tabloya INSERT/UPDATE tetikleyicisi → yazılan her satır
+otomatik `uid` alır, damgalanır, kuyruğa girer. 23 DAO yazma noktasını tek tek
+damgalamak yerine veritabanı garantisi.
+
+**Yakalanan iki gerçek hata:**
+1. Tetikleyicideki `is_custom = 1` koşulu **kimlik üretimini de** engelliyordu
+   → katalog hareketleri `uid` alamıyor, dolayısıyla sette kullanılsalar bile
+   gönderilemiyorlardı. Koşul ayrıldı: `uid` herkese, kuyruğa alma seçili.
+2. `SyncController._running` bayrağı **ilk await'ten sonra** set ediliyordu →
+   eşzamanlı üç tetikleme kontrolden geçip aynı satırı üç kez gönderiyordu.
+   Bayrak await öncesine alındı.
+
+**Test:** 180/180 (E ile 24 yeni). §10'daki 6 arıza testi + katalog davranışı +
+FK çevirisi + bağımlılık sırası + zamanlama (döngü koruması, eşzamanlılık,
+artan bekleme, oturumsuz çalışmama).
+
+> ⚠️ **Kalan:** gerçek Supabase'e karşı uçtan uca tur (emülatör diski dolduğu
+> için yapılamadı). İlk canlı denemede bakılacaklar: RLS reddi var mı, tarih
+> biçimi (`timestamptz`) kabul ediliyor mu, `onConflict: 'uid'` çalışıyor mu.
+
 ## 7. RLS politikaları
 
 Her senkronlanan tabloda aynı desen. Örnek:
@@ -586,7 +618,8 @@ Kod öncesi ya da paralel:
 | Aşama | İçerik | Bağımlılık |
 |---|---|---|
 | **A** ✅ | Şema v9 (uid/userId/updatedAt/syncState) + migration + test | **TAMAM** |
-| **B** | Supabase mirror tablolar + RLS (SQL) | Samet: proje restore |
+| **B** ✅ | Supabase mirror tablolar + RLS (SQL) | **TAMAM** — `supabase/01_schema.sql` çalıştırıldı |
+| **E** 🟡 | Outbox senkron katmanı + testler | **KOD TAMAM**, canlı doğrulama bekliyor |
 | **C** | Zorunlu giriş kapısı + onboarding sırası — **tasarım hazır (§5.1)**, kod bekliyor | A ✅ |
 | **D** | Google girişi | Samet: OAuth kurulumu |
 | **E** | Outbox senkron katmanı (push) + 6 test | A, B |

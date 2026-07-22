@@ -14,8 +14,10 @@ A → B → C → E → G → F → D.
       (A1 çıkar, 4→3 sayfa), `cloud_account_screen` (form tam ekran kapıya).
       **3 kural:** kapı ağı değil oturumu kontrol eder · kapı kararı gevşek
       provider'dan okunmaz · hesap değişince yerel veri temizlenir.
-- [ ] **Aşama B — Supabase mirror tabloları + RLS** (Samet: SQL panelden)
-- [ ] **Aşama E — Outbox senkron katmanı** + 6 arıza testi (§10)
+- [x] **Aşama B — Supabase mirror tabloları + RLS** (2026-07-22): `supabase/01_schema.sql`
+      + `02_grants.sql`. ⚠️ RLS tek başına yetmiyor, GRANT de şart (42501 dersi).
+- [x] **Aşama E — Outbox senkron katmanı** (2026-07-22): **canlıda çalışıyor**,
+      telefondan 15 satır gitti. Dört arıza aşıldı, veri kaybı sıfır (docs/18 §6.7).
 - [ ] **Aşama G** senkron durumu UI · **F** pull/çakışma · **D** Google native akış
 
 **Samet'in manuel işleri:** Google Cloud → **Branding** doldur (izin ekranında ham

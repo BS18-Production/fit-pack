@@ -1,9 +1,23 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
 > **Son güncelleme:** 2026-07-22
-> **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A (şema v9) TAMAM,
-> Aşama C tasarımı hazır, kod bekliyor.
+> **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · E TAMAM
+> (senkron canlıda çalışıyor). Sıradaki: **Aşama C** (zorunlu giriş kapısı).
 > **Sahibi:** Samet Orhan
+
+## ✅ Senkron CANLI ÇALIŞIYOR (2026-07-22)
+
+Telefondaki gerçek veri Supabase'e ulaşıyor: `tur bitti — gönderilen 15, kalan 0`.
+Aşama **A** (şema v9) · **B** (mirror tablolar + RLS) · **E** (giden kutusu) tamam.
+Dört canlı arıza aşıldı, **hiçbirinde veri kaybı olmadı** — detay docs/18 §6.7.
+En sinsisi: v10 öncesi satırların `uid`'i NULL kalınca 13 kayıt **sessizce**
+atlanıyordu (hata yok, sayaç sıfır). Artık gönderim öncesi kimlik onarımı var.
+
+**Operatör panelleri:** `tools/admin/` — kullanıcı listesi + profil sayfası
+(antrenman/beslenme/ölçüm logları, 15 alanda filtre) ve kişisel veri panosu.
+claude.ai artifact olarak çalışıyorlar.
+
+**Sıradaki: Aşama C** — zorunlu giriş kapısı (tasarım docs/18 §5.1 hazır).
 
 ## 🔐 Zorunlu Hesap + Senkron — Aşama A (2026-07-22)
 

@@ -503,5 +503,21 @@
   "exportRptWaterTable": "| Tarih | ml |",
   "exportRptBodyTitle": "Vücut Ölçüleri ({count} kayıt)",
   "exportRptNoBody": "Bu aralıkta ölçüm yok.",
-  "exportRptBodyTable": "| Tarih | Kilo | Bel | Göğüs | Kol | Kalça | Boyun | YY% |"
+  "exportRptBodyTable": "| Tarih | Kilo | Bel | Göğüs | Kol | Kalça | Boyun | YY% |",
+  "authWelcomeTitle": "Fit Pack'e hoş geldin",
+  "authWelcomeTagline": "Antrenmanın, beslenmen ve gelişimin tek yerde.",
+  "authValueWorkout": "Rutinlerini kur, her seti kaydet",
+  "authValueNutrition": "Kalori ve proteini gün gün takip et",
+  "authValueProgress": "Kilonu ve ölçülerini grafikte gör",
+  "authWhyAccount": "Verilerin hesabında durur — telefon değiştirsen de seninle gelir.",
+  "cloudIntroSignUp": "Hesap oluştur — antrenmanların, öğünlerin ve ölçümlerin hesabına otomatik kaydedilir.",
+  "syncUpToDate": "Verilerin güncel",
+  "syncSyncing": "Yükleniyor…",
+  "syncPendingOffline": "Kaydedildi — {count} kayıt bağlantı gelince yüklenecek",
+  "syncPendingWaiting": "Kaydedildi — {count} kayıt yüklenmeyi bekliyor",
+  "signOutPendingTitle": "Yüklenmemiş kayıtlar var",
+  "signOutPendingMsg": "{count} kayıt henüz sunucuya yüklenmedi. Şimdi çıkarsan bir dahaki girişine kadar yüklenmezler.",
+  "signOutSyncFirst": "Önce senkron et",
+  "signOutAnyway": "Yine de çık",
+  "signOutStillPending": "Hâlâ yükleniyor — birazdan tekrar dene"
 }

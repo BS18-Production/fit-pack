@@ -3120,6 +3120,102 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'| Date | Weight | Waist | Chest | Arm | Hip | Neck | BF% |'**
   String get exportRptBodyTable;
+
+  /// Welcome (gate) screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Fit Pack'**
+  String get authWelcomeTitle;
+
+  /// Welcome (gate) screen tagline
+  ///
+  /// In en, this message translates to:
+  /// **'Your workouts, nutrition and progress — all in one place.'**
+  String get authWelcomeTagline;
+
+  /// Welcome screen value bullet — workout
+  ///
+  /// In en, this message translates to:
+  /// **'Build routines and log every set'**
+  String get authValueWorkout;
+
+  /// Welcome screen value bullet — nutrition
+  ///
+  /// In en, this message translates to:
+  /// **'Track calories and protein day by day'**
+  String get authValueNutrition;
+
+  /// Welcome screen value bullet — progress
+  ///
+  /// In en, this message translates to:
+  /// **'Watch weight and measurements move in charts'**
+  String get authValueProgress;
+
+  /// Welcome screen note explaining why an account is required
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is stored in your account — it stays with you when you change phones.'**
+  String get authWhyAccount;
+
+  /// Auth gate intro shown in sign-up mode
+  ///
+  /// In en, this message translates to:
+  /// **'Create an account — your workouts, meals and measurements are saved to it automatically.'**
+  String get cloudIntroSignUp;
+
+  /// No description provided for @syncUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is up to date'**
+  String get syncUpToDate;
+
+  /// No description provided for @syncSyncing.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing…'**
+  String get syncSyncing;
+
+  /// No description provided for @syncPendingOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved — {count} record(s) will upload when you\'re back online'**
+  String syncPendingOffline(int count);
+
+  /// No description provided for @syncPendingWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved — {count} record(s) waiting to upload'**
+  String syncPendingWaiting(int count);
+
+  /// No description provided for @signOutPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Records not yet uploaded'**
+  String get signOutPendingTitle;
+
+  /// No description provided for @signOutPendingMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} record(s) haven\'t been uploaded to the server yet. If you sign out now, they won\'t upload until your next sign-in.'**
+  String signOutPendingMsg(int count);
+
+  /// No description provided for @signOutSyncFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync first'**
+  String get signOutSyncFirst;
+
+  /// No description provided for @signOutAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out anyway'**
+  String get signOutAnyway;
+
+  /// No description provided for @signOutStillPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Still uploading — try again in a moment'**
+  String get signOutStillPending;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

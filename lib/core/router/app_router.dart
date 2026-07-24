@@ -12,6 +12,9 @@ import 'package:fit_pack/features/workout/workout_summary_screen.dart';
 import 'package:fit_pack/features/nutrition/nutrition_screen.dart';
 import 'package:fit_pack/features/nutrition/foods_screen.dart';
 import 'package:fit_pack/features/body_metrics/body_metrics_screen.dart';
+import 'package:fit_pack/features/auth/auth_gate.dart';
+import 'package:fit_pack/features/auth/auth_screen.dart';
+import 'package:fit_pack/features/auth/welcome_screen.dart';
 import 'package:fit_pack/features/cloud/cloud_account_screen.dart';
 import 'package:fit_pack/features/profile/profile_screen.dart';
 import 'package:fit_pack/features/settings/attribution_screen.dart';
@@ -33,26 +36,45 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 /// ve NoTransitionPage ile geçtiğinden bu sarmalayıcıya ihtiyaç duymaz.
 Widget _glass(Widget child) => GlassBackground(child: child);
 
-/// Router'ı kurar. Başlangıç konumu, ilk açılış (P-10) durumuna göre seçilir:
-/// onboarding tamamlanmamışsa `/onboarding`, aksi halde `/home`. Tek kullanıcı
-/// pilot için yeterli — onboarding bittiğinde `context.go('/home')` çağrılır.
-GoRouter createAppRouter({required bool onboarded}) => GoRouter(
+/// Router'ı kurar. Zorunlu hesap (docs/18 §5.1) sonrası başlangıç konumu sabit
+/// `/welcome`; nereye gidileceğine `redirect` karar verir (oturum + onboarded).
+/// `refreshListenable` sayesinde giriş/çıkış anında kapı devreye girer.
+GoRouter createAppRouter({required AuthGate gate}) => GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: onboarded ? AppRoutes.home : AppRoutes.onboarding,
+  initialLocation: AppRoutes.welcome,
+  refreshListenable: gate,
+  redirect: (context, state) => gateRedirect(
+    location: state.matchedLocation,
+    signedIn: gate.signedIn,
+    onboarded: gate.onboarded,
+    busy: gate.busy,
+  ),
   // OAuth (Google) dönüşü — docs/18 §5.2. Supabase, `fitpack://login-callback`
   // deep link'ini KENDİ dinleyicisiyle işler (kod → oturum takası; logta
   // "handle deeplink uri"). Ama aynı URI GoRouter'a da düşüyor ve bir sayfa
   // adresi olmadığı için "no routes for location" fırlatıp kullanıcıya giriş
-  // sonrası "Page Not Found" gösteriyordu. Çözüm: bu URI'yi yut ve Bulut
-  // Hesabı ekranına dön — oturum orada zaten açılmış görünür.
+  // sonrası "Page Not Found" gösteriyordu. Çözüm: bu URI'yi yut ve kapıya dön —
+  // oturum açılınca `redirect` kullanıcıyı zaten doğru yere taşır.
   onException: (context, state, router) {
     if (state.uri.toString().contains('login-callback')) {
-      router.go(AppRoutes.cloud);
+      router.go(AppRoutes.welcome);
       return;
     }
     router.go(AppRoutes.home);
   },
   routes: [
+    // ── Zorunlu giriş kapısı (docs/18 §5.1) ──
+    GoRoute(
+      path: AppRoutes.welcome,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const WelcomeScreen()),
+    ),
+    GoRoute(
+      path: AppRoutes.auth,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(AuthScreen(
+          signUp: state.uri.queryParameters['mode'] == 'signup')),
+    ),
     GoRoute(
       path: AppRoutes.onboarding,
       parentNavigatorKey: _rootNavigatorKey,

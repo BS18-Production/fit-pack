@@ -1723,4 +1723,62 @@ class AppL10nEn extends AppL10n {
   @override
   String get exportRptBodyTable =>
       '| Date | Weight | Waist | Chest | Arm | Hip | Neck | BF% |';
+
+  @override
+  String get authWelcomeTitle => 'Welcome to Fit Pack';
+
+  @override
+  String get authWelcomeTagline =>
+      'Your workouts, nutrition and progress — all in one place.';
+
+  @override
+  String get authValueWorkout => 'Build routines and log every set';
+
+  @override
+  String get authValueNutrition => 'Track calories and protein day by day';
+
+  @override
+  String get authValueProgress =>
+      'Watch weight and measurements move in charts';
+
+  @override
+  String get authWhyAccount =>
+      'Your data is stored in your account — it stays with you when you change phones.';
+
+  @override
+  String get cloudIntroSignUp =>
+      'Create an account — your workouts, meals and measurements are saved to it automatically.';
+
+  @override
+  String get syncUpToDate => 'Your data is up to date';
+
+  @override
+  String get syncSyncing => 'Syncing…';
+
+  @override
+  String syncPendingOffline(int count) {
+    return 'Saved — $count record(s) will upload when you\'re back online';
+  }
+
+  @override
+  String syncPendingWaiting(int count) {
+    return 'Saved — $count record(s) waiting to upload';
+  }
+
+  @override
+  String get signOutPendingTitle => 'Records not yet uploaded';
+
+  @override
+  String signOutPendingMsg(int count) {
+    return '$count record(s) haven\'t been uploaded to the server yet. If you sign out now, they won\'t upload until your next sign-in.';
+  }
+
+  @override
+  String get signOutSyncFirst => 'Sync first';
+
+  @override
+  String get signOutAnyway => 'Sign out anyway';
+
+  @override
+  String get signOutStillPending => 'Still uploading — try again in a moment';
 }

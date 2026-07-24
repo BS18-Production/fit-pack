@@ -335,6 +335,46 @@ onboarding'i **tekrar görmez**. Aşama E'de doğrulanacak.
 - E-posta doğrulama zorunlu olsun mu (§13 açık maddesi) — zorunluysa ilk kurulum
   ağırlaşır.
 
+### 5.4 Aşama C uygulandı ✅ (2026-07-23)
+
+| Parça | Dosya |
+|---|---|
+| Kapı durumu + yönlendirme mantığı | `features/auth/auth_gate.dart` (`AuthGate`, `gateRedirect`) |
+| Hesap değişimi bekçisi (Kural 3) | `features/auth/account_switch.dart` |
+| ① Karşılama | `features/auth/welcome_screen.dart` |
+| ② Giriş / Kayıt (tam ekran) | `features/auth/auth_screen.dart` |
+| Router bağlantısı | `core/router/app_router.dart` — `redirect` + `refreshListenable` |
+| Açılış sırası | `main.dart` — `gate.bootstrap()` **`runApp` öncesi** |
+
+**Üç kuralın koda dönüşmüş hâli:**
+
+1. **Oturum, ağ değil.** `AuthGate.signedIn` yalnız `auth.currentSession`a bakar;
+   hiçbir yerde ağ çağrısı yok. Uçak modunda kullanıcı kendi verisine girer.
+2. **Gevşek provider yok.** `onboarded` `main()`de `bootstrap()` ile diskten bir
+   kez okunur; `authGateProvider` `runApp` ÖNCESİ `read` edildiği için router ilk
+   kararı gerçek değerle verir. `gateRedirect` saf fonksiyon → 7 testle kapsandı.
+3. **Hesap değişince temizlik.** Girişte cihazdaki son `user_id` ile karşılaştırma;
+   farklıysa `wipeLocalUserData` (gönderim sırasının TERSİ + katalogda yalnız
+   `is_custom = 1` + prefs'teki seans taslağı). 4 testle kapsandı.
+
+**Onboarding 4 → 3 sayfa.** A1 Karşılama çıkarıldı (giriş öncesine taşındı);
+kalan sayfa indeksleri ve `_lastPage` buna göre kaydırıldı.
+
+**Yan değişiklikler:** `cloud_account_screen` artık yalnız hesap paneli (form
+kapıya taşındı) · çıkış/hesap silme sonrası **elle `pop` yok** — kapı yığını
+kendisi değiştirir · `onException` `login-callback`'te artık `/welcome`e döner,
+oturum gelince `redirect` doğru yere taşır.
+
+**Emülatörde doğrulandı (uçtan uca):** sıfır kurulum → Karşılama → Kayıt →
+(e-posta doğrulama) → Giriş → Onboarding 3 sayfa → Ana Sayfa; senkron yeni
+kullanıcı kimliğiyle profil + ölçümü yükledi; Profil → Hesap → Çıkış anında
+Karşılama'ya döndü.
+
+**Bulgu — e-posta doğrulama açık.** Supabase'de doğrulama zorunlu olduğu için
+kayıt oturum AÇMIYOR: kullanıcı "Kayıt alındı, e-postanı doğrula" mesajını görüp
+posta kutusuna gidiyor. §13'teki açık madde artık gerçek bir akış kararı —
+kapalıysa kayıt tek adımda içeri alır.
+
 ### 5.2 Sağlayıcılar
 | Yöntem | Durum | Gereken kurulum |
 |---|---|---|
@@ -366,6 +406,15 @@ OAuth client B için zaten oluşturuldu, A'da da zararsız.
 | iOS bundle | `com.sametorhan.fitPack` |
 | Deep link | `fitpack://login-callback` (manifest'e eklendi) |
 | Debug SHA-1 | `FA:45:84:A2:D6:DB:06:A7:FE:D0:92:4A:8D:7B:CF:CA:AF:D6:06:77` |
+
+> **Aşama D kod tamam (2026-07-23), Web client ID bekliyor.** `auth_service.dart`
+> artık iki yollu: `SupabaseConfig.googleWebClientId` **doluysa** yerel akış
+> (`google_sign_in` + `signInWithIdToken`, Android hesap seçici), **boşsa** eski
+> tarayıcı akışına düşer (regresyon yok). `google_sign_in ^6.2.1` eklendi. Samet
+> yapıştırınca aktifleşir: **Supabase → Authentication → Providers → Google →
+> "Client ID (for OAuth)"** (Web client, `...apps.googleusercontent.com`). Bu akış
+> B-1'i (izin ekranındaki ham `supabase.co`) da bitirir çünkü tarayıcı hiç açılmaz.
+> Test edilemedi (client ID + Google şifresi gerektirir) — Samet cihazda doğrular.
 
 > ⚠️ **Kimlikler tutarsız:** Android `fit_pack`, iOS `fitPack`. Flutter varsayılanı,
 > hata değil — ama marka ismi netleşince **ikisi de değişecek** ve bu ancak
@@ -470,10 +519,13 @@ Kuyruk işleyici (ağ varsa)
 4. **Senkron yerel satırı asla silmez** — sadece `syncState` bayrağını çevirir
 5. **Yeniden deneme pes etmez** — kayıt kuyrukta kalır
 
-### 6.4 Çekme (pull) yolu
-- Girişte ve periyodik: `updatedAt > sonSenkron` olan sunucu satırlarını çek
-- `uid` ile yerelde eşleştir → varsa güncelle, yoksa ekle
-- FK'ler `uid` üzerinden yerel integer id'ye çevrilir
+### 6.4 Çekme (pull) yolu ✅ UYGULANDI (2026-07-23, §6.8)
+- Girişte: sunucudaki kullanıcı satırlarını çek (v1 tam tablo; artımlı
+  `updatedAt > sonSenkron` sonraya)
+- `uid` ile yerelde eşleştir → varsa çakışma kuralı, yoksa ekle
+- FK'ler `uid` üzerinden yerel integer id'ye çevrilir (gönderimin tersi)
+- **Tetikleyiciler pull boyunca kapalı** → sunucu `updated_at`'i korunur, inen
+  satır kuyruğa geri girmez (yankı yok)
 
 ### 6.5 Çakışma kuralı
 **En son yazan kazanır** (`updatedAt` karşılaştırması). Bu uygulamada veri ağırlıklı
@@ -534,6 +586,54 @@ ve gönderim öncesi kimlik onarımı yapılıyor (kendi kendini iyileştirir).
 **Operatör panelleri:** `tools/admin/` — Supabase verisini okuyan iki HTML sayfası
 (kullanıcı listesi + profil, kişisel pano). claude.ai artifact olarak çalışırlar;
 gerçek ürüne dönüştürme notu README'de.
+
+### 6.8 Çekme (pull) uygulandı ✅ (2026-07-23) — canlı doğrulandı
+
+**Neden gerekti:** Aşama E yalnız *yukarı* gönderiyordu. Yerel verisi silinmiş
+(telefon değişimi, yeniden kurulum, hesap değişimi bekçisinin temizliği) bir
+cihaza giriş yapan kullanıcı, sunucudaki verisini **geri alamıyordu** → boş
+ekran + tekrar onboarding. Samet'in gerçek testinde tam bu yaşandı.
+
+| Dosya | İş |
+|---|---|
+| `features/sync/sync_pull.dart` | Çekme hattı: kimlik çevirisi, çakışma, katalog benimseme |
+| `features/sync/supabase_sync_remote.dart` | `fetch(table, userId)` — RLS'li SELECT |
+| `features/auth/auth_gate.dart` | Girişte pull → SONRA onboarding kararı; açılışta arka plan tazeleme |
+
+**Akış (giriş):** hesap değişimi bekçisi → **pull** → `onboarded` oku. Sunucuda
+`onboarded = 1` profil varsa kullanıcı onboarding'i TEKRAR görmez. Pull ağ ister
+ama **kapı kararı ona bağlı değil** (Kural 1): pull başarısızsa yereldekiyle
+devam.
+
+**Dört tasarım kararı:**
+1. **Tetikleyiciler pull boyunca kapalı.** Açık olsalar her inen satırın
+   `updated_at`'ini `now()` yapar ve kuyruğa (`sync_state = 1`) alırlardı → sunucu
+   damgası kaybolur + inen veri anında geri gönderilir (sonsuz yankı). Turun
+   başında kaldırılıp sonunda tek kaynaktan geri kurulur.
+2. **Profil TEK satırdır.** `uid` ile eşleştirmek, yeniden-onboarding junk'ı
+   farklı `uid` taşıdığında ikinci profil satırı açardı. Onun yerine mevcut tek
+   satır sunucununkiyle değiştirilir → **junk kendiliğinden gerçek veriyle
+   iyileşir** (Samet'in telefonu bir sonraki açılışta düzelir).
+3. **Katalog isimle benimsenir.** Cihazlar seed hareketlere FARKLI `uid` üretir;
+   `uid` eşleşmediği için pull her kullanılan hareketi ikizlerdi. Aynı isimli seed
+   satırı (`is_custom = 0`, `user_id NULL`) varsa o benimsenir (uid'i sunucununki
+   olur), ikiz açılmaz.
+4. **Çakışma: en son yazan kazanır** (§6.5). Aynı `uid` + yerel daha yeni →
+   korunur (çevrimdışı düzenleme). Farklı `uid` ya da sunucu daha yeni → sunucu.
+
+**Sunucu güvenlik ağı:** `user_profile_one_per_user` (user_id UNIQUE, şemada
+zaten vardı) — bir junk profil push edilmeye çalışsa DB reddeder, gerçek profil
+korunur. Push sırasında profil ilk sırada olduğu için başarısız profil TÜM
+kuyruğu bloklar; pull junk'ı temizleyince kuyruk açılır.
+
+**Testler:** `test/features/sync_pull_test.dart` — 6 test (push→pull round-trip +
+FK zinciri, yankı yok, junk iyileşmesi, LWW koruması, katalog benimseme, boş
+sunucu). **Emülatörde gerçek Supabase'e karşı doğrulandı:** yerel silindi →
+giriş → `user_profile ← sunucudan 1 satır`, `body_measurements ← 1 satır`,
+`pull bitti — eklenen 1, güncellenen 1`, kuyruk boş; **onboarding sorulmadan**
+Ana Sayfa, Profil'de 2250 kcal / 170 g (girilmediği hâlde sunucudan geldi).
+
+---
 
 ## 7. RLS politikaları
 
@@ -599,6 +699,32 @@ Bekleyen kayıt varken çıkış yapılmak istenirse:
 > *"3 kayıt henüz yüklenmedi. Şimdi çıkarsan bu veriler kaybolur."*
 > `[İptal]` `[Önce senkron et]` `[Yine de çık]`
 
+### 9.1 Aşama G uygulandı ✅ (2026-07-23)
+
+| Parça | Dosya |
+|---|---|
+| Durum modeli + canlı sağlayıcı | `features/sync/sync_status.dart` (`SyncState`, `syncStatusProvider`) |
+| Gösterge + çıkış uyarısı | `features/cloud/cloud_account_screen.dart` (`_SyncStatusTile`) |
+| `isRunning` erişimi | `features/sync/sync_controller.dart` |
+
+**Gösterge dört durum** (Profil → Hesap ekranında): senkron (yeşil ✓ "Verilerin
+güncel"), yükleniyor (spinner), bekleyen+çevrimdışı ("Kaydedildi — N kayıt bağlantı
+gelince yüklenecek"), hata ("Kaydedildi — N kayıt yüklenmeyi bekliyor"). Mesaj daima
+**"kaydedildi"** ile başlar (§9 ilkesi). Sağlayıcı `autoDispose` — yalnız ekran
+açıkken canlı; senkron arka planda controller ile devam eder.
+
+**Reaktiflik:** uygulama tam reaktif olmadığı için (H-05 ertelendi) durum iki
+sinyalden türetilir — her tablo yazımı (`db.tableUpdates()`) + her gönderim turu
+sonucu (`controller.last`).
+
+**Çıkış uyarısı:** bekleyen kayıt varken "Çıkış" üç seçenek sunar — İptal / Önce
+senkron et (bir tur dener, hâlâ bekliyorsa çıkmaz) / Yine de çık. Kuyruk diskte
+olduğu için "yine de çık" veri kaybı DEĞİL — aynı kullanıcı tekrar girince gider;
+uyarı yine de dürüst çünkü sonraki girişe kadar sunucusuz kalırlar.
+
+**Doğrulama:** analyze 0 · test 197/197 · emülatörde "senkron" durumu (yeşil ✓)
+gözle doğrulandı.
+
 ---
 
 ## 10. Test gereksinimleri (kabul kriteri)
@@ -640,12 +766,11 @@ Kod öncesi ya da paralel:
 |---|---|---|
 | **A** ✅ | Şema v9 (uid/userId/updatedAt/syncState) + migration + test | **TAMAM** |
 | **B** ✅ | Supabase mirror tablolar + RLS (SQL) | **TAMAM** — `supabase/01_schema.sql` çalıştırıldı |
-| **E** 🟡 | Outbox senkron katmanı + testler | **KOD TAMAM**, canlı doğrulama bekliyor |
-| **C** | Zorunlu giriş kapısı + onboarding sırası — **tasarım hazır (§5.1)**, kod bekliyor | A ✅ |
-| **D** | Google girişi | Samet: OAuth kurulumu |
-| **E** | Outbox senkron katmanı (push) + 6 test | A, B |
-| **F** | Pull + çakışma çözümü | E |
-| **G** | Senkron durumu UI + çıkış uyarısı | E |
+| **E** ✅ | Outbox senkron katmanı + testler | **TAMAM** — canlı doğrulandı (§6.7) |
+| **C** ✅ | Zorunlu giriş kapısı + onboarding sırası | **TAMAM** (2026-07-23, §5.4) |
+| **D** 🟡 | Google yerel akış — KOD TAMAM, Web client ID bekliyor (§5.2.2) | Samet: client ID |
+| **F** ✅ | Pull + çakışma çözümü | **TAMAM** (2026-07-23, §6.8) |
+| **G** ✅ | Senkron durumu UI + çıkış uyarısı | **TAMAM** (2026-07-23, §9) |
 
 **Sıra önerisi:** A → B → C → E → G → F → D
 (Google'ı sona koydum: kurulum harici bağımlılık, çekirdek akışı bekletmesin.)

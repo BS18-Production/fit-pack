@@ -1001,5 +1001,63 @@
     }
   },
   "exportRptNoBody": "No measurements in this range.",
-  "exportRptBodyTable": "| Date | Weight | Waist | Chest | Arm | Hip | Neck | BF% |"
+  "exportRptBodyTable": "| Date | Weight | Waist | Chest | Arm | Hip | Neck | BF% |",
+  "authWelcomeTitle": "Welcome to Fit Pack",
+  "@authWelcomeTitle": {
+    "description": "Welcome (gate) screen title"
+  },
+  "authWelcomeTagline": "Your workouts, nutrition and progress — all in one place.",
+  "@authWelcomeTagline": {
+    "description": "Welcome (gate) screen tagline"
+  },
+  "authValueWorkout": "Build routines and log every set",
+  "@authValueWorkout": {
+    "description": "Welcome screen value bullet — workout"
+  },
+  "authValueNutrition": "Track calories and protein day by day",
+  "@authValueNutrition": {
+    "description": "Welcome screen value bullet — nutrition"
+  },
+  "authValueProgress": "Watch weight and measurements move in charts",
+  "@authValueProgress": {
+    "description": "Welcome screen value bullet — progress"
+  },
+  "authWhyAccount": "Your data is stored in your account — it stays with you when you change phones.",
+  "@authWhyAccount": {
+    "description": "Welcome screen note explaining why an account is required"
+  },
+  "cloudIntroSignUp": "Create an account — your workouts, meals and measurements are saved to it automatically.",
+  "@cloudIntroSignUp": {
+    "description": "Auth gate intro shown in sign-up mode"
+  },
+  "syncUpToDate": "Your data is up to date",
+  "syncSyncing": "Syncing…",
+  "syncPendingOffline": "Saved — {count} record(s) will upload when you're back online",
+  "@syncPendingOffline": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncPendingWaiting": "Saved — {count} record(s) waiting to upload",
+  "@syncPendingWaiting": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutPendingTitle": "Records not yet uploaded",
+  "signOutPendingMsg": "{count} record(s) haven't been uploaded to the server yet. If you sign out now, they won't upload until your next sign-in.",
+  "@signOutPendingMsg": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "signOutSyncFirst": "Sync first",
+  "signOutAnyway": "Sign out anyway",
+  "signOutStillPending": "Still uploading — try again in a moment"
 }

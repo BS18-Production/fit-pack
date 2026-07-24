@@ -47,8 +47,7 @@ class RoutinePreviewScreen extends ConsumerWidget {
               );
               if (!ok) return;
               await ref.read(workoutDaoProvider).archiveRoutine(routineId);
-              ref.invalidate(activeRoutinesProvider);
-              ref.invalidate(todayRoutineProvider);
+              // Rutin provider'ları reaktif (H-05) → arşivleme kendiliğinden yansır.
               if (context.mounted) context.pop();
             },
           ),

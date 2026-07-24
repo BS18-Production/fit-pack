@@ -188,3 +188,27 @@ END''';
 /// kullandığında senkron katmanı çağırır (tembel katalog senkronu).
 String queueCatalogRowSql(String table) =>
     'UPDATE $table SET sync_state = 1 WHERE id = ? AND sync_state = 0';
+
+/// Tetikleyicileri geçici KALDIRMAK için (docs/18 §6.4 — pull).
+///
+/// **Neden pull sırasında kaldırılır?** Tetikleyiciler her INSERT/UPDATE'te
+/// `updated_at`'i `now()` yapar ve satırı kuyruğa (`sync_state = 1`) alır. Ama
+/// pull, sunucunun **yetkili** verisini indiriyor: sunucunun `updated_at`'i
+/// korunmalı (çakışma kuralı ona bakar) ve inen satır kuyruğa GİRMEMELİ (yoksa
+/// hemen geri gönderilir → sonsuz yankı). Pull kendi yazımlarını yaparken
+/// tetikleyiciler kapalı olur, bitince `AppDatabase`'deki tek kaynaktan
+/// (`createInsertTriggerSql`/`createUpdateTriggerSql`) geri kurulur.
+String dropInsertTriggerSql(String table) =>
+    'DROP TRIGGER IF EXISTS ${table}_sync_ins';
+String dropUpdateTriggerSql(String table) =>
+    'DROP TRIGGER IF EXISTS ${table}_sync_upd';
+
+/// Yerel integer yabancı anahtar kolonu → sunucudaki `*_uid` kolon adı.
+/// Gönderimde `_stripId` + `_uid` ile üretilen adla AYNI olmalı (docs/18 §4):
+/// `session_id` → `session_uid`, `food_id` → `food_uid`.
+String serverFkColumn(String localFkColumn) {
+  final base = localFkColumn.endsWith('_id')
+      ? localFkColumn.substring(0, localFkColumn.length - 3)
+      : localFkColumn;
+  return '${base}_uid';
+}

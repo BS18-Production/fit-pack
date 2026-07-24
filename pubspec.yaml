@@ -37,6 +37,9 @@ dependencies:
 
   # Bulut yedek + hesap (docs/13 — Supabase)
   supabase_flutter: ^2.8.0
+  # Google yerel (native) giriş — Android hesap seçici (docs/18 §5.2.1 D).
+  # 6.x: Supabase'in belgelediği signInWithIdToken akışıyla uyumlu API.
+  google_sign_in: ^6.2.1
 
   # Routing
   go_router: ^14.8.1

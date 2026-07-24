@@ -801,14 +801,13 @@ class _CompactHealthRow extends ConsumerWidget {
 class _WaterMini extends ConsumerWidget {
   const _WaterMini();
 
+  // todayWaterProvider reaktif (H-05) → su ekleme/sıfırlama kendiliğinden yansır.
   Future<void> _add(WidgetRef ref, int ml) async {
     await ref.read(nutritionDaoProvider).addWater(DateTime.now(), ml);
-    ref.invalidate(todayWaterProvider);
   }
 
   Future<void> _reset(WidgetRef ref) async {
     await ref.read(nutritionDaoProvider).resetWater(DateTime.now());
-    ref.invalidate(todayWaterProvider);
   }
 
   @override

@@ -16,10 +16,8 @@ import '../../core/utils/format.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
-import '../home/providers/home_providers.dart';
 import 'exercise_detail_screen.dart';
 import 'record_calc.dart';
-import 'routine_providers.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
@@ -574,9 +572,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
 
     _clearDraft(); // seans DB'ye yazıldı — taslağı sil
-    ref.invalidate(weekWorkoutStatsProvider);
-    ref.invalidate(lastWorkoutSessionProvider);
-    ref.invalidate(weeklyStreakProvider);
+    // Home/Progress provider'ları reaktif (H-05): seans+setler DB'ye yazılınca
+    // momentum hero, haftalık istatistik, seri hepsi kendiliğinden tazelenir —
+    // elle invalidate gerekmez (eski kod momentum provider'larını atlıyordu).
     if (mounted) context.pushReplacement(AppRoutes.summary(sessionId));
   }
 

@@ -9,7 +9,6 @@ import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
-import 'routine_providers.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
 
@@ -112,7 +111,6 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
       scheduledWeekday: Value(_weekday),
     );
 
-    final int routineId;
     try {
       if (_isEdit) {
         final existing = await dao.getRoutine(widget.routineId!);
@@ -125,7 +123,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
       }
       // Rutin + hareketler tek transaction'da: düzenlemede "sil + yeniden
       // yaz" adımları atomik — ortada hata olsa mevcut liste kaybolmaz.
-      routineId = await dao.saveRoutineWithExercises(
+      await dao.saveRoutineWithExercises(
         routine: companion,
         isNew: !_isEdit,
         buildExercises: (id) => [
@@ -150,9 +148,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
       return;
     }
 
-    ref.invalidate(activeRoutinesProvider);
-    ref.invalidate(routineExercisesProvider(routineId));
-    ref.invalidate(todayRoutineProvider);
+    // Rutin provider'ları reaktif (H-05) → kaydetme kendiliğinden yansır.
     if (mounted) context.pop();
   }
 

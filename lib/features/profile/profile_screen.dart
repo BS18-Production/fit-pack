@@ -77,7 +77,7 @@ class _ProfileBody extends ConsumerWidget {
 
   Future<void> _save(WidgetRef ref, UserProfileData updated) async {
     await ref.read(userProfileDaoProvider).updateProfile(updated);
-    ref.invalidate(userProfileProvider);
+    // userProfileProvider reaktif (H-05) → düzenleme kendiliğinden yansır.
   }
 
   static String _fmtDate(DateTime d) =>

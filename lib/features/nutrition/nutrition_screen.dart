@@ -9,6 +9,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../../core/utils/format.dart';
 import '../../data/providers.dart';
+import '../../data/reactive.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/nutrition_dao.dart';
 import '../../data/services/openfoodfacts_service.dart';
@@ -20,16 +21,20 @@ import 'macro_goals.dart';
 
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
-/// Kayıtlar + yemek adı (join). UI'da ne eklendiği görünsün diye.
-final logsWithFoodProvider =
-    FutureProvider<List<FoodLogWithFood>>((ref) {
+/// Kayıtlar + yemek adı (join). **Reaktif** (H-05): öğün eklenince/silinince
+/// kendiliğinden tazelenir. Seçili gün değişince provider yeniden kurulur.
+final logsWithFoodProvider = StreamProvider<List<FoodLogWithFood>>((ref) {
+  final db = ref.watch(databaseProvider);
   final date = ref.watch(selectedDateProvider);
-  return ref.watch(nutritionDaoProvider).getLogsWithFoodForDate(date);
+  return watchTables(db, [db.foodLogs, db.foods],
+      () => ref.read(nutritionDaoProvider).getLogsWithFoodForDate(date));
 });
 
-final nutritionTotalsProvider = FutureProvider<DailyNutrition>((ref) {
+final nutritionTotalsProvider = StreamProvider<DailyNutrition>((ref) {
+  final db = ref.watch(databaseProvider);
   final date = ref.watch(selectedDateProvider);
-  return ref.watch(nutritionDaoProvider).getDailyTotals(date);
+  return watchTables(db, [db.foodLogs, db.foods],
+      () => ref.read(nutritionDaoProvider).getDailyTotals(date));
 });
 
 class NutritionScreen extends ConsumerWidget {
@@ -44,13 +49,13 @@ class NutritionScreen extends ConsumerWidget {
   Future<void> _delete(
       BuildContext context, WidgetRef ref, FoodLogWithFood item) async {
     // SnackBar ekrandan uzun yaşar (M-06): kullanıcı sekme değiştirdikten
-    // sonra "Geri al"a basarsa ekranın ref'i ölmüş olur. DAO ve kök container
-    // önceden yakalanır — ikisi de ekranın yaşam döngüsünden bağımsız.
+    // sonra "Geri al"a basarsa ekranın ref'i ölmüş olabilir. DAO önceden
+    // yakalanır — ekranın yaşam döngüsünden bağımsız; yazma sonrası tazeleme
+    // artık reaktif provider'ların işi (elle invalidate yok).
     final dao = ref.read(nutritionDaoProvider);
-    final container = ProviderScope.containerOf(context, listen: false);
     final l = AppL10n.of(context);
     await dao.deleteFoodLog(item.log.id);
-    _invalidateAll(ref);
+    // Kayıt/toplam provider'ları reaktif (H-05) → silme kendiliğinden yansır.
     if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     messenger.clearSnackBars();
@@ -71,9 +76,7 @@ class NutritionScreen extends ConsumerWidget {
               computedFat: Value(item.log.computedFat),
             ),
           );
-          container.invalidate(logsWithFoodProvider);
-          container.invalidate(nutritionTotalsProvider);
-          container.invalidate(todayNutritionProvider);
+          // Reaktif provider'lar (H-05) geri-al eklemesini kendiliğinden yansıtır.
         },
       ),
     ));
@@ -215,7 +218,7 @@ class NutritionScreen extends ConsumerWidget {
     try {
       final copied =
           await ref.read(nutritionDaoProvider).copyDayLogs(from, date);
-      _invalidateAll(ref);
+      // Reaktif provider'lar (H-05) kopyalanan öğünleri kendiliğinden yansıtır.
       messenger.clearSnackBars();
       messenger.showSnackBar(SnackBar(
         content: Text(copied == 0
@@ -702,9 +705,7 @@ class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
             computedCarb: Value(added.carbPer100g * ratio),
             computedFat: Value(added.fatPer100g * ratio),
           ));
-      ref.invalidate(logsWithFoodProvider);
-      ref.invalidate(nutritionTotalsProvider);
-      ref.invalidate(todayNutritionProvider);
+      // Reaktif provider'lar (H-05) yeni öğünü kendiliğinden yansıtır.
       HapticFeedback.lightImpact();
       if (mounted) {
         setState(() {

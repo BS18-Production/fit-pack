@@ -28,6 +28,11 @@ abstract class SyncRemote {
   /// Satırları `uid` çakışmasına göre upsert eder. **Dönmesi = sunucu onayı.**
   /// Hata fırlatırsa satırlar kuyrukta KALIR.
   Future<void> upsert(String table, List<Map<String, Object?>> rows);
+
+  /// Bir tablonun bu kullanıcıya ait TÜM satırlarını çeker (docs/18 §6.4).
+  /// RLS "own rows" politikası sunucuda süzer; yine de `userId` ile filtreleriz
+  /// (katalog tablolarında kullanıcının kendi + kullandığı satırlar için).
+  Future<List<Map<String, Object?>>> fetch(String table, String userId);
 }
 
 /// Giden kutusu gönderim hattı (docs/18 §6).

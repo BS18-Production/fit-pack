@@ -21,4 +21,10 @@ class SupabaseSyncRemote implements SyncRemote {
     if (rows.isEmpty) return;
     await client.from(table).upsert(rows, onConflict: 'uid');
   }
+
+  @override
+  Future<List<Map<String, Object?>>> fetch(String table, String userId) async {
+    final rows = await client.from(table).select().eq('user_id', userId);
+    return rows.cast<Map<String, Object?>>();
+  }
 }

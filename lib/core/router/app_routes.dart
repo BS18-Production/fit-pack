@@ -10,6 +10,15 @@
 class AppRoutes {
   AppRoutes._();
 
+  // ── Giriş kapısı (docs/18 §5.1) ──
+  /// ① Karşılama — oturum yokken uygulamanın açıldığı yer.
+  static const welcome = '/welcome';
+
+  /// ② Giriş / Kayıt. `mode=signup` kayıt sekmesiyle açar.
+  static const auth = '/auth';
+  static String authMode({required bool signUp}) =>
+      '$auth?mode=${signUp ? 'signup' : 'login'}';
+
   // ── Onboarding ──
   static const onboarding = '/onboarding';
 

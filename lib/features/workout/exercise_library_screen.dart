@@ -8,6 +8,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
+import '../../data/reactive.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'workout_ui.dart';
@@ -16,9 +17,11 @@ import '../../core/router/app_routes.dart';
 /// Antrenman V2 — Hareket Kütüphanesi (Claude Design reskin).
 /// Hareket/ekipman/kas adları İngilizce (salon standardı), arayüz Türkçe.
 /// Kategoriye göre gruplu liste, arama + kategori/kas filtreleri, özel hareket.
-
-final libraryExercisesProvider = FutureProvider<List<Exercise>>((ref) {
-  return ref.watch(workoutDaoProvider).getLibraryExercises();
+/// **Reaktif** (H-05): özel hareket eklenince/arşivlenince tazelenir.
+final libraryExercisesProvider = StreamProvider<List<Exercise>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return watchTables(db, [db.exercises],
+      () => ref.read(workoutDaoProvider).getLibraryExercises());
 });
 
 /// Filtre + gruplama için kategori sırası.
@@ -197,7 +200,7 @@ class _ExerciseLibraryScreenState
     );
     if (result == null) return;
     await ref.read(workoutDaoProvider).insertCustomExercise(result);
-    ref.invalidate(libraryExercisesProvider);
+    // Kütüphane reaktif (H-05) → yeni özel hareket kendiliğinden görünür.
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppL10n.of(context).elAdded)),

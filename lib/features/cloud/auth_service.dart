@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../core/config/supabase_config.dart';
 
 /// Supabase hesap/oturum sarmalayıcı (docs/13-cloud-backup.md).
 /// E-posta/şifre + Google ile giriş. Yerel-öncelikli mimaride bulut opsiyonel:
@@ -18,14 +21,51 @@ class AuthService {
     await _client.auth.signInWithPassword(email: email, password: password);
   }
 
-  /// Google ile giriş (OAuth). Google sağlayıcı + OAuth client kurulumu gerekir
-  /// (docs/13 §5). Kurulmadan çağrılırsa Supabase hata döndürür.
-  Future<void> signInWithGoogle() async {
+  /// Google ile giriş. Web client ID yapılandırılmışsa **yerel (native)** akış
+  /// (Android hesap seçici, tek dokunuş, izin ekranında ham `supabase.co` YOK);
+  /// yoksa eski **tarayıcı** akışı (docs/18 §5.2.1 D).
+  ///
+  /// Dönüş: kullanıcı iptal ettiyse `false`, giriş başladıysa/başarılıysa
+  /// `true`. Tarayıcı akışı asenkron döndüğü için hep `true` sayılır (sonucu
+  /// `onAuthStateChange` bildirir).
+  Future<bool> signInWithGoogle() async {
+    const webClientId = SupabaseConfig.googleWebClientId;
+    if (webClientId.isEmpty) {
+      await _signInWithGoogleBrowser();
+      return true;
+    }
+    return _signInWithGoogleNative(webClientId);
+  }
+
+  /// Tarayıcı/özel sekme akışı — yalnız Web OAuth client gerekir. Supabase deep
+  /// link'i `fitpack://login-callback` ile geri döner (manifest intent-filter).
+  Future<void> _signInWithGoogleBrowser() async {
     await _client.auth.signInWithOAuth(
       OAuthProvider.google,
-      // Mobilde deep-link geri dönüşü; AndroidManifest'e intent-filter eklenir.
       redirectTo: 'fitpack://login-callback',
     );
+  }
+
+  /// Yerel akış: cihazın Google hesap seçicisi açılır, alınan `idToken`
+  /// doğrudan Supabase'e verilir (`signInWithIdToken`). Tarayıcı hiç açılmaz.
+  ///
+  /// `serverClientId` = **Web** client ID: Google, token'ı bu `aud` için imzalar
+  /// ve Supabase'in provider'ında tanımlı client ile eşleşmesi gerekir.
+  Future<bool> _signInWithGoogleNative(String webClientId) async {
+    final googleSignIn = GoogleSignIn(serverClientId: webClientId);
+    final account = await googleSignIn.signIn();
+    if (account == null) return false; // kullanıcı iptal etti
+    final auth = await account.authentication;
+    final idToken = auth.idToken;
+    if (idToken == null) {
+      throw const AuthException('Google kimlik doğrulaması eksik (idToken yok)');
+    }
+    await _client.auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+      accessToken: auth.accessToken,
+    );
+    return true;
   }
 
   Future<void> signOut() async {

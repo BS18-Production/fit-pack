@@ -1714,4 +1714,61 @@ class AppL10nTr extends AppL10n {
   @override
   String get exportRptBodyTable =>
       '| Tarih | Kilo | Bel | Göğüs | Kol | Kalça | Boyun | YY% |';
+
+  @override
+  String get authWelcomeTitle => 'Fit Pack\'e hoş geldin';
+
+  @override
+  String get authWelcomeTagline =>
+      'Antrenmanın, beslenmen ve gelişimin tek yerde.';
+
+  @override
+  String get authValueWorkout => 'Rutinlerini kur, her seti kaydet';
+
+  @override
+  String get authValueNutrition => 'Kalori ve proteini gün gün takip et';
+
+  @override
+  String get authValueProgress => 'Kilonu ve ölçülerini grafikte gör';
+
+  @override
+  String get authWhyAccount =>
+      'Verilerin hesabında durur — telefon değiştirsen de seninle gelir.';
+
+  @override
+  String get cloudIntroSignUp =>
+      'Hesap oluştur — antrenmanların, öğünlerin ve ölçümlerin hesabına otomatik kaydedilir.';
+
+  @override
+  String get syncUpToDate => 'Verilerin güncel';
+
+  @override
+  String get syncSyncing => 'Yükleniyor…';
+
+  @override
+  String syncPendingOffline(int count) {
+    return 'Kaydedildi — $count kayıt bağlantı gelince yüklenecek';
+  }
+
+  @override
+  String syncPendingWaiting(int count) {
+    return 'Kaydedildi — $count kayıt yüklenmeyi bekliyor';
+  }
+
+  @override
+  String get signOutPendingTitle => 'Yüklenmemiş kayıtlar var';
+
+  @override
+  String signOutPendingMsg(int count) {
+    return '$count kayıt henüz sunucuya yüklenmedi. Şimdi çıkarsan bir dahaki girişine kadar yüklenmezler.';
+  }
+
+  @override
+  String get signOutSyncFirst => 'Önce senkron et';
+
+  @override
+  String get signOutAnyway => 'Yine de çık';
+
+  @override
+  String get signOutStillPending => 'Hâlâ yükleniyor — birazdan tekrar dene';
 }

@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/providers.dart';
 import 'supabase_sync_remote.dart';
 import 'sync_controller.dart';
+import 'sync_pull.dart';
 import 'sync_push.dart';
 
 /// Sunucu yüzeyi. Supabase başlatılamadıysa (ağ yok / yanlış config) yine de
@@ -14,6 +15,10 @@ final syncRemoteProvider = Provider<SyncRemote>(
 
 final syncPushProvider = Provider<SyncPush>(
   (ref) => SyncPush(ref.watch(databaseProvider), ref.watch(syncRemoteProvider)),
+);
+
+final syncPullProvider = Provider<SyncPull>(
+  (ref) => SyncPull(ref.watch(databaseProvider), ref.watch(syncRemoteProvider)),
 );
 
 /// Senkron zamanlayıcısı. **`autoDispose` DEĞİL** — ekran değişince yok olup

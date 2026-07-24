@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
+import '../sync/sync_providers.dart';
+import '../sync/sync_status.dart';
 import 'auth_service.dart';
 
-/// Hesap ekranı (docs/18-auth-and-sync.md).
-/// Oturum yoksa giriş/kayıt; oturum varsa hesap paneli (Çıkış / Hesabı Sil).
+/// Hesap paneli (docs/18-auth-and-sync.md) — Profil'den açılır.
+///
+/// Giriş/kayıt formu **artık burada değil**: hesap zorunlu olduğu için form
+/// uygulamanın önündeki tam ekran kapıya taşındı
+/// (`features/auth/auth_screen.dart`, docs/18 §5.1). Bu ekrana yalnız oturumu
+/// açık kullanıcı ulaşır → burada yapılacak iş Çıkış ve Hesabı Sil.
 ///
 /// **Elle bulut yedekleme KALDIRILDI (2026-07-21, docs/18 §1).** Veriler
 /// hesaba otomatik senkron edilir (outbox deseni, docs/18 §6) — kullanıcının
@@ -22,166 +27,11 @@ class CloudAccountScreen extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     return Scaffold(
       appBar: AppBar(title: Text(AppL10n.of(context).settingsCloudAccount)),
+      // Çıkış anında oturum düşer; kapı bu ekranı zaten karşılamayla
+      // değiştirecek — o tek kare için boş gövde yeter.
       body: user == null
-          ? const _AuthForm()
+          ? const SizedBox.shrink()
           : _AccountPanel(email: user.email ?? '—'),
-    );
-  }
-}
-
-// ───────────────────────────── Giriş / Kayıt ─────────────────────────────
-
-class _AuthForm extends ConsumerStatefulWidget {
-  const _AuthForm();
-  @override
-  ConsumerState<_AuthForm> createState() => _AuthFormState();
-}
-
-class _AuthFormState extends ConsumerState<_AuthForm> {
-  final _emailCtrl = TextEditingController();
-  final _passCtrl = TextEditingController();
-  bool _isLogin = true; // true: giriş, false: kayıt
-  bool _busy = false;
-  String? _error;
-
-  @override
-  void dispose() {
-    _emailCtrl.dispose();
-    _passCtrl.dispose();
-    super.dispose();
-  }
-
-  bool get _valid =>
-      _emailCtrl.text.contains('@') && _passCtrl.text.length >= 6;
-
-  Future<void> _submitEmail() async {
-    setState(() {
-      _busy = true;
-      _error = null;
-    });
-    final auth = ref.read(authServiceProvider);
-    try {
-      final email = _emailCtrl.text.trim();
-      final pass = _passCtrl.text;
-      if (_isLogin) {
-        await auth.signInWithEmail(email, pass);
-      } else {
-        await auth.signUpWithEmail(email, pass);
-        if (mounted && ref.read(currentUserProvider) == null) {
-          // E-posta doğrulama açıksa oturum hemen açılmaz.
-          setState(
-              () => _error = AppL10n.of(context).cloudSignupOk);
-        }
-      }
-    } on AuthException catch (e) {
-      setState(() => _error = e.message);
-    } catch (e) {
-      if (mounted) {
-        setState(() =>
-            _error = AppL10n.of(context).cloudConnErr(e.toString()));
-      }
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  Future<void> _google() async {
-    setState(() {
-      _busy = true;
-      _error = null;
-    });
-    try {
-      await ref.read(authServiceProvider).signInWithGoogle();
-    } catch (e) {
-      if (mounted) {
-        setState(() => _error = AppL10n.of(context).cloudGoogleErr);
-      }
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppL10n.of(context);
-    return ListView(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      children: [
-        Icon(Icons.cloud_outlined,
-            size: AppIconSize.xxl, color: context.colors.primary),
-        AppSpacing.vGapMd,
-        Text(_isLogin ? l.cloudSignIn : l.cloudCreateAccount,
-            textAlign: TextAlign.center,
-            style: context.texts.titleLarge
-                ?.copyWith(fontWeight: FontWeight.bold)),
-        AppSpacing.vGapSm,
-        Text(
-          l.cloudIntro,
-          textAlign: TextAlign.center,
-          style: context.texts.bodyMedium
-              ?.copyWith(color: context.colors.onSurfaceVariant),
-        ),
-        AppSpacing.vGapXl,
-        TextField(
-          controller: _emailCtrl,
-          keyboardType: TextInputType.emailAddress,
-          autofillHints: const [AutofillHints.email],
-          onChanged: (_) => setState(() {}),
-          decoration: InputDecoration(
-            labelText: l.cloudEmail,
-            prefixIcon: const Icon(Icons.mail_outline_rounded),
-            border: const OutlineInputBorder(borderRadius: AppRadius.brMd),
-          ),
-        ),
-        AppSpacing.vGapMd,
-        TextField(
-          controller: _passCtrl,
-          obscureText: true,
-          onChanged: (_) => setState(() {}),
-          decoration: InputDecoration(
-            labelText: l.cloudPassword,
-            prefixIcon: const Icon(Icons.lock_outline_rounded),
-            border: const OutlineInputBorder(borderRadius: AppRadius.brMd),
-          ),
-        ),
-        if (_error != null) ...[
-          AppSpacing.vGapMd,
-          Text(_error!,
-              style: context.texts.bodySmall
-                  ?.copyWith(color: context.colors.error)),
-        ],
-        AppSpacing.vGapLg,
-        FilledButton(
-          onPressed: (_busy || !_valid) ? null : _submitEmail,
-          style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(52)),
-          child: _busy
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2))
-              : Text(_isLogin ? l.cloudSignInBtn : l.cloudSignUpBtn),
-        ),
-        AppSpacing.vGapMd,
-        OutlinedButton.icon(
-          onPressed: _busy ? null : _google,
-          style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(52)),
-          icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
-          label: Text(l.cloudGoogle),
-        ),
-        AppSpacing.vGapLg,
-        TextButton(
-          onPressed: _busy
-              ? null
-              : () => setState(() {
-                    _isLogin = !_isLogin;
-                    _error = null;
-                  }),
-          child:
-              Text(_isLogin ? l.cloudNoAccount : l.cloudHaveAccount),
-        ),
-      ],
     );
   }
 }
@@ -198,9 +48,60 @@ class _AccountPanel extends ConsumerStatefulWidget {
 class _AccountPanelState extends ConsumerState<_AccountPanel> {
   bool _busy = false;
 
+  /// Çıkış. Ekranı BURADAN kapatmıyoruz: oturum düşünce kapı devreye girip
+  /// yığını karşılamayla değiştiriyor (`refreshListenable`). Elle `pop` etmek
+  /// o yeni yığından bir sayfa götürme riski taşır.
+  ///
+  /// **Bekleyen kayıt varken uyarı** (docs/18 §9): yüklenmemiş veri varken
+  /// sessizce çıkmak, o veriyi bir dahaki girişe kadar sunucusuz bırakır.
   Future<void> _signOut() async {
+    final l = AppL10n.of(context);
+    final controller = ref.read(syncControllerProvider);
+    final pending = await controller.pendingCount();
+    if (!mounted) return;
+
+    if (pending > 0) {
+      final choice = await showDialog<_SignOutChoice>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l.signOutPendingTitle),
+          content: Text(l.signOutPendingMsg(pending)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, _SignOutChoice.cancel),
+              child: Text(l.commonCancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, _SignOutChoice.syncFirst),
+              child: Text(l.signOutSyncFirst),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, _SignOutChoice.anyway),
+              child: Text(l.signOutAnyway,
+                  style: TextStyle(color: context.colors.error)),
+            ),
+          ],
+        ),
+      );
+      if (choice == null || choice == _SignOutChoice.cancel || !mounted) return;
+
+      if (choice == _SignOutChoice.syncFirst) {
+        setState(() => _busy = true);
+        await controller.syncNow();
+        final left = await controller.pendingCount();
+        if (!mounted) return;
+        setState(() => _busy = false);
+        if (left > 0) {
+          // Hâlâ bekliyor (ağ yok) → çıkma, kullanıcı tekrar deneyebilir.
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(l.signOutStillPending)));
+          return;
+        }
+      }
+      // syncFirst başarılı ya da "yine de çık" → devam.
+    }
+
     await ref.read(authServiceProvider).signOut();
-    if (mounted) Navigator.of(context).maybePop();
   }
 
   /// Hesabı kalıcı sil (docs/16 §4) — çift onay.
@@ -229,10 +130,10 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
     try {
       await ref.read(authServiceProvider).deleteAccount();
       if (mounted) {
+        // Silme oturumu da kapatır → kapı karşılamaya döndürür (elle pop yok).
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l.cloudDeleted)),
         );
-        Navigator.of(context).maybePop();
       }
     } catch (e) {
       if (mounted) {
@@ -278,6 +179,8 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
             ),
           ],
         ),
+        AppSpacing.vGapLg,
+        const _SyncStatusTile(),
         AppSpacing.vGapxl_,
         TextButton.icon(
           onPressed: _busy ? null : _signOut,
@@ -291,6 +194,78 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
           label: Text(l.cloudDeleteAccount, style: TextStyle(color: c.error)),
         ),
       ],
+    );
+  }
+}
+
+enum _SignOutChoice { cancel, syncFirst, anyway }
+
+/// Senkron durumu satırı (docs/18 §9). "Korkutma yok, durum bilgisi var" —
+/// mesaj daima "kaydedildi" güvencesiyle. Sessiz ✓'ten dönen spinner'a,
+/// oradan "bağlantı gelince yüklenecek"e kadar dört durum.
+class _SyncStatusTile extends ConsumerWidget {
+  const _SyncStatusTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
+    final c = context.colors;
+    final async = ref.watch(syncStatusProvider);
+    final status = async.valueOrNull;
+    // İlk kare / hata: sessiz kal (gösterge yanıp sönmesin).
+    if (status == null) return const SizedBox.shrink();
+
+    final (IconData icon, Color tint, String text, bool spin) = switch (
+        status.state) {
+      SyncState.synced => (
+          Icons.cloud_done_rounded,
+          context.semantic.success,
+          l.syncUpToDate,
+          false
+        ),
+      SyncState.syncing => (
+          Icons.cloud_sync_rounded,
+          c.primary,
+          l.syncSyncing,
+          true
+        ),
+      SyncState.pending => (
+          Icons.cloud_queue_rounded,
+          c.onSurfaceVariant,
+          l.syncPendingOffline(status.pending),
+          false
+        ),
+      SyncState.failed => (
+          Icons.cloud_off_rounded,
+          c.onSurfaceVariant,
+          l.syncPendingWaiting(status.pending),
+          false
+        ),
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: c.surfaceContainerHighest,
+        borderRadius: AppRadius.brMd,
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: AppIconSize.md,
+            height: AppIconSize.md,
+            child: spin
+                ? CircularProgressIndicator(strokeWidth: 2, color: tint)
+                : Icon(icon, color: tint, size: AppIconSize.md),
+          ),
+          AppSpacing.hGapMd,
+          Expanded(
+            child: Text(text,
+                style: context.texts.bodyMedium
+                    ?.copyWith(color: c.onSurfaceVariant)),
+          ),
+        ],
+      ),
     );
   }
 }

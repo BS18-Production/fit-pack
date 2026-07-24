@@ -7,15 +7,18 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/utils/format.dart';
 import '../../data/providers.dart';
+import '../../data/reactive.dart';
 import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../home/providers/home_providers.dart';
 import 'calorie_estimate.dart';
-import 'routine_providers.dart';
 
-final _allSessionsProvider = FutureProvider<List<WorkoutSession>>((ref) {
-  return ref.watch(workoutDaoProvider).getAllSessions();
+/// **Reaktif** (H-05): seans silinince/eklenince kendiliğinden tazelenir.
+final _allSessionsProvider = StreamProvider<List<WorkoutSession>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return watchTables(db, [db.workoutSessions],
+      () => ref.read(workoutDaoProvider).getAllSessions());
 });
 
 /// Seansın setleri (genişletilince yüklenir) — hareket adıyla gruplu.
@@ -165,7 +168,7 @@ class _SessionCard extends ConsumerWidget {
           : DateTime(picked.year, picked.month, picked.day,
               session.startedAt!.hour, session.startedAt!.minute)),
     ));
-    _invalidateAll(ref);
+    // Liste + istatistikler reaktif (H-05) → tarih değişimi kendiliğinden yansır.
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
@@ -178,14 +181,8 @@ class _SessionCard extends ConsumerWidget {
     );
     if (!ok) return;
     await ref.read(workoutDaoProvider).deleteSessionWithSets(session.id);
-    _invalidateAll(ref);
-  }
-
-  void _invalidateAll(WidgetRef ref) {
-    ref.invalidate(_allSessionsProvider);
-    ref.invalidate(weekWorkoutStatsProvider);
-    ref.invalidate(weeklyStreakProvider);
-    ref.invalidate(lastWorkoutSessionProvider);
+    // Liste + haftalık istatistik + seri reaktif (H-05) → silme kendiliğinden
+    // yansır.
   }
 }
 

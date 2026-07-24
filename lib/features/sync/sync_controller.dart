@@ -160,6 +160,9 @@ class SyncController {
 
   /// Test/hata ayıklama için: kaçıncı hata basamağındayız.
   int get failureCount => _failures;
+
+  /// Şu an bir gönderim turu sürüyor mu — senkron durumu arayüzü (Aşama G).
+  bool get isRunning => _running;
 }
 
 /// Minik değer yayını — son senkron sonucunu dinlenebilir tutar.

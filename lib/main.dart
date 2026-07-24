@@ -8,6 +8,7 @@ import 'core/config/supabase_config.dart';
 import 'core/onboarding/first_run_hints.dart';
 import 'data/providers.dart';
 import 'data/seed/seed_manager.dart';
+import 'features/auth/auth_gate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,19 +46,21 @@ void main() async {
   // Seed initial data
   await SeedManager(db).seedIfNeeded();
 
-  // İlk açılış (P-10) tamamlandı mı? seedIfNeeded profili garanti etti;
-  // onboarded=false ise router onboarding ekranıyla başlar.
-  final profile = await db.userProfileDao.getProfile();
-  final onboarded = profile?.onboarded ?? false;
+  // Zorunlu giriş kapısı (docs/18 §5.1). `runApp` ÖNCESİ kurulur: oturum varsa
+  // hesap değişimi kontrolü çalışır ve `onboarded` diskten okunur. Kapı kararı
+  // gevşek bir provider'ın varsayılanına bırakılmaz (Kural 2) — ilk kare doğru
+  // ekranı çizsin.
+  final gate = container.read(authGateProvider);
+  await gate.bootstrap();
 
   // İlk-kullanım ipuçları (docs/15 §B): mevcut kullanıcıya güncelleme sonrası
   // coach mark gösterme — yalnız yeni onboarding'den geçenler görür.
-  await FirstRunHints.initialize(onboarded: onboarded);
+  await FirstRunHints.initialize(onboarded: gate.onboarded);
 
   runApp(
     UncontrolledProviderScope(
       container: container,
-      child: FitPackApp(onboarded: onboarded),
+      child: const FitPackApp(),
     ),
   );
 }

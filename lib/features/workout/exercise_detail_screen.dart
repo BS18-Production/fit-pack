@@ -13,7 +13,6 @@ import '../../data/database/daos/workout_dao.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
-import 'exercise_library_screen.dart' show libraryExercisesProvider;
 import 'muscle_map.dart';
 import 'workout_ui.dart';
 
@@ -54,7 +53,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
                   );
                   if (!ok) return;
                   await ref.read(workoutDaoProvider).archiveExercise(ex.id);
-                  ref.invalidate(libraryExercisesProvider);
+                  // Kütüphane reaktif (H-05) → arşivleme kendiliğinden yansır.
                   if (context.mounted) context.pop();
                 },
               ),

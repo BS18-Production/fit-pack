@@ -12,13 +12,17 @@ import '../../data/providers.dart';
 import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/glass.dart';
-import '../home/providers/home_providers.dart';
+import '../auth/auth_gate.dart';
 import 'onboarding_calc.dart';
 
 /// İlk açılış akışı V2 (docs/15 — glass tema + değer + öğretme).
 ///
-/// 4 sayfa: Karşılama → Seni tanıyalım (vücut + faz) → Planın hazır
-/// (kalori/protein + değer projeksiyonu) → İçeride ne var (4 sekme haritası).
+/// 3 sayfa: Seni tanıyalım (vücut + faz) → Planın hazır (kalori/protein +
+/// değer projeksiyonu) → İçeride ne var (4 sekme haritası). Karşılama sayfası
+/// **giriş öncesine taşındı** (`features/auth/welcome_screen.dart`, docs/18
+/// §5.1) — onboarding artık oturum açılmış kullanıcıyla başlar, yani topladığı
+/// profil verisi doğduğu anda hesaba bağlıdır.
+///
 /// Tamamla → profil yazılır, başlangıç kilosu ölçüm olarak kaydedilir,
 /// onboarded=1, Home'a geçilir. Sekme başına ilk-kullanım ipuçları
 /// (coach mark) ayrı: `core/onboarding/first_run_hints.dart`.
@@ -46,7 +50,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
   int _page = 0;
 
-  // Sayfa 2 — vücut bilgileri
+  // Sayfa 1 — vücut bilgileri
   final _heightCtrl = TextEditingController();
   final _weightCtrl = TextEditingController();
   final _goalWeightCtrl = TextEditingController();
@@ -54,14 +58,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String? _gender; // 'male' | 'female' — günlük enerji tahmini için (opsiyonel)
   DateTime? _birthDate; // yaş — günlük enerji tahmini için (opsiyonel)
 
-  // Sayfa 3 — hedefler
+  // Sayfa 2 — hedefler
   final _kcalCtrl = TextEditingController();
   final _proteinCtrl = TextEditingController();
   bool _goalsEdited = false; // kullanıcı elle değiştirdiyse üzerine yazma
 
   bool _saving = false;
 
-  static const _lastPage = 3;
+  static const _lastPage = 2;
 
   @override
   void dispose() {
@@ -99,7 +103,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void _next() {
     FocusScope.of(context).unfocus();
     if (_page < _lastPage) {
-      if (_page == 1) _refreshSuggestedGoals();
+      // "Seni tanıyalım"dan çıkarken hedefleri öner.
+      if (_page == 0) _refreshSuggestedGoals();
       _pageController.nextPage(
         duration: AppDuration.normal,
         curve: Curves.easeInOut,
@@ -121,9 +126,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   /// İleri tuşu, mevcut adımın zorunlu alanları doluysa aktif olur.
   bool get _canAdvance {
     switch (_page) {
-      case 1:
+      case 0: // Seni tanıyalım — kilo zorunlu
         return _weight != null && _weight! > 0;
-      case 2:
+      case 1: // Planın hazır — kalori/protein zorunlu
         final kcal = int.tryParse(_kcalCtrl.text);
         final protein = int.tryParse(_proteinCtrl.text);
         return kcal != null && kcal > 0 && protein != null && protein > 0;
@@ -176,12 +181,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             );
       }
 
-      // Home ekranı taze profili + kiloyu görsün (H-05: kilo okuyan tüm
-      // provider'lar).
-      ref.invalidate(userProfileProvider);
-      ref.invalidate(latestWeightProvider);
-      ref.invalidate(weightTrendProvider);
+      // Home provider'ları reaktif (H-05): profil + başlangıç kilosu DB'ye
+      // yazılınca kendiliğinden yansır — elle invalidate gerekmez.
 
+      // Kapı durumu güncellenmeden Ana Sayfa'ya gidilemez: `redirect` hâlâ
+      // "onboarded değil" görür ve kullanıcıyı buraya geri yollar (docs/18 §5.1).
+      ref.read(authGateProvider).markOnboarded();
       if (mounted) context.go(AppRoutes.home);
     } catch (_) {
       // Kayıt başarısız — kullanıcı bilsin ve tekrar deneyebilsin (M-10:
@@ -209,7 +214,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   onPageChanged: (i) => setState(() => _page = i),
                   children: [
-                    const _WelcomePage(),
                     _AboutYouPage(
                       heightCtrl: _heightCtrl,
                       weightCtrl: _weightCtrl,
@@ -253,67 +257,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────── Sayfa 1: Karşılama
-
-class _WelcomePage extends StatelessWidget {
-  const _WelcomePage();
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppL10n.of(context);
-    final muted = context.colors.onSurfaceVariant;
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.xxl),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Marka rozeti — Ana Sayfa CTA'sıyla aynı gradient dil.
-          Container(
-            width: 84,
-            height: 84,
-            decoration: BoxDecoration(
-              borderRadius: AppRadius.brXl,
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColors.indigo, AppColors.indigoDeep],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.indigoDeep.withValues(alpha: 0.30),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: const Icon(Icons.fitness_center_rounded,
-                size: 40, color: AppColors.onGradient),
-          ),
-          AppSpacing.vGapXl,
-          Text(l.onbWelcomeTitle,
-              style: context.texts.displaySmall?.copyWith(height: 1.1)),
-          AppSpacing.vGapMd,
-          Text(l.onbWelcomeTagline,
-              style: context.texts.bodyLarge?.copyWith(color: muted)),
-          AppSpacing.vGapXl,
-          Row(
-            children: [
-              Icon(Icons.timer_outlined, size: AppIconSize.sm, color: muted),
-              AppSpacing.hGapSm,
-              Expanded(
-                child: Text(l.onbWelcomeHint,
-                    style: context.texts.bodySmall?.copyWith(color: muted)),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ────────────────────────────────────────────── Sayfa 2: Seni tanıyalım
+// ────────────────────────────────────────────── Sayfa 1: Seni tanıyalım
 
 class _AboutYouPage extends ConsumerWidget {
   const _AboutYouPage({
@@ -529,7 +473,7 @@ class _PhaseTile extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────── Sayfa 3: Planın hazır
+// ─────────────────────────────────────────────── Sayfa 2: Planın hazır
 
 class _PlanPage extends ConsumerWidget {
   const _PlanPage({
@@ -654,7 +598,7 @@ class _PlanPage extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────── Sayfa 4: İçeride ne var
+// ─────────────────────────────────────────── Sayfa 3: İçeride ne var
 
 class _TourPage extends StatelessWidget {
   const _TourPage();

@@ -12,21 +12,21 @@ import 'features/home/providers/home_providers.dart';
 import 'features/nutrition/nutrition_screen.dart' show selectedDateProvider;
 import 'features/workout/routine_providers.dart';
 import 'features/sync/sync_providers.dart';
+import 'features/auth/auth_gate.dart';
 
 class FitPackApp extends ConsumerStatefulWidget {
-  /// İlk açılış (P-10) tamamlandı mı? Router başlangıç konumunu belirler.
-  final bool onboarded;
-
-  const FitPackApp({super.key, required this.onboarded});
+  const FitPackApp({super.key});
 
   @override
   ConsumerState<FitPackApp> createState() => _FitPackAppState();
 }
 
 class _FitPackAppState extends ConsumerState<FitPackApp> {
-  // Router'ı bir kez kur — rebuild'lerde GoRouter state'i korunsun.
+  // Router'ı bir kez kur — rebuild'lerde GoRouter state'i korunsun. Kapı
+  // (oturum + onboarding) durumunu router'ın kendisi `redirect`te okur;
+  // `main()` `bootstrap()`u çağırdığı için değerler burada hazırdır.
   late final GoRouter _router =
-      createAppRouter(onboarded: widget.onboarded);
+      createAppRouter(gate: ref.read(authGateProvider));
 
   @override
   Widget build(BuildContext context) {

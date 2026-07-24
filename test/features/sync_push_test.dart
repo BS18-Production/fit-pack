@@ -31,6 +31,15 @@ class _FakeRemote implements SyncRemote {
     if (failAfterWrite) throw Exception('onay alınamadı');
   }
 
+  @override
+  Future<List<Map<String, Object?>>> fetch(String table, String userId) async {
+    calls.add('fetch:$table');
+    if (fail) throw Exception('ağ yok');
+    return (store[table]?.values.toList() ?? const [])
+        .where((r) => r['user_id'] == userId)
+        .toList();
+  }
+
   int rowCount(String table) => store[table]?.length ?? 0;
 }
 

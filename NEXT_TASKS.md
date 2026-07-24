@@ -7,18 +7,46 @@ A → B → C → E → G → F → D.
 
 - [x] **Aşama A — Şema v9** (2026-07-22): `SyncColumns` mixin 12 tabloda,
       migration + 4 test, gerçek cihazda v8→v9 doğrulandı.
-- [ ] **Aşama C — Zorunlu giriş kapısı** ⬅️ **TASARIM HAZIR (§5.1), KOD BEKLİYOR**
-      Akış: ① Karşılama → ② Giriş/Kayıt → ③ Onboarding → ④ Uygulama.
-      Dokunulacak: `main.dart`/`app.dart` (kapı durumu), `app_router.dart`
-      (`redirect` + `refreshListenable`, `/welcome`+`/auth`), `onboarding_screen`
-      (A1 çıkar, 4→3 sayfa), `cloud_account_screen` (form tam ekran kapıya).
-      **3 kural:** kapı ağı değil oturumu kontrol eder · kapı kararı gevşek
-      provider'dan okunmaz · hesap değişince yerel veri temizlenir.
+- [x] **Aşama C — Zorunlu giriş kapısı** (2026-07-23): ① Karşılama → ② Giriş/Kayıt
+      → ③ Onboarding (4→3 sayfa) → ④ Uygulama. `features/auth/` altında `AuthGate`
+      (+saf `gateRedirect`), `AccountSwitchGuard`, karşılama ve tam ekran giriş
+      ekranları; router `redirect` + `refreshListenable`; `main.dart` `runApp`
+      öncesi `bootstrap()`. **11 yeni test**, emülatörde uçtan uca doğrulandı
+      (docs/18 §5.4).
 - [x] **Aşama B — Supabase mirror tabloları + RLS** (2026-07-22): `supabase/01_schema.sql`
       + `02_grants.sql`. ⚠️ RLS tek başına yetmiyor, GRANT de şart (42501 dersi).
 - [x] **Aşama E — Outbox senkron katmanı** (2026-07-22): **canlıda çalışıyor**,
       telefondan 15 satır gitti. Dört arıza aşıldı, veri kaybı sıfır (docs/18 §6.7).
-- [ ] **Aşama G** senkron durumu UI · **F** pull/çakışma · **D** Google native akış
+- [x] **Aşama F — Pull + çakışma** (2026-07-23): `features/sync/sync_pull.dart`.
+      Girişte sunucu verisi iner, `onboarded` profil varsa onboarding atlanır.
+      Tetikleyiciler pull boyunca kapalı (yankı yok), profil tekil (junk iyileşir),
+      katalog isimle benimsenir, LWW çakışma. 6 test + emülatörde gerçek Supabase'e
+      karşı uçtan uca doğrulandı (docs/18 §6.8). Samet'in "verim geri gelmedi" hatası
+      çözüldü.
+- [x] **Aşama G — Senkron durumu UI** (2026-07-23): `features/sync/sync_status.dart`
+      + hesap ekranı göstergesi (4 durum, "kaydedildi" güvenceli) + bekleyen kayıtla
+      çıkış uyarısı (İptal/Önce senkron et/Yine de çık). docs/18 §9.1.
+- [x] **Aşama D — Google yerel akış KOD TAMAM** (2026-07-23): `auth_service.dart`
+      iki yollu (Web client ID doluysa native, boşsa tarayıcı). `google_sign_in`
+      eklendi. **Aktifleşmesi için:** `SupabaseConfig.googleWebClientId`'e Supabase
+      → Auth → Google → "Client ID (for OAuth)" yapıştır (docs/18 §5.2.2). B-1'i de
+      çözer. Test cihazda Samet'e kaldı.
+
+**Hâlâ açık:**
+- **E-posta doğrulama açık** → kayıt oturum açmıyor, kullanıcı posta kutusuna
+  gidiyor. Premium ilk kurulumda sürtünme; kapatılacak mı karar ver (docs/18 §13,
+  Supabase → Authentication → Email → Confirm email).
+- **`updated_at` NULL eski satırlar push'ta reddediliyor** (`23502`). v9 göçü `uid`
+  backfill etti ama `updated_at`i boş bıraktı. Etkisi: yalnız Samet'in v9-öncesi
+  kendi satırları; yeni kullanıcıda yok. Gönderim öncesi `_repairMissingUids`
+  yanına `updated_at` onarımı (COALESCE now()) eklenecek — küçük iş.
+
+- [x] **H-05 — Reaktif veri katmanı** (2026-07-23): 20 okuma provider'ı `FutureProvider`
+      → `StreamProvider` (`data/reactive.dart` `watchTables`); tablo değişince ekran
+      kendiliğinden tazelenir. Elle invalidate **74 → 38** (kalanlar meşru: onRetry,
+      gün-dönümü, pull, activeDraft, pull-to-refresh). Momentum hero (`last30WorkoutStats`)
+      artık seans bitince otomatik güncelleniyor — H-05 bug'ı çözüldü. Emülatörde su
+      widget'ıyla (invalidate'i kaldırılmış) canlı doğrulandı. test 197/197 · analyze 0.
 
 **Samet'in manuel işleri:** Google Cloud → **Branding** doldur (izin ekranında ham
 `...supabase.co` görünüyor, B-1) · mirror tablo SQL'i · `delete_user()` fonksiyonu.

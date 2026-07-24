@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
+import '../../data/reactive.dart';
 import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
@@ -16,8 +17,12 @@ import 'nutrition_screen.dart' show unitOptionsWith;
 /// Besin veritabanı (P-1 + P-2, docs/07-nutrition-v2.md).
 /// "Yemekler frontend'de değil" → buradan görünür/yönetilir: lokal SQLite
 /// `foods` tablosu. Değerleri gör, custom yemekleri düzenle/sil.
-final allFoodsProvider = FutureProvider<List<Food>>(
-    (ref) => ref.watch(nutritionDaoProvider).getAllFoods());
+/// **Reaktif** (H-05): yemek eklenince/düzenlenince/silinince tazelenir.
+final allFoodsProvider = StreamProvider<List<Food>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return watchTables(
+      db, [db.foods], () => ref.read(nutritionDaoProvider).getAllFoods());
+});
 
 class FoodsScreen extends ConsumerStatefulWidget {
   const FoodsScreen({super.key});
@@ -51,7 +56,7 @@ class _FoodsScreenState extends ConsumerState<FoodsScreen> {
   Future<void> _scan() async {
     final food = await scanBarcodeToFood(context, ref);
     if (food == null || !mounted) return;
-    ref.invalidate(allFoodsProvider);
+    // allFoodsProvider reaktif (H-05) → tarama sonrası liste kendiliğinden güncel.
     _searchController.text = food.name;
     setState(() => _query = food.name);
   }
@@ -74,7 +79,7 @@ class _FoodsScreenState extends ConsumerState<FoodsScreen> {
           defaultPortionGrams: Value(form.portionG),
           unitLabel: Value(form.unitLabel),
         ));
-    ref.invalidate(allFoodsProvider);
+    // allFoodsProvider reaktif (H-05) → yeni yemek kendiliğinden görünür.
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(AppL10n.of(context).foodsAdded(form.name))));
@@ -99,7 +104,7 @@ class _FoodsScreenState extends ConsumerState<FoodsScreen> {
             unitLabel: Value(form.unitLabel),
           ),
         );
-    ref.invalidate(allFoodsProvider);
+    // allFoodsProvider reaktif (H-05) → düzenleme kendiliğinden yansır.
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppL10n.of(context).foodsUpdated)));
@@ -124,7 +129,7 @@ class _FoodsScreenState extends ConsumerState<FoodsScreen> {
     );
     if (!ok) return;
     await dao.deleteFood(food.id);
-    ref.invalidate(allFoodsProvider);
+    // allFoodsProvider reaktif (H-05) → silme kendiliğinden yansır.
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l.foodsDeleted(food.name))));

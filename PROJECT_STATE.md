@@ -1,9 +1,75 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-07-22
-> **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · E TAMAM
-> (senkron canlıda çalışıyor). Sıradaki: **Aşama C** (zorunlu giriş kapısı).
+> **Son güncelleme:** 2026-07-23
+> **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · E · F ·
+> **G** TAMAM; **D** kod tamam (Web client ID bekliyor). Kapı + iki yönlü senkron +
+> durum göstergesi canlıda. Epik büyük ölçüde **bitti**.
 > **Sahibi:** Samet Orhan
+
+## ⚡ Reaktif Veri Katmanı (H-05) — 2026-07-23
+
+20 okuma provider'ı `FutureProvider` → `StreamProvider` (`lib/data/reactive.dart`
+`watchTables`): dokundukları tablo değişince ekran **kendiliğinden** tazelenir.
+Elle `invalidate` **74 → 38** (kalanlar meşru: onRetry, gün-dönümü, pull güvenliği,
+activeDraft, pull-to-refresh). Momentum hero (`last30WorkoutStats`) artık seans
+bitince otomatik güncelleniyor — H-05 momentum bug'ı kökten çözüldü. Emülatörde su
+widget'ıyla (invalidate'i kaldırıldı) canlı doğrulandı: 0.0 → 0.5 L elle tazeleme
+olmadan. **Kanonik okuma kalıbı artık:** `StreamProvider` + `watchTables(db, [tablolar], read)`.
+
+## 📶 Senkron Durumu UI (G) + Google Native Kod (D) — 2026-07-23
+
+**Aşama G:** Hesap ekranına senkron durumu göstergesi (`sync_status.dart`) — 4
+durum, mesaj daima "kaydedildi" ile başlar; bekleyen kayıtla çıkışta uyarı
+(İptal / Önce senkron et / Yine de çık). Emülatörde "Verilerin güncel" (yeşil ✓)
+doğrulandı.
+
+**Aşama D (kod tamam):** `auth_service.dart` iki yollu Google — `googleWebClientId`
+doluysa yerel (Android hesap seçici, `signInWithIdToken`), boşsa tarayıcı (regresyon
+yok). `google_sign_in ^6.2.1` eklendi. Aktivasyon Samet'in tek satırına bağlı:
+`SupabaseConfig.googleWebClientId`'e Supabase Google provider'ının Web client ID'si.
+İzin ekranındaki ham `supabase.co` (B-1) bununla biter.
+
+analyze 0 · test **197/197**.
+
+## ⬇️ Çekme (Pull) Kuruldu — Aşama F (2026-07-23)
+
+Senkron artık **iki yönlü**. Girişte sunucudaki veri yerele iner:
+`features/sync/sync_pull.dart`. Bu, Samet'in gerçek testinde çıkan hatayı çözer —
+verisi silinmiş cihaza girince "sıfır kullanıcı" gibi davranıp onboarding
+sormuyor; sunucudaki `onboarded=1` profili + antrenman/ölçüm geçmişini indiriyor.
+
+Dört karar: (1) tetikleyiciler pull boyunca **kapalı** (sunucu `updated_at`'i
+korunur, inen satır kuyruğa geri girmez), (2) profil **tekil** → yeniden-onboarding
+junk'ı gerçek veriyle kendiliğinden iyileşir, (3) katalog **isimle benimsenir**
+(seed hareket ikizlenmez), (4) çakışmada **en son yazan kazanır**. Sunucuda
+`user_profile_one_per_user` (user_id UNIQUE, zaten vardı) çift profili DB
+seviyesinde de engelliyor.
+
+test **197/197** (6 yeni pull testi) · analyze 0 · **emülatörde gerçek Supabase'e
+karşı doğrulandı**: yerel sil → giriş → veri indi, onboarding sorulmadan Ana
+Sayfa, Profil'de 2250 kcal (girilmediği hâlde). Detay docs/18 §6.8.
+
+## 🔐 Zorunlu Giriş Kapısı Kuruldu — Aşama C (2026-07-23)
+
+Uygulama artık **hesapsız açılmıyor**. Akış: ① Karşılama (değer + Hesap oluştur /
+Giriş yap, "Atla" yok) → ② tam ekran Giriş/Kayıt → ③ Onboarding (4 sayfadan **3**e
+indi; A1 Karşılama giriş öncesine taşındı) → ④ Uygulama. Yönlendirme kararı tek
+saf fonksiyonda: `gateRedirect` (oturum × onboarded), GoRouter'a `redirect` +
+`refreshListenable` ile bağlı → çıkışta kapı **anında** devreye giriyor.
+
+Üç tasarım kuralı da kodda: kapı **ağa değil oturuma** bakar (uçak modunda kendi
+verine girersin) · `onboarded` `runApp` ÖNCESİ diskten okunur (tembel provider'ın
+varsayılanına güvenilmez) · **hesap değişince yerel kullanıcı verisi silinir**
+(aynı cihazda ikinci kullanıcı öncekinin antrenmanlarını göremez); ortak katalog
+(1015 hareket) durur.
+
+analyze 0 · **test 191/191** (11 yeni) · emülatörde sıfır kurulumdan Ana Sayfa'ya
+uçtan uca yürüdü, senkron yeni kullanıcı kimliğiyle veri yükledi. Detay:
+docs/18 §5.4.
+
+**İki açık madde:** Supabase'de **e-posta doğrulama açık** → kayıt oturum açmıyor
+(karar gerekiyor) · v9'dan gelen `updated_at` NULL satırlar sunucuca reddediliyor
+(`23502`), Aşama F öncesi onarım eklenmeli. İkisi de NEXT_TASKS'te.
 
 ## ✅ Senkron CANLI ÇALIŞIYOR (2026-07-22)
 
@@ -17,7 +83,7 @@ atlanıyordu (hata yok, sayaç sıfır). Artık gönderim öncesi kimlik onarım
 (antrenman/beslenme/ölçüm logları, 15 alanda filtre) ve kişisel veri panosu.
 claude.ai artifact olarak çalışıyorlar.
 
-**Sıradaki: Aşama C** — zorunlu giriş kapısı (tasarım docs/18 §5.1 hazır).
+**Aşama C tamam** (yukarı bak). Sıradaki: **Aşama G** — senkron durumu arayüzü.
 
 ## 🔐 Zorunlu Hesap + Senkron — Aşama A (2026-07-22)
 

@@ -9,14 +9,18 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/units/units.dart';
 import '../../data/providers.dart';
+import '../../data/reactive.dart';
 import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../activity/activity_calendar.dart';
 import '../home/providers/home_providers.dart';
 
-final allMeasurementsProvider = FutureProvider<List<BodyMeasurement>>((ref) {
-  return ref.watch(bodyDaoProvider).getAllMeasurements();
+/// **Reaktif** (H-05): ölçüm eklenince/silinince kendiliğinden tazelenir.
+final allMeasurementsProvider = StreamProvider<List<BodyMeasurement>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return watchTables(db, [db.bodyMeasurements],
+      () => ref.read(bodyDaoProvider).getAllMeasurements());
 });
 
 class BodyMetricsScreen extends ConsumerWidget {
@@ -128,11 +132,8 @@ class BodyMetricsScreen extends ConsumerWidget {
                     );
                     if (!ok) return;
                     await ref.read(bodyDaoProvider).deleteMeasurement(m.id);
-                    // Kilo verisini okuyan TÜM provider'lar tazelenir (H-05):
-                    // Home "Son Kilo", Ayarlar TDEE, seans kalori tahmini.
-                    ref.invalidate(allMeasurementsProvider);
-                    ref.invalidate(weightTrendProvider);
-                    ref.invalidate(latestWeightProvider);
+                    // Kilo okuyan provider'lar reaktif (H-05) → silme sonrası
+                    // Home "Son Kilo", TDEE, kalori tahmini kendiliğinden güncel.
                   },
                 ),
               )),
@@ -575,10 +576,7 @@ class _AddMeasurementSheetState extends ConsumerState<_AddMeasurementSheet> {
               bodyFatPct: Value(fat),
             ),
           );
-      // Kilo verisini okuyan TÜM provider'lar tazelenir (H-05).
-      ref.invalidate(allMeasurementsProvider);
-      ref.invalidate(weightTrendProvider);
-      ref.invalidate(latestWeightProvider);
+      // Kilo okuyan provider'lar reaktif (H-05) → ekleme kendiliğinden yansır.
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {

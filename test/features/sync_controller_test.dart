@@ -14,6 +14,10 @@ class _CountingRemote implements SyncRemote {
     calls++;
     if (fail) throw Exception('ağ yok');
   }
+
+  @override
+  Future<List<Map<String, Object?>>> fetch(String table, String userId) async =>
+      const [];
 }
 
 void main() {

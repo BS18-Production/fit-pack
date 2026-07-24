@@ -326,6 +326,7 @@
   "cloudSignInBtn": "Giriş Yap",
   "cloudSignUpBtn": "Kayıt Ol",
   "cloudGoogle": "Google ile devam et",
+  "cloudOrEmail": "ya da e-posta ile devam et",
   "cloudNoAccount": "Hesabın yok mu? Kayıt ol",
   "cloudHaveAccount": "Zaten hesabın var mı? Giriş yap",
   "cloudSignOut": "Çıkış Yap",

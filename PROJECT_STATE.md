@@ -1,10 +1,29 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-07-23
+> **Son güncelleme:** 2026-07-25
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · E · F ·
 > **G** TAMAM; **D** kod tamam (Web client ID bekliyor). Kapı + iki yönlü senkron +
 > durum göstergesi canlıda. Epik büyük ölçüde **bitti**.
 > **Sahibi:** Samet Orhan
+
+## 🔑 Google Birincil + Zaman Damgası Onarımı — 2026-07-25
+
+**E-posta doğrulama kararı:** AÇIK kalıyor. Kapatmanın kazancı sürtünme, kaybı
+geri dönüşü olmayan veri kaybı (hesap = tek kurtarma yolu). Sürtünme çözümü:
+**Google girişini birincil buton** yaptık (`auth_screen.dart`) — dolgulu, üstte;
+ayırıcı "ya da e-posta ile devam et"; e-posta/şifre ikincil (çerçeveli). Busy
+durumu `_Busy` enum'ıyla ayrıştırıldı → doğru butonda yükleniyor göstergesi. Yeni
+l10n `cloudOrEmail` (TR/EN). Emülatörde görsel doğrulandı (Google dolgulu birincil).
+
+**Zaman damgası onarımı:** v9 göçü `uid`'i doldurdu ama `updated_at`'i boş bıraktı
+→ push'ta sunucunun NOT NULL kolonunda `23502` reddi (yalnız Samet'in v9-öncesi
+satırları). Gönderim ön geçişine `_repairMissingTimestamps()` (`sync_push.dart`) +
+`backfillUpdatedAtSql` (`sync_columns.dart`) eklendi; NULL damgalar push öncesi
+şimdiye ayarlanıyor (idempotent). 1 yeni test.
+
+**Markalı Türkçe doğrulama maili:** şablon hazır (`supabase/emails/confirm_signup_tr.html`)
+ama Supabase custom SMTP olmadan template düzenletmiyor + domain yok → yayın
+hazırlığına ertelendi (Resend + domain). analyze 0 · **test 198/198**.
 
 ## ⚡ Reaktif Veri Katmanı (H-05) — 2026-07-23
 

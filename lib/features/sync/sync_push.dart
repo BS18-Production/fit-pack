@@ -72,6 +72,13 @@ class SyncPush {
     // yeniden kuyruğa alıyor.
     await _repairMissingUids();
 
+    // Ön geçiş 1b: ZAMAN DAMGASIZ satırları onar. v9 göçü `uid`'i backfill
+    // etti ama `updated_at`'i boş bıraktı; sunucudaki kolon NOT NULL olduğu
+    // için o satırlar `23502` ile reddediliyordu. Yalnız Samet'in v9-öncesi
+    // kendi satırlarını etkiler, yeni kullanıcıda olmaz (docs/18 §6.9). Yalnız
+    // NULL olanlara dokunur → tekrar çalıştırmak güvenli.
+    await _repairMissingTimestamps();
+
     // Ön geçiş 2: bekleyen satırların işaret ettiği KATALOG satırlarını kuyruğa
     // al (tembel katalog senkronu — docs/18 §3.2 seçenek A). Bunu yapmazsak
     // sunucudaki set, orada olmayan bir harekete referans verir.
@@ -105,6 +112,22 @@ class SyncPush {
       if (count == 0) continue;
       syncLog('$table: $count satırın kimliği yok → üretiliyor');
       await db.customStatement(backfillUidSql(table));
+    }
+  }
+
+  /// `updated_at`'i olmayan satırlara şimdiki zamanı yazar. Zaman damgası
+  /// olmayan satır sunucunun NOT NULL kolonunda `23502` ile reddedilir — ve
+  /// çakışma kuralı (en son yazan kazanır) bu damgaya bakar (docs/18 §6.9).
+  Future<void> _repairMissingTimestamps() async {
+    for (final table in syncPushOrder) {
+      final missing = await db
+          .customSelect(
+              'SELECT COUNT(*) c FROM $table WHERE updated_at IS NULL')
+          .getSingle();
+      final count = missing.read<int>('c');
+      if (count == 0) continue;
+      syncLog('$table: $count satırın zaman damgası yok → şimdiye ayarlanıyor');
+      await db.customStatement(backfillUpdatedAtSql(table));
     }
   }
 

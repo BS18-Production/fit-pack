@@ -2053,6 +2053,12 @@ abstract class AppL10n {
   /// **'Continue with Google'**
   String get cloudGoogle;
 
+  /// No description provided for @cloudOrEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'or continue with email'**
+  String get cloudOrEmail;
+
   /// No description provided for @cloudNoAccount.
   ///
   /// In en, this message translates to:

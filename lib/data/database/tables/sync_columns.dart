@@ -115,6 +115,15 @@ const _uuidV4Sql = '''lower(
 String backfillUidSql(String table) =>
     'UPDATE $table SET uid = $_uuidV4Sql WHERE uid IS NULL';
 
+/// Eksik `updated_at`'leri şimdiye ayarlar (yalnız NULL olanlar — tekrar
+/// çalıştırmak güvenli). v9 göçü `uid`'i backfill etti ama `updated_at`'i boş
+/// bıraktı; sunucudaki kolon NOT NULL olduğu için bu satırlar gönderimde
+/// `23502` (not-null ihlali) ile reddediliyordu (docs/18 §6.9). Zaman damgası
+/// tetikleyicilerle AYNI birimde yazılır (unix saniye).
+String backfillUpdatedAtSql(String table) =>
+    "UPDATE $table SET updated_at = CAST(strftime('%s','now') AS INTEGER) "
+    'WHERE updated_at IS NULL';
+
 /// `uid` unique index'i. NULL'lar SQLite'ta unique index'i ihlal etmez, yani
 /// backfill'den önce de kurulabilir.
 String createUidIndexSql(String table) =>

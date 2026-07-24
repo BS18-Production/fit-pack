@@ -1,5 +1,6 @@
 import 'package:drift/native.dart';
 import 'package:fit_pack/data/database/app_database.dart';
+import 'package:fit_pack/data/database/tables/sync_columns.dart';
 import 'package:fit_pack/features/sync/sync_push.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -241,6 +242,37 @@ void main() {
         .customSelect('SELECT COUNT(*) c FROM workout_sets WHERE sync_state = 1')
         .getSingle();
     expect(left.read<int>('c'), 0, reason: 'kuyruk boşalmalı');
+  });
+
+  test('ZAMAN DAMGASIZ satır onarılır — v9 göçü updated_at boş bıraktı',
+      () async {
+    // v9 durumunu taklit et: satır tetikleyiciler eklenmeden önce oluşmuş →
+    // uid var (v9 backfill etti) ama updated_at YOK. Tetikleyici updated_at'i
+    // doldurduğu için, önce onu kaldırıp öyle bir satır üretiyoruz.
+    await db.customStatement('DROP TRIGGER IF EXISTS routines_sync_ins');
+    await db.customStatement('DROP TRIGGER IF EXISTS routines_sync_upd');
+    await db.customStatement(
+      "INSERT INTO routines (name, created_at, uid, sync_state) VALUES "
+      "('Eski', 1700000000, "
+      "'aaaaaaaa-0000-4000-8000-000000000009', 1)",
+    );
+    // updated_at bilerek verilmedi → NULL (v9 göçünün bıraktığı durum).
+    final before = await db
+        .customSelect('SELECT updated_at FROM routines')
+        .getSingle();
+    expect(before.data['updated_at'], isNull, reason: 'kurulum: damga yok');
+    // Tetikleyicileri geri kur — push sırasında gerçek hayatta aktifler.
+    await db.customStatement(createInsertTriggerSql('routines'));
+    await db.customStatement(createUpdateTriggerSql('routines'));
+
+    final result = await push.pushAll(userId: user);
+
+    // Onarım olmasaydı: updated_at NULL → sunucu 23502 (not-null) reddederdi.
+    expect(result.error, isNull, reason: 'zaman damgası onarıldı, red yok');
+    expect(remote.rowCount('routines'), 1);
+    expect(remote.store['routines']!.values.first['updated_at'], isNotNull,
+        reason: 'onarım şimdiye ayarladı → sunucuya geçerli damga gitti');
+    expect(await pending('routines'), 0, reason: 'kuyruk boşalmalı');
   });
 
   test('gönderim bağımlılık sırasında: önce ebeveyn, sonra çocuk', () async {

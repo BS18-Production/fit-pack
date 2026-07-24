@@ -598,6 +598,7 @@
   "cloudSignInBtn": "Sign In",
   "cloudSignUpBtn": "Sign Up",
   "cloudGoogle": "Continue with Google",
+  "cloudOrEmail": "or continue with email",
   "cloudNoAccount": "No account? Sign up",
   "cloudHaveAccount": "Already have an account? Sign in",
   "cloudSignOut": "Sign Out",

@@ -1094,6 +1094,9 @@ class AppL10nTr extends AppL10n {
   String get cloudGoogle => 'Google ile devam et';
 
   @override
+  String get cloudOrEmail => 'ya da e-posta ile devam et';
+
+  @override
   String get cloudNoAccount => 'Hesabın yok mu? Kayıt ol';
 
   @override

@@ -33,13 +33,27 @@ A → B → C → E → G → F → D.
       çözer. Test cihazda Samet'e kaldı.
 
 **Hâlâ açık:**
-- **E-posta doğrulama açık** → kayıt oturum açmıyor, kullanıcı posta kutusuna
-  gidiyor. Premium ilk kurulumda sürtünme; kapatılacak mı karar ver (docs/18 §13,
-  Supabase → Authentication → Email → Confirm email).
-- **`updated_at` NULL eski satırlar push'ta reddediliyor** (`23502`). v9 göçü `uid`
-  backfill etti ama `updated_at`i boş bıraktı. Etkisi: yalnız Samet'in v9-öncesi
-  kendi satırları; yeni kullanıcıda yok. Gönderim öncesi `_repairMissingUids`
-  yanına `updated_at` onarımı (COALESCE now()) eklenecek — küçük iş.
+- **E-posta doğrulama AÇIK KALIYOR** (karar 2026-07-25): kapatmanın tek kazancı
+  sürtünme, kaybı ise geri dönüşü olmayan veri kaybı (hesap = tek kurtarma yolu;
+  yanlış mail = veri kayıp). Sürtünmeyi bunun yerine **Google girişini birincil
+  buton yaparak** çözeceğiz → çoğunluk tek dokunuşla, zaten doğrulanmış girer;
+  e-posta/şifre yolu doğrulamalı kalır. **Yapılacak (küçük UI):** `auth_screen`de
+  Google butonunu görsel olarak öne çıkar (tarayıcı fallback'le bugün de çalışır,
+  native için Samet'in Client ID işi bekliyor).
+- **Markalı Türkçe doğrulama maili — ERTELENDİ** (2026-07-25): şablon hazır
+  (`supabase/emails/confirm_signup_tr.html`). **Engel:** Supabase artık custom SMTP
+  KURULMADAN template konusu/gövdesini düzenletmiyor ("Set up custom SMTP to edit
+  templates"). Custom SMTP anlamlı olması için kendi domain gerekir; Samet'te domain
+  YOK. Karar: pilotta İngilizce varsayılan mailde kal, markalı maili domain + Resend
+  (ücretsiz 3000/ay) ile **yayın hazırlığında** kur. Şablon SMTP açılınca aynen
+  yapıştırılır. *(Yan fayda: SMTP kurulunca spam düşme + rate limit de çözülür.)*
+
+- [x] **`updated_at` NULL eski satır onarımı** (2026-07-25): gönderim ön geçişine
+      `_repairMissingTimestamps()` eklendi (`sync_push.dart`) + `backfillUpdatedAtSql`
+      (`sync_columns.dart`). v9-öncesi zaman damgasız satırlar artık push öncesi
+      şimdiye ayarlanıyor → sunucunun NOT NULL kolonundaki `23502` reddi bitti.
+      Yalnız NULL olanlara dokunur (idempotent). **1 yeni test** (v9 durumunu
+      tetikleyici kaldırıp taklit ediyor) · test 198/198 · analyze 0.
 
 - [x] **H-05 — Reaktif veri katmanı** (2026-07-23): 20 okuma provider'ı `FutureProvider`
       → `StreamProvider` (`data/reactive.dart` `watchTables`); tablo değişince ekran

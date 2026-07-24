@@ -1101,6 +1101,9 @@ class AppL10nEn extends AppL10n {
   String get cloudGoogle => 'Continue with Google';
 
   @override
+  String get cloudOrEmail => 'or continue with email';
+
+  @override
   String get cloudNoAccount => 'No account? Sign up';
 
   @override

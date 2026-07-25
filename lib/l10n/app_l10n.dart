@@ -1999,12 +1999,6 @@ abstract class AppL10n {
   /// **'Couldn\'t connect: {err}'**
   String cloudConnErr(String err);
 
-  /// No description provided for @cloudGoogleErr.
-  ///
-  /// In en, this message translates to:
-  /// **'Google sign-in isn\'t configured yet or was cancelled.'**
-  String get cloudGoogleErr;
-
   /// No description provided for @cloudSignIn.
   ///
   /// In en, this message translates to:

@@ -901,3 +901,80 @@ Supabase → Authentication → **URL Configuration**:
   bağlantıları da aynı adresten döndüğü için doğrulanmalı.
 
 ---
+
+## 15. iOS platformu (2026-07-25)
+
+Uygulama bugüne kadar yalnız Android'de çalıştırılmıştı. Kod tarafı taşınabilir
+çıktı — `Platform.is*` dallanması **0 yer**, `dart:io` yalnız 1 dosyada, 15
+paketin tamamı iOS destekli — yani eksik olan kod değil, **platform
+yapılandırması** ve doğrulama alışkanlığıydı.
+
+### 15.1 Info.plist'e eklenenler
+
+| Anahtar | Neden |
+|---|---|
+| `NSCameraUsageDescription` | Barkod tarayıcı. iOS'ta açıklama metni olmayan izin isteği **uygulamayı çökertir** (Android yalnız izin sorar). |
+| `CFBundleURLTypes` → `fitpack` | Android manifest'teki intent-filter'ın iOS karşılığı. Yoksa Google dönüşü, e-posta doğrulama ve şifre sıfırlama bağlantılarının **üçü de** uygulamaya dönemez. |
+| `CFBundleURLTypes` → ters çevrilmiş istemci kimliği | Google Sign-In SDK hesap seçiciden bu adresle döner. |
+| `GIDClientID` | google_sign_in eklentisi iOS yapılandırmasını buradan okur. |
+
+### 15.2 Bildirimler iki platformlu yapıldı
+
+`InitializationSettings`'te iOS ayarı yoktu ve `requestPermission()` iOS'ta
+`_android` null olduğu için `?? true` ile **izni hiç sormadan "verildi"**
+diyordu: kullanıcı hatırlatıcıyı açar, hiçbir bildirim gelmez, hata da görmez.
+Eklendi: `DarwinInitializationSettings` (izin init'te değil, kullanıcı
+hatırlatıcıyı açınca istenir — Android akışıyla aynı), `DarwinNotificationDetails`,
+dinlenme bitişi için `InterruptionLevel.timeSensitive` (Odaklanma modunu deler;
+Android'deki `Importance.high` dengi).
+
+### 15.3 Google yerel akış artık platform bazlı
+
+Tek bayrak yerine platform bayrağı okunuyor (`_nativeGoogleReady`), çünkü
+hazırlık platform başına ayrı: Google her platform için ayrı OAuth istemcisi
+ister (iOS bundle kimliğiyle, Android SHA-1 imzasıyla). Tek bayrak olsaydı iOS
+için doldurmak Android'in çalışan girişini `ApiException: 10` ile bozardı.
+Bugün: **iOS yerel, Android tarayıcı** (Android istemcisi henüz yok).
+
+### 15.4 `serverClientId` iOS'ta audience'ı değiştirmiyor (canlıda ısırdı)
+
+İlk kurulumda iOS istemci kimliği Google Cloud'da oluşturuldu, Supabase'e
+eklenmedi — varsayım `GoogleSignIn(serverClientId: <web>)`'in kimlik jetonunu
+Web istemcisi adına imzalatacağıydı. **Yanlış:** iOS'ta `serverClientId` yalnız
+sunucu yetki kodu için kullanılır, `idToken` her zaman **platform istemcisi**
+adına imzalanır. Supabase reddetti:
+
+```
+invalid request: Unacceptable audience in id_token:
+[<iOS client ID>]   ·   POST /token → 400
+```
+
+**Çözüm:** Supabase → Authentication → Providers → Google → **Authorized Client
+IDs** alanına Web kimliğinin yanına iOS kimliği de eklenir (virgülle). Kod
+değişmez. Android yerel akışı açılacağı gün Android istemci kimliği de aynı
+listeye eklenmeli.
+
+### 15.5 Hata mesajı teşhisi engelliyordu
+
+`auth_screen._google()` istisnayı yutup sabit "Google girişi henüz
+yapılandırılmadı ya da iptal edildi" metnini basıyordu. Yukarıdaki 400 hatası
+bu yüzden "iptal ettin galiba" gibi okundu ve teşhis uzadı. Artık e-posta
+akışıyla aynı biçimde gerçek hata gösteriliyor (`cloudConnErr(e.toString())`);
+iptal zaten sessizdir (servis istisna atmaz, `false` döner), o yüzden bu dala
+yalnız gerçek hatalar düşer. Ölü kalan `cloudGoogleErr` iki dilden de silindi.
+
+### 15.6 Doğrulananlar (iPhone 17 simülatörü, iOS 26.2)
+
+Derleme (`Runner.app`, ilk pod kurulumu 275 sn, sonraki derlemeler ~10 sn) ·
+karşılama ekranı (Dynamic Island çakışması yok, güvenli alan doğru) · Google
+girişi (tarayıcı yolu) · deep link dönüşü · **senkron indirmesi** (sunucudaki
+veri simülatöre indi) · Drift/SQLite · seed v2 · Ana Sayfa ve Beslenme
+ekranları · 215/215 test.
+
+### 15.7 Ölü paketler
+
+`file_picker` ve `share_plus` pubspec'te duruyordu ama kodda hiç
+kullanılmıyordu (elle yedekleme kaldırılınca öksüz kalmışlar) — iOS'a gereksiz
+pod yükü getiriyorlardı, kaldırıldı. **Not:** `ExportService` (500 satır) da
+hiçbir ekrandan çağrılmıyor, yalnız kendi testinden; `csv` paketi ona bağlı.
+Kararı ayrı verilecek.

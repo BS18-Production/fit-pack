@@ -1065,10 +1065,6 @@ class AppL10nTr extends AppL10n {
   }
 
   @override
-  String get cloudGoogleErr =>
-      'Google girişi henüz yapılandırılmadı ya da iptal edildi.';
-
-  @override
   String get cloudSignIn => 'Giriş yap';
 
   @override

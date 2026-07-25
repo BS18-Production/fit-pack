@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -30,21 +32,32 @@ class AuthService {
     await _client.auth.signInWithPassword(email: email, password: password);
   }
 
-  /// Google ile giriş. Web client ID yapılandırılmışsa **yerel (native)** akış
-  /// (Android hesap seçici, tek dokunuş, izin ekranında ham `supabase.co` YOK);
-  /// yoksa eski **tarayıcı** akışı (docs/18 §5.2.1 D).
+  /// Google ile giriş. Platformun yerel akışı hazırsa **yerel (native)** akış
+  /// (cihazın hesap seçicisi, tek dokunuş, izin ekranında ham `supabase.co`
+  /// YOK); değilse **tarayıcı** akışı (docs/18 §5.2.1 D).
+  ///
+  /// Hazırlık platform başına ayrıdır: her platform Google'da kendi OAuth
+  /// client'ını ister (iOS bundle kimliğiyle, Android SHA-1 imzasıyla). Bu
+  /// yüzden tek bayrak yerine platform bayrağı okunur — biri hazır diye
+  /// diğerinde yerel akış denenirse giriş çalışma zamanında patlar.
   ///
   /// Dönüş: kullanıcı iptal ettiyse `false`, giriş başladıysa/başarılıysa
   /// `true`. Tarayıcı akışı asenkron döndüğü için hep `true` sayılır (sonucu
   /// `onAuthStateChange` bildirir).
   Future<bool> signInWithGoogle() async {
     const webClientId = SupabaseConfig.googleWebClientId;
-    if (webClientId.isEmpty) {
+    if (webClientId.isEmpty || !_nativeGoogleReady) {
       await _signInWithGoogleBrowser();
       return true;
     }
     return _signInWithGoogleNative(webClientId);
   }
+
+  bool get _nativeGoogleReady => switch (defaultTargetPlatform) {
+        TargetPlatform.iOS => SupabaseConfig.googleNativeOnIos,
+        TargetPlatform.android => SupabaseConfig.googleNativeOnAndroid,
+        _ => false,
+      };
 
   /// Tarayıcı/özel sekme akışı — yalnız Web OAuth client gerekir. Supabase deep
   /// link'i `fitpack://login-callback` ile geri döner (manifest intent-filter).

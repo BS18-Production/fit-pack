@@ -10,13 +10,21 @@ class SupabaseConfig {
 
   /// Google yerel (native) giriş için **Web** OAuth client ID'si (docs/18
   /// §5.2.1 D). Supabase → Authentication → Providers → Google'daki
-  /// **"Client ID (for OAuth)"** değeriyle AYNI olmalı — `...apps.
-  /// googleusercontent.com` biçiminde. Android client değil, Web client:
-  /// `signInWithIdToken`'ın doğruladığı `aud` budur.
+  /// **"Client ID (for OAuth)"** değeriyle AYNI olmalı. Platform client'ı
+  /// değil, Web client'ı: `signInWithIdToken`'ın doğruladığı `aud` budur.
   ///
-  /// **BOŞ bırakılırsa** giriş otomatik olarak eski **tarayıcı akışına** düşer
-  /// (çalışıyor, sadece daha az akıcı). Samet bu ID'yi yapıştırınca Android
-  /// hesap seçici (native) devreye girer ve izin ekranındaki ham `supabase.co`
-  /// sorunu (B-1) ortadan kalkar.
-  static const String googleWebClientId = '';
+  /// **BOŞ bırakılırsa** giriş her platformda **tarayıcı akışına** düşer.
+  static const String googleWebClientId =
+      '1090099755341-i184afject30b47qr60r6sjeote3palb.apps.googleusercontent.com';
+
+  /// iOS yerel akışının hazır olup olmadığı. Asıl client ID `ios/Runner/
+  /// Info.plist` içindeki `GIDClientID`'de durur (eklenti yapılandırmayı
+  /// oradan okur) — burada yalnız akış seçimi için bayrak tutulur.
+  static const bool googleNativeOnIos = true;
+
+  /// Android yerel akışı **kapalı**: Google'ın Android client'ı (paket adı +
+  /// SHA-1 imza parmak izi) henüz oluşturulmadı. Bayrak açılmadan yerel akış
+  /// denenirse giriş `ApiException: 10` ile başarısız olur; kapalıyken
+  /// Android bugün çalışan tarayıcı akışında kalır (docs/18 §5.2.1 D).
+  static const bool googleNativeOnAndroid = false;
 }

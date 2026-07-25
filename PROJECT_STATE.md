@@ -1,10 +1,30 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
 > **Son güncelleme:** 2026-07-25
-> **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · E · F ·
-> **G** TAMAM; **D** kod tamam (Web client ID bekliyor). Kapı + iki yönlü senkron +
-> durum göstergesi canlıda. Epik büyük ölçüde **bitti**.
+> **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
+> F · G TAMAM. Kapı + iki yönlü senkron + durum göstergesi canlıda. Epik **bitti**.
+> **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
+
+## 📱 iOS Ayağa Kalktı — 2026-07-25
+
+Detay: **[docs/18 §15](docs/18-auth-and-sync.md)**.
+
+Uygulama bugüne kadar yalnız Android'de çalıştırılmıştı; iOS'ta tek bir derleme
+bile yapılmamıştı (`ios/Podfile` yoktu). Kod tarafı taşınabilir çıktı —
+`Platform.is*` dallanması **0 yer**, 15 paketin tamamı iOS destekli — eksik olan
+**platform yapılandırmasıydı**.
+
+Kapatılan üç sessiz arıza: kamera izni metni yoktu (barkod ekranı iOS'ta
+**çökerdi**), `fitpack://` şeması yoktu (Google dönüşü + e-posta doğrulama +
+şifre sıfırlamanın üçü de dönemezdi), bildirim servisi tamamen Android'e bağlıydı
+ve iOS'ta izni **hiç sormadan "verildi" diyordu**.
+
+Simülatörde doğrulandı: derleme · karşılama ekranı · Google girişi · deep link ·
+**senkron indirmesi** · Drift/SQLite · seed v2 · 215/215 test.
+
+Açık: Supabase'in Authorized Client IDs listesine iOS kimliği eklenecek (yerel
+Google akışı onsuz 400 alıyor — docs/18 §15.4).
 
 ## 🎞️ İçerik Turu 2 — İki Kareli Form Gösterimi — 2026-07-25
 

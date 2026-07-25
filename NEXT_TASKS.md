@@ -26,11 +26,36 @@ A → B → C → E → G → F → D.
 - [x] **Aşama G — Senkron durumu UI** (2026-07-23): `features/sync/sync_status.dart`
       + hesap ekranı göstergesi (4 durum, "kaydedildi" güvenceli) + bekleyen kayıtla
       çıkış uyarısı (İptal/Önce senkron et/Yine de çık). docs/18 §9.1.
-- [x] **Aşama D — Google yerel akış KOD TAMAM** (2026-07-23): `auth_service.dart`
-      iki yollu (Web client ID doluysa native, boşsa tarayıcı). `google_sign_in`
-      eklendi. **Aktifleşmesi için:** `SupabaseConfig.googleWebClientId`'e Supabase
-      → Auth → Google → "Client ID (for OAuth)" yapıştır (docs/18 §5.2.2). B-1'i de
-      çözer. Test cihazda Samet'e kaldı.
+- [x] **Aşama D — Google yerel akış** (2026-07-23 kod, 2026-07-25 iOS kurulumu):
+      `auth_service.dart` iki yollu. Web client ID yazıldı; seçim artık **platform
+      bazlı** (`_nativeGoogleReady`), çünkü Google her platform için ayrı OAuth
+      istemcisi ister. **iOS: yerel akış kuruldu** (istemci kimliği + Info.plist).
+      **Android: tarayıcı akışında** — Android istemcisi (paket adı + SHA-1) henüz
+      yok, `googleNativeOnAndroid = false`. Detay: docs/18 §15.3.
+
+## 📱 iOS platformu (docs/18 §15) — 2026-07-25 ayağa kalktı
+
+Android ile eş zamanlı ilerlemesi için kuruldu. Derleme, simülatör, Google girişi,
+deep link, senkron, veritabanı ve seed doğrulandı (docs/18 §15.6).
+
+- [ ] **Supabase → Google → Authorized Client IDs'e iOS kimliğini ekle** (Samet,
+      30 sn). Yapılmadan iOS yerel Google girişi `Unacceptable audience in id_token`
+      ile 400 alır — kimlik jetonu iOS istemcisi adına imzalanıyor (docs/18 §15.4).
+- [ ] **Android yerel Google akışı**: Google Cloud'da Android istemcisi (paket adı
+      `com.sametorhan.fit_pack` + SHA-1 imza parmak izi) → kimliği aynı Authorized
+      Client IDs listesine ekle → `googleNativeOnAndroid = true`. Bugün çalışan
+      tarayıcı akışı bozulmadan yapılmalı.
+- [ ] **Info.plist izin metinleri tek dilli (Türkçe)**: `NSCameraUsageDescription`
+      cihaz dilinden bağımsız hep aynı görünüyor. Lokalizasyon `tr.lproj/en.lproj +
+      InfoPlist.strings` ister ve Xcode proje dosyasına dokunur → yayın hazırlığına
+      bırakıldı.
+- [ ] **Oturum belirteçleri `shared_preferences`'ta düz metin** (iOS ve Android,
+      supabase_flutter varsayılanı). Keychain/Keystore'a taşımak yayın öncesi
+      güvenlik maddesi.
+- [ ] **iOS turu ritmi**: her oturumda çift test değil — epik sonunda ve UI
+      ağırlıklı işlerde (glass, animasyon, klavye, güvenli alan) iOS turu. Ucuz
+      sigorta olarak CI'da `flutter build ios --no-codesign` (macOS koşucusu
+      dakikayı 10× sayar → gecelik/PR'da, her push'ta değil).
 
 - [x] **Şifre kurtarma akışı** (2026-07-25): zorunlu hesap mimarisindeki son
       açık delik kapandı — şifresini unutan kullanıcının antrenman geçmişi artık

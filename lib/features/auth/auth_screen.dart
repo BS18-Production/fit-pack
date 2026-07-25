@@ -94,7 +94,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     try {
       await ref.read(authServiceProvider).signInWithGoogle();
     } catch (e) {
-      if (mounted) setState(() => _error = AppL10n.of(context).cloudGoogleErr);
+      // Gerçek hatayı göster, e-posta akışıyla aynı biçimde. Sabit "yapılandırılmadı
+      // ya da iptal edildi" metni yanıltıcıydı: iptal zaten sessizdir (servis
+      // `false` döner, istisna atmaz), buraya yalnız GERÇEK hatalar düşer ve
+      // metin onları gizliyordu (ör. Supabase'in "Unacceptable audience in
+      // id_token" reddi yapılandırma hatası gibi değil, iptal gibi okunuyordu).
+      if (mounted) {
+        setState(() => _error = AppL10n.of(context).cloudConnErr(e.toString()));
+      }
     } finally {
       if (mounted) setState(() => _busy = _Busy.none);
     }

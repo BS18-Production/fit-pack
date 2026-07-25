@@ -32,12 +32,23 @@ class NotificationService {
     priority: Priority.defaultPriority,
   );
 
+  /// iOS karşılıkları. Dinlenme bitişi zamana duyarlı — Odaklanma modunda da
+  /// görünsün (Android'deki Importance.high dengi); hatırlatıcılar sıradan.
+  static const _iosRest = DarwinNotificationDetails(
+    interruptionLevel: InterruptionLevel.timeSensitive,
+  );
+  static const _iosReminders = DarwinNotificationDetails();
+
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _inited = false;
 
   AndroidFlutterLocalNotificationsPlugin? get _android =>
       _plugin.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
+
+  IOSFlutterLocalNotificationsPlugin? get _ios =>
+      _plugin.resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>();
 
   Future<void> init() async {
     if (_inited) return;
@@ -53,16 +64,33 @@ class NotificationService {
     await _plugin.initialize(
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        // iOS'ta izin init'te İSTENMEZ — kullanıcı hatırlatıcıyı açtığında
+        // requestPermission() sorar (Android akışıyla aynı, uygulama açılır
+        // açılmaz izin diyaloğu çıkmasın).
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        ),
       ),
     );
     _inited = true;
   }
 
-  /// Android 13+ çalışma zamanı bildirim izni. Verilmezse false.
+  /// Bildirim izni: Android 13+ çalışma zamanı izni, iOS'ta
+  /// UNUserNotificationCenter yetkisi. Verilmezse false.
   Future<bool> requestPermission() async {
     await init();
-    final granted = await _android?.requestNotificationsPermission();
-    return granted ?? true;
+    final android = _android;
+    if (android != null) {
+      return await android.requestNotificationsPermission() ?? true;
+    }
+    final ios = _ios;
+    if (ios != null) {
+      return await ios.requestPermissions(alert: true, badge: true, sound: true) ??
+          false;
+    }
+    return true;
   }
 
   /// Dinlenme sayacı dakik alarm izni (Android 12+ özel izin). Reddedilse de
@@ -83,7 +111,7 @@ class NotificationService {
   }) async {
     await init();
     final when = tz.TZDateTime.now(tz.local).add(after);
-    const details = NotificationDetails(android: _chRest);
+    const details = NotificationDetails(android: _chRest, iOS: _iosRest);
     try {
       await _plugin.zonedSchedule(
           id: idRest,
@@ -124,7 +152,10 @@ class NotificationService {
       title: title,
       body: body,
       scheduledDate: when,
-      notificationDetails: const NotificationDetails(android: _chReminders),
+      notificationDetails: const NotificationDetails(
+        android: _chReminders,
+        iOS: _iosReminders,
+      ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time, // her gün tekrar
     );

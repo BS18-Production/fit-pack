@@ -6,6 +6,42 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<!-- Barkod tarayıcı (mobile_scanner, Beslenme → ürün ekle). iOS'ta bu
+	     metin yoksa kamera açılırken uygulama çöker. -->
+	<key>NSCameraUsageDescription</key>
+	<string>Ürün barkodunu okuyup besin değerlerini otomatik doldurmak için kamerayı kullanır.</string>
+	<!-- Supabase dönüş adresi: Google girişi, e-posta doğrulama ve şifre
+	     sıfırlama bağlantıları uygulamaya bu şemayla döner (docs/18 §5.2).
+	     Android'deki manifest intent-filter'ın iOS karşılığı. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.sametorhan.fitPack.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fitpack</string>
+			</array>
+		</dict>
+		<!-- Google yerel giriş dönüşü. Şema = iOS client ID'nin ters çevrilmiş
+		     hâli; Google Sign-In SDK hesap seçiciden bu adresle geri döner. -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.sametorhan.fitPack.google</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.1090099755341-4d94bg1qmt8neuqfiktpb557u4gk647e</string>
+			</array>
+		</dict>
+	</array>
+	<!-- Google iOS OAuth client ID (docs/18 §5.2.1 D). google_sign_in eklentisi
+	     iOS'ta yapılandırmayı buradan okur; Android'de karşılığı yoktur. -->
+	<key>GIDClientID</key>
+	<string>1090099755341-4d94bg1qmt8neuqfiktpb557u4gk647e.apps.googleusercontent.com</string>
 	<key>CFBundleDisplayName</key>
 	<string>Fit Pack</string>
 	<key>CFBundleExecutable</key>

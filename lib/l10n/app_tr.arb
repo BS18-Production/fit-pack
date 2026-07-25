@@ -317,7 +317,6 @@
   "exShareBtn": "Dışa Aktar & Paylaş",
   "cloudSignupOk": "Kayıt alındı. E-postanı doğrulayıp giriş yapabilirsin.",
   "cloudConnErr": "Bağlanılamadı: {err}",
-  "cloudGoogleErr": "Google girişi henüz yapılandırılmadı ya da iptal edildi.",
   "cloudSignIn": "Giriş yap",
   "cloudCreateAccount": "Hesap oluştur",
   "cloudIntro": "Giriş yap — antrenmanların, öğünlerin ve ölçümlerin hesabına otomatik kaydedilir.",

@@ -589,7 +589,6 @@
       }
     }
   },
-  "cloudGoogleErr": "Google sign-in isn't configured yet or was cancelled.",
   "cloudSignIn": "Sign in",
   "cloudCreateAccount": "Create account",
   "cloudIntro": "Sign in — your workouts, meals and measurements are saved to your account automatically.",

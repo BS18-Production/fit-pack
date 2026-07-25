@@ -1072,10 +1072,6 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String get cloudGoogleErr =>
-      'Google sign-in isn\'t configured yet or was cancelled.';
-
-  @override
   String get cloudSignIn => 'Sign in';
 
   @override

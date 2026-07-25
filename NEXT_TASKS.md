@@ -55,6 +55,16 @@ deep link, senkron, veritabanı ve seed doğrulandı (docs/18 §15.6).
 - [ ] **Oturum belirteçleri `shared_preferences`'ta düz metin** (iOS ve Android,
       supabase_flutter varsayılanı). Keychain/Keystore'a taşımak yayın öncesi
       güvenlik maddesi.
+- [ ] **Berna'nın telefonundaki kopya 2026-08-01'de dolar** (ücretsiz Apple ID
+      imzası 7 gün). Telefonu bağlayıp yeniden kur: `xcrun devicectl device install
+      app --device <UDID> build/ios/Release-iphoneos/Runner.app`. **Debug derlemesi
+      ana ekrandan açılmaz**, release şart. Flutter `--release` derlemeyi yapıp
+      "expected app not found" der — uygulama `Release-iphoneos/` altındadır,
+      `iphoneos/` altında değil.
+- [ ] **Kablosuz dağıtım (TestFlight) ERTELENDİ** — Samet 2026-07-25: "şimdilik
+      kablolu test yeterli, sonra bakarız". Ücretsiz yolu yok, $99/yıl Apple
+      Developer Program şart. İç test (100 kişi, Apple incelemesi yok) ile dış test
+      (10.000 kişi, Beta App Review + gizlilik politikası URL'si) ayrımı var.
 - [ ] **iOS turu ritmi**: her oturumda çift test değil — epik sonunda ve UI
       ağırlıklı işlerde (glass, animasyon, klavye, güvenli alan) iOS turu. Ucuz
       sigorta olarak CI'da `flutter build ios --no-codesign` (macOS koşucusu

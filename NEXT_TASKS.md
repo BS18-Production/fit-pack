@@ -38,9 +38,12 @@ A → B → C → E → G → F → D.
 Android ile eş zamanlı ilerlemesi için kuruldu. Derleme, simülatör, Google girişi,
 deep link, senkron, veritabanı ve seed doğrulandı (docs/18 §15.6).
 
-- [ ] **Supabase → Google → Authorized Client IDs'e iOS kimliğini ekle** (Samet,
-      30 sn). Yapılmadan iOS yerel Google girişi `Unacceptable audience in id_token`
-      ile 400 alır — kimlik jetonu iOS istemcisi adına imzalanıyor (docs/18 §15.4).
+- [x] **iOS yerel Google girişi ÇALIŞIYOR** (2026-07-25): Supabase → Google →
+      "Client IDs"e iOS kimliği eklendi + **"Skip nonce checks" açıldı** (google_sign_in
+      6.x nonce parametresi almıyor). Doğrulandı: `grant_type: id_token`,
+      `login_method: oidc` → 200. Bedeli replay korumasının zayıflaması; kalıcı
+      çözüm `google_sign_in` 7.x yükseltmesi (Android'i de etkiler, ayrı iş).
+      docs/18 §15.4 + §15.4.1.
 - [ ] **Android yerel Google akışı**: Google Cloud'da Android istemcisi (paket adı
       `com.sametorhan.fit_pack` + SHA-1 imza parmak izi) → kimliği aynı Authorized
       Client IDs listesine ekle → `googleNativeOnAndroid = true`. Bugün çalışan

@@ -23,8 +23,10 @@ ve iOS'ta izni **hiç sormadan "verildi" diyordu**.
 Simülatörde doğrulandı: derleme · karşılama ekranı · Google girişi · deep link ·
 **senkron indirmesi** · Drift/SQLite · seed v2 · 215/215 test.
 
-Açık: Supabase'in Authorized Client IDs listesine iOS kimliği eklenecek (yerel
-Google akışı onsuz 400 alıyor — docs/18 §15.4).
+**iOS yerel Google girişi de çalışıyor** (aynı gün): Supabase "Client IDs"e iOS
+kimliği eklendi + "Skip nonce checks" açıldı. Doğrulandı — `grant_type: id_token`,
+`login_method: oidc` → 200, yani Safari'ye çıkmadan giriş. Android hâlâ tarayıcı
+akışında (Android istemcisi/SHA-1 yok). docs/18 §15.4.
 
 ## 🎞️ İçerik Turu 2 — İki Kareli Form Gösterimi — 2026-07-25
 

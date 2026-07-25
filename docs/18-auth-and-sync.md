@@ -949,10 +949,34 @@ invalid request: Unacceptable audience in id_token:
 [<iOS client ID>]   ·   POST /token → 400
 ```
 
-**Çözüm:** Supabase → Authentication → Providers → Google → **Authorized Client
-IDs** alanına Web kimliğinin yanına iOS kimliği de eklenir (virgülle). Kod
-değişmez. Android yerel akışı açılacağı gün Android istemci kimliği de aynı
-listeye eklenmeli.
+**Çözüm:** Supabase → Authentication → Sign In / Providers → Google → **"Client
+IDs"** alanına (panelde etiket tam olarak bu; "Authorized Client IDs" değil)
+Web kimliğinin yanına iOS kimliği de eklenir, virgülle, boşluksuz. Kod değişmez.
+Android yerel akışı açılacağı gün Android istemci kimliği de aynı listeye
+eklenmeli.
+
+### 15.4.1 Ardından nonce engeli — "Skip nonce checks" açıldı
+
+Audience düzelince sıradaki 400 geldi:
+
+```
+invalid request: Passed nonce and nonce in id_token should either both exist or not.
+```
+
+Google'ın iOS akışı kimlik jetonuna bir nonce koyuyor, ama uygulama Supabase'e
+aynı nonce'u iletmiyor — `google_sign_in` **6.x'in `signIn()` metodu nonce
+parametresi almıyor** (7.x'te geldi), yani ikisini eşleştirmenin kod tarafında
+yolu yok. Supabase'in bu durum için sunduğu anahtar açıldı: aynı ekranda **"Skip
+nonce checks"** (açıklaması birebir "such as with iOS" diyor).
+
+**Bedeli:** kimlik jetonu tekrar kullanım (replay) koruması zayıflar; jeton 1
+saat ömürlü olduğu için pratik risk düşük. Ayar **tüm platformlar** için geçerli.
+Kalıcı çözüm `google_sign_in` 7.x'e yükseltip nonce'u uçtan uca taşımak — Android'i
+de etkilediği için ayrı iş.
+
+**Doğrulandı (2026-07-25 16:58:53Z):** `POST /token`, `grant_type: id_token`,
+`login_method: oidc` → **200**. Aynı günün önceki başarılı girişleri `pkce`
+(tarayıcı) idi; bu ilk yerel giriş.
 
 ### 15.5 Hata mesajı teşhisi engelliyordu
 

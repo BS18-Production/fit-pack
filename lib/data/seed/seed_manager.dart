@@ -13,7 +13,10 @@ class SeedManager {
   /// Seed/backfill içeriği değişince ARTIR (M-04). Sürüm eşleşiyorsa açılışta
   /// tablo taramaları + 1022 kayıtlık JSON parse tamamen atlanır (runApp'ten
   /// önce koştuğu için ilk kareyi geciktiriyordu).
-  static const seedVersion = 1;
+  /// v2 (2026-07-25): küratörlü hareketlere form görseli backfill'i
+  /// (`_backfillExerciseImages`, docs/11 §12) — artırılmazsa mevcut
+  /// kurulumlarda hiç çalışmaz (M-04 dersi).
+  static const seedVersion = 2;
   static const seedVersionKey = 'seed_version';
 
   Future<void> seedIfNeeded() async {
@@ -40,6 +43,11 @@ class SeedManager {
       // sadece kelime sırası/noktalama farkıyla aynı olan varyantları birleştir.
       await _dedupeExercises();
     }
+
+    // Form görseli backfill'i HER İKİ yolda da çalışmalı: küratörlü seed
+    // (`_seedExercises`) görselsiz kayıt yazdığı için sıfırdan kuran kullanıcı
+    // da temel lift'leri görselsiz görürdü (docs/11 §12).
+    await _backfillExerciseImages();
 
     await prefs.setInt(seedVersionKey, seedVersion);
   }
@@ -118,6 +126,45 @@ class SeedManager {
 
     if (toInsert.isNotEmpty) {
       await db.workoutDao.insertExercises(toInsert);
+    }
+  }
+
+  /// Küratörlü hareketlere form görseli bağlar (içerik turu 2, docs/11 §12).
+  ///
+  /// **Sorun:** D-2 birleştirme kuralı "ad eşleşmesinde mevcut kazanır" diyordu.
+  /// Sonuç: Samet'in küratörlü çekirdek listesi (Squat, Deadlift, Bench…)
+  /// korundu ama o satırlarda `imagePath` yok, ve isimler free-exercise-db'nin
+  /// adlandırmasıyla tutmadığı için ("Barbell Back Squat" ≠ "Barbell Squat")
+  /// zenginleştirme onlara hiç uğramadı. Yani **görseli olmayanlar tam da
+  /// salonun en çok kullanılan hareketleriydi** — 1015 hareketin 814'ünde
+  /// görsel varken temel lift'lerde yoktu.
+  ///
+  /// `_duplicateVariants` bunu ayrıca büyütmüştü: dedupe, free-exercise-db'den
+  /// gelen **görselli** satırı silip küratörlü **görselsiz** satırı koruyordu.
+  ///
+  /// **Çözüm:** elle onaylanmış eşleme tablosu (`exercise_image_map.json`).
+  /// Otomatik isim benzerliği bu iş için kullanılamaz — denendi ve
+  /// "Barbell Back Squat → Barbell Hack Squat", "Bench Press → Guillotine
+  /// Bench Press" gibi hatalar üretti. **Yanlış form görseli, görsel
+  /// olmamasından daha kötüdür** (kullanıcı yanlış hareketi öğrenir), o yüzden
+  /// emin olunmayan hareketler bilerek boş bırakıldı.
+  ///
+  /// İdempotent: yalnız `image_path` boş olan, özel olmayan satırlara yazar.
+  Future<void> _backfillExerciseImages() async {
+    final Map<String, dynamic> map = json.decode(
+        await rootBundle.loadString('assets/data/exercise_image_map.json'));
+    if (map.isEmpty) return;
+
+    final all = await db.workoutDao.getAllExercises();
+    for (final ex in all) {
+      if (ex.isCustom) continue;
+      if (ex.imagePath != null && ex.imagePath!.isNotEmpty) continue;
+      final path = map[ex.name] as String?;
+      if (path == null) continue;
+      await db.workoutDao.updateExerciseMeta(
+        ex.id,
+        ExercisesCompanion(imagePath: Value(path)),
+      );
     }
   }
 

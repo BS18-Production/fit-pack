@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +12,7 @@ import '../../data/database/daos/workout_dao.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
+import '../../shared/widgets/exercise_demo.dart';
 import 'muscle_map.dart';
 import 'workout_ui.dart';
 
@@ -154,33 +154,12 @@ class ExerciseHowToContent extends StatelessWidget {
       controller: scrollController,
       padding: AppSpacing.screen,
       children: [
-        // Demo fotoğrafı (free-exercise-db, public domain) — CDN'den lazy-load
-        // + cache. Yoksa/internetsizse ekipman ikonu yer tutucu.
-        if (_demoImageUrl(ex.imagePath) != null)
-          ClipRRect(
-            borderRadius: AppRadius.brLg,
-            child: AspectRatio(
-              aspectRatio: 4 / 3,
-              child: CachedNetworkImage(
-                imageUrl: _demoImageUrl(ex.imagePath)!,
-                fit: BoxFit.cover,
-                placeholder: (_, _) => Container(
-                  color: context.colors.surfaceContainerHighest,
-                  child: const Center(
-                      child: SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2))),
-                ),
-                errorWidget: (_, _, _) => Container(
-                  color: context.colors.surfaceContainerHighest,
-                  child: Icon(WorkoutUi.equipmentIcon(ex.equipment),
-                      size: AppIconSize.xxl,
-                      color: context.colors.onSurfaceVariant),
-                ),
-              ),
-            ),
-          ),
+        // Form gösterimi — free-exercise-db'nin başlangıç + bitiş karesi
+        // dönüşümlü oynatılır (public domain). CDN'den lazy-load + cache.
+        ExerciseDemoImage(
+          imagePath: ex.imagePath,
+          fallbackIcon: WorkoutUi.equipmentIcon(ex.equipment),
+        ),
         // Çalışan kaslar — vücut diyagramı (veriden renklenir).
         if (ex.primaryMuscle != null || muscles.isNotEmpty) ...[
           AppSpacing.vGapLg,
@@ -252,14 +231,6 @@ class ExerciseHowToContent extends StatelessWidget {
     );
   }
 
-  /// imagePath 'assets/exercise_img/...' → free-exercise-db jsDelivr CDN URL'i
-  /// (public domain). Sadece bu önekli yollar için; değilse null.
-  static String? _demoImageUrl(String? imagePath) {
-    const prefix = 'assets/exercise_img/';
-    if (imagePath == null || !imagePath.startsWith(prefix)) return null;
-    final rel = imagePath.substring(prefix.length);
-    return 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/$rel';
-  }
 
   Widget _legendDot(BuildContext context, Color color, String label) {
     return Row(mainAxisSize: MainAxisSize.min, children: [

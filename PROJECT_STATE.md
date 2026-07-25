@@ -6,6 +6,51 @@
 > durum göstergesi canlıda. Epik büyük ölçüde **bitti**.
 > **Sahibi:** Samet Orhan
 
+## 🎞️ İçerik Turu 2 — İki Kareli Form Gösterimi — 2026-07-25
+
+Detay: **[docs/11 §12](docs/11-content-enrichment.md)**.
+
+**Bulgu:** free-exercise-db her harekette **iki kare** tutuyor (`0.jpg`
+başlangıç + `1.jpg` bitiş, 873/873'te ikisi de var) ama uygulama yalnız
+birincisini gösteriyordu — hareketi anlatan iki kareden biri kullanılmıyordu.
+
+`shared/widgets/exercise_demo.dart` → `ExerciseDemoImage` ikisini dönüşümlü
+oynatıyor. Ücretsiz (public domain), ek indirme hareket başına tek görsel.
+`ExerciseHowToContent` içinde olduğu için hareket detayı **ve** aktif seans
+sheet'i birden kazandı. Geçiş 350→**160 ms** (uzun geçiş çift pozlama hayaleti
+üretiyordu; arka plan sabit olduğu için kısa kesme doğru okuma).
+
+**İki kayıt düzeltildi:**
+- **D-1 iptal** — doküman "görselleri APK'ya göm" diyordu, kod hep CDN'den
+  çekiyordu. Samet offline hedefi olmadığını belirtti → CDN doğru, D-1 kalktı
+  (gömmek ~41–83 MB'a mal olurdu).
+- **NEXT_TASKS #2 "seansta nasıl yapılır" YAPILMADI kaydı yanlıştı** — özellik
+  `active_session_screen.dart:974`'te zaten çalışıyor.
+
+**Araştırma sonucu (docs/11 §12.3):** wger'de Türkçe **yalnız 31 çeviri** → §3
+ve D-5'teki "Türkçe wger'den gelir" planı geçersiz. ExerciseDB'nin GitHub
+reposu **2 dosyalık boş kabuk**; ticari ürün ayrı (`exercisedb.io`, tek
+seferlik satın alma, self-host, fiyat öğrenilemedi). Ücretli alternatifler:
+MoveKit ₺1.699/206 animasyon, Exercise Animatic $359/~1.600 klip.
+
+**AÇIK karar:** 814 hareketin Türkçe talimatı (4000 cümle) — 4 seçenek
+konuşuldu, karar verilmedi.
+
+analyze 0 · **test 215/215** · emülatörde iki poz da doğrulandı.
+**Kapsama onarımı (aynı gün):** Samet "kaç harekette görsel var" diye sordu →
+ölçüm 814/1015 (%80) gösterdi ama **eksik 201 tam da temel hareketlerdi**
+(Squat, Deadlift, Bench, Leg Press, Overhead Press). Kök sebep: D-2 birleştirme
+kuralı küratörlü satırı koruyor, isimler kaynakla tutmuyor; dedupe ise görselli
+satırı silip görselsizi koruyordu. Otomatik eşleştirme üç turda da yanlış
+hareket eşledi (Back Squat→Hack Squat) → **elle onaylı eşleme tablosu**
+(`assets/data/exercise_image_map.json`, 97 kayıt) + `SeedManager.
+_backfillExerciseImages()` (idempotent, her iki seed yolunda) + seedVersion
+1→2. **814 → 911 görselli (%90)**, temel lift bandı kapsandı. 5 yeni test ·
+97 eşlemenin 194 karesi de CDN'de doğrulandı · emülatörde uygulandı.
+Kapsanmayan 104: kardiyo/esneme/kalistenik + kaynakta sade sürümü olmayan
+~56 kuvvet hareketi (ücretli kütüphane kararına girdi).
+
+
 ## 🔓 Şifre Kurtarma — 2026-07-25
 
 Zorunlu hesap mimarisindeki **son açık delik** kapandı. `sendPasswordReset`

@@ -116,3 +116,137 @@ Uygulamanın iki içerik havuzu var ve ikisi de elle küratörlü, sınırlı:
 - USDA/FatSecret online entegrasyon — opsiyonel sonraki tur.
 - Hareket adlarının tam Türkçeleştirilmesi — wger ile ayrı iş.
 - Tarif (recipe) içeriği üretimi — ayrı kapsam.
+
+---
+
+## 12. Tur 2 — İçerik araştırması + iki kareli form gösterimi (2026-07-25)
+
+Samet "antrenman ve beslenme içeriğini zenginleştirelim, önce araştıralım,
+karar vermeden her seçeneği konuşalım" dedi. Bu bölüm o turun bulgularıdır.
+**Beslenme tarafı henüz ele alınmadı** (ayrı tur).
+
+### 12.1 Envanter — sorun "veri az" değil
+
+| | Durum |
+|---|---|
+| Gömülü hareket | **814** (`exercises_extended.json`) · DB'de toplam **1015** |
+| Metadata (kas/ekipman/seviye/ölçüm) | %96–100 dolu, kaliteli |
+| Adım adım talimat | %99.5 dolu — **tamamı İngilizce** |
+| Türkçe içerik | **sıfır** (ne isim ne talimat) |
+| Video / animasyon | yok |
+
+### 12.2 ⚠️ D-1 kararı GERÇEKLE UYUŞMUYORDU → resmen tersine çevrildi
+
+§7'deki D-1 *"Gömülü/offline, ~800 statik resim APK'ya gömülür"* diyordu.
+**Kod bunu hiç yapmadı:** görseller çalışma anında jsDelivr CDN'inden çekiliyor,
+`assets/`'te tek görsel yok (0/814 diskte). Yani doküman bir yıl boyunca
+gerçeği yanlış anlattı.
+
+**Samet kararı (2026-07-25): CDN doğru olan, D-1 iptal.**
+> *"Offline çalışmalı gibi bir gayemiz yok. İnterneti olan kullansın. Premium
+> uygulama yapıyorum, gereksiz şeylerle APK'yı şişiremem."*
+
+Ölçüm bu kararı destekliyor: ortalama görsel 52 KB → hepsini gömmek hareket
+başına 1 görselle **~41 MB**, başlangıç+bitiş çiftiyle **~83 MB**.
+
+### 12.3 Kaynak araştırması (2026-07-25)
+
+| Kaynak | Hacim | Lisans | Bulgu |
+|---|---|---|---|
+| free-exercise-db (mevcut) | 873 | Public domain | Temiz, sorunsuz |
+| **wger** | 828 | CC-BY-SA 4.0 | ⚠️ **Türkçe çeviri yalnız 31** (3286 çevirinin içinde). 360 görsel / **78 video**. §3'teki *"wger ile Türkçe"* planı ve D-5'in *"Türkçe görünen ad ileride wger ile"* notu **yanlış varsayıma dayanıyordu** |
+| ExerciseDB | 11.000+ | karışık — aşağıda | Üç ayrı şey aynı adı taşıyor |
+| MoveKit | 206 (3D animasyon) | ticari | ₺1.699 tam kütüphane, kas vurgulu varyant |
+| Exercise Animatic | ~1.600–2.000 | non-exclusive B2B | $359; **4K green screen** → işlenmesi gerekir, drop-in değil |
+
+**ExerciseDB'nin üç ayrı hâli** (karıştırılması kolay):
+1. `github.com/ExerciseDB/exercisedb-api` — AGPL-3.0 ama **içinde 2 dosya var**
+   (`LICENSE` + `README`, 32 KB), 25 Kas 2025'ten beri tek commit yok. Açık
+   kaynak değil, açık kaynak kılığında tanıtım sayfası. 519 yıldız bir README'ye.
+2. `exercisedb.dev` — ücretsiz playground API. *"Production için önerilmez"*
+   cümlesi buna ait. SSL sertifikası süresi dolmuş durumda.
+3. `exercisedb.io` — asıl ticari ürün: **tek seferlik veri seti satın alma**,
+   JSON+GIF indirilir, ticari kullanım serbest, **self-host** edilir, runtime
+   bağımlılığı yok. Fiyat öğrenilemedi (Cloudflare TR IP'sini engelliyor).
+   Satın alınacaksa **medya haklarının kimde olduğu yazılı sorulmalı**
+   (Samet'in "telif riski varsa girme" kuralı).
+
+### 12.4 ✅ Yapılan: iki kareli form gösterimi (ücretsiz)
+
+**Bulgu:** free-exercise-db her harekette **iki kare** tutuyor — `0.jpg`
+başlangıç, `1.jpg` bitiş pozisyonu, **873/873 harekette ikisi de var**.
+Uygulama yalnız `0.jpg`'yi gösteriyordu; hareketi anlatan iki kareden biri
+kullanılmıyordu.
+
+`lib/shared/widgets/exercise_demo.dart` → `ExerciseDemoImage`: iki kareyi
+dönüşümlü oynatır. Ek lisans yok, ek maliyet yok, ek indirme hareket başına
+tek görsel. `ExerciseHowToContent` içinde durduğu için **hem hareket detayı
+hem aktif seans sheet'i** birden kazandı.
+
+**Tasarım notu — geçiş süresi:** ilk sürüm 350 ms çapraz geçişti; emülatörde
+iki gövde üst üste binip **çift pozlama hayaleti** oluşturdu. İki kare aynı
+kamera açısından çekildiği için arka plan sabit, yalnız gövde değişiyor;
+gerçek egzersiz GIF'leri de dissolve değil sert kesme kullanır. **160 ms**'ye
+indirildi — kesmenin sertliğini alır, hayalet göze çarpmaz.
+
+- Kare üretimi saf fonksiyon (`frameUrl`) + **6 test** — yanlış adres üretilirse
+  animasyon sessizce ölür, kimse fark etmezdi.
+- Erişilebilirlik: sistemde animasyon kapalıysa döngü çalışmaz, tek kare kalır.
+- Özel (kullanıcı eklediği) hareketlerde `imagePath` boş → widget çizilmez.
+- analyze 0 · test **209/209** · emülatörde iki poz da görsel doğrulandı.
+
+### 12.5 Hâlâ AÇIK karar: Türkçe talimat
+
+814 hareket × ~5 adım ≈ 4000 cümle, tamamı İngilizce. Seçenekler konuşuldu,
+**karar verilmedi**: (a) toplu AI çevirisi, (b) AI + Berna gözden geçirmesi,
+(c) yalnız en çok kullanılan 100–150 hareket (uzun kuyruk İngilizce kalır),
+(d) hiç çevirme. wger üzerinden gelmesi **mümkün değil** (§12.3).
+
+D-5 (hareket ADI İngilizce kanonik kalsın) tartışılmadı, geçerli kabul edildi —
+salon dili zaten İngilizce.
+
+### 12.6 Önerilen sıra
+Önce ücretsiz derinleşme (iki kare ✅ → Türkçe talimat kararı), **sonra**
+gerekirse satın alınan animasyon. Gerekçe: mevcut içeriğin tam hâli görülmeden
+yapılan satın alma, neyin eksik olduğunu bilmeden yapılmış olur.
+
+### 12.7 Form görseli kapsama onarımı (aynı gün)
+
+**Bulgu (Samet'in sorusu üzerine ölçüldü):** 1015 hareketin **814'ünde (%80)**
+görsel vardı — ama eksik olan 201, tam da salonun **temel hareketleriydi**:
+Barbell Back Squat, Conventional/Romanian/Sumo Deadlift, Front Squat, Leg
+Press, Overhead Press, Bent-Over Barbell Row… Yani 814 görece bilinmeyen
+hareketin görseli varken squat ve deadlift'in yoktu. İstenenin tam tersi.
+
+**Kök sebep iki katmanlı:**
+1. **D-2** ("ad eşleşmesinde mevcut kazanır") küratörlü çekirdek listeyi
+   korudu; o satırlarda `imagePath` yok ve isimler kaynakla tutmuyordu
+   ("Barbell Back Squat" ≠ "Barbell Squat") → zenginleştirme hiç uğramadı.
+2. **`_duplicateVariants` dedupe'u** bunu büyütmüştü: free-exercise-db'den
+   gelen **görselli** satırı silip küratörlü **görselsiz** satırı koruyordu
+   (7 hareket, aralarında Bent-Over Barbell Row).
+
+**Otomatik eşleştirme DENENDİ ve REDDEDİLDİ.** Üç turda da yanlış hareket
+eşledi: `Barbell Back Squat → Barbell Hack Squat`, `Bench Press → Guillotine
+Bench Press`, `Smith Machine Squat → Smith Machine Pistol Squat`. Skor
+fonksiyonu bunun anlam problemi olduğunu göremiyor. **Yanlış form görseli,
+görsel olmamasından daha kötüdür** — kullanıcı yanlış hareketi öğrenir.
+
+**Çözüm:** elle onaylanmış `assets/data/exercise_image_map.json` (**97 eşleme**)
++ `SeedManager._backfillExerciseImages()` (idempotent; yalnız `image_path`
+boş ve `is_custom = 0` satırlara yazar) + `seedVersion` 1 → **2** (artırılmazsa
+mevcut kurulumlarda hiç çalışmaz, M-04 dersi). Backfill **her iki seed yolunda
+da** çağrılır — sıfırdan kuran kullanıcı da kapsanır.
+
+**Sonuç:** görselli hareket **814 → 911** (%80 → **%90**), ve daha önemlisi
+temel lift bandı artık kapsanıyor. **5 yeni test** (biçim, kaynak tutarlılığı,
+idempotentlik, özel harekete dokunmama, temel-lift regresyon bekçisi).
+
+**Kapsanmayan 104** bilinçli bırakıldı: 12 kardiyo + 13 esneme + 23
+kalistenik (form görseli anlamsız ya da kaynakta yok) ve **~56 kuvvet
+hareketi** — bunlarda free-exercise-db'de sade sürüm yok, yalnız varyant var
+(Sumo Deadlift → yalnız "with Bands", Barbell Curl → yalnız grip varyantları).
+
+> 💡 **Satın alma kararına girdi:** kapsanamayan ~56 kuvvet hareketi, ücretli
+> bir animasyon kütüphanesinin (MoveKit 206 hareket, ₺1.699) gerçekten değer
+> katacağı tek yer. Ücretsiz kaynak buraya kadar getirdi.

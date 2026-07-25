@@ -6,6 +6,30 @@
 > durum göstergesi canlıda. Epik büyük ölçüde **bitti**.
 > **Sahibi:** Samet Orhan
 
+## 🔓 Şifre Kurtarma — 2026-07-25
+
+Zorunlu hesap mimarisindeki **son açık delik** kapandı. `sendPasswordReset`
+serviste duruyordu ama hiçbir yerden çağrılmıyordu; yani şifresini unutan
+kullanıcının antrenman geçmişine dönüş yolu yoktu — epiğin var oluş sebebiyle
+(veri kaybını önlemek) çelişen bir boşluk.
+
+**Eklenenler:** giriş ekranında "Şifreni mi unuttun?" bağlantısı (yalnız giriş
+sekmesinde) + `_ForgotPasswordDialog` · `AuthGate.recovering` bayrağı ·
+`/reset-password` rotası + `ResetPasswordScreen` · `updatePassword`.
+
+**Kritik nokta:** sıfırlama bağlantısı Supabase'de **gerçek oturum** açar.
+`recovering` bayrağı yönlendirme tablosunun ÜSTÜNDE olmasaydı kullanıcı
+"oturum var + onboarded" kuralıyla doğruca Ana Sayfa'ya düşer ve **şifresi hiç
+değişmezdi** → bir sonraki cihazda yine giremezdi. Şifre iki kez sorulur (tek
+alanda yazım hatası = kendi bilmediği şifreye geçmek). Onay mesajı hesap
+sayımı sızdırmaz. Vazgeçme yolu var (bağlantıyı yanlışlıkla açan kilitli
+kalmasın). Deep link Google ile aynı → domain gerekmedi.
+
+**Doğrulama:** analyze 0 · **test 203/203** (5 yeni) · emülatörde gerçek
+Supabase'e karşı `POST /recover → 200` + `mail.send / recovery` (docs/18 §14).
+⚠️ Test hesabı `fitpack.gate.test@gmail.com` mail ALAMIYOR — Supabase adres
+içindeki `.test` yüzünden reddediyor (proje kısıtı değil).
+
 ## 🔑 Google Birincil + Zaman Damgası Onarımı — 2026-07-25
 
 **E-posta doğrulama kararı:** AÇIK kalıyor. Kapatmanın kazancı sürtünme, kaybı

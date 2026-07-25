@@ -13,8 +13,17 @@ class AuthService {
   User? get currentUser => _client.auth.currentUser;
   Stream<AuthState> get onAuthChange => _client.auth.onAuthStateChange;
 
+  /// Kayıt. `emailRedirectTo` **şart**: verilmezse Supabase doğrulama
+  /// bağlantısını projenin **Site URL**'ine yollar, o da varsayılan
+  /// `http://localhost:3000` olduğu için kullanıcı "This site can't be
+  /// reached" hatasına düşer (hesap onaylanır ama kullanıcı bunu göremez).
+  /// Deep link verilince bağlantı doğrudan uygulamayı açar.
   Future<void> signUpWithEmail(String email, String password) async {
-    await _client.auth.signUp(email: email, password: password);
+    await _client.auth.signUp(
+      email: email,
+      password: password,
+      emailRedirectTo: _deepLink,
+    );
   }
 
   Future<void> signInWithEmail(String email, String password) async {
@@ -42,7 +51,7 @@ class AuthService {
   Future<void> _signInWithGoogleBrowser() async {
     await _client.auth.signInWithOAuth(
       OAuthProvider.google,
-      redirectTo: 'fitpack://login-callback',
+      redirectTo: _deepLink,
     );
   }
 
@@ -81,10 +90,33 @@ class AuthService {
     await _client.auth.signOut();
   }
 
+  /// Şifre sıfırlama bağlantısı gönderir (docs/18 §14).
+  ///
+  /// **Zorunlu hesap mimarisinde bu bir veri kurtarma yoludur:** şifresini
+  /// unutan kullanıcının hesabı = antrenman geçmişinin tek anahtarı.
+  ///
+  /// `redirectTo` Google girişiyle **aynı** deep link'i kullanır
+  /// (`fitpack://login-callback`, manifest intent-filter). Maildeki bağlantı
+  /// uygulamayı açar, Supabase kurtarma oturumu kurar ve
+  /// `AuthChangeEvent.passwordRecovery` yayar → `AuthGate` kullanıcıyı yeni
+  /// şifre ekranına kilitler.
   Future<void> sendPasswordReset(String email) async {
-    await _client.auth.resetPasswordForEmail(email);
+    await _client.auth.resetPasswordForEmail(
+      email,
+      redirectTo: _deepLink,
+    );
+  }
+
+  /// Kurtarma oturumundayken yeni şifreyi yazar. Oturum yoksa
+  /// `AuthException` fırlar (bağlantının süresi dolmuş olabilir).
+  Future<void> updatePassword(String newPassword) async {
+    await _client.auth.updateUser(UserAttributes(password: newPassword));
   }
 }
+
+/// OAuth ve şifre sıfırlamanın ortak dönüş adresi. Tek yerde durur ki
+/// Supabase panelindeki "Redirect URLs" listesiyle ayrışmasın.
+const _deepLink = 'fitpack://login-callback';
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 

@@ -32,7 +32,34 @@ A → B → C → E → G → F → D.
       → Auth → Google → "Client ID (for OAuth)" yapıştır (docs/18 §5.2.2). B-1'i de
       çözer. Test cihazda Samet'e kaldı.
 
+- [x] **Şifre kurtarma akışı** (2026-07-25): zorunlu hesap mimarisindeki son
+      açık delik kapandı — şifresini unutan kullanıcının antrenman geçmişi artık
+      erişilemez hale gelmiyor. `sendPasswordReset` yazılmıştı ama UI'ya
+      bağlanmamıştı. Eklenenler: giriş ekranında "Şifreni mi unuttun?" +
+      `_ForgotPasswordDialog`, `AuthGate.recovering` bayrağı (kurtarma oturumu
+      yönlendirme tablosunun ÜSTÜNDE — yoksa kullanıcı Ana Sayfa'ya düşer ve
+      şifresi hiç değişmezdi), `/reset-password` rotası +
+      `ResetPasswordScreen` (şifre iki kez sorulur), `updatePassword`.
+      **5 yeni test** · test 203/203 · emülatörde gerçek Supabase'e karşı
+      `200 + mail.send` doğrulandı (docs/18 §14).
+
+- [x] **Kayıt doğrulama maili deep link'e döner** (2026-07-25): `signUpWithEmail`
+      `emailRedirectTo` vermiyordu → doğrulama bağlantısı Site URL'e
+      (`http://localhost:3000`) gidiyor, kullanıcı `ERR_CONNECTION_REFUSED`
+      görüyordu. Hesap onaylanıyordu ama kullanıcı sonucu göremiyordu. Artık
+      kayıt/sıfırlama/Google üçü de `fitpack://login-callback` üzerinden döner.
+
 **Hâlâ açık:**
+
+- [ ] **Samet — Supabase Site URL düzeltilmeli.** Authentication → URL
+      Configuration → **Site URL** hâlâ varsayılan `http://localhost:3000`.
+      Redirect URLs listesinde `fitpack://login-callback` olduğu da
+      doğrulanmalı (docs/18 §14).
+- [ ] **Custom SMTP artık kozmetik değil.** Dahili mail servisinin saatlik
+      kotası `/signup` + `/recover` toplamı üzerinden sayılıyor; mevcut
+      kurulumda aynı saat içinde birkaç kişi kayıt olamıyor
+      (`429 over_email_send_rate_limit`, 2026-07-25'te yaşandı). Gerçek
+      kullanıcı almadan önce çözülmeli.
 - **E-posta doğrulama AÇIK KALIYOR** (karar 2026-07-25): kapatmanın tek kazancı
   sürtünme, kaybı ise geri dönüşü olmayan veri kaybı (hesap = tek kurtarma yolu;
   yanlış mail = veri kayıp). Sürtünmeyi bunun yerine **Google girişini birincil

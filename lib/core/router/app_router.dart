@@ -14,6 +14,7 @@ import 'package:fit_pack/features/nutrition/foods_screen.dart';
 import 'package:fit_pack/features/body_metrics/body_metrics_screen.dart';
 import 'package:fit_pack/features/auth/auth_gate.dart';
 import 'package:fit_pack/features/auth/auth_screen.dart';
+import 'package:fit_pack/features/auth/reset_password_screen.dart';
 import 'package:fit_pack/features/auth/welcome_screen.dart';
 import 'package:fit_pack/features/cloud/cloud_account_screen.dart';
 import 'package:fit_pack/features/profile/profile_screen.dart';
@@ -48,6 +49,7 @@ GoRouter createAppRouter({required AuthGate gate}) => GoRouter(
     signedIn: gate.signedIn,
     onboarded: gate.onboarded,
     busy: gate.busy,
+    recovering: gate.recovering,
   ),
   // OAuth (Google) dönüşü — docs/18 §5.2. Supabase, `fitpack://login-callback`
   // deep link'ini KENDİ dinleyicisiyle işler (kod → oturum takası; logta
@@ -74,6 +76,11 @@ GoRouter createAppRouter({required AuthGate gate}) => GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => _glass(AuthScreen(
           signUp: state.uri.queryParameters['mode'] == 'signup')),
+    ),
+    GoRoute(
+      path: AppRoutes.resetPassword,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const ResetPasswordScreen()),
     ),
     GoRoute(
       path: AppRoutes.onboarding,

@@ -49,6 +49,7 @@ class AuthGate extends ChangeNotifier {
 
   bool _onboarded = false;
   bool _busy = false;
+  bool _recovering = false;
   String? _appliedUserId;
 
   /// Profil kurulumu tamamlandı mı (`user_profile.onboarded`). Hesaba bağlıdır:
@@ -70,6 +71,24 @@ class AuthGate extends ChangeNotifier {
   /// yoksa yerel veri silinirken kullanıcı bir an eski hesabın Ana Sayfa'sını
   /// görür.
   bool get busy => _busy;
+
+  /// Şifre kurtarma oturumu açık mı (docs/18 §14).
+  ///
+  /// Maildeki sıfırlama bağlantısı Supabase'de **gerçek bir oturum** açar.
+  /// Bu bayrak olmasaydı `gateRedirect` "oturum var + onboarded" görüp
+  /// kullanıcıyı doğruca Ana Sayfa'ya alırdı ve yeni şifre hiç sorulmazdı —
+  /// yani kullanıcı hâlâ eski/unutulmuş şifreyle kalır, bir sonraki cihazda
+  /// yine giremezdi. Bayrak açıkken kapı kullanıcıyı yeni şifre ekranına
+  /// kilitler.
+  bool get recovering => _recovering;
+
+  /// Yeni şifre başarıyla yazıldıktan sonra çağrılır — kilit kalkar, kullanıcı
+  /// normal akışına (onboarding ya da Ana Sayfa) devam eder.
+  void clearRecovery() {
+    if (!_recovering) return;
+    _recovering = false;
+    notifyListeners();
+  }
 
   /// Açılışta bir kez, `runApp` ÖNCESİ çağrılır. **Çevrimdışı-hızlı**: `onboarded`
   /// diskten okunur, ağ BEKLENMEZ (Kural 1 — açılış internete bağlı değil).
@@ -98,8 +117,16 @@ class AuthGate extends ChangeNotifier {
 
   void _onAuth(AuthState state) {
     final userId = state.session?.user.id;
-    // Çıkış → kapı devreye girsin.
+    // Kurtarma bağlantısıyla gelindi → yeni şifre belirlenene kadar içeri
+    // alma. Yönlendirme kararından ÖNCE işaretlenmeli, yoksa bir kare Ana
+    // Sayfa görünür.
+    if (state.event == AuthChangeEvent.passwordRecovery) {
+      _recovering = true;
+    }
+    // Çıkış → kapı devreye girsin. Kurtarma yarıda bırakıldıysa kilidi de bırak
+    // (oturum yokken kilit kullanıcıyı boş ekranda hapsederdi).
     if (userId == null) {
+      _recovering = false;
       notifyListeners();
       return;
     }
@@ -201,15 +228,26 @@ final authGateProvider = Provider<AuthGate>((ref) {
 /// | ✓ | ✗ | ③ `/onboarding` |
 /// | ✓ | ✓ | ④ `/home` |
 ///
+/// Kurtarma oturumu (`recovering`) bu tablonun ÜSTÜNDEDİR: şifre yenilenene
+/// kadar kullanıcı `/reset-password` dışına çıkamaz (docs/18 §14).
+///
 /// `null` = olduğun yerde kal.
 String? gateRedirect({
   required String location,
   required bool signedIn,
   required bool onboarded,
   bool busy = false,
+  bool recovering = false,
 }) {
   // Hesap değişimi sürerken karar verme — veri temizlenirken ekran değişmesin.
   if (busy) return null;
+
+  // Şifre kurtarma her şeyin önünde: oturum açık ama kullanıcı yeni şifresini
+  // belirlemeden uygulamaya giremez. `signedIn` şartı, oturumu düşen (bağlantı
+  // süresi dolmuş) kullanıcının boş ekranda kilitli kalmasını engeller.
+  if (recovering && signedIn) {
+    return location == AppRoutes.resetPassword ? null : AppRoutes.resetPassword;
+  }
 
   final atGate = location == AppRoutes.welcome || location == AppRoutes.auth;
 
@@ -217,7 +255,12 @@ String? gateRedirect({
   if (!onboarded) {
     return location == AppRoutes.onboarding ? null : AppRoutes.onboarding;
   }
-  // Girişi tamamlamış kullanıcı kapıya/onboarding'e geri dönemez.
-  if (atGate || location == AppRoutes.onboarding) return AppRoutes.home;
+  // Girişi tamamlamış kullanıcı kapıya/onboarding'e geri dönemez. Kurtarma
+  // ekranı da buraya dahil: bayrak kapalıyken orada işi yok.
+  if (atGate ||
+      location == AppRoutes.onboarding ||
+      location == AppRoutes.resetPassword) {
+    return AppRoutes.home;
+  }
   return null;
 }

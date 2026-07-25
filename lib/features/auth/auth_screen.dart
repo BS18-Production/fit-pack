@@ -100,6 +100,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
   }
 
+  /// Şifre sıfırlama diyaloğunu açar. Giriş alanına yazılmış e-posta varsa
+  /// diyaloga taşınır — kullanıcı ikinci kez yazmasın.
+  Future<void> _forgotPassword() async {
+    final sent = await showDialog<bool>(
+      context: context,
+      builder: (_) => _ForgotPasswordDialog(initialEmail: _emailCtrl.text.trim()),
+    );
+    if (sent == true && mounted) {
+      setState(() {
+        _error = null;
+        _info = AppL10n.of(context).cloudForgotSent;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
@@ -203,6 +218,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2))
                   : Text(_isLogin ? l.cloudSignInBtn : l.cloudSignUpBtn),
             ),
+            // Kurtarma yolu yalnız giriş sekmesinde anlamlı — kayıt olurken
+            // unutulacak bir şifre henüz yok.
+            if (_isLogin)
+              TextButton(
+                onPressed: _busy != _Busy.none ? null : _forgotPassword,
+                child: Text(l.cloudForgot),
+              ),
             AppSpacing.vGapLg,
             TextButton(
               onPressed: _busy != _Busy.none
@@ -217,6 +239,107 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Şifre sıfırlama bağlantısı isteme diyaloğu (docs/18 §14).
+///
+/// CONVENTIONS §2: diyalog kendi `ConsumerStatefulWidget`'ı — üst ekranın
+/// `ref`'i parametre olarak taşınmaz.
+class _ForgotPasswordDialog extends ConsumerStatefulWidget {
+  const _ForgotPasswordDialog({required this.initialEmail});
+
+  final String initialEmail;
+
+  @override
+  ConsumerState<_ForgotPasswordDialog> createState() =>
+      _ForgotPasswordDialogState();
+}
+
+class _ForgotPasswordDialogState extends ConsumerState<_ForgotPasswordDialog> {
+  late final _emailCtrl = TextEditingController(text: widget.initialEmail);
+  bool _busy = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(authServiceProvider)
+          .sendPasswordReset(_emailCtrl.text.trim());
+      if (mounted) Navigator.of(context).pop(true);
+    } on AuthException catch (e) {
+      // Genelde hız sınırı ("too many requests") — kullanıcıya göster.
+      if (mounted) setState(() => _error = e.message);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _error = AppL10n.of(context).cloudConnErr(e.toString()));
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    return AlertDialog(
+      title: Text(l.cloudForgotTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l.cloudForgotMsg,
+            style: context.texts.bodySmall
+                ?.copyWith(color: context.colors.onSurfaceVariant),
+          ),
+          AppSpacing.vGapLg,
+          TextField(
+            controller: _emailCtrl,
+            keyboardType: TextInputType.emailAddress,
+            autofillHints: const [AutofillHints.email],
+            autofocus: widget.initialEmail.isEmpty,
+            onChanged: (_) => setState(() => _error = null),
+            decoration: InputDecoration(
+              labelText: l.cloudEmail,
+              prefixIcon: const Icon(Icons.mail_outline_rounded),
+              border: const OutlineInputBorder(borderRadius: AppRadius.brMd),
+            ),
+          ),
+          if (_error != null) ...[
+            AppSpacing.vGapMd,
+            Text(_error!,
+                style: context.texts.bodySmall
+                    ?.copyWith(color: context.colors.error)),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: _busy ? null : () => Navigator.of(context).pop(false),
+          child: Text(l.commonCancel),
+        ),
+        FilledButton(
+          onPressed: (_busy || !_emailCtrl.text.contains('@')) ? null : _send,
+          child: _busy
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2))
+              : Text(l.cloudForgotSend),
+        ),
+      ],
     );
   }
 }

@@ -1097,6 +1097,48 @@ class AppL10nTr extends AppL10n {
   String get cloudOrEmail => 'ya da e-posta ile devam et';
 
   @override
+  String get cloudForgot => 'Şifreni mi unuttun?';
+
+  @override
+  String get cloudForgotTitle => 'Şifreni sıfırla';
+
+  @override
+  String get cloudForgotMsg =>
+      'Yeni şifre belirlemen için e-postana bir bağlantı göndereceğiz. Bağlantıyı bu cihazda aç.';
+
+  @override
+  String get cloudForgotSend => 'Bağlantı gönder';
+
+  @override
+  String get cloudForgotSent =>
+      'Bu adrese ait bir hesap varsa sıfırlama bağlantısı yola çıktı.';
+
+  @override
+  String get cloudResetTitle => 'Yeni şifre belirle';
+
+  @override
+  String get cloudResetIntro =>
+      'Hesabın için yeni bir şifre seç. Hemen ardından girişin yapılacak.';
+
+  @override
+  String get cloudResetNew => 'Yeni şifre (en az 6 karakter)';
+
+  @override
+  String get cloudResetRepeat => 'Yeni şifre (tekrar)';
+
+  @override
+  String get cloudResetMismatch => 'Şifreler eşleşmiyor.';
+
+  @override
+  String get cloudResetSave => 'Şifreyi kaydet';
+
+  @override
+  String get cloudResetOk => 'Şifren güncellendi.';
+
+  @override
+  String get cloudResetCancel => 'Vazgeç ve çıkış yap';
+
+  @override
   String get cloudNoAccount => 'Hesabın yok mu? Kayıt ol';
 
   @override

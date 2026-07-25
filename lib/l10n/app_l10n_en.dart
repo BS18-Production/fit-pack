@@ -1104,6 +1104,48 @@ class AppL10nEn extends AppL10n {
   String get cloudOrEmail => 'or continue with email';
 
   @override
+  String get cloudForgot => 'Forgot your password?';
+
+  @override
+  String get cloudForgotTitle => 'Reset password';
+
+  @override
+  String get cloudForgotMsg =>
+      'We\'ll email you a link to set a new password. Open it on this device.';
+
+  @override
+  String get cloudForgotSend => 'Send link';
+
+  @override
+  String get cloudForgotSent =>
+      'If an account exists for that address, a reset link is on its way.';
+
+  @override
+  String get cloudResetTitle => 'Set a new password';
+
+  @override
+  String get cloudResetIntro =>
+      'Choose a new password for your account. You\'ll be signed in right after.';
+
+  @override
+  String get cloudResetNew => 'New password (min 6 characters)';
+
+  @override
+  String get cloudResetRepeat => 'New password (again)';
+
+  @override
+  String get cloudResetMismatch => 'Passwords don\'t match.';
+
+  @override
+  String get cloudResetSave => 'Save password';
+
+  @override
+  String get cloudResetOk => 'Your password has been updated.';
+
+  @override
+  String get cloudResetCancel => 'Cancel and sign out';
+
+  @override
   String get cloudNoAccount => 'No account? Sign up';
 
   @override

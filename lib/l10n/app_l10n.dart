@@ -2059,6 +2059,84 @@ abstract class AppL10n {
   /// **'or continue with email'**
   String get cloudOrEmail;
 
+  /// No description provided for @cloudForgot.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot your password?'**
+  String get cloudForgot;
+
+  /// No description provided for @cloudForgotTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get cloudForgotTitle;
+
+  /// No description provided for @cloudForgotMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll email you a link to set a new password. Open it on this device.'**
+  String get cloudForgotMsg;
+
+  /// No description provided for @cloudForgotSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send link'**
+  String get cloudForgotSend;
+
+  /// No description provided for @cloudForgotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'If an account exists for that address, a reset link is on its way.'**
+  String get cloudForgotSent;
+
+  /// No description provided for @cloudResetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a new password'**
+  String get cloudResetTitle;
+
+  /// No description provided for @cloudResetIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a new password for your account. You\'ll be signed in right after.'**
+  String get cloudResetIntro;
+
+  /// No description provided for @cloudResetNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New password (min 6 characters)'**
+  String get cloudResetNew;
+
+  /// No description provided for @cloudResetRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'New password (again)'**
+  String get cloudResetRepeat;
+
+  /// No description provided for @cloudResetMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords don\'t match.'**
+  String get cloudResetMismatch;
+
+  /// No description provided for @cloudResetSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save password'**
+  String get cloudResetSave;
+
+  /// No description provided for @cloudResetOk.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password has been updated.'**
+  String get cloudResetOk;
+
+  /// No description provided for @cloudResetCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel and sign out'**
+  String get cloudResetCancel;
+
   /// No description provided for @cloudNoAccount.
   ///
   /// In en, this message translates to:

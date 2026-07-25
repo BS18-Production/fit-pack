@@ -795,3 +795,109 @@ Kod öncesi ya da paralel:
       2026-07-22) — ileride lazım olacak.
 - [ ] Supabase ücretsiz plan limitleri yayın için yeterli mi?
 - [ ] E-posta doğrulama zorunlu olsun mu? (zorunluysa çevrimdışı ilk kurulum daha da zorlaşır)
+
+---
+
+## 14. Şifre kurtarma (2026-07-25)
+
+**Neden zorunlu:** Zorunlu hesap mimarisinde hesap, kullanıcının antrenman
+geçmişinin **tek anahtarıdır**. Şifresini unutan kişinin kurtarma yolu yoksa
+verisi fiilen yok olur — bu, epiğin var oluş sebebiyle (veri kaybını önlemek)
+doğrudan çelişir. Kod tarafında `sendPasswordReset` yazılmıştı ama hiçbir
+yerden çağrılmıyordu; yani akış yarım kalmıştı.
+
+### Akış
+
+```
+Giriş ekranı → "Şifreni mi unuttun?" → e-posta diyaloğu
+  → resetPasswordForEmail(email, redirectTo: fitpack://login-callback)
+  → [mail] bağlantı → uygulama açılır
+  → Supabase KURTARMA OTURUMU açar + AuthChangeEvent.passwordRecovery
+  → AuthGate._recovering = true
+  → gateRedirect kullanıcıyı /reset-password'e KİLİTLER
+  → yeni şifre (iki kez) → updateUser(password)
+  → gate.clearRecovery() → normal akış (onboarding ya da Ana Sayfa)
+```
+
+### Kritik tasarım noktaları
+
+| Konu | Karar | Gerekçe |
+|---|---|---|
+| Kurtarma oturumu | `recovering` bayrağı yönlendirme tablosunun **üstünde** | Sıfırlama bağlantısı gerçek oturum açar; bayrak olmasaydı kullanıcı "oturum var + onboarded" kuralıyla Ana Sayfa'ya düşer, **şifresi değişmemiş** olurdu → bir sonraki cihazda yine giremezdi |
+| Deep link | Google ile **aynı** (`fitpack://login-callback`) | Manifest intent-filter zaten kurulu; domain gerekmiyor → markalı maili erteleten engel buraya takılmıyor |
+| Şifre iki kez sorulur | Zorunlu | Tek alanla yazım hatası yapan kullanıcı, kendi bilmediği bir şifreye geçip hesabından tamamen çıkar |
+| Onay mesajı | *"Bu adrese ait bir hesap varsa..."* | Hesap sayımı (enumeration) sızdırmaz — "böyle kullanıcı yok" demek kimin üye olduğunu ifşa eder |
+| Vazgeçme yolu | "Vazgeç ve çıkış yap" | Bağlantıyı yanlışlıkla açan kişi ekranda kilitli kalmamalı |
+| Oturum düşerse | `recovering && signedIn` şartı | Bağlantının süresi dolmuşsa şifre yazılamaz; kullanıcı boş ekranda hapsolmaz, karşılamaya döner |
+
+### Mail şablonu
+Supabase'in **varsayılan İngilizce** "Reset Password" maili kullanılıyor.
+Markalı Türkçe şablon custom SMTP gerektiriyor (§11, kayıt maili ile aynı
+engel) → yayın hazırlığına ertelendi.
+
+### ⚠️ Tuzak: `fitpack.gate.test@gmail.com` mail ALAMAZ
+
+Emülatör doğrulamasında Supabase bu adresi `400 email_address_invalid` ile
+reddetti. Resmî açıklama: *"Example and test domains are currently not
+supported."* — yani **adresin içindeki `.test` parçası** takılıyor, gmail.com
+alan adı değil.
+
+**Bu proje geneli bir mail kısıtı DEĞİL.** Aynı akış `sametorhan@gmail.com`
+ile `200` döndü ve sunucu logunda `mail.send / mail_type: recovery` göründü.
+Gerçek kullanıcılar etkilenmez.
+
+Yan açıklama: test hesabının Supabase'de **elle onaylanmak zorunda kalması**
+da muhtemelen aynı sebep — kayıt doğrulama maili de hiç gönderilememiş.
+İleride mail gerektiren bir akış test edilecekse `.test` içermeyen bir adres
+kullan.
+
+### Doğrulama (2026-07-25)
+- analyze 0 · test **203/203** (5 yeni `gateRedirect` testi)
+- Emülatörde uçtan uca: giriş ekranı → "Forgot your password?" → diyalog →
+  gerçek Supabase'e istek → `200` + `mail.send`. Nötr onay mesajı kırmızı hata
+  değil, birincil renkte göründü.
+- Bağlantıya tıklama → kurtarma ekranı yolu **cihazda denenmedi** (Samet'in
+  gerçek hesabının şifresini değiştirmemek için). `gateRedirect` tarafı birim
+  testleriyle kapsanıyor; deep link'i Supabase SDK'sı Google akışıyla aynı
+  mekanizmadan işliyor.
+
+### Kayıt doğrulama maili de aynı deep link'e döner (2026-07-25 düzeltmesi)
+
+**Bulunan hata:** `signUpWithEmail` `emailRedirectTo` vermiyordu. Supabase bu
+durumda doğrulama bağlantısını projenin **Site URL**'ine yolluyor; o da hiç
+değiştirilmemiş varsayılan `http://localhost:3000` olduğu için kullanıcı
+tarayıcıda `ERR_CONNECTION_REFUSED` görüyordu. **Hesap aslında onaylanıyordu**
+(DB'de `email_confirmed_at` doluyor), kullanıcı sadece sonucu göremiyordu —
+sessiz ama güven kırıcı bir hata.
+
+**Düzeltme:** `signUp(..., emailRedirectTo: _deepLink)`. Artık kayıt, şifre
+sıfırlama ve Google — üçü de `fitpack://login-callback` üzerinden dönüyor.
+
+> ℹ️ Bağlantıyı ikinci kez açmak `otp_expired` verir; token tek kullanımlık ve
+> Gmail'in bağlantı tarayıcısı çoğu zaman onu önceden tüketir. Hesap onaylıysa
+> sorun yok, kullanıcı doğrudan giriş yapar.
+
+### ⚠️ Dahili mail servisinin saatlik kotası (2026-07-25'te ısırdı)
+
+Supabase'in dahili (built-in) mail servisinin saatlik gönderim kotası var ve
+kota `/signup` + `/recover` + `/user` uçlarının **toplam istek sayısı** üzerinden
+işliyor. İki kurtarma testi kotayı doldurdu, ardından gelen kayıt denemesi
+`429 over_email_send_rate_limit` yedi. **Kayıt geri alındı** (`auth.users`'a
+satır yazılmadı), yani yarım hesap kalmıyor.
+
+Kota yalnız **custom SMTP** ile yükseltilebiliyor. Pratik sonuç: mevcut
+kurulumda aynı saat içinde birkaç kişi kayıt olamaz → SMTP kurulumu gerçek
+kullanıcı alınmadan önce kozmetik olmaktan çıkıp zorunlu hale geliyor.
+
+Test hesabı açarken kotayı yakmamak için: Google ile gir, ya da Supabase paneli
+→ Authentication → Users → *Add user* → **Auto Confirm** (hiç mail gitmez).
+
+### Samet'in manuel işi
+Supabase → Authentication → **URL Configuration**:
+- **Site URL** hâlâ `http://localhost:3000` — deep link'e ya da gerçek bir
+  adrese çekilmeli (yukarıdaki hatanın kök sebebi).
+- **Redirect URLs** listesinde `fitpack://login-callback` bulunmalı. Google
+  tarayıcı akışı çalıştığına göre muhtemelen ekli, ama kayıt ve sıfırlama
+  bağlantıları da aynı adresten döndüğü için doğrulanmalı.
+
+---

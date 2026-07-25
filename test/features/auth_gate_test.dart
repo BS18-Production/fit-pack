@@ -72,6 +72,78 @@ void main() {
       );
     });
 
+    test('kurtarma oturumu her şeyin önünde — yeni şifre ekranına kilitler',
+        () {
+      // Sıfırlama bağlantısı GERÇEK oturum açar. Bayrak olmasaydı kullanıcı
+      // "oturum var + onboarded" kuralıyla doğruca Ana Sayfa'ya düşer, şifresi
+      // değişmemiş olurdu (docs/18 §14).
+      for (final loc in [AppRoutes.home, AppRoutes.onboarding, '/workout']) {
+        expect(
+          gateRedirect(
+              location: loc,
+              signedIn: true,
+              onboarded: true,
+              recovering: true),
+          AppRoutes.resetPassword,
+          reason: '$loc kurtarma sırasında görülmemeli',
+        );
+      }
+    });
+
+    test('kurtarma sırasında yeni şifre ekranında kalınır', () {
+      expect(
+        gateRedirect(
+            location: AppRoutes.resetPassword,
+            signedIn: true,
+            onboarded: true,
+            recovering: true),
+        isNull,
+      );
+    });
+
+    test('oturum düşerse kurtarma ekranında kilitli kalınmaz', () {
+      // Bağlantının süresi dolmuş → oturum yok. Kullanıcı şifre yazamayacağı
+      // boş ekranda hapsolmamalı, karşılamaya dönmeli.
+      expect(
+        gateRedirect(
+            location: AppRoutes.resetPassword,
+            signedIn: false,
+            onboarded: true,
+            recovering: true),
+        AppRoutes.welcome,
+      );
+    });
+
+    test('kurtarma bitince şifre ekranı erişilemez olur', () {
+      expect(
+        gateRedirect(
+            location: AppRoutes.resetPassword,
+            signedIn: true,
+            onboarded: true),
+        AppRoutes.home,
+      );
+      // Onboarding'i bitirmemiş kullanıcı önce oraya gider.
+      expect(
+        gateRedirect(
+            location: AppRoutes.resetPassword,
+            signedIn: true,
+            onboarded: false),
+        AppRoutes.onboarding,
+      );
+    });
+
+    test('hesap değişimi kurtarmanın da önünde — karar ertelenir', () {
+      expect(
+        gateRedirect(
+            location: AppRoutes.home,
+            signedIn: true,
+            onboarded: true,
+            recovering: true,
+            busy: true),
+        isNull,
+      );
+    });
+
     test('hesap değişimi sürerken karar ertelenir', () {
       // Yerel veri silinirken kullanıcı bir an eski hesabın ekranını görmemeli.
       expect(

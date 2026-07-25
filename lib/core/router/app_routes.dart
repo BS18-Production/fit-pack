@@ -19,6 +19,10 @@ class AppRoutes {
   static String authMode({required bool signUp}) =>
       '$auth?mode=${signUp ? 'signup' : 'login'}';
 
+  /// Şifre kurtarma — maildeki bağlantıdan gelen kullanıcı yeni şifresini
+  /// burada belirler (docs/18 §14). Yalnız kurtarma oturumunda erişilir.
+  static const resetPassword = '/reset-password';
+
   // ── Onboarding ──
   static const onboarding = '/onboarding';
 

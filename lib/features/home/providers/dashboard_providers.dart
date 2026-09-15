@@ -29,7 +29,7 @@ final last30WorkoutStatsProvider =
   return watchTables(
       db, [db.workoutSessions, db.workoutSets, db.bodyMeasurements], () async {
     final wo = ref.read(workoutDaoProvider);
-    final bw = (await ref.read(bodyDaoProvider).getLatestMeasurement())?.weightKg;
+    final bw = (await ref.read(bodyDaoProvider).getLatestWeight())?.weightKg;
     final today = DateTime.now();
     final start = DateTime(today.year, today.month, today.day)
         .subtract(const Duration(days: 30));
@@ -68,7 +68,7 @@ final weekDashboardProvider =
     final wo = ref.read(workoutDaoProvider);
     final nut = ref.read(nutritionDaoProvider);
     final profile = await ref.read(userProfileDaoProvider).getProfile();
-    final bw = (await ref.read(bodyDaoProvider).getLatestMeasurement())?.weightKg;
+    final bw = (await ref.read(bodyDaoProvider).getLatestWeight())?.weightKg;
 
     final b = _weekBounds(DateTime.now(), weekStart);
 

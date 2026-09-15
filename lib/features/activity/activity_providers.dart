@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/nutrition_dao.dart';
 import '../../data/providers.dart';
+import '../../data/reactive.dart';
 
 /// Aktivite takvimi (docs/10-activity-calendar.md) — Faz A: veri katmanı.
 /// Bir ayın her günü için birleşik aktivite (makro + su + antrenman).
@@ -94,31 +95,46 @@ Map<int, DayActivity> buildMonthActivity({
 /// Bir ayın aktivite haritası. Aile anahtarı = ayın herhangi bir günü
 /// (yıl+ay kullanılır). Tek sorgu seti ile tüm ay doldurulur.
 ///
-/// autoDispose: İlerleme sekmesinden çıkınca atılır; geri dönünce taze
-/// hesaplanır (su/yemek/antrenman değişiklikleri yansısın). AppShell
-/// `context.go` ile route değiştirir (IndexedStack yok) → ekran dispose olur.
-final monthActivityProvider = FutureProvider.autoDispose
-    .family<Map<int, DayActivity>, DateTime>((ref, month) async {
-  // Aralık kuralı [start, end): bitiş = sonraki ayın ilk günü, HARİÇ tutulur
-  // (DAO sorguları H-01 gereği < end kullanır — eski -1ms hilesi gereksiz).
-  final start = DateTime(month.year, month.month, 1);
-  final end = DateTime(month.year, month.month + 1, 1);
+/// **Tabloları izler, sekme ömrüne güvenmez.** Eskiden `FutureProvider.autoDispose`
+/// idi ve "sekmeden çıkınca ekran dispose olur, geri dönünce taze hesaplanır"
+/// varsayımına dayanıyordu. O varsayım router `StatefulShellRoute.indexedStack`'e
+/// geçince bozuldu (`app_router.dart`): sekmeler artık canlı kalıyor, dispose
+/// olmuyor. Sonuç: takvim açıkken beslenme sekmesinde öğün eklenince geri
+/// dönüldüğünde takvim bayat kalıyordu (dış inceleme 2026-09-15, #10).
+/// Artık kaynak tablolar değişince kendiliğinden yeniden hesaplanıyor.
+/// `autoDispose` korunur ama artık tazelik için DEĞİL, bellek için: aile
+/// anahtarı her ay ayrı girdi açar, izlenmeyen aylar bırakılmalı.
+final monthActivityProvider = StreamProvider.autoDispose
+    .family<Map<int, DayActivity>, DateTime>((ref, month) {
+  final db = ref.watch(databaseProvider);
+  return watchTables(db, [
+    db.foodLogs,
+    db.foods,
+    db.waterIntake,
+    db.workoutSessions,
+    db.workoutSets,
+  ], () async {
+    // Aralık kuralı [start, end): bitiş = sonraki ayın ilk günü, HARİÇ tutulur
+    // (DAO sorguları H-01 gereği < end kullanır — eski -1ms hilesi gereksiz).
+    final start = DateTime(month.year, month.month, 1);
+    final end = DateTime(month.year, month.month + 1, 1);
 
-  final nut = ref.watch(nutritionDaoProvider);
-  final wo = ref.watch(workoutDaoProvider);
+    final nut = ref.read(nutritionDaoProvider);
+    final wo = ref.read(workoutDaoProvider);
 
-  final totals = await nut.getDailyTotalsInRange(start, end);
-  final water = await nut.getWaterInRange(start, end);
-  final sessions = await wo.getSessionsByDateRange(start, end);
-  final setsBySession =
-      await wo.getSetsForSessions(sessions.map((s) => s.id).toList());
+    final totals = await nut.getDailyTotalsInRange(start, end);
+    final water = await nut.getWaterInRange(start, end);
+    final sessions = await wo.getSessionsByDateRange(start, end);
+    final setsBySession =
+        await wo.getSetsForSessions(sessions.map((s) => s.id).toList());
 
-  return buildMonthActivity(
-    year: month.year,
-    month: month.month,
-    totals: totals,
-    water: water,
-    sessions: sessions,
-    setsBySession: setsBySession,
-  );
+    return buildMonthActivity(
+      year: month.year,
+      month: month.month,
+      totals: totals,
+      water: water,
+      sessions: sessions,
+      setsBySession: setsBySession,
+    );
+  });
 });

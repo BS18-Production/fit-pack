@@ -1,6 +1,44 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
-## 🔐 Zorunlu Hesap + Senkron (docs/18) — SIRADAKİ İŞ
+## 🔴 Senkron v2 (docs/20) — SIRADAKİ İŞ
+
+Dış inceleme (2026-09-15) senkron protokolünde 7 P1 açığı buldu, hepsi kodda
+doğrulandı. Ayrıntı ve numaralandırma: [CODE_REVIEW.md § Dış İnceleme](CODE_REVIEW.md).
+
+- [ ] **docs/20 — Senkron v2 tasarımı yazılacak (kod ÖNCE değil).** Kapsaması
+      gerekenler:
+      - **Silme protokolü** (#1): tombstone / `deleted_at` + `SyncRemote.delete`.
+        Rutin düzenlemesi sil+yeniden-ekle yerine satır kimliğini koruyan fark
+        uygulamalı, yoksa sunucuda rutin şişmeye devam eder.
+      - **Satır sürümü** (#3, #4): saniyelik `updated_at` sürüm yerine geçemez;
+        her yerel değişiklikte artan revizyon. Sunucu tarafında **koşullu**
+        upsert (RPC ya da `where updated_at <`), yoksa eski yazma yeniyi ezer.
+      - **Sayfalama** (#5): kararlı sıralamayla tüm sayfalar; PostgREST
+        varsayılanı 1.000 satır ve sessizce kesiyor.
+      - **Pull penceresi** (#2): ağ beklemesi tetikleyiciler kapalıyken
+        olmamalı. Açılışta tetikleyici bütünlüğü onarılmalı (`beforeOpen` şu an
+        yalnız `PRAGMA foreign_keys` yapıyor).
+      - **Hesap izolasyonu** (#6, #7): `bootstrap()` sahiplik kontrolü yapmalı;
+        `gateRedirect` hata durumunu girdi olarak almalı; ortak katalog
+        kimlikleri kullanıcıya bağlanmamalı.
+      - **Reaktif yayılım** (#9): pull ham SQL yazdığı için Drift `tableUpdates`
+        tetiklenmiyor; elle liste 8 provider, kodda 23 `watchTables` var.
+      - **Su tekilliği** (#8 kalan yarısı): gün başına tekillik kısıtı — şema
+        değişikliği, migration + test aynı commit'te (ADR-007).
+- [ ] **Senkron testleri gerçekten yarışı sınamalı** (E-15): `sync_push_test`
+      T-5 düzenlemeyi `pushAll` bittikten SONRA yapıyor; T-1 dosyayı kapatıp
+      açmıyor. İsimleri vaat ettiklerini ölçmüyorlar.
+- [ ] **Açılış dumanı testi + CI** (E-16): `widget_test.dart` yalnız `1+1==2`;
+      repoda takip edilen iş akışı yok.
+
+- [x] **Bağımsız bulgular düzeltildi** (2026-09-15): #11 kilo sorgusu
+      (`getLatestWeight`), #10 aktivite takvimi reaktif oldu, #12 "dünü kopyala"
+      transaction + çift dokunuş koruması, #8 su kaydı yerel yarısı, #13 admin
+      panel yarış durumu. analyze 0 · test 227/227 (12 yeni).
+
+---
+
+## 🔐 Zorunlu Hesap + Senkron (docs/18) — kodlandı, protokol eksik
 
 Tasarım: **[docs/18-auth-and-sync.md](docs/18-auth-and-sync.md)**. Aşama sırası:
 A → B → C → E → G → F → D.

@@ -12,30 +12,51 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
   DateTime _dayStart(DateTime d) => DateTime(d.year, d.month, d.day);
 
   /// Günün toplam su miktarı (ml). Kayıt yoksa 0.
+  ///
+  /// **`getSingleOrNull` DEĞİL** (dış inceleme 2026-09-15, #8): tabloda gün
+  /// başına tekillik kısıtı yok. İki cihaz aynı güne ayrı `uid`'lerle satır
+  /// açarsa indirme ikisini de yerele yazar ve tek-satır sorgusu **fırlatırdı**
+  /// — su kartı olan her ekran hata verirdi. Çoklu satır beklenen durum değil
+  /// ama okuma buna dayanıklı olmalı: satırlar toplanır.
   Future<int> getWaterForDay(DateTime day) async {
-    final row = await (select(waterIntake)
+    final rows = await (select(waterIntake)
           ..where((w) => w.date.equals(_dayStart(day))))
-        .getSingleOrNull();
-    return row?.amountMl ?? 0;
+        .get();
+    return rows.fold<int>(0, (sum, r) => sum + r.amountMl);
   }
 
   /// Güne [ml] ekler (negatif = azaltır), 0 altına düşmez. Yeni güne satır
   /// açar, varsa artırır. Güncellenmiş toplamı döner.
-  Future<int> addWater(DateTime day, int ml) async {
-    final d = _dayStart(day);
-    final existing = await (select(waterIntake)..where((w) => w.date.equals(d)))
-        .getSingleOrNull();
-    if (existing == null) {
-      final v = ml < 0 ? 0 : ml;
-      await into(waterIntake)
-          .insert(WaterIntakeCompanion.insert(date: d, amountMl: Value(v)));
-      return v;
-    }
-    final next = (existing.amountMl + ml).clamp(0, 100000);
-    await (update(waterIntake)..where((w) => w.id.equals(existing.id)))
-        .write(WaterIntakeCompanion(amountMl: Value(next)));
-    return next;
-  }
+  ///
+  /// **Tek transaction** (dış inceleme 2026-09-15, #8): oku-değiştir-yaz dizisi
+  /// açıktaydı; su düğmesine hızlı arka arkaya basınca iki okuma aynı değeri
+  /// görüp biri diğerinin artışını yutabiliyordu. Aynı güne birden çok satır
+  /// düşmüşse (çok cihaz) en eskisi güncellenir — kalıcı çözüm gün başına
+  /// tekillik kısıtı, o senkron v2 kapsamında (docs/20).
+  Future<int> addWater(DateTime day, int ml) => transaction(() async {
+        final d = _dayStart(day);
+        final rows = await (select(waterIntake)
+              ..where((w) => w.date.equals(d))
+              ..orderBy([(w) => OrderingTerm.asc(w.id)]))
+            .get();
+        if (rows.isEmpty) {
+          final v = ml < 0 ? 0 : ml;
+          await into(waterIntake)
+              .insert(WaterIntakeCompanion.insert(date: d, amountMl: Value(v)));
+          return v;
+        }
+        final total = rows.fold<int>(0, (sum, r) => sum + r.amountMl);
+        final next = (total + ml).clamp(0, 100000);
+        await (update(waterIntake)..where((w) => w.id.equals(rows.first.id)))
+            .write(WaterIntakeCompanion(amountMl: Value(next)));
+        // Fazla satırlar varsa toplam ilkine taşındı → kalanlar sıfırlanır ki
+        // okuma iki kez saymasın.
+        for (final extra in rows.skip(1)) {
+          await (update(waterIntake)..where((w) => w.id.equals(extra.id)))
+              .write(const WaterIntakeCompanion(amountMl: Value(0)));
+        }
+        return next;
+      });
 
   /// Günün su kaydını sıfırlar (uzun basışla geri al).
   Future<void> resetWater(DateTime day) async {
@@ -152,10 +173,14 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
               w.date.isBiggerOrEqualValue(start) &
               w.date.isSmallerThanValue(end)))
         .get();
-    return {
-      for (final w in rows)
-        DateTime(w.date.year, w.date.month, w.date.day): w.amountMl
-    };
+    // Map literal'i aynı güne ikinci satır düşerse öncekini EZERDİ (#8 ile aynı
+    // kök: gün başına tekillik kısıtı yok). Toplamak doğru davranış.
+    final out = <DateTime, int>{};
+    for (final w in rows) {
+      final day = DateTime(w.date.year, w.date.month, w.date.day);
+      out[day] = (out[day] ?? 0) + w.amountMl;
+    }
+    return out;
   }
 
   /// Son eklenen DISTINCT yemekler — "Son kullanılanlar" hızlı şeridi.
@@ -180,23 +205,38 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
   }
 
   /// [from] gününün tüm kayıtlarını [to] gününe kopyalar ("dünü kopyala").
-  /// Kopyalanan kayıt sayısını döner; 0 → kaynak gün boş.
-  Future<int> copyDayLogs(DateTime from, DateTime to) async {
-    final logs = await getLogsForDate(from);
-    for (final log in logs) {
-      await insertFoodLog(FoodLogsCompanion(
-        date: Value(DateTime(to.year, to.month, to.day)),
-        mealType: Value(log.mealType),
-        foodId: Value(log.foodId),
-        grams: Value(log.grams),
-        computedKcal: Value(log.computedKcal),
-        computedProtein: Value(log.computedProtein),
-        computedCarb: Value(log.computedCarb),
-        computedFat: Value(log.computedFat),
-      ));
-    }
-    return logs.length;
-  }
+  /// Kopyalanan kayıt sayısını döner; 0 → kaynak gün boş **ya da** hedef gün
+  /// zaten dolu.
+  ///
+  /// **Tek transaction + hedef kontrolü içeride** (dış inceleme 2026-09-15,
+  /// #12): eskiden kayıtlar tek tek, transaction dışında ekleniyordu — üçüncü
+  /// satırda hata olsa iki öğün yarım kalıyordu. Hedefin boş olduğu kontrolü de
+  /// aynı transaction'da, çünkü düğme `logs.isEmpty` iken görünüyor ve hızlı
+  /// iki dokunuş ekran daha tazelenmeden ikinci kopyayı başlatabiliyordu.
+  Future<int> copyDayLogs(DateTime from, DateTime to) => transaction(() async {
+        final day = DateTime(to.year, to.month, to.day);
+        final existing = await getLogsForDate(day);
+        if (existing.isNotEmpty) return 0; // hedef dolu → kopyalama
+        final logs = await getLogsForDate(from);
+        if (logs.isEmpty) return 0;
+        await batch((b) => b.insertAll(
+              foodLogs,
+              [
+                for (final log in logs)
+                  FoodLogsCompanion(
+                    date: Value(day),
+                    mealType: Value(log.mealType),
+                    foodId: Value(log.foodId),
+                    grams: Value(log.grams),
+                    computedKcal: Value(log.computedKcal),
+                    computedProtein: Value(log.computedProtein),
+                    computedCarb: Value(log.computedCarb),
+                    computedFat: Value(log.computedFat),
+                  ),
+              ],
+            ));
+        return logs.length;
+      });
 
   Future<int> deleteFoodLog(int id) =>
       (delete(foodLogs)..where((l) => l.id.equals(id))).go();

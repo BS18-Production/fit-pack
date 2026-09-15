@@ -21,6 +21,12 @@ import 'macro_goals.dart';
 
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
+/// "Dünü kopyala" sürüyor mu. Düğme yalnız gün boşken görünür ve kopyalama
+/// bitene kadar ekran tazelenmez → hızlı iki dokunuş iki kopya başlatabiliyordu
+/// (dış inceleme 2026-09-15, #12). DAO tarafında da hedef kontrolü var; bu
+/// bayrak kullanıcıya düğmeyi sönük gösterip ikinci dokunuşu hiç başlatmaz.
+final copyDayBusyProvider = StateProvider<bool>((ref) => false);
+
 /// Kayıtlar + yemek adı (join). **Reaktif** (H-05): öğün eklenince/silinince
 /// kendiliğinden tazelenir. Seçili gün değişince provider yeniden kurulur.
 final logsWithFoodProvider = StreamProvider<List<FoodLogWithFood>>((ref) {
@@ -177,7 +183,9 @@ class NutritionScreen extends ConsumerWidget {
                       padding:
                           const EdgeInsets.only(bottom: AppSpacing.md),
                       child: OutlinedButton.icon(
-                        onPressed: () => _copyYesterday(context, ref),
+                        onPressed: ref.watch(copyDayBusyProvider)
+                            ? null
+                            : () => _copyYesterday(context, ref),
                         icon: const Icon(Icons.content_copy_rounded,
                             size: AppIconSize.sm),
                         label: Text(isToday
@@ -215,6 +223,9 @@ class NutritionScreen extends ConsumerWidget {
     final date = ref.read(selectedDateProvider);
     final from = date.subtract(const Duration(days: 1));
     final messenger = ScaffoldMessenger.of(context);
+    final busy = ref.read(copyDayBusyProvider.notifier);
+    if (busy.state) return; // ikinci dokunuş
+    busy.state = true;
     try {
       final copied =
           await ref.read(nutritionDaoProvider).copyDayLogs(from, date);
@@ -228,6 +239,8 @@ class NutritionScreen extends ConsumerWidget {
     } catch (_) {
       messenger.showSnackBar(
           SnackBar(content: Text(l.nutritionCopyFailed)));
+    } finally {
+      busy.state = false;
     }
   }
 

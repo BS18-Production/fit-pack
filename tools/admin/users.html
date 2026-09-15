@@ -426,6 +426,12 @@ order by b.date desc limit 200`;
 /* ───────────────── durum ───────────────── */
 let ROWS=[], sortKey='kayit_ts', sortDir=-1, filter='all', query='', cursor=-1;
 let current=null, tab='profil', DETAIL={};
+/* Detay isteklerinin nesli. Her loadDetail çağrısı bir numara alır; yalnız
+   EN SON istek DETAIL'i yazabilir. Eskiden sonuçlar önce DETAIL'e yazılıp
+   sonra kullanıcı kontrolü yapılıyordu: A'nın geç gelen yanıtı, ekranda B
+   varken ortak state'i eziyor, sonraki sekme geçişinde B başlığı altında
+   A'nın verisi görünüyordu (dış inceleme 2026-09-15, #13). */
+let detailSeq=0;
 
 function statusOf(r){
   const now=Date.now();
@@ -1044,12 +1050,19 @@ function drawBody(host,rows){
 }
 
 async function loadDetail(uid,refresh=false){
+  const seq=++detailSeq;
   if(!isUuid(uid)){ DETAIL={sets:[],foods:[],body:[]}; drawTabs(); drawTab(); return; }
   const jobs=[['sets',sqlSets(uid)],['foods',sqlFoods(uid)],['body',sqlBody(uid)]];
   const res=await Promise.allSettled(jobs.map(([,q])=>ask(q,refresh)));
+  // Önce YERELE topla — ortak state'e dokunma.
+  const next={};
   res.forEach((x,i)=>{ const key=jobs[i][0];
-    DETAIL[key] = x.status==='fulfilled' ? extract(x.value.payload) : []; });
-  if(current?.uuid===uid){ drawTabs(); drawTab(); }
+    next[key] = x.status==='fulfilled' ? extract(x.value.payload) : []; });
+  // Yalnız hâlâ geçerliysek yaz: kullanıcı değişmemiş VE daha yeni bir istek
+  // başlamamış olmalı (aynı kullanıcı için art arda yenilemede de geçerli).
+  if(seq!==detailSeq || current?.uuid!==uid) return;
+  DETAIL=next;
+  drawTabs(); drawTab();
 }
 
 /* ───────────────── yükleme ───────────────── */

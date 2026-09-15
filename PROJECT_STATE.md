@@ -1,10 +1,42 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-07-25
+> **Son güncelleme:** 2026-09-15
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
-> F · G TAMAM. Kapı + iki yönlü senkron + durum göstergesi canlıda. Epik **bitti**.
+> F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
+> protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
+> sunucuda çakışma çözümü yok, sayfalama yok, hesap izolasyonu eksik).
+> Ayrıntı: [CODE_REVIEW.md § Dış İnceleme](CODE_REVIEW.md). Sıradaki iş
+> **docs/20 — Senkron v2 tasarımı**.
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
+
+## 🔍 Dış Kod İncelemesi — 2026-09-15
+
+Samet GitHub reposunu dış bir modele (ChatGPT Astra 6 medium) incelettirdi.
+**14 bulgunun 14'ü de kod üzerinde doğrulandı** — yanlış pozitif çıkmadı.
+Dış inceleyicide Flutter/Dart yoktu; `flutter analyze` (0 uyarı) ve
+`flutter test` (215/215 geçer) burada çalıştırıldı. Testler geçiyor ama
+raporun en sert tespiti şu: **yanlış şeyi ölçüyorlar** — `sync_push_test`
+T-5'in adı "gönderim sırasında düzenlenen satır" ama düzenlemeyi `pushAll`
+bittikten sonra yapıyor; T-1 "süreç ölümü" diyor ama veritabanı dosyasını
+kapatıp açmıyor.
+
+**Bugün düzeltilenler** (tasarım gerektirmeyen, bağımsız 5 bulgu): kilosuz
+ölçümün mevcut kiloyu perdelemesi (#11), aktivite takviminin sekme geçişinde
+bayat kalması (#10), "dünü kopyala"nın transaction'sız + çift dokunuşa açık
+olması (#12), su kaydının çoklu satırda çökmesi ve oku-değiştir-yaz yarışı
+(#8 yerel yarısı), admin panelde geç yanıtın yanlış kullanıcının verisini
+yazması (#13). analyze 0 · test **227/227** (12 yeni regresyon testi). #10'un testi, eski
+kalıp geçici yeniden kurulup çalıştırılarak doğrulandı — eski kodla kırmızı,
+yeniyle yeşil. Emülatörde derlendi, kuruldu, açıldı (çökme yok); değişen
+ekranlar zorunlu giriş kapısının arkasında olduğu için görsel tur yapılamadı.
+
+**Açık kalan ve BİRLİKTE tasarlanması gerekenler** (#1-#7): dördü aynı köke
+iniyor — satır sürümü yok, silme protokolü yok, ortak katalog kullanıcıya
+bağlanıyor, pull ağ beklemesini yazma penceresinden ayırmıyor. En görünür
+sonucu: **silinen öğün sonraki açılışta geri geliyor** (tek cihazda bile —
+`bootstrap()` arka plan pull'u sunucuda duran satırı yeniden ekliyor).
+Bunlara docs/20 yazılmadan kod yazılmayacak.
 
 ## 📱 iOS Ayağa Kalktı — 2026-07-25
 

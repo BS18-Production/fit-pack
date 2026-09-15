@@ -30,7 +30,7 @@ final todayNutritionProvider = StreamProvider<DailyNutrition>((ref) {
 final latestWeightProvider = StreamProvider<BodyMeasurement?>((ref) {
   final db = ref.watch(databaseProvider);
   return watchTables(db, [db.bodyMeasurements],
-      () => ref.read(bodyDaoProvider).getLatestMeasurement());
+      () => ref.read(bodyDaoProvider).getLatestWeight());
 });
 
 /// Bugünün su tüketimi (ml). Home su kartı izler.

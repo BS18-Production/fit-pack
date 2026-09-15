@@ -216,6 +216,77 @@ Rapor (MD/JSON/CSV) hâlâ V1 şemasını yansıtıyor: set RPE'si, set tipi (ı
 
 - **D-01 (Batch 1'de bulundu ve düzeltildi):** `backup_service.dart` kaynak dosyasında, `_isSqlite` doc yorumunun içinde **gerçek bir NUL baytı (0x00)** vardı ("SQLite format 3␀"). Dart derleyicisi şikayet etmiyordu ama `grep` dosyayı ikili (binary) sayıyor, metin araçları şaşıyordu. Yorum `"SQLite format 3" + NUL` olarak yeniden yazıldı.
 
+## Dış İnceleme — 2026-09-15 (ChatGPT Astra 6 medium)
+
+> **İnceleyen:** dış model, GitHub reposu üzerinden salt-okunur · **Temel:** `f042812`
+> **Ham rapor:** `~/Downloads/fit-pack-code-review-2026-09-15.md`
+> **Doğrulama:** 14 bulgunun 14'ü de kod üzerinde teyit edildi (Claude, aynı gün).
+> Dış inceleyicide Flutter/Dart yoktu; `flutter analyze` (0) ve `flutter test`
+> (215/215) burada çalıştırıldı — testler geçiyor, ama aşağıdaki E-15/E-16
+> maddeleri testlerin **yanlış şeyi** ölçtüğünü gösteriyor.
+
+Numaralandırma dış raporla aynı (#1…#14) kalsın diye korunmuştur.
+
+| # | Önem | Dosya | Özet | Durum |
+|---|------|-------|------|-------|
+| #1 | 🔴 P1 | `sync_push.dart`, `sync_pull.dart`, `workout_dao.dart` | **Silme yayılmıyor:** `SyncRemote`'ta `delete` yok, şemada `deleted_at` yok → silinen kayıt sonraki indirmede geri gelir. Rutin düzenlemesi sil+yeniden-ekle yaptığı için sunucuda rutin şişer | ⬜ senkron v2 |
+| #2 | 🔴 P1 | `sync_pull.dart:59-98` | Pull, **ağ beklemesi boyunca** 12 tablonun tetikleyicilerini düşürüyor; o sırada kullanıcı yazması `uid=NULL, sync_state=0` kalır. Süreç ölürse DROP kalıcı — `beforeOpen` yalnız `PRAGMA foreign_keys` yapıyor, tetikleyici onarmıyor | ⬜ senkron v2 |
+| #3 | 🔴 P1 | `sync_columns.dart:185`, `sync_push.dart:212` | Sürüm damgası **saniye** çözünürlüğünde (`strftime('%s','now')`). `_markClean`'in `updated_at IS ?` koruması aynı saniyedeki düzenlemeyi ayırt edemiyor → düzenleme sessizce kuyruktan düşer | ⬜ senkron v2 |
+| #4 | 🔴 P1 | `supabase_sync_remote.dart:20` | `upsert(onConflict:'uid')` **koşulsuz**; çakışma kuralı yalnız indirme tarafında. Çevrimdışı bekleyen eski yazma, sunucudaki yeni sürümü ezer | ⬜ senkron v2 |
+| #5 | 🔴 P1 | `supabase_sync_remote.dart:26` | `select()` sayfalama yok; PostgREST varsayılanı 1.000 satır → büyük geçmiş **sessizce** eksik iner, hata da vermez | ⬜ senkron v2 |
+| #6 | 🔴 P1 | `auth_gate.dart:100` | `bootstrap()` oturumu doğrudan `_appliedUserId` sayıyor, `AccountSwitchGuard.apply` çağırmıyor. Ayrıca `_applyAccount` catch'inin "başarısızsa içeri alma" sözü `gateRedirect`'te karşılıksız — fonksiyon hata durumunu girdi olarak almıyor | ⬜ senkron v2 |
+| #7 | 🔴 P1 | `account_switch.dart:62` | Hesap değişiminde temizlik yalnız `is_custom=1` siliyor; kullanılmış katalog satırı eski `uid`/`user_id` ile kalıyor → sonraki kullanıcının gönderimi RLS'e takılır ve **kuyruk o noktada durur** | ⬜ senkron v2 |
+| #8 | 🟠 P2 | `nutrition_dao.dart:15`, `nutrition_tables.dart:51` | Su: gün başına tekillik kısıtı yok, `getSingleOrNull()` iki satırda **fırlatır**; oku-değiştir-yaz transaction dışıydı | ✅ yerel yarısı (2026-09-15) · ⬜ tekillik → v2 |
+| #9 | 🟠 P2 | `sync_pull.dart:256`, `auth_gate.dart:202` | Pull ham `customStatement` kullanıyor → Drift `tableUpdates` tetiklenmiyor; elle tazeleme listesi 8 provider, kodda 23 `watchTables` çağrısı var | ⬜ senkron v2 |
+| #10 | 🟠 P2 | `activity_providers.dart:93` | Takvim `autoDispose` tazeliğine güveniyordu; router `StatefulShellRoute.indexedStack`'e geçince sekmeler canlı kaldı → takvim bayatlıyordu | ✅ 2026-09-15 |
+| #11 | 🟠 P2 | `body_dao.dart:15` | `getLatestMeasurement` "son kilo" sanılıyordu; kilosuz ölçüm (yalnız bel) girilince mevcut kilo yok sayılıyordu | ✅ 2026-09-15 |
+| #12 | 🟠 P2 | `nutrition_dao.dart:184` | "Dünü kopyala" transaction dışında tek tek ekliyordu; çift dokunuş koruması yoktu | ✅ 2026-09-15 |
+| #13 | 🟠 P2 | `tools/admin/users.html:1046` | `loadDetail` sonuçları ortak `DETAIL`'e **kontrolden önce** yazıyordu → A'nın geç yanıtı B açıkken state'i eziyor | ✅ 2026-09-15 |
+| #14 | 🔴 P1 | `android/app/build.gradle.kts:30` | `targetSdk 34` + release debug anahtarıyla imzalı. **Yeni bulgu değil — H-04'ün açık kalan kısmı.** 2026-09 itibarıyla Play hedefi API 36 | ⬜ yayın kararı |
+| E-15 | 🟠 P2 | `test/features/sync_push_test.dart` | T-5 adı "gönderim sırasında düzenlenen satır" ama düzenlemeyi `pushAll` **bittikten sonra** yapıyor — uçuş halindeki yarış test edilmiyor. T-1 "süreç ölümü" diyor ama dosyayı kapatıp açmıyor, aynı bellek bağlantısını okuyor | ⬜ senkron v2 |
+| E-16 | 🔵 LOW | `test/widget_test.dart` | Yalnız `1 + 1 == 2` — açılış dumanı testi yok. CI iş akışı da repoda yok | ⬜ |
+
+### Kök nedenler (neden 1-7 birlikte tasarlanmalı)
+
+| Kök eksik | Doğurduğu bulgular |
+|---|---|
+| Satır sürümü yok (saniyelik `updated_at` sürüm yerine geçiyor) | #3, #4 |
+| Silme protokolü yok (tombstone / `deleted_at`) | #1 |
+| Sahiplik modeli: ortak katalog kullanıcıya bağlanıyor | #6, #7 |
+| Pull ağ beklemesini yazma penceresinden ayırmıyor | #2, #5, #9 |
+
+Tek tek yamamak, her birinde aynı varsayımı farklı yerden yeniden kurmak olur.
+**docs/20 — Senkron v2** yazılmadan 1-7'ye kod yazılmayacak.
+
+### ✅ Bu oturumda düzeltilenler (2026-09-15)
+
+Tasarım gerektirmeyen, birbirinden bağımsız bulgular:
+
+- **#11** — `getLatestMeasurement` kaldırıldı, yerine `getLatestWeight()`
+  (`weightKg IS NOT NULL`). Eski metot silindi ki aynı tuzağa bir daha
+  düşülmesin; 5 çağrı yerinin hepsi zaten kiloyu okuyordu.
+- **#10** — `monthActivityProvider` `FutureProvider.autoDispose` → tabloları
+  izleyen `StreamProvider.autoDispose`. `autoDispose` korundu ama artık tazelik
+  için değil, aile anahtarı başına bellek için.
+- **#12** — `copyDayLogs` tek transaction + `batch.insertAll`; hedef günün boş
+  olduğu kontrolü **transaction'ın içine** alındı. UI'da `copyDayBusyProvider`
+  düğmeyi kopyalama boyunca söndürüyor.
+- **#8 (yerel yarısı)** — `addWater` tek transaction; `getWaterForDay` ve
+  `getWaterInRange` çoklu satıra dayanıklı (fırlatmak/ezmek yerine topluyor).
+  Gün başına tekillik kısıtı senkron v2'ye kaldı (şema değişikliği).
+- **#13** — `loadDetail` sonuçları önce yerel değişkende topluyor; `detailSeq`
+  nesil sayacı + kullanıcı kontrolü geçmeden ortak `DETAIL` yazılmıyor.
+
+Doğrulama: analyze 0 · test **227/227** (12 yeni: `external_review_fixes_test.dart`
+10 test, `activity_reactive_test.dart` 2 test).
+
+**Düzeltmeler gerçekten test ediliyor mu?** #10'un testi, eski kalıp geçici
+olarak yeniden kurulup çalıştırılarak doğrulandı: `FutureProvider.autoDispose`
+ile aynı senaryoda değer 3 saniye boyunca hiç tazelenmedi, yeni akışla anında
+geldi. Yani test yeşili boşuna değil — E-15'in tuzağına düşmüyor.
+
+---
+
 ## Batch Durumu
 
 - ✅ **Faz 3 — Kurallar & guardrail'ler (2026-07-04):** [CONVENTIONS.md](CONVENTIONS.md) oluşturuldu (klasör yapısı, kanonik Riverpod kalıbı, kalıcılık/tarih-aralığı/transaction/şema kuralları, AppRoutes navigasyon kuralı, tema/sabit kuralları, hata yönetimi standardı, "bitti" tanımı — hepsi bu koddan gerçek örneklerle). Proje-içi [CLAUDE.md](CLAUDE.md) oluşturuldu → her oturumda CONVENTIONS.md'yi zorunlu okuma olarak işaretliyor.

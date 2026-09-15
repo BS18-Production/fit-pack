@@ -894,11 +894,21 @@ Test hesabı açarken kotayı yakmamak için: Google ile gir, ya da Supabase pan
 
 ### Samet'in manuel işi
 Supabase → Authentication → **URL Configuration**:
-- **Site URL** hâlâ `http://localhost:3000` — deep link'e ya da gerçek bir
-  adrese çekilmeli (yukarıdaki hatanın kök sebebi).
-- **Redirect URLs** listesinde `fitpack://login-callback` bulunmalı. Google
-  tarayıcı akışı çalıştığına göre muhtemelen ekli, ama kayıt ve sıfırlama
-  bağlantıları da aynı adresten döndüğü için doğrulanmalı.
+- ✅ **Site URL düzeltildi** (Samet, 2026-08-02 bildirdi) — artık varsayılan
+  `http://localhost:3000` değil. Yukarıdaki hatanın kök sebebi kapandı.
+- ⬜ **Redirect URLs** listesinde `fitpack://login-callback` bulunmalı —
+  **doğrulanmadı**. Google tarayıcı akışı çalıştığına göre muhtemelen ekli, ama
+  kayıt ve sıfırlama bağlantıları da aynı adresten döndüğü için gözle
+  görülmeli. Site URL'den daha kritik olmasının sebebi: Supabase koddan gelen
+  `emailRedirectTo` parametresini bu allow-list'e karşı doğruluyor ve eşleşme
+  bulamazsa hata vermeden Site URL'e düşüyor. Yani deep link listede yoksa
+  `emailRedirectTo` düzeltmesi hiç devreye girmez.
+
+> **Not (2026-08-02):** Bu iki ayar sık karıştırılıyor ama **iOS yerel Google
+> girişiyle ilgisi yok**. O iş Authentication → **Providers → Google** altında
+> ("Client IDs" + "Skip nonce checks", §15.4). URL Configuration yalnız
+> **e-posta bağlantılarının** (kayıt doğrulama, şifre sıfırlama) nereye
+> düştüğünü belirler.
 
 ---
 

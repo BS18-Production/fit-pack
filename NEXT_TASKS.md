@@ -89,10 +89,14 @@ deep link, senkron, veritabanı ve seed doğrulandı (docs/18 §15.6).
 
 **Hâlâ açık:**
 
-- [ ] **Samet — Supabase Site URL düzeltilmeli.** Authentication → URL
-      Configuration → **Site URL** hâlâ varsayılan `http://localhost:3000`.
-      Redirect URLs listesinde `fitpack://login-callback` olduğu da
-      doğrulanmalı (docs/18 §14).
+- [x] **Supabase Site URL düzeltildi** (Samet, 2026-08-02 bildirdi). Artık
+      varsayılan `http://localhost:3000` değil.
+- [ ] **Samet — Redirect URLs listesi doğrulanmalı.** Authentication → URL
+      Configuration → **Redirect URLs** içinde `fitpack://login-callback`
+      bulunmalı. Site URL'den daha kritik: Supabase koddan gelen
+      `emailRedirectTo`'yu bu allow-list'e karşı doğruluyor, eşleşme yoksa
+      **sessizce Site URL'e düşüyor** — yani deep link listede değilse
+      `emailRedirectTo` düzeltmesi hiç devreye girmez (docs/18 §14).
 - [ ] **Custom SMTP artık kozmetik değil.** Dahili mail servisinin saatlik
       kotası `/signup` + `/recover` toplamı üzerinden sayılıyor; mevcut
       kurulumda aynı saat içinde birkaç kişi kayıt olamıyor

@@ -182,16 +182,30 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
         AppSpacing.vGapLg,
         const _SyncStatusTile(),
         AppSpacing.vGapxl_,
-        TextButton.icon(
+        // C-35: çıkış geri alınabilir, olağan bir işlem → nötr. Hesap silme
+        // kalıcı → ayrı, kırmızı ve ne yaptığını söyleyen bir alt bölümde.
+        OutlinedButton.icon(
           onPressed: _busy ? null : _signOut,
-          icon: Icon(Icons.logout_rounded, color: c.error),
-          label: Text(l.cloudSignOut, style: TextStyle(color: c.error)),
+          icon: const Icon(Icons.logout_rounded),
+          label: Text(l.cloudSignOut),
         ),
+        AppSpacing.vGapxl_,
+        const Divider(),
         AppSpacing.vGapSm,
-        TextButton.icon(
-          onPressed: _busy ? null : _deleteAccount,
-          icon: Icon(Icons.delete_forever_rounded, color: c.error),
-          label: Text(l.cloudDeleteAccount, style: TextStyle(color: c.error)),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: TextButton.icon(
+            onPressed: _busy ? null : _deleteAccount,
+            icon: Icon(Icons.delete_forever_rounded, color: c.error),
+            label:
+                Text(l.cloudDeleteAccount, style: TextStyle(color: c.error)),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: Text(l.cloudDeleteHint,
+              style: context.texts.bodySmall
+                  ?.copyWith(color: c.onSurfaceVariant)),
         ),
       ],
     );

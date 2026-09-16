@@ -345,6 +345,29 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
     return result?.readTable(workoutSets);
   }
 
+  /// Hareketin yapıldığı EN SON seanstaki setleri, set numarası sırasıyla
+  /// (G-2): aktif seansta "ÖNCEKİ" sütunu ve ✓ önerisi set numarasına göre
+  /// eşleşir. Isınma setleri dahildir — sıra numarası kayıttakiyle aynı kalsın.
+  /// Hareket hiç yapılmadıysa boş liste.
+  Future<List<WorkoutSet>> getLastSessionSetsForExercise(int exerciseId) async {
+    final latest = select(workoutSets).join([
+      innerJoin(workoutSessions, workoutSessions.id.equalsExp(workoutSets.sessionId)),
+    ])
+      ..where(workoutSets.exerciseId.equals(exerciseId))
+      ..orderBy([
+        OrderingTerm.desc(workoutSessions.date),
+        OrderingTerm.desc(workoutSessions.id),
+      ])
+      ..limit(1);
+    final row = await latest.getSingleOrNull();
+    if (row == null) return const [];
+    final sessionId = row.readTable(workoutSets).sessionId;
+    return (select(workoutSets)
+          ..where((s) => s.sessionId.equals(sessionId) & s.exerciseId.equals(exerciseId))
+          ..orderBy([(s) => OrderingTerm.asc(s.setNumber)]))
+        .get();
+  }
+
 }
 
 /// Rutin hareketi + hareket bilgisi (join sonucu — UI'da ad/ekipman göster).

@@ -1831,6 +1831,12 @@ abstract class AppL10n {
   /// **'Weight'**
   String get bmWeight;
 
+  /// Caption under the weight change: which measurement the change is compared to
+  ///
+  /// In en, this message translates to:
+  /// **'vs. {date}'**
+  String bmDiffSince(String date);
+
   /// No description provided for @bmWaist.
   ///
   /// In en, this message translates to:
@@ -2155,6 +2161,12 @@ abstract class AppL10n {
   /// **'Delete Account'**
   String get cloudDeleteAccount;
 
+  /// No description provided for @cloudDeleteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently deletes your account and the data stored in the cloud.'**
+  String get cloudDeleteHint;
+
   /// No description provided for @cloudDeleteTitle.
   ///
   /// In en, this message translates to:
@@ -2460,6 +2472,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Notifies when rest ends while the app is in the background'**
   String get notifRestTimerSub;
+
+  /// No description provided for @notifRestSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest timer sound'**
+  String get notifRestSound;
+
+  /// No description provided for @notifRestSoundSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Beeps for the last 3 seconds and when rest ends. Uses media volume and plays over your music.'**
+  String get notifRestSoundSub;
 
   /// No description provided for @notifWorkout.
   ///

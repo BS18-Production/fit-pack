@@ -96,11 +96,15 @@ void main() {
   });
 
   group('Kategoriye göre varsayılan dinlenme', () {
-    test('compound > isolation > flexibility', () {
-      expect(WorkoutUi.defaultRestSec('compound'), 180);
-      expect(WorkoutUi.defaultRestSec('isolation'), 90);
+    // G-3: kuvvet hareketlerinde 60 sn (bileşikte 180 pratikte uzundu),
+    // esneme 30 sn.
+    test('kuvvet 60 sn, esneme 30 sn', () {
+      expect(WorkoutUi.defaultRestSec('compound'), 60);
+      expect(WorkoutUi.defaultRestSec('isolation'), 60);
+      expect(WorkoutUi.defaultRestSec('calisthenics'), 60);
       expect(WorkoutUi.defaultRestSec('cardio'), 60);
       expect(WorkoutUi.defaultRestSec('flexibility'), 30);
+      expect(WorkoutUi.defaultRestSec('bilinmeyen'), 60);
     });
     test('restLabel: 0 → Yok, 90 → 1:30', () {
       expect(WorkoutUi.restLabel(0, none: 'Yok'), 'Yok');

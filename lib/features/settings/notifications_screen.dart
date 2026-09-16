@@ -147,6 +147,16 @@ class NotificationsScreen extends ConsumerWidget {
                 value: prefs.restEnabled,
                 onChanged: (v) => _setRest(context, ref, v),
               ),
+              // G-1: ekran açıkken sesli geri sayım — bildirim izni istemez.
+              SwitchListTile(
+                secondary: const Icon(Icons.volume_up_outlined),
+                title: Text(l.notifRestSound),
+                subtitle: Text(l.notifRestSoundSub),
+                value: prefs.restSoundEnabled,
+                onChanged: (v) => ref
+                    .read(notificationPrefsProvider.notifier)
+                    .update(prefs.copyWith(restSoundEnabled: v)),
+              ),
             ],
           ),
           AppSpacing.vGapLg,

@@ -6,6 +6,7 @@ import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/units/units.dart';
+import '../../core/utils/weight_goal.dart';
 import '../../l10n/app_l10n.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
@@ -506,6 +507,10 @@ class _WeekDashboard extends ConsumerWidget {
           Skeleton.card(height: 260)
         else
           GridView.count(
+            // Padding AÇIKÇA sıfır (C-7): verilmezse iç ızgara MediaQuery'nin
+            // güvenli alanını (çentik + buzlu çubuk) kendine ekliyor → başlıkla
+            // kartlar ve kartlarla Beslenme arasında büyük boşluk oluşuyordu.
+            padding: EdgeInsets.zero,
             crossAxisCount: 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -919,6 +924,7 @@ class _WeightMini extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
     final trend = ref.watch(weightTrendProvider).valueOrNull;
+    final goalKg = ref.watch(userProfileProvider).valueOrNull?.goalWeightKg;
     final units = ref.watch(unitsProvider);
     final c = context.colors;
     final success = context.semantic.success;
@@ -972,7 +978,15 @@ class _WeightMini extends ConsumerWidget {
                 ),
                 if (trend.delta != null && trend.delta != 0) ...[
                   const SizedBox(height: 4),
-                  _DeltaChip(delta: trend.delta!, units: units),
+                  _DeltaChip(
+                    delta: trend.delta!,
+                    units: units,
+                    tone: weightChangeTone(
+                      fromKg: trend.latest! - trend.delta!,
+                      toKg: trend.latest!,
+                      goalKg: goalKg,
+                    ),
+                  ),
                 ],
               ],
             ],
@@ -986,14 +1000,18 @@ class _WeightMini extends ConsumerWidget {
 class _DeltaChip extends StatelessWidget {
   final double delta; // kg (DB kanonik)
   final Units units;
-  const _DeltaChip({required this.delta, required this.units});
+  final WeightChangeTone tone;
+  const _DeltaChip(
+      {required this.delta, required this.units, required this.tone});
 
   @override
   Widget build(BuildContext context) {
-    // Cut bağlamı: kilo düşüşü olumlu (yeşil). Artış nötr ton.
+    // C-31: yön hedef kiloya göre yorumlanır (kilo alan için artış olumlu);
+    // hedef yoksa nötr. Eskiden "düşüş = iyi" sabitti.
     final down = delta < 0;
-    final color =
-        down ? context.semantic.success : context.colors.onSurfaceVariant;
+    final color = tone == WeightChangeTone.good
+        ? context.semantic.success
+        : context.colors.onSurfaceVariant;
     return Container(
       padding:
           const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),

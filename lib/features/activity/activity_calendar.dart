@@ -118,8 +118,10 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
 
   void _showDaySummary(BuildContext context, DateTime day, DayActivity? act) {
     final goals = _goals();
+    // Kök navigator (C-1): sekme içinden açılınca alt çubuğun arkasında kalmasın.
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       showDragHandle: true,
       builder: (_) => _DaySummarySheet(
         day: day,
@@ -210,6 +212,9 @@ class _MonthGrid extends StatelessWidget {
     }
 
     return GridView.count(
+      // Sıfır padding (C-7 ile aynı kök): verilmezse iç ızgara buzlu alt
+      // çubuğun yüksekliğini kendi altına ekliyor → takvimin altında boşluk.
+      padding: EdgeInsets.zero,
       crossAxisCount: 7,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),

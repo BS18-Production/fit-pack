@@ -5,6 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// tarafında yapılır (tercih değişince ekran servis çağırır).
 class NotificationPrefs {
   final bool restEnabled;
+  // G-1: seans ekranı açıkken mola geri sayımı + bitiş sesi. Bildirimden
+  // bağımsız (izin gerektirmez) → varsayılan AÇIK.
+  final bool restSoundEnabled;
   final bool workoutEnabled;
   final int workoutHour, workoutMinute;
   final bool waterEnabled;
@@ -12,6 +15,7 @@ class NotificationPrefs {
 
   const NotificationPrefs({
     this.restEnabled = false,
+    this.restSoundEnabled = true,
     this.workoutEnabled = false,
     this.workoutHour = 18,
     this.workoutMinute = 0,
@@ -22,6 +26,7 @@ class NotificationPrefs {
 
   NotificationPrefs copyWith({
     bool? restEnabled,
+    bool? restSoundEnabled,
     bool? workoutEnabled,
     int? workoutHour,
     int? workoutMinute,
@@ -31,6 +36,7 @@ class NotificationPrefs {
   }) =>
       NotificationPrefs(
         restEnabled: restEnabled ?? this.restEnabled,
+        restSoundEnabled: restSoundEnabled ?? this.restSoundEnabled,
         workoutEnabled: workoutEnabled ?? this.workoutEnabled,
         workoutHour: workoutHour ?? this.workoutHour,
         workoutMinute: workoutMinute ?? this.workoutMinute,
@@ -42,6 +48,7 @@ class NotificationPrefs {
 
 class NotificationPrefsNotifier extends Notifier<NotificationPrefs> {
   static const _kRest = 'notif_rest';
+  static const _kRestSound = 'notif_rest_sound';
   static const _kWorkout = 'notif_workout';
   static const _kWorkoutH = 'notif_workout_h';
   static const _kWorkoutM = 'notif_workout_m';
@@ -59,6 +66,7 @@ class NotificationPrefsNotifier extends Notifier<NotificationPrefs> {
     final p = await SharedPreferences.getInstance();
     state = NotificationPrefs(
       restEnabled: p.getBool(_kRest) ?? false,
+      restSoundEnabled: p.getBool(_kRestSound) ?? true,
       workoutEnabled: p.getBool(_kWorkout) ?? false,
       workoutHour: p.getInt(_kWorkoutH) ?? 18,
       workoutMinute: p.getInt(_kWorkoutM) ?? 0,
@@ -72,6 +80,7 @@ class NotificationPrefsNotifier extends Notifier<NotificationPrefs> {
     state = next;
     final p = await SharedPreferences.getInstance();
     await p.setBool(_kRest, next.restEnabled);
+    await p.setBool(_kRestSound, next.restSoundEnabled);
     await p.setBool(_kWorkout, next.workoutEnabled);
     await p.setInt(_kWorkoutH, next.workoutHour);
     await p.setInt(_kWorkoutM, next.workoutMinute);

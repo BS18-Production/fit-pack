@@ -986,6 +986,11 @@ class AppL10nEn extends AppL10n {
   String get bmWeight => 'Weight';
 
   @override
+  String bmDiffSince(String date) {
+    return 'vs. $date';
+  }
+
+  @override
   String get bmWaist => 'Waist';
 
   @override
@@ -1154,6 +1159,10 @@ class AppL10nEn extends AppL10n {
   String get cloudDeleteAccount => 'Delete Account';
 
   @override
+  String get cloudDeleteHint =>
+      'Permanently deletes your account and the data stored in the cloud.';
+
+  @override
   String get cloudDeleteTitle => 'Delete account';
 
   @override
@@ -1317,6 +1326,13 @@ class AppL10nEn extends AppL10n {
   @override
   String get notifRestTimerSub =>
       'Notifies when rest ends while the app is in the background';
+
+  @override
+  String get notifRestSound => 'Rest timer sound';
+
+  @override
+  String get notifRestSoundSub =>
+      'Beeps for the last 3 seconds and when rest ends. Uses media volume and plays over your music.';
 
   @override
   String get notifWorkout => 'Daily workout reminder';

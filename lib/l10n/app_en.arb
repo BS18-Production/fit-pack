@@ -554,6 +554,11 @@
   },
   "bmLatest": "Latest Measurements",
   "bmWeight": "Weight",
+  "bmDiffSince": "vs. {date}",
+  "@bmDiffSince": {
+    "description": "Caption under the weight change: which measurement the change is compared to",
+    "placeholders": { "date": { "type": "String" } }
+  },
   "bmWaist": "Waist",
   "bmArm": "Arm",
   "bmChest": "Chest",
@@ -615,6 +620,7 @@
   "cloudHaveAccount": "Already have an account? Sign in",
   "cloudSignOut": "Sign Out",
   "cloudDeleteAccount": "Delete Account",
+  "cloudDeleteHint": "Permanently deletes your account and the data stored in the cloud.",
   "cloudDeleteTitle": "Delete account",
   "cloudDeleteMsg": "Your cloud account and cloud backup will be permanently deleted. Data on this device is not affected.",
   "cloudDeleteConfirm2Title": "Are you sure?",
@@ -690,6 +696,8 @@
   "settingsNotificationsSubtitle": "Rest timer, workout & water reminders",
   "notifRestTimer": "Rest timer alert",
   "notifRestTimerSub": "Notifies when rest ends while the app is in the background",
+  "notifRestSound": "Rest timer sound",
+  "notifRestSoundSub": "Beeps for the last 3 seconds and when rest ends. Uses media volume and plays over your music.",
   "notifWorkout": "Daily workout reminder",
   "notifWater": "Daily water reminder",
   "notifTime": "Time",

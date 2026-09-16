@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import '../../core/feedback/feedback_service.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
@@ -18,6 +19,7 @@ import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'exercise_detail_screen.dart';
 import 'record_calc.dart';
+import 'set_prefill.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
@@ -43,6 +45,22 @@ class _SetEntry {
   String type = 'normal';
   bool done = false;
   bool isRecord = false; // bu set tamamlanınca kişisel rekor kırdı (rozet)
+  // Değerler koddan doldurulunca artar (G-2): giriş alanları `initialValue`
+  // ile kurulu, yeni değeri göstermeleri için bu sayaçla yeniden kurulurlar.
+  int fillGen = 0;
+
+  SetValues get values => SetValues(
+      weightKg: weight,
+      reps: reps,
+      durationSec: durationSec,
+      distanceM: distanceM);
+
+  void apply(SetValues v) {
+    weight = v.weightKg;
+    reps = v.reps;
+    durationSec = v.durationSec;
+    distanceM = v.distanceM;
+  }
 
   /// Ölçüm tipine göre set'te anlamlı bir veri girilmiş mi.
   bool hasInput(String measure) {
@@ -61,7 +79,11 @@ class _SetEntry {
 
 class _SessionExercise {
   final Exercise exercise;
-  final String? previous; // geçen seans ipucu (tipe göre format)
+  // Geçen seansın son çalışma seti etiketi — yalnız taslak uyumu için
+  // yazılır; ekran artık set numarasına göre [lastSets]'i gösterir (G-2).
+  final String? previous;
+  // Hareketin son yapıldığı seanstaki setler, set sırasıyla (G-2).
+  final List<WorkoutSet> lastSets;
   final List<_SetEntry> sets;
   final int restSec; // setler arası dinlenme (rutinden ya da kategoriye göre)
   // Seans öncesi kişisel rekorlar (record_calc) — canlı modda, yalnız ağırlık
@@ -70,10 +92,29 @@ class _SessionExercise {
   // artışlar yeniden rozetlensin.
   double bestE1rm = 0;
   double bestWeightKg = 0;
-  _SessionExercise(this.exercise, this.previous, this.sets,
-      {required this.restSec});
+  _SessionExercise(this.exercise, this.sets,
+      {required this.lastSets, required this.restSec, required Units units})
+      : previous = prevLabel(
+            lastSets.where((s) => !s.isWarmup).lastOrNull,
+            exercise.measurementType,
+            units);
 
   String get measure => exercise.measurementType;
+
+  List<CurrentSet> get currentSets => [
+        for (final s in sets) (values: s.values, warmup: s.type == 'warmup')
+      ];
+
+  List<SetValues> get lastValues =>
+      [for (final w in lastSets) SetValues.fromSet(w)];
+
+  /// [index]'teki set için ✓ önerisi (bkz. [suggestionFor]).
+  SetValues? suggestionAt(int index) => suggestionFor(
+        index: index,
+        current: currentSets,
+        lastSession: lastValues,
+        measure: measure,
+      );
 }
 
 /// "12:30" / "1.30" / "90" → saniye. Boş/geçersiz → null.
@@ -162,6 +203,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _title = ''; // ilk didChangeDependencies'te locale ile atanır
     if (!_isManual) {
       WakelockPlus.enable(); // antrenman boyunca ekran uyanık kalsın (docs/12)
+      ref.read(feedbackServiceProvider).warmUp(); // ilk bip gecikmesin (G-1)
       WidgetsBinding.instance.addObserver(this);
       _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() => _elapsed = DateTime.now().difference(_startedAt));
@@ -268,7 +310,6 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       if (ex == null) continue; // silinmiş/arşivlenmiş hareketi atla
       final se = _SessionExercise(
         ex,
-        de.previous,
         de.sets
             .map((s) => _SetEntry()
               ..weight = s.weight
@@ -280,7 +321,10 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
               ..done = s.done
               ..isRecord = s.isRecord)
             .toList(),
+        // Geçen seans taslakta değil DB'de — devam ederken yeniden okunur.
+        lastSets: await dao.getLastSessionSetsForExercise(ex.id),
         restSec: de.restSec,
+        units: ref.read(unitsProvider),
       );
       await _loadBests(se);
       _exercises.add(se);
@@ -327,9 +371,6 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       _title = routine?.name ??
           (mounted ? AppL10n.of(context).navWorkout : 'Workout');
       for (final it in exs) {
-        final last = await dao.getLastSetForExercise(it.exercise.id);
-        final prev = prevLabel(
-            last, it.exercise.measurementType, ref.read(unitsProvider));
         // Kardiyo/süre/mesafe hareketleri tek "set" ile başlar; ağırlık
         // hareketleri rutin hedefi kadar (varsayılan 3).
         final isCardioLike = it.exercise.measurementType == 'time' ||
@@ -337,10 +378,11 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         final count = isCardioLike ? 1 : (it.routineExercise.targetSets ?? 3);
         final se = _SessionExercise(
           it.exercise,
-          prev,
           List.generate(count, (_) => _SetEntry()),
+          lastSets: await dao.getLastSessionSetsForExercise(it.exercise.id),
           restSec: it.routineExercise.targetRestSec ??
               WorkoutUi.defaultRestSec(it.exercise.category),
+          units: ref.read(unitsProvider),
         );
         await _loadBests(se); // anlık rekor rozeti için seans öncesi en iyiler
         _exercises.add(se);
@@ -348,6 +390,13 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
     if (mounted) setState(() => _loading = false);
     _saveDraft(); // başlangıç taslağını yaz (boş bile olsa resume hedefi olur)
+    // Geçmiş kayıt (C-18): akışın ilk sorusu "hangi gün?" — tarih seçici
+    // kendiliğinden açılır; vazgeçilirse bugün kalır.
+    if (_isManual && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _pickSessionDate();
+      });
+    }
   }
 
   bool get _hasData => _exercises
@@ -387,12 +436,15 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
     if (record) {
       set.isRecord = true;
-      HapticFeedback.heavyImpact();
+      ref.read(feedbackServiceProvider).record();
     }
   }
 
   void _toggleDone(_SessionExercise ex, _SetEntry set) {
     setState(() {
+      // G-2: tamamlanırken boş alanlar öneriyle dolar (tek dokunuş = onay).
+      // Geri alırken değerler kalır — kullanıcı düzeltip yeniden işaretler.
+      if (!set.done) _fillFromSuggestion(ex, set);
       set.done = !set.done;
       if (set.done) {
         _checkRecord(ex, set);
@@ -403,12 +455,21 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       }
     });
     if (set.done) {
-      HapticFeedback.lightImpact();
+      ref.read(feedbackServiceProvider).setDone();
       // Hareketin kullanıcı tarafından belirlenen dinlenme süresi (0 = yok).
       // Geçmiş kayıt modunda dinlenme sayacı anlamsız — canlı değil.
       if (!_isManual && ex.restSec > 0) _startRest(ex.restSec);
     }
     _saveDraft();
+  }
+
+  void _fillFromSuggestion(_SessionExercise ex, _SetEntry set) {
+    final suggestion = ex.suggestionAt(ex.sets.indexOf(set));
+    if (suggestion == null) return;
+    final filled = fillMissing(set.values, suggestion, ex.measure);
+    if (filled == set.values) return;
+    set.apply(filled);
+    set.fillGen++;
   }
 
   void _cycleType(_SetEntry set) {
@@ -449,13 +510,15 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   Future<void> _addExercise() async {
     final ex = await context.push<Exercise>(AppRoutes.exercisesSelect);
     if (ex == null) return;
-    final last = await ref.read(workoutDaoProvider).getLastSetForExercise(ex.id);
-    final prev = prevLabel(last, ex.measurementType, ref.read(unitsProvider));
+    final lastSets =
+        await ref.read(workoutDaoProvider).getLastSessionSetsForExercise(ex.id);
+    if (!mounted) return;
     final se = _SessionExercise(
       ex,
-      prev,
       List.generate(1, (_) => _SetEntry()),
+      lastSets: lastSets,
       restSec: WorkoutUi.defaultRestSec(ex.category),
+      units: ref.read(unitsProvider),
     );
     await _loadBests(se);
     if (!mounted) return;
@@ -479,11 +542,16 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (deadline == null) return;
     final leftMs = deadline.difference(DateTime.now()).inMilliseconds;
     final left = (leftMs / 1000).ceil();
+    // G-1: ekran açıkken uygulama ön planda kalıyor, bildirim hiç düşmüyor —
+    // son 3 saniye tık + bitiş sesi/titreşimi buradan verilir.
+    final cue = restCueFor(
+        prevLeft: _restRemaining, left: left, overdueMs: -leftMs);
     setState(() => _restRemaining = left > 0 ? left : 0);
+    ref.read(feedbackServiceProvider).restCue(cue,
+        sound: ref.read(notificationPrefsProvider).restSoundEnabled);
     if (left <= 0) {
       _restTimer?.cancel();
       _restDeadline = null;
-      HapticFeedback.mediumImpact();
     }
   }
 
@@ -651,7 +719,10 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text(AppL10n.of(context).asFinish),
+                    // Geçmiş kayıtta bitirilecek canlı bir seans yok → "Kaydet".
+                    : Text(_isManual
+                        ? AppL10n.of(context).commonSave
+                        : AppL10n.of(context).asFinish),
               ),
             ),
           ],
@@ -1023,7 +1094,11 @@ class _ExerciseBlock extends ConsumerWidget {
                   index: e.key,
                   set: e.value,
                   measure: ex.measure,
-                  previous: ex.previous,
+                  // "ÖNCEKİ": geçen seansın AYNI numaralı seti (G-2).
+                  previous: e.key < ex.lastSets.length
+                      ? prevLabel(ex.lastSets[e.key], ex.measure, units)
+                      : null,
+                  suggestion: e.value.done ? null : ex.suggestionAt(e.key),
                   units: units,
                   onToggle: () => onToggle(e.value),
                   onCycleType: () => onCycleType(e.value),
@@ -1163,6 +1238,8 @@ class _SetRow extends StatelessWidget {
   final _SetEntry set;
   final String measure;
   final String? previous;
+  // ✓'e basılınca boş alanlara yazılacak değerler — alanlarda soluk ipucu.
+  final SetValues? suggestion;
   final Units units;
   final VoidCallback onToggle, onCycleType, onChanged;
   const _SetRow(
@@ -1171,40 +1248,54 @@ class _SetRow extends StatelessWidget {
       required this.set,
       required this.measure,
       required this.previous,
+      required this.suggestion,
       required this.units,
       required this.onToggle,
       required this.onCycleType,
       required this.onChanged});
 
   /// Ölçüm tipine göre orta giriş hücreleri (header ile aynı genişlik düzeni).
+  /// Boş alanın ipucu = ✓ önerisi (G-2); öneri yoksa eski sabit ipucu.
   List<Widget> _inputCols() {
+    final sug = suggestion;
+    // Koddan doldurulunca alan yeni değerle yeniden kurulsun (fillGen).
+    Key k(String field) => ValueKey('$field-${set.fillGen}');
+    final repsHint = sug?.reps?.toString();
+    final timeHint =
+        sug?.durationSec == null ? null : fmtDuration(sug!.durationSec!);
+    Widget rpeCell() => SizedBox(
+        width: 44,
+        child: _NumCell(
+            key: k('rpe'),
+            value: set.rpe,
+            decimal: true,
+            hint: '–',
+            onChanged: (v) {
+              set.rpe = v;
+              onChanged();
+            }));
     switch (measure) {
       case 'reps':
         return [
           Expanded(
               child: _NumCell(
+                  key: k('reps'),
                   value: set.reps?.toDouble(),
                   decimal: false,
+                  hint: repsHint,
                   onChanged: (v) {
                     set.reps = v?.round();
                     onChanged();
                   })),
-          SizedBox(
-              width: 44,
-              child: _NumCell(
-                  value: set.rpe,
-                  decimal: true,
-                  hint: '–',
-                  onChanged: (v) {
-                    set.rpe = v;
-                    onChanged();
-                  })),
+          rpeCell(),
         ];
       case 'time':
         return [
           Expanded(
               child: _TimeCell(
+                  key: k('time'),
                   value: set.durationSec,
+                  hint: timeHint,
                   onChanged: (v) {
                     set.durationSec = v;
                     onChanged();
@@ -1214,11 +1305,14 @@ class _SetRow extends StatelessWidget {
         return [
           Expanded(
               child: _NumCell(
+                  key: k('dist'),
                   value: set.distanceM == null
                       ? null
                       : units.distanceFromM(set.distanceM!),
                   decimal: true,
-                  hint: units.distanceUnit,
+                  hint: sug?.distanceM == null
+                      ? units.distanceUnit
+                      : units.distanceValue(sug!.distanceM!),
                   onChanged: (v) {
                     set.distanceM =
                         v == null ? null : units.distanceToM(v);
@@ -1226,7 +1320,9 @@ class _SetRow extends StatelessWidget {
                   })),
           Expanded(
               child: _TimeCell(
+                  key: k('time'),
                   value: set.durationSec,
+                  hint: timeHint,
                   onChanged: (v) {
                     set.durationSec = v;
                     onChanged();
@@ -1237,33 +1333,30 @@ class _SetRow extends StatelessWidget {
           // Görüntü/giriş birim tercihinde; state ve DB kg (docs/16 §3).
           Expanded(
               child: _NumCell(
+                  key: k('kg'),
                   value: set.weight == null
                       ? null
                       : double.parse(
                           units.weightFromKg(set.weight!).toStringAsFixed(1)),
                   decimal: true,
+                  hint: sug?.weightKg == null
+                      ? null
+                      : units.weightValue(sug!.weightKg!),
                   onChanged: (v) {
                     set.weight = v == null ? null : units.weightToKg(v);
                     onChanged();
                   })),
           Expanded(
               child: _NumCell(
+                  key: k('reps'),
                   value: set.reps?.toDouble(),
                   decimal: false,
+                  hint: repsHint,
                   onChanged: (v) {
                     set.reps = v?.round();
                     onChanged();
                   })),
-          SizedBox(
-              width: 44,
-              child: _NumCell(
-                  value: set.rpe,
-                  decimal: true,
-                  hint: '–',
-                  onChanged: (v) {
-                    set.rpe = v;
-                    onChanged();
-                  })),
+          rpeCell(),
         ];
     }
   }
@@ -1366,7 +1459,8 @@ class _NumCell extends StatelessWidget {
   final String? hint;
   final ValueChanged<double?> onChanged;
   const _NumCell(
-      {required this.value,
+      {super.key,
+      required this.value,
       required this.decimal,
       required this.onChanged,
       this.hint});
@@ -1391,6 +1485,8 @@ class _NumCell extends StatelessWidget {
         ],
         decoration: InputDecoration(
           hintText: hint ?? '0',
+          // Öneri (G-2) girilmiş değerle karışmasın — belirgin soluk.
+          hintStyle: _hintStyle(context),
           isDense: true,
           contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         ),
@@ -1401,12 +1497,18 @@ class _NumCell extends StatelessWidget {
   }
 }
 
+/// Boş giriş alanı ipucu: girilmiş değerden (onSurface) açıkça soluk.
+TextStyle _hintStyle(BuildContext context) => TextStyle(
+    color: context.colors.onSurfaceVariant.withValues(alpha: 0.4));
+
 /// Süre giriş hücresi — dk:sn formatı ("12:30"). Kullanıcı ":" ile saniye
 /// girer; sadece sayı yazarsa dakika kabul edilir (bkz. [parseDuration]).
 class _TimeCell extends StatelessWidget {
   final int? value;
+  final String? hint; // ✓ önerisi (G-2); yoksa "0:00"
   final ValueChanged<int?> onChanged;
-  const _TimeCell({required this.value, required this.onChanged});
+  const _TimeCell(
+      {super.key, required this.value, required this.onChanged, this.hint});
 
   @override
   Widget build(BuildContext context) {
@@ -1419,8 +1521,9 @@ class _TimeCell extends StatelessWidget {
         inputFormatters: [
           FilteringTextInputFormatter.allow(RegExp(r'[0-9:.,]')),
         ],
-        decoration: const InputDecoration(
-          hintText: '0:00',
+        decoration: InputDecoration(
+          hintText: hint ?? '0:00',
+          hintStyle: _hintStyle(context),
           isDense: true,
           contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         ),

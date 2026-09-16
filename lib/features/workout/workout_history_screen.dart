@@ -13,12 +13,29 @@ import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../home/providers/home_providers.dart';
 import 'calorie_estimate.dart';
+import 'history_summary.dart';
 
 /// **Reaktif** (H-05): seans silinince/eklenince kendiliğinden tazelenir.
 final _allSessionsProvider = StreamProvider<List<WorkoutSession>>((ref) {
   final db = ref.watch(databaseProvider);
   return watchTables(db, [db.workoutSessions],
       () => ref.read(workoutDaoProvider).getAllSessions());
+});
+
+/// Kapalı kartlardaki özet (C-19): seans başına set sayısı + hacim. Tüm
+/// seansların setleri tek sorguda çekilir (N+1 yok); set eklenip silinince
+/// kendiliğinden tazelenir.
+final _sessionTotalsProvider =
+    StreamProvider<Map<int, SessionTotals>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return watchTables(db, [db.workoutSessions, db.workoutSets], () async {
+    final dao = ref.read(workoutDaoProvider);
+    final ids = (await dao.getAllSessions()).map((s) => s.id).toList();
+    final bySession = await dao.getSetsForSessions(ids);
+    return {
+      for (final e in bySession.entries) e.key: sessionTotals(e.value),
+    };
+  });
 });
 
 /// Seansın setleri (genişletilince yüklenir) — hareket adıyla gruplu.
@@ -89,14 +106,24 @@ class _SessionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
-    final dateTxt =
-        context.dateFmt('d MMMM EEEE').format(session.date);
+    final units = ref.watch(unitsProvider);
+    final totals = ref.watch(_sessionTotalsProvider).valueOrNull?[session.id];
+    final dateTxt = context
+        .dateFmt(historyDatePattern(session.date, DateTime.now()))
+        .format(session.date);
     final meta = <String>[
       dateTxt,
       if (session.durationMin != null && session.durationMin! > 0)
         '${session.durationMin} ${l.unitMinShort}',
       if (session.rpe != null) 'RPE ${session.rpe}',
     ].join('  ·  ');
+    // Açmadan karşılaştırma için ikinci satır: set sayısı · hacim.
+    final summary = totals == null || totals.sets == 0
+        ? null
+        : [
+            l.workoutSetCount(totals.sets),
+            if (totals.volumeKg > 0) units.weight(totals.volumeKg, frac: 0),
+          ].join('  ·  ');
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -116,7 +143,7 @@ class _SessionCard extends ConsumerWidget {
           ),
         ),
         title: Text(session.workoutType, style: context.texts.titleSmall),
-        subtitle: Text(meta,
+        subtitle: Text(summary == null ? meta : '$meta\n$summary',
             style: context.texts.bodySmall
                 ?.copyWith(color: context.colors.onSurfaceVariant)),
         trailing: PopupMenuButton<String>(
@@ -236,16 +263,10 @@ class _SessionDetail extends ConsumerWidget {
           );
         }
         // Seans özeti: toplam hacim, set sayısı, yoğunluk → kalori tahmini.
-        double volume = 0;
-        var setCount = 0;
-        final allSets = <WorkoutSet>[];
-        for (final sets in grouped.values) {
-          for (final s in sets) {
-            volume += (s.weightKg ?? 0) * (s.reps ?? 0);
-            setCount++;
-            allSets.add(s);
-          }
-        }
+        final allSets = [for (final sets in grouped.values) ...sets];
+        final totals = sessionTotals(allSets);
+        final volume = totals.volumeKg;
+        final setCount = totals.sets;
         final intensity = sessionIntensity(allSets);
         final kcal = estimateWorkoutKcal(
           bodyWeightKg: bodyWeight,

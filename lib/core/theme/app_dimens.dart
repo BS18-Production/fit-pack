@@ -89,4 +89,23 @@ class AppA11y {
 extension AppInsetsX on BuildContext {
   double get bottomScrollInset =>
       MediaQuery.paddingOf(this).bottom + AppSpacing.xl;
+
+  /// Yüzen işlem düğmesi (FAB) olan sekmelerde liste sonu boşluğu (C-2):
+  /// çubuk + nefes + FAB payı — son kart düğmenin altında kalmasın.
+  double get fabScrollInset => bottomScrollInset + AppFab.clearance;
+
+  /// Alt panel (bottom sheet) içeriğinin alt boşluğu: klavye açıksa klavye,
+  /// kapalıysa cihazın alt güvenli alanı (iPhone ana ekran çizgisi). Panel
+  /// kök navigator'da açıldığı için alt çubuk payı gerekmez (C-1).
+  double get sheetBottomInset {
+    final mq = MediaQuery.of(this);
+    final keyboard = mq.viewInsets.bottom;
+    return keyboard > 0 ? keyboard : mq.viewPadding.bottom;
+  }
+}
+
+/// Genişletilmiş FAB (56) + üstünde bırakılan nefes.
+class AppFab {
+  AppFab._();
+  static const double clearance = 80;
 }

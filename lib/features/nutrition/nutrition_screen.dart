@@ -129,6 +129,10 @@ class NutritionScreen extends ConsumerWidget {
           hint: FirstRunHint.nutrition,
           message: (l) => l.hintNutrition,
           child: FloatingActionButton.extended(
+            // Beslenme + İlerleme FAB'ları sekme yığınında birlikte canlı
+            // (IndexedStack) — varsayılan ortak hero etiketi sayfa geçişinde
+            // "multiple heroes share the same tag" hatası veriyordu.
+            heroTag: null,
             onPressed: () => _showAddFoodSheet(context, ref),
             icon: const Icon(Icons.add_rounded),
             label: Text(l.nutritionAddFood),
@@ -138,9 +142,10 @@ class NutritionScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () async => _invalidateAll(ref),
         child: ListView(
-          // Alt boşluk: içerik buzlu gezinme çubuğunun altından akar.
+          // Alt boşluk: içerik buzlu gezinme çubuğunun altından akar + FAB
+          // payı (C-2) — son öğün kartı "Yemek Ekle"nin altında kalmasın.
           padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg,
-              AppSpacing.lg, context.bottomScrollInset),
+              AppSpacing.lg, context.fabScrollInset),
           children: [
             _DateBar(
               date: date,
@@ -246,8 +251,11 @@ class NutritionScreen extends ConsumerWidget {
 
   void _showAddFoodSheet(BuildContext context, WidgetRef ref,
       {String? mealType}) {
+    // Kök navigator (C-1): sekme navigator'ında açılan panel buzlu alt
+    // çubuğun ARKASINDA kalıyordu (AppShell extendBody) → "Ekle" görünmüyordu.
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: context.colors.surface,
@@ -845,7 +853,7 @@ class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
       builder: (context, scrollController) {
         return Padding(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
+            bottom: context.sheetBottomInset,
             left: AppSpacing.lg,
             right: AppSpacing.lg,
           ),
@@ -853,14 +861,25 @@ class _AddFoodSheetState extends ConsumerState<_AddFoodSheet> {
             children: [
               SheetHeader(title: l.nutritionAddFood, subtitle: subtitle),
               AppSpacing.vGapSm,
+              // C-5: dört öğün tek satıra sığsın — seçili bölüm zaten dolgulu
+              // olduğu için onay ikonu gereksiz (yazıdan yer yiyip "Break/fast"
+              // diye bölüyordu); uzun ad kırılmak yerine hafifçe küçülür.
               SegmentedButton<String>(
+                showSelectedIcon: false,
+                style: const ButtonStyle(
+                  padding: WidgetStatePropertyAll(
+                      EdgeInsets.symmetric(horizontal: AppSpacing.xs)),
+                ),
                 segments: [
                   ButtonSegment(
-                      value: 'breakfast', label: Text(l.mealBreakfast)),
-                  ButtonSegment(value: 'lunch', label: Text(l.mealLunch)),
-                  ButtonSegment(value: 'dinner', label: Text(l.mealDinner)),
+                      value: 'breakfast',
+                      label: _SegmentLabel(l.mealBreakfast)),
                   ButtonSegment(
-                      value: 'snack', label: Text(l.mealSnackShort)),
+                      value: 'lunch', label: _SegmentLabel(l.mealLunch)),
+                  ButtonSegment(
+                      value: 'dinner', label: _SegmentLabel(l.mealDinner)),
+                  ButtonSegment(
+                      value: 'snack', label: _SegmentLabel(l.mealSnackShort)),
                 ],
                 selected: {_currentMealType},
                 onSelectionChanged: (v) =>
@@ -1324,6 +1343,18 @@ class _NumberField extends StatelessWidget {
 
 /// Seçili yemek için miktar (adet/birim VEYA gram) + canlı kalori + Ekle.
 /// Yemeğin birimi varsa adet/g geçişi; gram her zaman tek doğruluk kaynağı.
+/// Bölümlü seçici etiketi: tek satır, sığmazsa kırılmak yerine küçülür.
+class _SegmentLabel extends StatelessWidget {
+  final String text;
+  const _SegmentLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) => FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(text, maxLines: 1, softWrap: false),
+      );
+}
+
 class _QuantityFooter extends StatelessWidget {
   final Food food;
   final double grams;

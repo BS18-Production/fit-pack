@@ -111,24 +111,15 @@ class WorkoutUi {
     }
   }
 
-  /// Kategoriye göre önerilen varsayılan dinlenme süresi (saniye).
-  /// Kullanıcı rutin oluştururken değiştirebilir.
-  static int defaultRestSec(String category) {
-    switch (category) {
-      case 'compound':
-        return 180; // ağır bileşik → uzun dinlenme
-      case 'isolation':
-        return 90;
-      case 'calisthenics':
-        return 90;
-      case 'cardio':
-        return 60;
-      case 'flexibility':
-        return 30;
-      default:
-        return 90;
-    }
-  }
+  /// Yeni eklenen hareketin varsayılan dinlenme süresi (saniye). Kullanıcı
+  /// rutin oluştururken değiştirebilir.
+  ///
+  /// G-3 (Samet, 2026-09-15): bileşik harekette 180 sn pratikte uzun geliyor,
+  /// her seferinde elle kısaltılıyordu → kuvvet hareketlerinde 60 sn. Esneme
+  /// kısa kalır. Mevcut rutinlerde kayıtlı süreler değiştirilmez.
+  static const defaultRest = 60;
+  static int defaultRestSec(String category) =>
+      category == 'flexibility' ? 30 : defaultRest;
 
   /// Dinlenme süresini etiketler: null/0 → [none] ("Yok"/"None", locale'e
   /// göre çağıran verir), aksi halde "dk:sn".

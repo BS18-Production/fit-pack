@@ -260,7 +260,7 @@ class AppL10nTr extends AppL10n {
   String get mealSnack => 'Atıştırma';
 
   @override
-  String get mealSnackShort => 'Atıştır.';
+  String get mealSnackShort => 'Atıştırma';
 
   @override
   String nutritionAddTo(String meal) {
@@ -978,6 +978,11 @@ class AppL10nTr extends AppL10n {
   String get bmWeight => 'Kilo';
 
   @override
+  String bmDiffSince(String date) {
+    return '$date ölçümüne göre';
+  }
+
+  @override
   String get bmWaist => 'Bel';
 
   @override
@@ -1147,6 +1152,10 @@ class AppL10nTr extends AppL10n {
   String get cloudDeleteAccount => 'Hesabı Sil';
 
   @override
+  String get cloudDeleteHint =>
+      'Hesabın ve bulutta saklanan verilerin kalıcı olarak silinir.';
+
+  @override
   String get cloudDeleteTitle => 'Hesabı sil';
 
   @override
@@ -1311,6 +1320,13 @@ class AppL10nTr extends AppL10n {
   @override
   String get notifRestTimerSub =>
       'Uygulama arka plandayken dinlenme bitince haber verir';
+
+  @override
+  String get notifRestSound => 'Mola sonu sesi';
+
+  @override
+  String get notifRestSoundSub =>
+      'Son 3 saniye ve mola bitince bip sesi. Medya sesini kullanır, müziğin üstünde çalar.';
 
   @override
   String get notifWorkout => 'Günlük antrenman hatırlatıcı';

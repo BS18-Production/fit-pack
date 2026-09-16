@@ -8,6 +8,7 @@ import '../../core/onboarding/first_run_hints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/units/units.dart';
+import '../../core/utils/weight_goal.dart';
 import '../../data/providers.dart';
 import '../../data/reactive.dart';
 import '../../data/database/app_database.dart';
@@ -44,6 +45,10 @@ class BodyMetricsScreen extends ConsumerWidget {
           hint: FirstRunHint.progress,
           message: (l) => l.hintProgress,
           child: FloatingActionButton.extended(
+            // Beslenme + İlerleme FAB'ları sekme yığınında birlikte canlı
+            // (IndexedStack) — varsayılan ortak hero etiketi sayfa geçişinde
+            // "multiple heroes share the same tag" hatası veriyordu.
+            heroTag: null,
             onPressed: () => _showAddMeasurementDialog(context, ref),
             icon: const Icon(Icons.add_rounded),
             label: Text(l.bmAddMeasurement),
@@ -51,16 +56,14 @@ class BodyMetricsScreen extends ConsumerWidget {
         ),
       ),
       body: ListView(
-        // Alt boşluk: içerik buzlu gezinme çubuğunun altından akar; 80 = FAB
-        // payı, bottomScrollInset = çubuk + nefes.
+        // Alt boşluk: çubuk + nefes + FAB payı (fabScrollInset).
         padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg,
-            AppSpacing.lg, context.bottomScrollInset),
+            AppSpacing.lg, context.fabScrollInset),
         children: [
           // Aktivite takvimi — ölçüm olsun olmasın her zaman görünür.
           const ActivityCalendar(),
           AppSpacing.vGapLg,
           ..._measurementSection(context, ref, measurementsAsync),
-          const SizedBox(height: 80),
         ],
       ),
     );
@@ -99,7 +102,6 @@ class BodyMetricsScreen extends ConsumerWidget {
         }
 
         final latest = measurements.first;
-        final oldest = measurements.length > 1 ? measurements.last : null;
         // Grafik için kilolu ölçümler, eskiden yeniye.
         final weighted = measurements.where((m) => m.weightKg != null).toList()
           ..sort((a, b) => a.date.compareTo(b.date));
@@ -108,7 +110,14 @@ class BodyMetricsScreen extends ConsumerWidget {
         final units = ref.watch(unitsProvider);
 
         return [
-          _SummaryCard(latest: latest, oldest: oldest, units: units),
+          _SummaryCard(
+            latest: latest,
+            // Fark, kilosu olan İLK ölçüme göre (C-31) — kilosuz satır
+            // (yalnız bel/kol) karşılaştırmayı düşürmesin.
+            baseline: weighted.length >= 2 ? weighted.first : null,
+            goalKg: goalWeight,
+            units: units,
+          ),
           AppSpacing.vGapLg,
           if (weighted.length >= 2) ...[
             _WeightChartCard(
@@ -152,8 +161,11 @@ class BodyMetricsScreen extends ConsumerWidget {
 /// DAO) korunur, kullanıcı tab'a fırlatılmadan yerinde giriş yapar (docs/16
 /// §2.1, S1). Kaydedince ilgili tüm provider'lar tazelenir (bkz. _save).
 Future<void> showAddMeasurementSheet(BuildContext context) {
+  // Kök navigator (C-1): İlerleme sekmesinden açılınca panel buzlu alt
+  // çubuğun arkasında kalıyor, "Kaydet" görünmüyordu.
   return showModalBottomSheet(
     context: context,
+    useRootNavigator: true,
     isScrollControlled: true,
     builder: (ctx) => const _AddMeasurementSheet(),
   );
@@ -344,20 +356,34 @@ class _WeightChartCard extends StatelessWidget {
 
 class _SummaryCard extends StatelessWidget {
   final BodyMeasurement latest;
-  final BodyMeasurement? oldest;
+  final BodyMeasurement? baseline; // farkın karşılaştırıldığı ilk kilolu ölçüm
+  final double? goalKg;
   final Units units;
 
-  const _SummaryCard(
-      {required this.latest, required this.oldest, required this.units});
+  const _SummaryCard({
+    required this.latest,
+    required this.baseline,
+    required this.goalKg,
+    required this.units,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final weightDiff = oldest != null &&
-            latest.weightKg != null &&
-            oldest!.weightKg != null
-        ? units.weightFromKg(latest.weightKg!) -
-            units.weightFromKg(oldest!.weightKg!)
+    final from = baseline?.weightKg;
+    final to = latest.weightKg;
+    final weightDiff = from != null && to != null
+        ? units.weightFromKg(to) - units.weightFromKg(from)
         : null;
+    final tone = from != null && to != null
+        ? weightChangeTone(fromKg: from, toKg: to, goalKg: goalKg)
+        : WeightChangeTone.neutral;
+    final sinceDate = baseline == null
+        ? null
+        : context
+            .dateFmt(baseline!.date.year == DateTime.now().year
+                ? 'd MMM'
+                : 'd MMM y')
+            .format(baseline!.date);
 
     return Card(
       child: Padding(
@@ -377,6 +403,10 @@ class _SummaryCard extends StatelessWidget {
                       ? units.weight(latest.weightKg!)
                       : '—',
                   diff: weightDiff,
+                  diffTone: tone,
+                  diffCaption: sinceDate == null
+                      ? null
+                      : AppL10n.of(context).bmDiffSince(sinceDate),
                   unit: units.weightUnit,
                 ),
                 _MetricTile(
@@ -404,20 +434,26 @@ class _MetricTile extends StatelessWidget {
   final String label;
   final String value;
   final double? diff;
+  final WeightChangeTone diffTone;
+  final String? diffCaption; // farkın neye göre olduğu ("12 Tem ölçümüne göre")
   final String? unit;
 
   const _MetricTile({
     required this.label,
     required this.value,
     this.diff,
+    this.diffTone = WeightChangeTone.neutral,
+    this.diffCaption,
     this.unit,
   });
 
   @override
   Widget build(BuildContext context) {
     final down = (diff ?? 0) < 0;
-    final diffColor =
-        down ? context.semantic.success : context.colors.error;
+    // C-31: artış otomatik kırmızı değil — hedefe doğruysa yeşil, değilse nötr.
+    final diffColor = diffTone == WeightChangeTone.good
+        ? context.semantic.success
+        : context.colors.onSurfaceVariant;
     return Column(
       children: [
         Text(label,
@@ -442,6 +478,10 @@ class _MetricTile extends StatelessWidget {
                   style: context.texts.labelSmall?.copyWith(color: diffColor)),
             ],
           ),
+          if (diffCaption != null)
+            Text(diffCaption!,
+                style: context.texts.labelSmall
+                    ?.copyWith(color: context.colors.onSurfaceVariant)),
         ],
       ],
     );
@@ -598,7 +638,7 @@ class _AddMeasurementSheetState extends ConsumerState<_AddMeasurementSheet> {
     double c(num cm) => double.parse(units.lengthFromCm(cm).toStringAsFixed(0));
     return Padding(
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.lg,
+        bottom: context.sheetBottomInset + AppSpacing.lg,
         left: AppSpacing.lg,
         right: AppSpacing.lg,
       ),

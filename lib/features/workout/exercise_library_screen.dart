@@ -450,15 +450,16 @@ class _ExerciseRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // C-20: ad tüm genişliği kullanır ve iki satıra iner —
+                  // "Alternating Cable Shoulder…" gibi benzer varyasyonlar
+                  // ayırt edilebilsin. Kategori etiketi alt satıra taşındı.
+                  Text(exercise.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.texts.titleSmall),
+                  const SizedBox(height: 3),
                   Row(
                     children: [
-                      Flexible(
-                        child: Text(exercise.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: context.texts.titleSmall),
-                      ),
-                      AppSpacing.hGapSm,
                       _CatTag(label: WorkoutUi.categoryLabel(exercise.category),
                           color: catColor),
                       if (exercise.isCustom) ...[
@@ -466,14 +467,18 @@ class _ExerciseRow extends StatelessWidget {
                         Icon(Icons.person_rounded,
                             size: 14, color: c.secondary),
                       ],
+                      if (sub.isNotEmpty) ...[
+                        AppSpacing.hGapSm,
+                        Flexible(
+                          child: Text(sub,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: context.texts.bodySmall
+                                  ?.copyWith(color: c.onSurfaceVariant)),
+                        ),
+                      ],
                     ],
                   ),
-                  if (sub.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(sub,
-                        style: context.texts.bodySmall
-                            ?.copyWith(color: c.onSurfaceVariant)),
-                  ],
                 ],
               ),
             ),

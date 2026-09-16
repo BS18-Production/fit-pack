@@ -1,5 +1,176 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## ✅ Paket 1 — Kullanım geri bildirimi + doğrulanmış arayüz hataları (2026-09-16)
+
+Samet'in üç isteği (G-1/G-2/G-3, aşağıda) + Codex arayüz incelemesinden **kodda
+doğrulanan** küçük hatalar. Senkron koduna dokunmaz. Samet 2026-09-16'da
+"başla" dedi; açık sorular aşağıdaki kararlarla kapatıldı.
+
+**Kararlar (G-1/G-2/G-3):**
+- **G-1 kök neden:** seans ekranı `WakelockPlus` ile açık kalıyor → uygulama
+  ön planda → mola bitince yalnız `HapticFeedback`. Arka plan bildirimi de
+  varsayılan KAPALI (`restEnabled = false`). Salonda hiç ses çıkmıyordu.
+  **Çözüm:** ön planda ses — son 3 saniye kısa tık + bitişte çift bip +
+  titreşim. Ortak `FeedbackService` (`core/feedback/`) — ses/titreşim tek
+  yerden. Ses **medya sesini** kullanır, müziğin üstüne karışır, kulaklık
+  takılıysa kulaklıktan çalar; telefonun sessiz anahtarını dinlemez (salonda
+  telefon çoğunlukla sessizde, özellik tam orada lazım). Ayarlar →
+  Bildirimler → "Mola sonu sesi" ile kapatılır (varsayılan açık). Ses
+  dosyaları bu projede üretildi (lisans yok), toplam ~56 KB
+  (`assets/sounds/`). Kilit ekranı durumu için "Dinlenme sayacı bildirimi"
+  hâlâ ayrıca açılmalı (izin ister, varsayılan kapalı).
+- **G-2:** alanlar otomatik DOLDURULMAZ — `_finish` işaretlenmemiş ama değer
+  girilmiş seti de kaydediyor, otomatik doldurma onaylanmamış kayıt üretirdi.
+  Bunun yerine: boş alanlarda soluk **öneri** görünür; ✓'e basınca boş
+  alanlar öneriyle dolar ve set tamamlanır (tek dokunuş = kullanıcı onayı).
+  Öneri kuralı (`set_prefill.dart`): üstteki dolu set geçen seansın aynı
+  setiyle AYNIYSA (geçen seansı takip ediyorsun) geçen seansın bu numaralı
+  seti önerilir — piramit (100→120→140) bozulmaz; bugün farklı değer
+  girildiyse o değer sonraki setlere taşınır; geçmişi olmayan harekette
+  üstteki set taşınır. Isınma seti çalışma setine taşınmaz. RPE (algılanan
+  zorluk) taşınmaz — öznel. "ÖNCEKİ" sütunu artık set numarasına göre geçen
+  seansı gösterir (önceden her satırda son seti gösteriyordu). Öneri alanda
+  belirgin soluk (%40) — girilmiş değerle karışmasın.
+- **G-3:** `defaultRestSec` kuvvet kategorilerinde 60 sn (esneme 30 sn).
+  "Gerçek molayı öğren" fikri ERTELENDİ: `workout_sets.restSeconds` kolonu
+  var ama hiç yazılmıyor (dünkü "veri zaten var" notu yanlıştı); rutinlerdeki
+  eski 180'ler varsayılandan geldiği için "son kullanılanı hatırla" da eski
+  değeri geri getirirdi. Mevcut rutinlerin mola değerleri değiştirilmez
+  (kullanıcı verisi) — rutin düzenleyiciden elle değiştirilir.
+
+**Codex bulguları (kodda doğrulandı):**
+- **C-1** Beslenme/İlerleme alt panelleri buzlu çubuğun arkasında açılıyor —
+  `showModalBottomSheet` sekme navigator'ına ekleniyor → `useRootNavigator`.
+- **C-2** Beslenmede liste sonu FAB (yüzen düğme) payı yok.
+- **C-5** Öğün seçici: "Breakfast"/"Kahvaltı" satır kırıyor, "Atıştır." kısaltması.
+- **C-7** Ana Sayfa "This Week" ızgarası: `GridView` padding'i boş → Flutter
+  güvenli alan boşluğunu (çentik + çubuk) ekliyor → büyük boşluklar.
+- **C-18** Geçmiş antrenman: tarih seçici kendiliğinden açılsın, düğme "Kaydet".
+- **C-19** Antrenman geçmişi: eski yıllarda yıl yok; kapalı kartta set/hacim özeti yok.
+- **C-20** Hareket kütüphanesi: ad tek satırda kesiliyor.
+- **C-31** İlerleme özeti: fark ilk ölçüme göre ama yazmıyor; artış otomatik
+  kırmızı (Ana Sayfa'da nötr). Renk hedef kilo yönüne göre olmalı.
+- **C-35** Hesap: "Çıkış yap" ve "Hesabı sil" aynı kırmızı.
+
+- **Ek (doğrulama sırasında bulundu):** İlerleme takvim ızgarasında C-7 ile
+  aynı padding hatası (takvimin altına alt çubuk boşluğu) · Beslenme +
+  İlerleme FAB'ları aynı varsayılan hero etiketini paylaşıyordu ("multiple
+  heroes share the same tag" — Codex turunda da vardı) → `heroTag: null`.
+- [x] **Paket 1 bitti** (2026-09-16): analyze 0 · test **263/263** (36 yeni)
+  · iOS simülatöründe (iPhone 17) görsel doğrulama: C-1 iki panel, C-2,
+  C-5, C-7, C-18, C-19, C-20, C-31, C-35, G-2 (✓ → 100×10 doldu, 2. set
+  120×9 önerisi korundu), G-1 ayarı + ses kuyruğunun çaldığı sistem
+  günlüğünden görüldü (kulakla dinlenmedi). Seans kaydedilmeden kapatıldı,
+  simülatör verisi değişmedi.
+- [ ] **Samet — cihazda dene:** mola sesi (kulaklıklı/kulaklıksız, sessiz
+  modda), ✓ ile doldurma. Android emülatöründe oturum düştü (sunucu:
+  `refresh_token_not_found`) → emülatörde yeniden Google girişi gerekiyor.
+- [ ] **Samet — profil çelişkisi:** hedef kilo 80 kg (kilo verme) ama kalori
+  hedefi 3100, günlük harcama ~2891 (fazla). Hangisi doğru? (C-34 ile bağlı.)
+- [ ] **Silme bildirimi sekme değişince de ekranda kalıyor** ("X silindi —
+  Geri al"): eylemli SnackBar kendiliğinden kapanmıyor; başka sekmede
+  yanlışlıkla "Geri al"a basılabilir.
+
+## 🔎 Codex Arayüz İncelemesi — kalan bulgular (2026-09-16)
+
+Codex (dış model) uygulamayı iOS simülatöründe İngilizce/açık temada gezdi, 37
+öneri verdi. Kodla karşılaştırıldı; Paket 1'e girenler yukarıda.
+
+- **Paket 2 — ana sayfa düzeni (Samet'le karar):** C-6 seri kartındaki sayılar
+  son 30 gün ama etiketsiz (haftalıkla tekrar gibi görünüyor) · C-8 günlük
+  işler (su/beslenme) haftalık istatistiğin altında · C-9 sıfır kartlar ·
+  C-10 kilo kartında ölçüm tarihi yok. Önce C-7 düzeltmesiyle ekrana yeniden bak.
+- **Paket 3 — seans:** C-16 "0/6 set" ilerleme göstergesi · C-15 sütun
+  kontrastı (ekranda bakılacak).
+- **Paket 4 — orta boy:** C-11 Antrenman üst ikonları etiketsiz · C-12 baskın
+  aksiyon "boş antrenman" · C-13 rutin önizlemede toplam set/süre ·
+  C-21 filtre keşfedilebilirliği · C-22 listede hareket görseli (911 harekette
+  var) · C-28 hazır besini "kopyala → kendi besinim" · C-29 İlerleme takvimle
+  başlıyor · C-32 ölçüm düzenleme yok · C-34 TDEE (toplam günlük enerji
+  harcaması) kartı hedefle ilişki kurmuyor · C-36 son senkron zamanı.
+- **Katılınmayan / zaten var:** C-30 gün detayı zaten var (takvimde güne
+  dokun) · C-4 besin/birim Türkçe → bilinçli ertelenen Faz B · C-17 TR
+  arayüzde "ÖNCEKİ" + RPE açıklaması var (yalnız 1RM açıklanmamış) · C-23
+  814 hareketin talimatı zaten açık karar · C-37 lisans satırı bilinçli (B2).
+- **Düşük öncelik:** C-14, C-24, C-25, C-26, C-27, C-33.
+
+## 🗣️ Kullanım Geri Bildirimi — Samet, 2026-09-15
+
+Samet uygulamayı **gerçekten kullanırken** çıkan üç istek. Hepsi aktif seans
+akışında — yani en sık dokunulan ekranda. Kararlar yukarıda (Paket 1).
+Aşağısı 2026-09-15'te kod üzerinde doğrulanan durum + o günkü açık sorular.
+
+### G-1 · Mola bitince SESLİ uyarı
+
+> "Sürekli telefonun ekranına bakamaz kimse. 40 saniye mola bitti mi bitmedi mi
+> anlaşılması için bir uyarı sesi olmalı."
+
+**Mevcut durum (doğrulandı):**
+- `active_session_screen.dart:486` — mola bitince **yalnız titreşim**
+  (`HapticFeedback.mediumImpact()`). Ses yok.
+- `core/notifications/notification_service.dart:107` — `scheduleRestDone()`
+  **zaten var**: Android `Importance.high`, iOS `InterruptionLevel.timeSensitive`.
+- Yani altyapı duruyor ama Samet duymuyor. **Önce bunun nedeni bulunmalı:**
+  bildirim ön plandayken bastırılıyor mu, kanal sesi kapalı mı, izin verilmemiş
+  mi? Yeni ses eklemeden önce cevaplanmalı — belki hata, belki eksik özellik.
+
+**Açık sorular:**
+- Ses mi, sesli bildirim mi, yoksa ikisi de mi? Spor salonunda telefon cepteyken
+  titreşim yetmiyor; kulaklık takılıysa ses müziğin üstüne binmeli (ducking).
+- Sessiz moddayken ne olmalı? Salonda telefonu sessizde tutan çok.
+- Son 3 saniye geri sayım sesi mi, tek bitiş sesi mi? (Setin başına hazırlanmak
+  için geri sayım daha iyi olabilir.)
+- Ayarlardan kapatılabilmeli (Ayarlar → Bildirimler ekranı zaten var).
+- **Samet'in notu: "bu sadece mola için değil, başka alanlarda da olabilir."**
+  → Seans bitişi, kişisel rekor (PR) kutlaması, su hatırlatması gibi yerler için
+  ortak bir "geri bildirim (ses/titreşim) katmanı" düşünülmeli; her yere ayrı
+  `HapticFeedback` serpiştirmek yerine tek servis.
+- Paket seçimi: `audioplayers` / `just_audio` / `SystemSound` — hangisi? Ses
+  dosyası APK'ya gömülecekse boyut etkisi var.
+
+### G-2 · Önceki setin kilo/tekrar değerini sonrakine taşıma
+
+> "Şu anda her setin bilgisini girerken sıfırdan giriyorum."
+
+**Mevcut durum (doğrulandı):**
+- `active_session_screen.dart:452` — hareket eklenirken `getLastSetForExercise`
+  çağrılıyor ve `prevLabel(...)` ile **önceki performans GÖSTERİLİYOR**.
+- Ama `_SetEntry()` **boş** oluşturuluyor → değer gösteriliyor, doldurulmuyor.
+  Samet ekranda gördüğü sayıyı elle yazıyor. Şikayetin tam kaynağı bu.
+
+**Açık sorular:**
+- Otomatik doldurma mı, tek dokunuşla kopyalama mı? Otomatik doldurma yanlış
+  kayda yol açabilir (kullanıcı onaylamadan "bitti" derse geçen haftanın kilosu
+  bu haftanın kaydı olur) — **veri doğruluğu riski, hafife alınmamalı.**
+- Kaynak ne olmalı: aynı seanstaki **bir önceki set** mi, geçmiş seanstaki
+  **aynı set numarası** mı? İkisi farklı: ilki düşen set (drop set) akışına,
+  ikincisi program takibine uyar.
+- Dolu gelen değer görsel olarak "taslak" mı görünmeli (soluk), yoksa normal mi?
+- Ölçüm tipi farkı: kilo×tekrar dışında süre/mesafe hareketleri de var
+  (`measurementType`) — çözüm hepsini kapsamalı.
+
+### G-3 · Varsayılan mola süresi 3 dk → 1 dk
+
+> "Sıfırdan programa başlayıp tek tek egzersiz eklediğimde mola 3 dk geliyor."
+
+**Mevcut durum (doğrulandı):** `workout_ui.dart:116` `defaultRestSec(category)`
+kategoriye göre veriyor — `compound` **180 sn**, `isolation`/`calisthenics` 90,
+`cardio` 60, `flexibility` 30. Samet 3 dk görüyor çünkü eklediği hareketler
+bileşik (compound). Yani sabit 3 dk değil, kategori kuralı.
+
+**İstenen:** başlangıç değeri **60 sn**.
+
+**Açık sorular:**
+- Bütün kategoriler mi 60'a inecek, yoksa yalnız `compound` mu? Kategori mantığı
+  mantıklı bir fikirdi ama pratikte uzun geliyor.
+- **Daha iyi UX fikri aranıyor** (Samet'in isteği): sabit varsayılan yerine
+  kullanıcının o harekette *gerçekte* ne kadar dinlendiğini öğrenip önermek?
+  Veri zaten var — `workout_sets.restSeconds` kaydediliyor.
+- Rutin oluştururken ayarlanabiliyor (`restOptions` listesi 0-300 sn). Seans
+  içinde de hızlı değiştirme var mı, yoksa yalnız ±ayar (`_bumpRest`) mı?
+
+---
+
 ## 🔴 Senkron v2 (docs/20) — SIRADAKİ İŞ
 
 Dış inceleme (2026-09-15) senkron protokolünde 7 P1 açığı buldu, hepsi kodda
@@ -25,6 +196,16 @@ doğrulandı. Ayrıntı ve numaralandırma: [CODE_REVIEW.md § Dış İnceleme](
         tetiklenmiyor; elle liste 8 provider, kodda 23 `watchTables` var.
       - **Su tekilliği** (#8 kalan yarısı): gün başına tekillik kısıtı — şema
         değişikliği, migration + test aynı commit'te (ADR-007).
+- [ ] **Açılışta oturum açıkken birkaç saniye Karşılama ekranı görünüyor**
+      (2026-09-16, emülatörde gözlendi — Supabase projesi duraklatılmışken).
+      Router `initialLocation: welcome`; `bootstrap()` `_appliedUserId`'yi
+      `await _readOnboarded()` SONRASI atıyor → arada gelen oturum olayı
+      `_applyAccount`'u tetikliyor → `busy=true` iken `gateRedirect` karar
+      vermiyor → pull ağda bekledikçe kullanıcı "Hesap oluştur" ekranını
+      görüyor. Kural 1'e (açılış ağa bağlı değil) aykırı; sinyalsiz salonda
+      daha uzun sürer. Pull penceresi (#2) ile birlikte ele alınmalı.
+      Ayrıca ağ hatası yakalanmamış istisna (`Unhandled Exception:
+      AuthRetryableFetchException`) olarak günlüğe düşüyor.
 - [ ] **Senkron testleri gerçekten yarışı sınamalı** (E-15): `sync_push_test`
       T-5 düzenlemeyi `pushAll` bittikten SONRA yapıyor; T-1 dosyayı kapatıp
       açmıyor. İsimleri vaat ettiklerini ölçmüyorlar.
@@ -126,6 +307,16 @@ deep link, senkron, veritabanı ve seed doğrulandı (docs/18 §15.6).
       kayıt/sıfırlama/Google üçü de `fitpack://login-callback` üzerinden döner.
 
 **Hâlâ açık:**
+
+- [ ] **Supabase ücretsiz planı projeyi DURAKLATIYOR** (2026-09-16'da
+      `INACTIVE` bulundu, MCP ile yeniden başlatıldı). Duraklatılmışken
+      alt alan adı hiç çözülmüyor (NXDOMAIN). Evdeki ZTE modem var olmayan
+      adresleri kendine yönlendirdiği için uygulamada
+      `CERTIFICATE_VERIFY_FAILED` olarak görünüyor — yanıltıcı. Uygulama yerelde
+      çalışmaya devam ediyor ama senkron sessizce duruyor ve kullanıcı bunu
+      fark etmiyor. Gerçek kullanıcı almadan önce: ücretli plan ya da düzenli
+      etkinlik; senkron durumu göstergesi bu hatayı "bağlantı yok" diye
+      göstermeli.
 
 - [x] **Supabase Site URL düzeltildi** (Samet, 2026-08-02 bildirdi). Artık
       varsayılan `http://localhost:3000` değil.

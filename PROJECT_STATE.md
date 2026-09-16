@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-09-15
+> **Son güncelleme:** 2026-09-16
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -9,6 +9,42 @@
 > **docs/20 — Senkron v2 tasarımı**.
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
+
+## 🧰 Paket 1 — Mola sesi, set doldurma, arayüz düzeltmeleri — 2026-09-16
+
+Samet'in kullanım geri bildirimi (G-1/G-2/G-3) + Codex'in (dış model) iOS
+simülatöründe yaptığı arayüz turundan **kodda doğrulanan** hatalar. Codex'in
+37 önerisi sınıflandırıldı (NEXT_TASKS § Codex): 9'u bu pakette, kalanlar
+Paket 2-4'e; 6'sına katılınmadı ya da zaten vardı.
+
+- **G-1 mola sonu sesi:** kök neden — seans ekranı açık kaldığı için uygulama
+  ön planda, yalnız titreşim vardı; arka plan bildirimi de varsayılan
+  kapalıydı. Yeni `core/feedback/feedback_service.dart` (ortak ses +
+  titreşim): son 3 saniye tık, bitişte çift bip + belirgin titreşim.
+  `audioplayers` eklendi; medya sesi, müziği kısıp üstüne çalar. Ayarlar →
+  Bildirimler → "Mola sonu sesi" (varsayılan açık).
+- **G-2 önceki değeri taşıma:** alanlar kendiliğinden dolmaz (kayıt,
+  onaysız ama dolu seti de yazıyor). Soluk öneri + ✓'e tek dokunuşla doldur.
+  "ÖNCEKİ" sütunu artık set numarasına göre (`getLastSessionSetsForExercise`).
+- **G-3:** varsayılan mola 180/90 → 60 sn (esneme 30).
+- **Codex düzeltmeleri:** alt paneller alt çubuğun arkasında kalıyordu
+  (`useRootNavigator`), Beslenme FAB payı, öğün seçici satır kırması, Ana
+  Sayfa + takvim ızgarasında gizli güvenli alan boşluğu, geçmiş kayıtta tarih
+  seçici + "Kaydet", geçmiş kartında yıl + set/hacim özeti, kütüphanede
+  iki satırlık ad, kilo farkı hedef yönüne göre renk + "neye göre", hesap
+  ekranında çıkış/silme ayrımı, FAB hero etiketi çakışması.
+
+**Doğrulama:** analyze 0 · test **263/263** · iOS simülatöründe ekran ekran.
+
+**Oturumda yaşanan olay:** simülatör otomasyonunda kayan bir dokunma
+Samet'in gerçek hesabına bir öğün kaydı ("Armut", 170 g) ekledi. Kayıt
+sunucudan kimliğiyle (`uid`), simülatörden uygulama içinden silindi; iki
+tarafta da önceki 2 öğün kaldı. Dokunma kayması düzeltildi (Simulator
+penceresinde 52 px araç çubuğu + ~0,92 ölçek).
+
+**Operasyon:** Supabase projesi ücretsiz planda **duraklatılmıştı** →
+yeniden başlatıldı. Android emülatöründe oturum sunucuda bulunamadı
+(`refresh_token_not_found`) → yeniden giriş gerekiyor.
 
 ## 🔍 Dış Kod İncelemesi — 2026-09-15
 

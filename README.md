@@ -44,10 +44,11 @@ flutter run -d 92EFAB82-82C1-459D-A925-27DAA867E869
 |--------|-----------|
 | Framework | Flutter 3.x |
 | State | Riverpod 2.x |
-| DB | Drift (SQLite) — şema **v2** (migration'lı), V2'de SQLCipher |
+| DB | Drift (SQLite) — şema **v10** (migration'lı) + Supabase senkron |
 | Routing | go_router |
 | Grafikler | fl_chart |
 | Beslenme | OpenFoodFacts (`http`) + barkod (`mobile_scanner`) |
+| Ses | `audioplayers` — mola sonu geri sayım/bitiş sesi (`assets/sounds/`) |
 | AI | Gemini API (switchable) |
 
 Detaylı stack tablosu ve bağımlılıklar için [Mimari Doküman](docs/02-architecture.md).
@@ -65,8 +66,8 @@ lib/
 ## Test Cihazı
 
 - **Android (primary):** SM A075F (ID: `R96YB00XJPB`)
-- **iOS sim:** iPhone 17 Pro Sim (`92EFAB82-82C1-459D-A925-27DAA867E869`)
-- **AVD:** MemoRush_Test
+- **iOS sim:** iPhone 17 · iOS 26.2 (`9A4796B8-F70E-4FBC-8DCE-CB0AD328BC9C`) — Codex incelemesi burada yapılır
+- **AVD:** FitPack (`emulator-5554`)
 
 ## Git
 

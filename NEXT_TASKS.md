@@ -1,5 +1,82 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## ✅ Paket "Hızlı antrenman girişi" — #11 Arama v2 + #3 Sonraki hedef (2026-09-17)
+
+Samet "özellik tarafından başla" dedi (Docker/Supabase kurulumu sonraya).
+docs/21 §2 #11 ve #3. Commit edilmedi.
+
+- [x] **#11 Hareket arama v2** — `exercise_search.dart` (saf): kelime başı
+      eşleşme, tire/boşluk/çoğul sadeleştirme, alaka sıralaması (ad > Türkçe
+      ad > birincil kas > ekipman/kategori > ikincil kas), kas adı aramasında
+      birincil kas öncelikli, temel hareket + son 90 gün kullanım öne çıkar.
+      Türkçe adlar `assets/data/exercise_terms_tr.json` (152 kural, 24'ü zayıf
+      niteleyici, 39 temel hareket). Kütüphanede arama varken düz sıralı liste,
+      boşken en üstte "Son kullandıkların" (`getExerciseUsageSince`). Eski
+      `searchHaystack/matchesQuery` kaldırıldı. Ölçüm: "şınav" 0 → 25 sonuç
+      (Push-Up 1.), "lat" Lat Pulldown 161. → 1.; 34 aramalık altın liste yeşil.
+- [x] **#3 Antrenmanda sonraki hedef** — `progression.dart` (çift ilerleme):
+      hareket başlığının altında gerekçe satırı ("Geçen sefer: 15 kg × 10, 10, 10
+      (aralık 8–12)…"); kilo artışı/+1 tekrar **yalnız düğmeyle** uygulanır
+      (Samet kararı), geri alınabilir, taslakta saklanır (`inc`); piramitte
+      setler ayrı yazılır. Ayarlar → **Kilo artışı** (varsayılan 1,25 kg;
+      imperial 2,5 lb). Metrik kilo artık iki ondalıkla gösteriliyor
+      (`Units.lift`) — 61,25 kg eskiden "61,3" görünürdü.
+- [x] analyze 0 · test **324/324** · iOS simülatöründe doğrulandı (arama
+      "şınav"/"lat", son kullanılanlar, Bench "tekrar dene", Cable "+1 tekrar" →
+      öneriler 11 → geri al, açıklama paneli, Ayarlar satırı). Simülatör
+      verisi değişmedi.
+- [ ] **Samet — Türkçe ad listesini gözden geçir:**
+      `assets/data/exercise_terms_tr.json` (salonda kullandığın adlar eksikse
+      ekleyelim).
+- [ ] **Gözlem — bir kez görüldü, yeniden üretilemedi:** seansta "+1 tekrar"
+      uygulanıp geri alındıktan ~20 dk sonra taslakta uygulanmış hali duruyordu
+      (seans yeniden açılınca "Uygulandı" geldi). Aynı sıra iki kez denendi,
+      ikisinde de doğru kaydedildi. Takipte.
+- [ ] **Bilinen boşluk (eski):** set alanına yazılan değer taslağa hemen
+      yazılmıyor — yalnız ✓/set ekleme/arka plana geçişte. Uygulama o arada
+      kapanırsa yazılan değer kaybolur.
+- [ ] **Doğrulanamadı:** kilo artırma önerisinin ([+1,25 kg]) ekran görünümü —
+      simülatördeki verilerde tüm setleri üst sınıra ulaşmış hareket yok.
+      Birim testleriyle kapsandı.
+
+## 🌙 Gece Görevi — 2026-09-17 (Samet'in incelemesini bekliyor, commit edilmedi)
+
+- [x] **docs/20 — Senkron v2 tasarımı yazıldı** →
+      [docs/20-sync-v2.md](docs/20-sync-v2.md). Kod yok. Samet'in onayı ve
+      §13'teki 7 açık soru bekleniyor. Uygulama 8 aşamaya bölündü (~9 gün).
+- [x] **Paket 3 kodlandı** (C-16 seans ilerlemesi "1/6 set" + ince çubuk,
+      C-15 sütun başlığı / ÖNCEKİ / ✓ okunurluğu). `session_progress.dart` +
+      4 test · analyze 0 · test **267/267** · iOS simülatöründe
+      doğrulandı.
+- [x] **Özellik önerileri değerlendirildi** →
+      [docs/21-feature-roadmap.md](docs/21-feature-roadmap.md). Kod yok.
+      Önerilen sıra: #3 sonraki hedef → #1 haftalık değerlendirme (+#6
+      çekirdeği) → #4 ilerleme fotoğrafları → #2 "geçmişten öğün kopyala";
+      senkron v2 Aşama 5'ten sonra #8 → #5 → #7 → #2 tam; sonra #10, #9.
+      §6'da Samet'e 10 soru.
+- **Samet'in kararları (2026-09-17, sabah):** Supabase ücretli plan şimdi
+      değil · özellik sırası onaylandı · kilo artışı varsayılan **1,25 kg**,
+      otomatik değil ([Artır] ile) · profile **hedef yönü** alanı gelecek ·
+      haftalık değerlendirme **bildirimi** gelecek · **katalog kimliği şimdi**
+      (docs/20 Aşama 6'ya alındı). Samet'in soruları üzerine docs/20
+      güncellendi: **silme her zaman kazanır**, sunucuda silinen satır gerçekten
+      silinir (`deleted_records` işareti kalır), sunucu testleri **yerel
+      Docker** önerisi (Docker + Supabase CLI kurulu değil). Açık kalanlar:
+      docs/20 §13 (2, 3, 4, 5, 7) ve docs/21 §6 (6 soru).
+- **Samet onayı (2026-09-17, öğlen):** docs/20 §13 ve docs/21 §6'daki tüm
+      öneriler onaylandı (silme kazanır, gönderilmemiş kayıtta seçim, işaretler
+      süresiz, su olay kaydı, yerel Docker testleri, günlük durum alanları,
+      beslenme günü tamamlandı kuralı, asistan mimarisi, önce Android widget,
+      takviye kaydı + rozetler isteniyor).
+- [x] **Hareket arama v2** (docs/21 §2 #11) — yukarıda, uygulandı. Samet: "hareket aramak çok zor".
+      Ölçüm: "lat" 485 sonuç (Lat Pulldown 161. sırada), "kol" 457, "şınav"/
+      "barfiks"/"mekik" 0 sonuç, "pullup" Pull-Up'ı bulmuyor. Öneri: alaka
+      sıralaması + kelime başı eşleşme + Türkçe ad listesi (~150 hareket) +
+      son kullanılanlar; #3 ile aynı paket, sıranın başı. Yerini Samet onaylayacak.
+- [ ] **Samet — simülatörde açık seans:** 2026-09-16 22:23'te başlatılmış bir
+      "Push day" seansı açık duruyor (1. set tamam). Gece görevi dokunmadı.
+      Deneme ise geri tuşu → "Leave"; bitirilirse 3+ saatlik süre kaydedilir.
+
 ## ✅ Paket 1 — Kullanım geri bildirimi + doğrulanmış arayüz hataları (2026-09-16)
 
 Samet'in üç isteği (G-1/G-2/G-3, aşağıda) + Codex arayüz incelemesinden **kodda
@@ -80,8 +157,8 @@ Codex (dış model) uygulamayı iOS simülatöründe İngilizce/açık temada ge
   son 30 gün ama etiketsiz (haftalıkla tekrar gibi görünüyor) · C-8 günlük
   işler (su/beslenme) haftalık istatistiğin altında · C-9 sıfır kartlar ·
   C-10 kilo kartında ölçüm tarihi yok. Önce C-7 düzeltmesiyle ekrana yeniden bak.
-- **Paket 3 — seans:** C-16 "0/6 set" ilerleme göstergesi · C-15 sütun
-  kontrastı (ekranda bakılacak).
+- ✅ **Paket 3 — seans** (2026-09-17, gece görevi): C-16 "1/6 set" ilerleme
+  göstergesi + çubuk · C-15 sütun kontrastı.
 - **Paket 4 — orta boy:** C-11 Antrenman üst ikonları etiketsiz · C-12 baskın
   aksiyon "boş antrenman" · C-13 rutin önizlemede toplam set/süre ·
   C-21 filtre keşfedilebilirliği · C-22 listede hareket görseli (911 harekette
@@ -176,8 +253,13 @@ bileşik (compound). Yani sabit 3 dk değil, kategori kuralı.
 Dış inceleme (2026-09-15) senkron protokolünde 7 P1 açığı buldu, hepsi kodda
 doğrulandı. Ayrıntı ve numaralandırma: [CODE_REVIEW.md § Dış İnceleme](CODE_REVIEW.md).
 
-- [ ] **docs/20 — Senkron v2 tasarımı yazılacak (kod ÖNCE değil).** Kapsaması
-      gerekenler:
+- [x] **docs/20 yazıldı** (2026-09-17) → [docs/20-sync-v2.md](docs/20-sync-v2.md).
+      Onay bekliyor. Uygulama aşamaları (§11): 0 kırmızı testler · 1 yerel
+      sağlamlık (şema v11, `capture` bayrağı, `local_seq`) · 2 açılış ve kapı ·
+      3 sunucu sürümü · 4 sayfalı/artımlı çekme + koşullu gönderim · 5 silme
+      protokolü · 6 sahiplik + su olay kaydı · 7 durum/operasyon · 8
+      (opsiyonel) belirlenimci katalog kimliği.
+- [x] Tasarımın kapsaması gerekenler (hepsi docs/20'de karşılandı):
       - **Silme protokolü** (#1): tombstone / `deleted_at` + `SyncRemote.delete`.
         Rutin düzenlemesi sil+yeniden-ekle yerine satır kimliğini koruyan fark
         uygulamalı, yoksa sunucuda rutin şişmeye devam eder.

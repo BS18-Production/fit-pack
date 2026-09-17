@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-09-16
+> **Son güncelleme:** 2026-09-17
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -9,6 +9,43 @@
 > **docs/20 — Senkron v2 tasarımı**.
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
+
+## ⚡ Hızlı Antrenman Girişi — Arama v2 + Sonraki Hedef — 2026-09-17
+
+docs/21'in ilk paketi (Samet sırayı onayladı, "özellik tarafından başla").
+
+- **Hareket arama v2:** Samet "istediğimi bulamıyorum" dedi; ölçüm "şınav" 0
+  sonuç, "lat" 485 sonuç (Lat Pulldown 161.) gösterdi. Yeni arama kelime
+  başından eşleşiyor, yazım farklarını yok sayıyor, Türkçe hareket adlarını
+  kural dosyasından üretiyor ve alakaya göre sıralıyor; son kullanılanlar öne
+  çıkıyor. Şimdi "şınav" → Push-Up 1., "lat" → Lat Pulldown 1.
+- **Antrenmanda sonraki hedef:** çift ilerleme kuralıyla her harekette
+  gerekçeli öneri; kilo/tekrar artışı yalnız kullanıcı düğmeye basınca
+  (varsayılan +1,25 kg, Ayarlar'dan değişir).
+- analyze 0 · test **324/324** · iOS simülatöründe doğrulandı.
+
+## 🌙 Gece Görevi — docs/20 + Paket 3 + docs/21 — 2026-09-17
+
+Samet'in verdiği gece görevi (commit edilmedi, sabah incelenecek):
+
+- **[docs/20 — Senkron v2](docs/20-sync-v2.md):** 7 kritik açığın dört kök
+  nedeni tek tasarımda. Ana kararlar: üç ayrı sayaç (`changed_at_ms`
+  çakışma, `local_seq` gönderim onayı, `server_rev` çekme imleci); çakışma
+  kuralı sunucuda Postgres tetikleyicisiyle; silme = yerel silme + mezar taşı,
+  sunucuda yumuşak silme; tetikleyiciler çalışma anında hiç düşürülmez
+  (`capture` bayrağı); iki aşamalı, sayfalı, artımlı çekme; sunucu anahtarı
+  `(user_id, uid)`; su olay kaydına dönüyor. 8 aşama, ~9 gün, 18 yerel +
+  sunucu testi. 7 açık soru.
+- **Paket 3:** seans başlığında "1/6 set" + uygulama çubuğu altında ilerleme
+  çubuğu (C-16); sütun başlıkları, ÖNCEKİ değerleri ve ✓ daha okunur (C-15).
+  analyze 0 · test **267/267** · iOS simülatöründe dokunmadan doğrulandı.
+- **[docs/21 — Özellik yol haritası](docs/21-feature-roadmap.md):** 10 öneri
+  + 2 sonraki aşama güncel koda karşı değerlendirildi. Önerilen ilk üç:
+  antrenmanda sonraki hedef → haftalık değerlendirme → ilerleme fotoğrafları.
+  Yeni silinebilir senkron verisi üreten özellikler docs/20 Aşama 5'i bekler.
+
+**Not:** simülatörde 2026-09-16 22:23'te başlatılmış açık bir seans var
+(kullanıcı denemesi); gece görevi dokunmadı.
 
 ## 🧰 Paket 1 — Mola sesi, set doldurma, arayüz düzeltmeleri — 2026-09-16
 

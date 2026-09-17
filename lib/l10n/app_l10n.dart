@@ -1285,6 +1285,12 @@ abstract class AppL10n {
   /// **'Past entry'**
   String get asPastEntry;
 
+  /// Active session: completed sets out of all sets
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/{total} sets'**
+  String asSetProgress(int done, int total);
+
   /// No description provided for @asFinish.
   ///
   /// In en, this message translates to:

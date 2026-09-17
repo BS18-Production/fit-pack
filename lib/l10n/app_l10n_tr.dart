@@ -692,6 +692,11 @@ class AppL10nTr extends AppL10n {
   String get asPastEntry => 'Geçmiş kayıt';
 
   @override
+  String asSetProgress(int done, int total) {
+    return '$done/$total set';
+  }
+
+  @override
   String get asFinish => 'Bitir';
 
   @override

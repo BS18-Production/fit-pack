@@ -19,6 +19,7 @@ import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'exercise_detail_screen.dart';
 import 'record_calc.dart';
+import 'session_progress.dart';
 import 'set_prefill.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
@@ -668,6 +669,10 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   @override
   Widget build(BuildContext context) {
+    // C-16: kalan işi göster — geçmiş kayıtta ✓ zorunlu değil, gösterilmez.
+    final progress = SessionProgress.of(
+        _exercises.map((e) => e.sets.map((s) => s.done)));
+    final showProgress = !_isManual && !progress.isEmpty;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
@@ -699,10 +704,29 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                           color: context.colors.primary,
                           fontWeight: FontWeight.w700,
                           fontFeatures: const [FontFeature.tabularFigures()])),
+                  if (showProgress)
+                    Flexible(
+                      child: Text(
+                          '  ·  ${AppL10n.of(context).asSetProgress(progress.done, progress.total)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.texts.labelMedium?.copyWith(
+                              color: context.colors.onSurfaceVariant,
+                              fontWeight: FontWeight.w700,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures()
+                              ])),
+                    ),
                 ],
               ),
             ],
           ),
+          bottom: showProgress
+              ? PreferredSize(
+                  preferredSize: const Size.fromHeight(_progressBarHeight),
+                  child: _SessionProgressBar(progress: progress),
+                )
+              : null,
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: AppSpacing.md),
@@ -776,6 +800,31 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                   ),
                 ],
               ),
+      ),
+    );
+  }
+}
+
+const double _progressBarHeight = 3;
+
+/// Uygulama çubuğunun altında ince set ilerlemesi (C-16). Tümü bitince yeşil.
+class _SessionProgressBar extends StatelessWidget {
+  final SessionProgress progress;
+  const _SessionProgressBar({required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = progress.isComplete
+        ? context.semantic.success
+        : context.colors.primary;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(end: progress.fraction),
+      duration: AppDuration.normal,
+      builder: (context, value, _) => LinearProgressIndicator(
+        value: value,
+        minHeight: _progressBarHeight,
+        color: color,
+        backgroundColor: color.withValues(alpha: 0.12),
       ),
     );
   }
@@ -1132,12 +1181,12 @@ class _H extends StatelessWidget {
   final bool center;
   const _H(this.t, {this.center = false});
   @override
+  // C-15: salonda kol boyu mesafeden okunmalı — daha koyu + bir tık büyük.
   Widget build(BuildContext context) => Text(t,
       textAlign: center ? TextAlign.center : TextAlign.start,
       style: context.texts.labelSmall?.copyWith(
-          color: context.colors.onSurfaceVariant.withValues(alpha: 0.7),
-          fontWeight: FontWeight.w700,
-          fontSize: 10.5,
+          color: context.colors.onSurfaceVariant,
+          fontWeight: FontWeight.w800,
           letterSpacing: 0.3));
 }
 
@@ -1147,7 +1196,7 @@ class _RpeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = context.colors.onSurfaceVariant.withValues(alpha: 0.7);
+    final color = context.colors.onSurfaceVariant;
     return InkWell(
       onTap: () => _showRpeInfo(context),
       borderRadius: AppRadius.brSm,
@@ -1158,8 +1207,7 @@ class _RpeHeader extends StatelessWidget {
           Text('RPE',
               style: context.texts.labelSmall?.copyWith(
                   color: color,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
                   letterSpacing: 0.3)),
           const SizedBox(width: 2),
           Icon(Icons.help_outline_rounded, size: 12, color: color),
@@ -1415,10 +1463,12 @@ class _SetRow extends StatelessWidget {
           ),
           SizedBox(
             width: 56,
+            // C-15: referans bilgi — girilen değerden (tam koyu) ve öneriden
+            // (%40) ayrışacak kadar okunur.
             child: Text(previous ?? '—',
                 textAlign: TextAlign.center,
                 style: context.texts.bodySmall?.copyWith(
-                    color: c.onSurfaceVariant.withValues(alpha: 0.6),
+                    color: c.onSurfaceVariant.withValues(alpha: 0.85),
                     fontWeight: FontWeight.w600,
                     fontFeatures: const [FontFeature.tabularFigures()])),
           ),
@@ -1429,7 +1479,7 @@ class _SetRow extends StatelessWidget {
               child: Material(
                 color: set.done
                     ? context.semantic.success
-                    : c.onSurface.withValues(alpha: 0.06),
+                    : c.onSurface.withValues(alpha: 0.08),
                 borderRadius: AppRadius.brSm,
                 child: InkWell(
                   onTap: onToggle,
@@ -1441,7 +1491,7 @@ class _SetRow extends StatelessWidget {
                         size: 18,
                         color: set.done
                             ? context.semantic.onSuccess
-                            : c.onSurfaceVariant.withValues(alpha: 0.6)),
+                            : c.onSurfaceVariant),
                   ),
                 ),
               ),

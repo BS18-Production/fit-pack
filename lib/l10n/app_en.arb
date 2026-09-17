@@ -435,6 +435,18 @@
   "asPastWorkout": "Past Workout",
   "asEmptyWorkout": "Empty Workout",
   "asPastEntry": "Past entry",
+  "asSetProgress": "{done}/{total} sets",
+  "@asSetProgress": {
+    "description": "Active session: completed sets out of all sets",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "asFinish": "Finish",
   "asExitTitle": "Leave workout?",
   "asExitMsg": "Your entered sets won't be saved.",

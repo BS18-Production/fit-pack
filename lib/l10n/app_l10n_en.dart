@@ -700,6 +700,11 @@ class AppL10nEn extends AppL10n {
   String get asPastEntry => 'Past entry';
 
   @override
+  String asSetProgress(int done, int total) {
+    return '$done/$total sets';
+  }
+
+  @override
   String get asFinish => 'Finish';
 
   @override

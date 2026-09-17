@@ -198,6 +198,7 @@
   "asPastWorkout": "Geçmiş Antrenman",
   "asEmptyWorkout": "Boş Antrenman",
   "asPastEntry": "Geçmiş kayıt",
+  "asSetProgress": "{done}/{total} set",
   "asFinish": "Bitir",
   "asExitTitle": "Antrenmandan çık?",
   "asExitMsg": "Girdiğin setler kaydedilmeyecek.",

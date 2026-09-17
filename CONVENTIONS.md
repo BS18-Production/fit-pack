@@ -134,6 +134,11 @@ Tablo/kolon eklerken **aynı commit'te**:
 7. Eski kurulumlara veri doldurma gerekiyorsa `SeedManager`'a idempotent
    backfill ekle **ve** `SeedManager.seedVersion`'ı artır (yoksa backfill hiç
    çalışmaz — kod incelemesi M-04).
+8. **Geri dönüş sorusunu cevapla** (dokümana/commit mesajına yaz): bu sürüm
+   yayınlandıktan sonra kullanıcı eski uygulama sürümüne dönerse ne olur?
+   Yeni kolonlar nullable/varsayılanlı olduğu için eski kod genelde çalışır;
+   **çalışmayacaksa** (eski kodun anlamadığı zorunlu alan, sunucu şeması,
+   veri taşıma) bunu yazılı belirt ve yayını buna göre planla.
 
 **YASAK:** Tablo/kolon silme, tip daraltma, yıkıcı migration (ADR-007). Ölü
 tablo kalsa bile şemada durur, yalnız erişim kodu temizlenir + belgelenir
@@ -230,6 +235,40 @@ Bir iş şu koşulları sağlamadan "bitti" değildir:
 - [ ] Emülatörde/cihazda çalıştırılıp görsel doğrulandı.
 - [ ] `PROJECT_STATE.md` / `NEXT_TASKS.md` güncellendi (Samet'in kuralı:
       oturum sonu dokümantasyon).
+
+---
+
+## 7b. Tasarım Dokümanı Ne Zaman Gerekir
+
+Ölçüt **ekran/dosya sayısı değil, etkisidir**. Tek ekrandaki bir silme düğmesi,
+on ekranın renk değişiminden daha risklidir.
+
+**Koddan önce tasarım dokümanı (`docs/NN-*.md`) yaz** — aşağıdakilerden biri
+bile geçerliyse:
+
+1. **Kalıcı veri** yapısı, sahipliği ya da anlamı değişiyor (yeni tablo/kolon,
+   kimlik şeması, birim/ölçü değişimi).
+2. **Hesap, senkron, silme, yedekleme ya da geri yükleme** etkileniyor.
+3. **Geri dönüşü pahalı** bir karar var (sunucu şeması, göç, dış servis
+   bağımlılığı, kullanıcıya görünen sözleşme).
+4. **Birden çok özellik aynı kurala** bağlanacak (ör. "silme her zaman kazanır").
+
+**Diğer işlerde doküman yerine kısa bir kayıt yeter** — NEXT_TASKS maddesinde
+ya da commit gövdesinde üç şey: **problem** (ölçülebilirse ölçümüyle),
+**beklenen davranış**, **nasıl doğrulanacağı**. Örnek: hareket arama v2 —
+"şınav → 0 sonuç, lat → 485 sonuç içinde 161." ölçümüyle başladı, aynı
+ölçümle bitti, 34 aramalık kalıcı test bıraktı; ayrı doküman yazılmadı.
+
+### Tasarım dokümanının ilk bölümü: "Karar özeti"
+
+Her tasarım dokümanı, teknik bölümlerden ÖNCE **bir sayfayı geçmeyen** bir
+karar özetiyle başlar (Samet bunu okuyup karar verir, 600 satırı okumaz):
+
+- **Ne değişecek** ve **neden** (bir paragraf).
+- **Önerilen seçenek** + elenen seçenekler tek cümleyle.
+- **Gerçek veriye etkisi** — mevcut kayıtlara ne olur, geri dönüş mümkün mü.
+- **Samet'ten gereken kararlar** (numaralı, cevaplanınca işaretlenir).
+- **Nasıl doğrulanacak** — hangi test, hangi ölçüm, cihazda ne görülecek.
 
 ---
 

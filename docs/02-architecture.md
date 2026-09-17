@@ -323,7 +323,7 @@ LazyDatabase _openConnection() {
 
 **Kural:**
 - Provider isimleri `xxxProvider` ile biter.
-- `autoDispose` **shared screens'de KULLANILMAZ** — geçmişte MemoRush'ta crash yaşandı ([feedback hatırası](../../.claude/projects/-Users-sametorhan/memory/feedback_riverpod_autodispose_navigation.md)).
+- `autoDispose` **shared screens'de KULLANILMAZ** — geçmişte MemoRush'ta crash yaşandı (feedback hatırası (Claude memory: `feedback_riverpod_autodispose_navigation`)).
 - Sadece **modal/dialog gibi gerçekten kısa ömürlü** provider'larda `autoDispose` kullan.
 
 ### 5.3 Notifier Yapısı (örnek)

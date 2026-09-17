@@ -13,6 +13,15 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
+## 🧰 Çalışma Düzeni — 2026-09-17 (akşam)
+
+Dış değerlendirme (ChatGPT) sonrası süreç sadeleştirildi, katman eklenmedi:
+tasarım dokümanı eşiği **etkiye** bağlandı (CONVENTIONS §7b), uzun tasarımlar
+**Karar özeti** ile başlıyor, dosya görevleri ayrıştırıldı ve kapanan işler
+`docs/archive/` altına alındı (NEXT_TASKS 1128 → ~600 satır). GitHub'da CI
+kuruldu (analyze + test + `tools/check_docs.py`); yerel kapı yerinde duruyor.
+Riskli veri işlerinde bağımsız inceleme adımı yazıldı (docs/06 §6b).
+
 ## 🛡️ Sağlamlık Paketi — 2026-09-17 (akşam)
 
 ChatGPT değerlendirmesinden sonra haftalık değerlendirmenin önüne alındı.

@@ -16,6 +16,41 @@ geçtikleri yerde açıldı; sonda küçük bir sözlük var (§14).
 
 ---
 
+## 0. Karar özeti (bir sayfa — teknik ayrıntı §1'den itibaren)
+
+**Ne değişecek, neden.** Telefon ile bulut arasındaki eşitleme bugün dört
+konuda hatalı: silme diğer cihaza gitmiyor, sürüm damgası saniyelik olduğu
+için aynı saniyedeki iki değişiklikte yanlış kayıt kazanıyor, sunucuda
+çakışma çözümü yok ve çekme sayfalanmıyor. Sonuç: **sildiğin kayıt geri
+gelebiliyor, düzenlemen sessizce kaybolabiliyor.** Aynı hesabı iki cihazda
+(telefon + iOS) kullandığın için bu teorik değil.
+
+**Önerilen seçenek.** Üç ayrı sayaç (çakışma için milisaniyelik damga,
+gönderim onayı için yerel sıra numarası, çekme için sunucu sürümü); çakışma
+kararı **sunucuda** verilir; silme kalıcı bir işaret bırakır ve **her zaman
+kazanır**. *Elenenler:* yalnız istemci tarafında çakışma çözümü (iki cihaz
+aynı anda yazınca yine kayıp), tam yeniden indirme (veri büyüdükçe pahalı).
+
+**Gerçek veriye etkisi.** Mevcut kayıtlar yerinde kalır; göç yalnız kolon
+ekler ve mevcut zaman damgalarını milisaniyeye çevirir (S-18 kayıpsız göç
+testi). Sunucuda önce yedek alınır. **Geri dönüş:** yeni kolonların
+varsayılanı olduğu için eski uygulama sürümü şemayla çalışır; ancak
+Aşama 3'ten sonra eski istemcinin yazmaları sunucuda **reddedilir** — bu
+yüzden 3 ve 4 aynı sürümde yayınlanır (§11).
+
+**Samet'ten gereken kararlar.** §13'teki 7 sorunun tamamı 2026-09-17'de
+cevaplandı (ücretli plan: hayır · silme kazanır · gönderilmemiş kayıtta
+seçim sunulur · işaretler süresiz · su olay kaydına döner · katalog kimliği
+bu işe dahil · sunucu testleri yerel Docker). Yeni karar gerekmiyor.
+
+**Nasıl doğrulanacak.** 18 yerel + sunucu testi (§10): silme yayılımı,
+çakışmada son yazan kazanır, sayfalama, reddedilen yazma, hesap izolasyonu,
+v10 → v11 kayıpsız göç. Cihazda duman testi: her aşama sonunda açılış + bir
+kayıt + senkron. Ölçüt: iki cihazda silinen kayıt geri gelmiyor, bekleyen
+kayıt sayısı sıfıra iniyor.
+
+---
+
 ## 1. Problem — bugün ne bozuk?
 
 Senkron (cihaz ↔ Supabase eşitleme) canlıda çalışıyor, ama **veri
@@ -561,6 +596,14 @@ sahte geçmiş (test hesabı) → tam iner.
 
 Her aşama **tek başına commit edilebilir**, testleri yeşil ve uygulama
 çalışır durumda bırakır. Sıra bağımlılığa göre.
+
+> **Commit edilebilir ≠ yayınlanabilir.** Sunucu değişikliği olan aşamalarda
+> (3, 5, 6) sunucu ile telefon **birlikte** güncellenmelidir: sunucu yeni
+> kuralı uygulamaya başladığı anda eski istemcinin yazmaları reddedilir.
+> Yayın grupları: **3 + 4 aynı sürüm**, **5** kendi sürümü, **6** kendi
+> sürümü. 0, 1, 2 ve 7 yalnız istemci — tek başlarına yayınlanabilir.
+> Her yayın öncesi: sunucu yedeği + "eski sürüme dönülürse ne olur"
+> sorusunun yazılı cevabı (CONVENTIONS §3 madde 8).
 
 | Aşama | İçerik | Çözdüğü | Sunucu değişikliği | Tahmini |
 |---|---|---|---|---|

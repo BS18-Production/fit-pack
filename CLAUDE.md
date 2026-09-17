@@ -21,7 +21,8 @@ Flutter · Drift (SQLite, lokal) · Riverpod · GoRouter · fl_chart · Supabase
 
 1. **[CONVENTIONS.md](CONVENTIONS.md)** — kod standartları (ZORUNLU).
 2. **[PROJECT_STATE.md](PROJECT_STATE.md)** — projenin canlı durumu.
-3. **[NEXT_TASKS.md](NEXT_TASKS.md)** — sıradaki işler (doğruluk kaynağı).
+3. **[NEXT_TASKS.md](NEXT_TASKS.md)** — sıradaki işler (iş sırası ve durumu
+   için doğruluk kaynağı; uygulamanın ne yaptığını kod + doğrulama belirler).
 4. **[CODE_REVIEW.md](CODE_REVIEW.md)** — kod incelemesi bulguları + batch durumu.
 
 ## Çalışma Kuralları (Samet'in tercihleri)
@@ -29,8 +30,11 @@ Flutter · Drift (SQLite, lokal) · Riverpod · GoRouter · fl_chart · Supabase
 - **İzin sorma, direkt çalıştır** (`--dangerously-skip-permissions` modu gibi).
 - **Kısa ve net cevaplar.** Hitap kullanma ("kanka" deme); samimi ama hitapsız.
 - **Kısaltmaları aç:** PRD, DAO, RPE, TDEE vb. — açılım + Türkçe anlam yaz.
-- **Önce dokümantasyon, sonra kod:** yeni proje/büyük genişlemede PRD →
-  mimari → UX → roadmap; kod en son.
+- **Önce dokümantasyon, sonra kod:** ölçüt işin **etkisi** — veri yapısı,
+  hesap/senkron/silme/yedekleme, geri dönüşü pahalı karar ya da birden çok
+  özelliği bağlayan kural varsa önce tasarım dokümanı (CONVENTIONS §7b).
+  Doküman "Karar özeti" ile başlar. Diğer işlerde problem + beklenen davranış
+  + doğrulama yöntemini yazmak yeter.
 - **Kod değişince emülatörde/cihazda çalıştır**, görsel doğrula.
 - **Oturum sonu:** PROJECT_STATE / NEXT_TASKS / README güncelle.
 

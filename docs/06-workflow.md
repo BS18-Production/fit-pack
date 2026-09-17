@@ -139,7 +139,10 @@ dart run build_runner watch --delete-conflicting-outputs
 
 ## 6. Pre-Push Checklist (main'e gitmeden önce)
 
-Testing §10'daki disiplinin workflow'a bağlanmış hali. CI olmadığı için **bu manuel kapıdır:**
+Testing §10'daki disiplinin workflow'a bağlanmış hali. **Asıl kapı burasıdır**
+(emülatör/cihaz doğrulaması yalnız burada yapılabilir); GitHub'daki CI
+(`.github/workflows/ci.yml`) unutulan adımı yakalayan **ikinci ağdır**:
+her push/PR'da `flutter analyze`, `flutter test` ve `tools/check_docs.py`.
 
 ```
 [ ] 1. flutter analyze            → 0 warning
@@ -149,10 +152,22 @@ Testing §10'daki disiplinin workflow'a bağlanmış hali. CI olmadığı için 
 [ ] 5. Emülatörde smoke test      → R-01 (açılış+şifreli DB) + R-11 (veri kalıcı)
 [ ] 6. Sprint sonuysa             → R-01..R-11 tam regresyon (Testing §8)
 [ ] 7. Doc güncel mi              → PROJECT_STATE / NEXT_TASKS / README (§10)
-[ ] 8. commit (Co-Authored footer) + push
+[ ] 8. python3 tools/check_docs.py → bozuk bağlantı / bayat durum ifadesi yok
+[ ] 9. commit (Co-Authored footer) + push → CI yeşil mi (GitHub Actions)
 ```
 
 > Adım 5 her push'ta; adım 6 sadece sprint sonu push'unda.
+
+---
+
+## 6b. Riskli Değişiklikte Bağımsız İnceleme (2026-09-17)
+
+Kodu yazan ve inceleyen aynı asistan olduğu için, **veri açısından riskli**
+işlerde ikinci bir göz devreye girer (Samet dış modele danışır: ChatGPT/Codex).
+Kapsam — CONVENTIONS §7b'deki tetikleyicilerle aynı: senkron protokolü, veri
+göçü, hesap izolasyonu, yedek/geri yükleme, silme. İnceleyene verilecek paket:
+tasarım dokümanının "Karar özeti" bölümü + diff + testlerin **neyi
+kanıtladığı**. Metin/renk/tek ekran işlerinde gerekmez.
 
 ---
 
@@ -210,10 +225,30 @@ manuel doğrula → (gerekiyorsa) test yaz → commit → task'ı [x] işaretle
 
 **Her oturum sonunda / commit-kapanışta otomatik güncelle** (kullanıcı tercihi — memory):
 
+**Görev ayrımı (2026-09-17'de netleştirildi — aynı bilgiyi dört dosyada
+tekrarlamak bayatlamanın ana kaynağıydı):**
+
+| Dosya | Yalnız şunu anlatır | Anlatmaz |
+|---|---|---|
+| `docs/NN-*.md` (tasarım) | Amaçlanan davranış + kararların gerekçesi | İlerleme durumu, commit numarası |
+| `NEXT_TASKS.md` | Açık işler, sıra, bağımlılıklar | Uygulamanın nasıl çalıştığı |
+| `PROJECT_STATE.md` | Şu an çalışan özellikler, bilinen sınırlılıklar, son doğrulama | Yapılacaklar listesi |
+| `CODE_REVIEW.md` | Bulgular + kapanış kanıtı (test/commit) | Tasarım gerekçesi |
+
+- **"Doğruluk kaynağı" ifadesinin sınırı:** `NEXT_TASKS.md` **iş sırası ve
+  durumu** için doğruluk kaynağıdır. Uygulamanın gerçekte ne yaptığı **kod ve
+  doğrulama** ile belirlenir; çelişkide kod kazanır, doküman düzeltilir.
+- **Arşivleme:** kapanmış paketler `docs/archive/` altına taşınır
+  (ilk arşiv: `docs/archive/next-tasks-2026-05_07.md`). Taşınan bölümdeki
+  **açık maddeler** NEXT_TASKS'te "Arşivden gelen açık maddeler" başlığına
+  aynen alınır — arşive gömülmez.
+- **İş sonu üç soru** (NEXT_TASKS maddesine yazılır): *tasarımdan sapma oldu
+  mu? açık sınırlılık kaldı mı? hangi sürümde/nerede doğrulandı?*
+
 | Doküman | Ne Zaman | Ne Güncellenir |
 |---------|----------|----------------|
 | `PROJECT_STATE.md` | Her oturum sonu | Canlı durum, doc/versiyon tablosu, karar noktaları |
-| `NEXT_TASKS.md` | Her oturum sonu | Biten task `[x]`, yeni sıradakiler |
+| `NEXT_TASKS.md` | Her oturum sonu | Biten task `[x]`, yeni sıradakiler; kapanan paketler arşive |
 | `README.md` | İlgili değişiklikte | Kurulum/çalıştırma/mimari özeti değişince |
 | `docs/0X-*.md` | Karar değişince | İlgili doc v1.x bump + "Onay & Versiyon" tablosu |
 | Memory (`project_fit_pack.md`) | Oturum sonu | "ŞU AN NEREDE KALDIK" güncel tutulur |

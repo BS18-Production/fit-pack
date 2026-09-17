@@ -6,10 +6,27 @@
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
 > sunucuda çakışma çözümü yok, sayfalama yok, hesap izolasyonu eksik).
 > Ayrıntı: [CODE_REVIEW.md § Dış İnceleme](CODE_REVIEW.md). docs/20 —
-> Senkron v2 tasarımı yazıldı ve onaylandı; Samet'in kararıyla önce özellik
-> paketleri (docs/21), sonra Docker + Supabase CLI kurulumu ve senkron v2.
+> Senkron v2 tasarımı yazıldı ve onaylandı. **Sıra (Samet, 2026-09-17
+> akşam):** sağlamlık paketi → haftalık değerlendirme + hedef yönü →
+> Docker + Supabase CLI ve senkron v2 → ilerleme fotoğrafları + geçmişten
+> öğün kopyala (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
+
+## 🛡️ Sağlamlık Paketi — 2026-09-17 (akşam)
+
+ChatGPT değerlendirmesinden sonra haftalık değerlendirmenin önüne alındı.
+
+- **Set girişi taslağa güvenilir yazılıyor:** yazım 0,5 sn durunca kayıt;
+  arka plana geçişte ve ekran kapanışında bekleyen yazım hemen tamamlanıyor.
+  Kalan kayıp penceresi yalnız ani kapanmada ~0,5 sn (docs/12 §1).
+- **Hesap değişiminde silinen taslak geri gelmiyor** (silme sayacı).
+- **Geri alma ↔ taslak:** diskten yeniden okuma ve taslaktan devamla test
+  edildi; önceki tek seferlik gözlem yeniden üretilemedi.
+- **"Kiloyu artır" satırı** gerçek hesaba yazmadan, test ortamında ekran
+  görüntüsüyle doğrulandı.
+- 7 yeni widget testi · analyze 0 · test **331/331**.
+- Bekleyen: Android Google girişi (Samet'le birlikte).
 
 ## ⚡ Hızlı Antrenman Girişi — Arama v2 + Sonraki Hedef — 2026-09-17
 

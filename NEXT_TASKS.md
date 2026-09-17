@@ -1,5 +1,69 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## 🧭 Güncel sıra — Samet onayı (2026-09-17 akşam)
+
+ChatGPT değerlendirmesi sonrası sıra değişti: taslak kaybı haftalık
+değerlendirmeden önce kapanıyor; senkron v2 fotoğraflardan ve öğün
+kopyalamadan öne alındı (aynı hesap birden fazla cihazda açık — telefon +
+iOS simülatörü; haftalık raporun güvenilirliği kayıtların güvenilirliğine
+bağlı).
+
+1. **Sağlamlık paketi** — ✅ kodlandı; yalnız Android girişi Samet'le birlikte bekliyor.
+2. **#1 Haftalık değerlendirme + hedef yönü + haftalık bildirim** (docs/21).
+   Samet'in kuralları:
+   - Beslenme ortalaması = **kayıt girilmiş günlerin** ortalaması; kaç gün
+     kayıt olduğu yazılır. **Eksik kayıttan hedef başarısı/başarısızlığı
+     çıkarılmaz** (kayıtsız gün = bilinmiyor). #8 "gün tamamlandı" senkron
+     v2'yi beklediği için ilk sürüm bu kuralla çıkar.
+   - Hedef yönü **geçmişe uygulanmaz**: yalnız bu haftanın yorumu ve gelecek
+     haftanın odağında kullanılır; değişiklik tarihi saklanır.
+   - İlk sürümde puan yok, grafik az; somut cümleler ("3 antrenman; 4 günde
+     beslenme kaydı; önceki hafta kilo ölçümü yok"). Tek ölçüm varsa
+     sınırlılığı yazılır. Farklı hareketler tek "gelişim puanı"na toplanmaz.
+   - Bildirim kısa, dokununca bu ekran açılır. Hedef kullanıcı onayı olmadan
+     değişmez.
+3. **Docker + Supabase CLI kurulumu → senkron v2** (docs/20, ~10,5 gün).
+   Mevcut yerel ve bulut kayıtlarının kimlikleri korunarak taşınması da
+   sınanır (S-18 + katalog kimliği taşıması), yalnız yeni kurulum değil.
+4. **#4 İlerleme fotoğrafları** (docs/19 dilim 1, yalnız cihazda) + **#2
+   "geçmişten öğün kopyala"**.
+5. Diğerleri (docs/21 sırası): #8 → #5 → #7 → #2 tam → #10, #9, #13, #12.
+
+## 🛡️ Sağlamlık Paketi (2026-09-17)
+
+- [x] **Set girişinin taslağa güvenilir yazımı** — set alanına yazılan değer
+      yazım 0,5 sn durunca taslağa yazılır (`_scheduleDraftSave`); bekleyen
+      yazım **arka plana geçişte** ve **ekran kapanışında** hemen tamamlanır.
+      Tarih değişimi de artık taslağa yazılıyor.
+      **Kalan kayıp penceresi:** yalnız ani kapanmada (çökme, pil bitmesi,
+      sistemin arka plan olayı vermeden öldürmesi) son tuştan sonraki en fazla
+      ~0,5 sn + diske yazma süresi. Ayrıntı: docs/12 §1.
+- [x] **Silinmiş taslak geri gelmez** — kapanışta yazım eklenince çıkan yeni
+      risk: hesap değişimi taslağı sildikten sonra ekranın geciken yazımı eski
+      hesabın taslağını geri getirebilirdi. `WorkoutDraftService.clearCount`
+      ile engellendi.
+- [x] **Geri alma ↔ taslak tutarlılığı** — uygula → geri al → arka plan →
+      kapanış → taslak **diskten yeniden okunarak** (`reload()`) ve **taslaktan
+      devam edilerek** doğrulandı: geri alınmış hal kalıcı, öneriler 10 tekrar
+      (11 değil). Tersi (uygulanmış hal devamda korunur) de test edildi.
+      Önceki tek seferlik gözlemin kodda karşılığı bulunmadı; o sırada
+      simülatörde hot reload hatası (`lastWeightsKg` null) yaşanmıştı —
+      muhtemel neden bu, kesin değil.
+- [x] **"Kiloyu artır" satırının görsel doğrulaması** — gerçek hesaba
+      yazmadan, widget testinde gerçek yazı tipiyle çizilip ekran görüntüsü
+      alındı: gerekçe "60 kg × 12, 12, 12 — her sette 12 tekrara ulaştın…",
+      düğme "+1.25 kg"; uygulanınca "Uygulandı: her sete +1.25 kg, 8 tekrar",
+      boş alan önerileri 61.25 × 8, ÖNCEKİ sütunu 60×12 kalıyor. Kalıcı test:
+      metinler + öneri ipuçları.
+- [x] `test/features/active_session_draft_test.dart` — 7 widget testi; her
+      biri koddan ilgili satır çıkarılınca kırmızıya dönüyor (5 bozma denemesi).
+      analyze 0 · test **331/331**.
+- [ ] **Android Google girişi** — Samet telefon yanındayken **birlikte**
+      doğrulanacak (bekliyor).
+- [ ] **Gözlem (düşük öncelik):** "+1.25 kg" gerekçe cümlesinde satır
+      sonunda "+1.25 / kg" diye bölünebiliyor (dar ekran). Değer ile birim
+      arasına bölünmez boşluk konabilir.
+
 ## ✅ Paket "Hızlı antrenman girişi" — #11 Arama v2 + #3 Sonraki hedef (2026-09-17)
 
 Samet "özellik tarafından başla" dedi (Docker/Supabase kurulumu sonraya).
@@ -29,16 +93,12 @@ hedef) — main'e gönderildi (2026-09-17).
 - [ ] **Samet — Türkçe ad listesini gözden geçir:**
       `assets/data/exercise_terms_tr.json` (salonda kullandığın adlar eksikse
       ekleyelim).
-- [ ] **Gözlem — bir kez görüldü, yeniden üretilemedi:** seansta "+1 tekrar"
-      uygulanıp geri alındıktan ~20 dk sonra taslakta uygulanmış hali duruyordu
-      (seans yeniden açılınca "Uygulandı" geldi). Aynı sıra iki kez denendi,
-      ikisinde de doğru kaydedildi. Takipte.
-- [ ] **Bilinen boşluk (eski):** set alanına yazılan değer taslağa hemen
-      yazılmıyor — yalnız ✓/set ekleme/arka plana geçişte. Uygulama o arada
-      kapanırsa yazılan değer kaybolur.
-- [ ] **Doğrulanamadı:** kilo artırma önerisinin ([+1,25 kg]) ekran görünümü —
-      simülatördeki verilerde tüm setleri üst sınıra ulaşmış hareket yok.
-      Birim testleriyle kapsandı.
+- [x] ~~Gözlem — geri alma taslağa yazılmadı~~ → Sağlamlık paketinde testle
+      kapatıldı (yukarıda).
+- [x] ~~Bilinen boşluk — set alanı taslağa hemen yazılmıyor~~ → Sağlamlık
+      paketinde düzeltildi.
+- [x] ~~Doğrulanamadı — kilo artırma satırının görünümü~~ → Sağlamlık
+      paketinde test ortamında ekran görüntüsüyle doğrulandı.
 
 ## 🌙 Gece Görevi — 2026-09-17 (Samet inceledi ve onayladı; commit `ec4197f` docs, `215653b` Paket 3)
 
@@ -75,9 +135,12 @@ hedef) — main'e gönderildi (2026-09-17).
       "barfiks"/"mekik" 0 sonuç, "pullup" Pull-Up'ı bulmuyor. Öneri: alaka
       sıralaması + kelime başı eşleşme + Türkçe ad listesi (~150 hareket) +
       son kullanılanlar; #3 ile aynı paket, sıranın başı. Samet onayladı.
-- [ ] **Samet — simülatörde açık seans:** 2026-09-16 22:23'te başlatılmış bir
-      "Push day" seansı açık duruyor (1. set tamam). Gece görevi dokunmadı.
-      Deneme ise geri tuşu → "Leave"; bitirilirse 3+ saatlik süre kaydedilir.
+- [x] **Simülatördeki açık seans kapandı:** 2026-09-16 22:23'te başlayan
+      "Push day"i Samet 2026-09-17 09:20:45'te bitirdi (657 dk, tek set:
+      Barbell Bench Press 100×10). Bu haftanın 5.059 kcal'i bu kayıttan.
+- [ ] **Ürün fikri (bu olaydan):** çok uzun açık kalmış seans bitirilirken
+      (ör. > 4 saat) bitiş saatini sormak / son set saatini önermek — yoksa
+      süre ve kalori şişiyor.
 
 ## ✅ Paket 1 — Kullanım geri bildirimi + doğrulanmış arayüz hataları (2026-09-16)
 
@@ -250,11 +313,10 @@ bileşik (compound). Yani sabit 3 dk değil, kategori kuralı.
 
 ---
 
-## 🔴 Senkron v2 (docs/20) — ONAYLANDI, özellik paketlerinden sonra
+## 🔴 Senkron v2 (docs/20) — ONAYLANDI, sıra 3 (bkz. "Güncel sıra")
 
-Samet'in kararı (2026-09-17): önce özellik tarafı (docs/21 sırası: #1
-haftalık değerlendirme → #4 → #2), sonra Docker + Supabase CLI kurulumu ve
-bu iş.
+Samet'in kararı (2026-09-17 akşam): sağlamlık paketi → #1 haftalık
+değerlendirme → Docker + Supabase CLI kurulumu ve bu iş → #4, #2.
 
 Dış inceleme (2026-09-15) senkron protokolünde 7 P1 açığı buldu, hepsi kodda
 doğrulandı. Ayrıntı ve numaralandırma: [CODE_REVIEW.md § Dış İnceleme](CODE_REVIEW.md).

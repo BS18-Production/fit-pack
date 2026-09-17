@@ -1,0 +1,40 @@
+# Her gönderimde yerel kapıyla aynı kontroller (docs/06 §6).
+# Yerel kontroller kalkmadı; bu, unutulan bir adımı yakalayan ikinci ağ.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.41.1
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # Üretilen dosyalar (drift .g.dart, l10n) repoda takipli — analyze
+      # bunları olduğu gibi kullanır, CI'da yeniden üretilmez.
+      - run: flutter analyze
+
+      # drift/sqlite3 testleri yerel kütüphaneye bağlı (macOS'ta hazır gelir).
+      - run: sudo apt-get update && sudo apt-get install -y libsqlite3-0 libsqlite3-dev
+
+      - run: flutter test
+
+      - name: Doküman tutarlılığı (docs/06 §10)
+        run: python3 tools/check_docs.py

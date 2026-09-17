@@ -3,7 +3,8 @@
 ## ✅ Paket "Hızlı antrenman girişi" — #11 Arama v2 + #3 Sonraki hedef (2026-09-17)
 
 Samet "özellik tarafından başla" dedi (Docker/Supabase kurulumu sonraya).
-docs/21 §2 #11 ve #3. Commit edilmedi.
+docs/21 §2 #11 ve #3. Commit: `7ca8415` (arama v2), `71def18` (sonraki
+hedef) — main'e gönderildi (2026-09-17).
 
 - [x] **#11 Hareket arama v2** — `exercise_search.dart` (saf): kelime başı
       eşleşme, tire/boşluk/çoğul sadeleştirme, alaka sıralaması (ad > Türkçe
@@ -39,11 +40,12 @@ docs/21 §2 #11 ve #3. Commit edilmedi.
       simülatördeki verilerde tüm setleri üst sınıra ulaşmış hareket yok.
       Birim testleriyle kapsandı.
 
-## 🌙 Gece Görevi — 2026-09-17 (Samet'in incelemesini bekliyor, commit edilmedi)
+## 🌙 Gece Görevi — 2026-09-17 (Samet inceledi ve onayladı; commit `ec4197f` docs, `215653b` Paket 3)
 
 - [x] **docs/20 — Senkron v2 tasarımı yazıldı** →
-      [docs/20-sync-v2.md](docs/20-sync-v2.md). Kod yok. Samet'in onayı ve
-      §13'teki 7 açık soru bekleniyor. Uygulama 8 aşamaya bölündü (~9 gün).
+      [docs/20-sync-v2.md](docs/20-sync-v2.md). Kod yok. §13'teki 7 soru
+      karara bağlandı (aşağıda). Uygulama 8 aşamaya (0–7) bölündü (~10 gün +
+      yarım gün yerel test ortamı kurulumu).
 - [x] **Paket 3 kodlandı** (C-16 seans ilerlemesi "1/6 set" + ince çubuk,
       C-15 sütun başlığı / ÖNCEKİ / ✓ okunurluğu). `session_progress.dart` +
       4 test · analyze 0 · test **267/267** · iOS simülatöründe
@@ -72,7 +74,7 @@ docs/21 §2 #11 ve #3. Commit edilmedi.
       Ölçüm: "lat" 485 sonuç (Lat Pulldown 161. sırada), "kol" 457, "şınav"/
       "barfiks"/"mekik" 0 sonuç, "pullup" Pull-Up'ı bulmuyor. Öneri: alaka
       sıralaması + kelime başı eşleşme + Türkçe ad listesi (~150 hareket) +
-      son kullanılanlar; #3 ile aynı paket, sıranın başı. Yerini Samet onaylayacak.
+      son kullanılanlar; #3 ile aynı paket, sıranın başı. Samet onayladı.
 - [ ] **Samet — simülatörde açık seans:** 2026-09-16 22:23'te başlatılmış bir
       "Push day" seansı açık duruyor (1. set tamam). Gece görevi dokunmadı.
       Deneme ise geri tuşu → "Leave"; bitirilirse 3+ saatlik süre kaydedilir.
@@ -248,17 +250,22 @@ bileşik (compound). Yani sabit 3 dk değil, kategori kuralı.
 
 ---
 
-## 🔴 Senkron v2 (docs/20) — SIRADAKİ İŞ
+## 🔴 Senkron v2 (docs/20) — ONAYLANDI, özellik paketlerinden sonra
+
+Samet'in kararı (2026-09-17): önce özellik tarafı (docs/21 sırası: #1
+haftalık değerlendirme → #4 → #2), sonra Docker + Supabase CLI kurulumu ve
+bu iş.
 
 Dış inceleme (2026-09-15) senkron protokolünde 7 P1 açığı buldu, hepsi kodda
 doğrulandı. Ayrıntı ve numaralandırma: [CODE_REVIEW.md § Dış İnceleme](CODE_REVIEW.md).
 
 - [x] **docs/20 yazıldı** (2026-09-17) → [docs/20-sync-v2.md](docs/20-sync-v2.md).
-      Onay bekliyor. Uygulama aşamaları (§11): 0 kırmızı testler · 1 yerel
-      sağlamlık (şema v11, `capture` bayrağı, `local_seq`) · 2 açılış ve kapı ·
-      3 sunucu sürümü · 4 sayfalı/artımlı çekme + koşullu gönderim · 5 silme
-      protokolü · 6 sahiplik + su olay kaydı · 7 durum/operasyon · 8
-      (opsiyonel) belirlenimci katalog kimliği.
+      Samet onayladı (§13'teki 7 soru karara bağlandı). Uygulama aşamaları
+      (§11): 0 kırmızı testler · 1 yerel sağlamlık (şema v11, `capture`
+      bayrağı, `local_seq`) · 2 açılış ve kapı · 3 sunucu sürümü · 4
+      sayfalı/artımlı çekme + koşullu gönderim · 5 silme protokolü · 6
+      sahiplik + belirlenimci katalog kimliği + su olay kaydı · 7
+      durum/operasyon. Toplam ~10 gün.
 - [x] Tasarımın kapsaması gerekenler (hepsi docs/20'de karşılandı):
       - **Silme protokolü** (#1): tombstone / `deleted_at` + `SyncRemote.delete`.
         Rutin düzenlemesi sil+yeniden-ekle yerine satır kimliğini koruyan fark

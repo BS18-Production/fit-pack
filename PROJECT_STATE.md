@@ -5,8 +5,9 @@
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
 > sunucuda çakışma çözümü yok, sayfalama yok, hesap izolasyonu eksik).
-> Ayrıntı: [CODE_REVIEW.md § Dış İnceleme](CODE_REVIEW.md). Sıradaki iş
-> **docs/20 — Senkron v2 tasarımı**.
+> Ayrıntı: [CODE_REVIEW.md § Dış İnceleme](CODE_REVIEW.md). docs/20 —
+> Senkron v2 tasarımı yazıldı ve onaylandı; Samet'in kararıyla önce özellik
+> paketleri (docs/21), sonra Docker + Supabase CLI kurulumu ve senkron v2.
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
@@ -26,16 +27,18 @@ docs/21'in ilk paketi (Samet sırayı onayladı, "özellik tarafından başla").
 
 ## 🌙 Gece Görevi — docs/20 + Paket 3 + docs/21 — 2026-09-17
 
-Samet'in verdiği gece görevi (commit edilmedi, sabah incelenecek):
+Samet'in verdiği gece görevi (sabah incelendi ve onaylandı; commit
+`ec4197f` docs, `215653b` Paket 3):
 
 - **[docs/20 — Senkron v2](docs/20-sync-v2.md):** 7 kritik açığın dört kök
   nedeni tek tasarımda. Ana kararlar: üç ayrı sayaç (`changed_at_ms`
   çakışma, `local_seq` gönderim onayı, `server_rev` çekme imleci); çakışma
   kuralı sunucuda Postgres tetikleyicisiyle; silme = yerel silme + mezar taşı,
-  sunucuda yumuşak silme; tetikleyiciler çalışma anında hiç düşürülmez
+  sunucuda satır gerçekten silinir ve `deleted_records` işareti kalır, silme
+  her zaman kazanır; tetikleyiciler çalışma anında hiç düşürülmez
   (`capture` bayrağı); iki aşamalı, sayfalı, artımlı çekme; sunucu anahtarı
-  `(user_id, uid)`; su olay kaydına dönüyor. 8 aşama, ~9 gün, 18 yerel +
-  sunucu testi. 7 açık soru.
+  `(user_id, uid)`; su olay kaydına dönüyor. 8 aşama (0–7), ~10 gün, 18 yerel
+  + sunucu testi. 7 soru Samet'in kararıyla kapandı.
 - **Paket 3:** seans başlığında "1/6 set" + uygulama çubuğu altında ilerleme
   çubuğu (C-16); sütun başlıkları, ÖNCEKİ değerleri ve ✓ daha okunur (C-15).
   analyze 0 · test **267/267** · iOS simülatöründe dokunmadan doğrulandı.

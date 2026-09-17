@@ -31,8 +31,24 @@ yeniden açılınca kurtar.
   - `AppLifecycleState.inactive/paused` (asıl bug — uygulama arka plana alınınca).
     `_SetEntry` alanları giriş anında güncellendiği için yarım yazılmış değerler
     bile yakalanır.
-  - Yapısal değişiklikte de yaz (set ekle/çıkar, hareket ekle/kaldır, ✓) — paused
-    gelmeden sert kill'e karşı emniyet.
+  - Yapısal değişiklikte de yaz (set ekle/çıkar, hareket ekle/kaldır, ✓,
+    tarih değişimi, sonraki hedefi uygula/geri al) — paused gelmeden sert
+    kill'e karşı emniyet.
+  - **Set alanına yazım (2026-09-17, sağlamlık paketi):** her tuşta değil,
+    yazım **0,5 sn** durunca yazılır (`_draftSaveDelay`). Bekleyen yazım
+    **arka plana geçişte** (`inactive/paused`) ve **ekran kapanışında**
+    (`dispose`) beklemeden tamamlanır; yapısal bir değişiklik de bekleyeni
+    karşılar (anlık durumu yazar).
+  - **Kalan kayıp penceresi — yalnız ani kapanma:** çökme, pil bitmesi ya da
+    sistemin uygulamayı arka plan olayı vermeden öldürmesi. Kaybolabilecek şey
+    son tuş vuruşundan sonraki **en fazla ~0,5 sn** + diske yazma süresi
+    (Android `SharedPreferences.commit()` eşzamanlı yazar — ms düzeyi; iOS
+    değeri sistem servisine (cfprefsd) teslim eder, uygulama çökse de kalır).
+    Normal kullanımda (ekranı kilitleme, başka uygulamaya geçme, uygulamayı
+    çoklu görevden kaydırıp kapatma) arka plan olayı önce gelir → kayıp yok.
+  - **Silinmiş taslak geri gelmez:** servis her silmede bir sayaç artırır;
+    açık ekran başladığı andaki değerden farklıysa (hesap değişimi taslağı
+    sildi) hiçbir yazım yapmaz.
 - **Ne zaman silinir:** "Bitir" (DB'ye yazıldıktan sonra) **veya** kullanıcı çıkışı
   onaylayınca (setleri atma).
 - **Mod sınırı:** Yalnızca canlı seans (`manualDate == null`). Geçmiş kayıt akışı
@@ -60,6 +76,10 @@ kapat (manuel/geçmiş kayıt modunda gereksiz).
 - Emülatör: seans başlat → set gir → home'a dön → uygulamayı süreç olarak öldür
   (`adb shell am kill`) → tekrar aç → banner çıkıyor → Devam et → setler yerinde.
 - `flutter analyze` 0 · ilgili testler yeşil (draft serialize/deserialize round-trip).
+- `test/features/active_session_draft_test.dart` (widget): gecikmeli yazım,
+  arka planda ve kapanışta tamamlama, silinmiş taslağın geri gelmemesi,
+  sonraki hedefi uygula → geri al → **taslak diskten yeniden okunarak**
+  (`SharedPreferences.reload()`) ve taslaktan devam edilerek doğrulanır.
 
 ---
 

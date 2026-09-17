@@ -31,6 +31,9 @@ import '../../core/router/app_routes.dart';
 /// Set tablosu (KG/tekrar/RPE/✓), set tipleri, dinlenme sayacı, canlı süre,
 /// +set / +hareket. Bitir → seans + setler kaydedilir → özet.
 
+/// Set alanına yazım durduktan sonra taslağın kaydedilme gecikmesi.
+const _draftSaveDelay = Duration(milliseconds: 500);
+
 const _setTypes = ['normal', 'warmup', 'drop', 'failure'];
 const _setTypeLabel = {
   'normal': '',
@@ -202,6 +205,12 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   bool _loading = true;
   bool _saving = false;
   bool _draftCleared = false; // bitir/çıkış sonrası taslak yazımını durdur
+  late final WorkoutDraftService _drafts;
+  // Ekran açıldığında taslak kaç kez silinmişti — değişirse taslak başka
+  // yerden silinmiştir (hesap değişimi), bu ekran onu yeniden yazmaz.
+  late final int _draftClearCount;
+  // Set alanına yazarken gecikmeli kayıt (bkz. [_scheduleDraftSave]).
+  Timer? _draftDebounce;
 
   bool get _isManual => widget.manualDate != null;
   // Yalnızca canlı seans taslaklanır (geçmiş kayıt hızlı + tarihli, gerek yok).
@@ -225,6 +234,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _startedAt = widget.manualDate ?? now;
     _sessionDate = DateTime(_startedAt.year, _startedAt.month, _startedAt.day);
     _title = ''; // ilk didChangeDependencies'te locale ile atanır
+    _drafts = ref.read(workoutDraftServiceProvider);
+    _draftClearCount = _drafts.clearCount;
     if (!_isManual) {
       WakelockPlus.enable(); // antrenman boyunca ekran uyanık kalsın (docs/12)
       ref.read(feedbackServiceProvider).warmUp(); // ilk bip gecikmesin (G-1)
@@ -312,14 +323,32 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
             .toList(),
       );
 
+  /// Taslağı hemen yazar; bekleyen gecikmeli yazım varsa onu da karşılar
+  /// (yazılan anlık durum, bekleyen değişikliği zaten içerir).
   Future<void> _saveDraft() async {
+    _draftDebounce?.cancel();
+    _draftDebounce = null;
     if (!_draftable || _draftCleared || _loading) return;
-    await ref.read(workoutDraftServiceProvider).save(_buildDraft());
+    if (_drafts.clearCount != _draftClearCount) return;
+    await _drafts.save(_buildDraft());
+  }
+
+  /// Set alanına yazılan değer: her tuşta değil, yazım [_draftSaveDelay]
+  /// kadar durunca kaydedilir. Bekleyen yazım arka plana geçişte
+  /// ([didChangeAppLifecycleState]) ve ekran kapanışında ([dispose]) hemen
+  /// tamamlanır. Kalan kayıp penceresi yalnız ani kapanmada (çökme, pil
+  /// bitmesi, sistemin uygulamayı arka plan olayı vermeden öldürmesi): son
+  /// tuştan sonraki en fazla [_draftSaveDelay] + diske yazma süresi.
+  void _scheduleDraftSave() {
+    if (!_draftable || _draftCleared) return;
+    _draftDebounce?.cancel();
+    _draftDebounce = Timer(_draftSaveDelay, _saveDraft);
   }
 
   void _clearDraft() {
     _draftCleared = true;
-    ref.read(workoutDraftServiceProvider).clear();
+    _draftDebounce?.cancel();
+    _drafts.clear();
     ref.invalidate(activeDraftProvider); // banner kalksın
   }
 
@@ -404,6 +433,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (picked != null) {
       setState(() =>
           _sessionDate = DateTime(picked.year, picked.month, picked.day));
+      _saveDraft();
     }
   }
 
@@ -411,6 +441,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   void dispose() {
     _ticker?.cancel();
     _restTimer?.cancel();
+    // Yazıp hemen ekrandan çıkıldıysa bekleyen yazımı tamamla. _saveDraft
+    // ref kullanmaz; temizlenmiş/başka yerden silinmiş taslağı yazmaz.
+    if (_draftDebounce?.isActive ?? false) _saveDraft();
     if (!_isManual) {
       WidgetsBinding.instance.removeObserver(this);
       WakelockPlus.disable();
@@ -422,7 +455,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     final dao = ref.read(workoutDaoProvider);
     // Resume modu: routine yerine kaydedilmiş taslaktan kur.
     if (widget.resume) {
-      final draft = await ref.read(workoutDraftServiceProvider).load();
+      final draft = await _drafts.load();
       if (draft != null) await _restoreFromDraft(draft);
       if (mounted) setState(() => _loading = false);
       return;
@@ -851,7 +884,10 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                                     onRemoveSet: () => _removeSet(e),
                                     onRemoveExercise: () => _removeExercise(e),
                                     onToggleAdvance: () => _toggleAdvance(e),
-                                    onChanged: () => setState(() {}),
+                                    onChanged: () {
+                                      setState(() {});
+                                      _scheduleDraftSave();
+                                    },
                                   )),
                               AppSpacing.vGapMd,
                               OutlinedButton.icon(

@@ -147,6 +147,13 @@ class WorkoutDraft {
 
 /// Taslağı disk üzerinde okur/yazar/siler.
 class WorkoutDraftService {
+  // Her silmede artar. Açık seans ekranı başladığı andaki değeri saklar;
+  // değer değiştiyse taslak başka yerden silinmiştir (hesap değişimi, banner
+  // "Sil") ve ekranın geciken yazımı onu geri getirmemelidir. Statik: hesap
+  // değişimi servisi sağlayıcı dışından kuruyor.
+  static int _clearCount = 0;
+  int get clearCount => _clearCount;
+
   Future<void> save(WorkoutDraft draft) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kDraftKey, draft.encode());
@@ -160,6 +167,7 @@ class WorkoutDraftService {
   }
 
   Future<void> clear() async {
+    _clearCount++;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kDraftKey);
   }

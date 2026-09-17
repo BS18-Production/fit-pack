@@ -198,60 +198,13 @@ class WorkoutUi {
     'flexibility': ['esneklik', 'germe', 'stretch', 'flexibility'],
   };
 
-  /// Türkçe karakterleri sadeleştirip küçük harfe çevirir (arama için).
-  static String normalize(String s) {
-    final lower = s.toLowerCase();
-    const map = {
-      'ı': 'i', 'İ': 'i', 'ş': 's', 'ç': 'c', 'ö': 'o', 'ü': 'u', 'ğ': 'g',
-    };
-    final buf = StringBuffer();
-    for (final ch in lower.split('')) {
-      buf.write(map[ch] ?? ch);
-    }
-    return buf.toString();
-  }
-
-  /// Bir hareketin aranabilir tüm metni (İngilizce ad + İngilizce/Türkçe
-  /// kas + ekipman + kategori), normalize edilmiş. `matchesQuery` kullanır.
-  static String searchHaystack({
-    required String name,
-    required String category,
-    String? primaryMuscle,
-    String? equipment,
-    List<String> muscles = const [],
-  }) {
-    final parts = <String>[
-      name,
-      category,
-      categoryLabel(category),
-      ...(_trCategoryTerms[category] ?? const []),
-      if (primaryMuscle != null) ...[
-        primaryMuscle,
-        muscleLabel(primaryMuscle),
-        ...(_trMuscleTerms[primaryMuscle] ?? const []),
-      ],
-      for (final m in muscles) ...[
-        m,
-        ...(_trMuscleTerms[m] ?? const []),
-      ],
-      if (equipment != null) ...[
-        equipment,
-        equipmentLabel(equipment),
-        ...(_trEquipTerms[equipment] ?? const []),
-      ],
-    ];
-    return normalize(parts.join(' '));
-  }
-
-  /// Boşlukla ayrılmış tüm kelimeler haystack içinde geçiyor mu (AND).
-  static bool matchesQuery(String haystack, String query) {
-    final q = normalize(query).trim();
-    if (q.isEmpty) return true;
-    for (final token in q.split(RegExp(r'\s+'))) {
-      if (!haystack.contains(token)) return false;
-    }
-    return true;
-  }
+  /// Arama v2 (`exercise_search.dart`) için Türkçe terim listeleri.
+  static List<String> trMuscleTermsOf(String key) =>
+      _trMuscleTerms[key] ?? const [];
+  static List<String> trEquipTermsOf(String key) =>
+      _trEquipTerms[key] ?? const [];
+  static List<String> trCategoryTermsOf(String key) =>
+      _trCategoryTerms[key] ?? const [];
 }
 
 /// Design'daki indigo gradient birincil buton (Kaydet / Başla / CTA).

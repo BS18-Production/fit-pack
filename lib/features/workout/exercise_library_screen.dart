@@ -7,10 +7,12 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/database/app_database.dart';
+import '../../data/database/daos/workout_dao.dart' show ExerciseUsage;
 import '../../data/providers.dart';
 import '../../data/reactive.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
+import 'exercise_search.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
 
@@ -22,6 +24,33 @@ final libraryExercisesProvider = StreamProvider<List<Exercise>>((ref) {
   final db = ref.watch(databaseProvider);
   return watchTables(db, [db.exercises],
       () => ref.read(workoutDaoProvider).getLibraryExercises());
+});
+
+/// Arama v2 Türkçe terim kuralları (docs/21 §2 #11). Dosya okunamazsa arama
+/// yine çalışır — yalnız Türkçe hareket adları eksik kalır.
+final exerciseTermsProvider = FutureProvider<ExerciseTermData>((ref) async {
+  try {
+    return ExerciseTermData.fromJson(
+        await rootBundle.loadString('assets/data/exercise_terms_tr.json'));
+  } catch (_) {
+    return ExerciseTermData.empty;
+  }
+});
+
+/// Son 90 günde yapılan hareketler (en yeni önce) — "son kullandıkların" ve
+/// kişisel sıralama. **Reaktif:** seans kaydedilince tazelenir.
+const _recentWindow = Duration(days: 90);
+const _recentShown = 6;
+
+final recentExerciseUsageProvider =
+    StreamProvider<List<ExerciseUsage>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return watchTables(
+      db,
+      [db.workoutSets, db.workoutSessions],
+      () => ref
+          .read(workoutDaoProvider)
+          .getExerciseUsageSince(DateTime.now().subtract(_recentWindow)));
 });
 
 /// Filtre + gruplama için kategori sırası.
@@ -71,31 +100,54 @@ class _ExerciseLibraryScreenState
   String? _category;
   String? _muscle;
 
+  // Arama dizini katalog/terimler değişince yeniden kurulur, her tuşta değil.
+  ExerciseSearchIndex? _index;
+  List<Exercise>? _indexedList;
+  ExerciseTermData? _indexedTerms;
+
   @override
   void dispose() {
     _searchCtrl.dispose();
     super.dispose();
   }
 
-  List<Exercise> _filter(List<Exercise> all) {
-    final q = _query.trim();
-    return all.where((e) {
-      if (_category != null && e.category != _category) return false;
-      if (_muscle != null && e.primaryMuscle != _muscle) return false;
-      if (q.isNotEmpty) {
-        // İngilizce ad + İngilizce/Türkçe kas + ekipman + kategori üzerinde
-        // ara — kullanıcı "bacak", "arka kol", "makine" ile de bulabilsin.
-        final haystack = WorkoutUi.searchHaystack(
-          name: e.name,
-          category: e.category,
-          primaryMuscle: e.primaryMuscle,
-          equipment: e.equipment,
-          muscles: _parseMuscles(e.muscleGroups),
-        );
-        if (!WorkoutUi.matchesQuery(haystack, q)) return false;
-      }
-      return true;
-    }).toList();
+  ExerciseSearchIndex _indexFor(List<Exercise> all, ExerciseTermData terms) {
+    if (_index == null ||
+        !identical(all, _indexedList) ||
+        !identical(terms, _indexedTerms)) {
+      _index = ExerciseSearchIndex([
+        for (final e in all)
+          SearchableExercise(
+            id: e.id,
+            name: e.name,
+            category: e.category,
+            primaryMuscle: e.primaryMuscle,
+            equipment: e.equipment,
+            muscles: _parseMuscles(e.muscleGroups),
+            // Küratörlü seed satırında seviye yok (genişletilmiş katalogda var).
+            isCurated: !e.isCustom && e.level == null,
+          ),
+      ], terms);
+      _indexedList = all;
+      _indexedTerms = terms;
+    }
+    return _index!;
+  }
+
+  bool _passesFilters(Exercise e) =>
+      (_category == null || e.category == _category) &&
+      (_muscle == null || e.primaryMuscle == _muscle);
+
+  /// Arama yoksa filtrelenmiş tam liste (gruplu gösterilir); arama varsa
+  /// alaka sırasına dizilmiş sonuçlar (düz gösterilir).
+  List<Exercise> _results(List<Exercise> all, ExerciseTermData terms,
+      Map<int, int> usage) {
+    if (_query.trim().isEmpty) return all.where(_passesFilters).toList();
+    final byId = {for (final e in all) e.id: e};
+    return [
+      for (final id in _indexFor(all, terms).search(_query, usage: usage))
+        if (_passesFilters(byId[id]!)) byId[id]!,
+    ];
   }
 
   List<String> _parseMuscles(String json) {
@@ -109,6 +161,12 @@ class _ExerciseLibraryScreenState
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(libraryExercisesProvider);
+    final terms =
+        ref.watch(exerciseTermsProvider).valueOrNull ?? ExerciseTermData.empty;
+    final recent =
+        ref.watch(recentExerciseUsageProvider).valueOrNull ?? const [];
+    final usage = {for (final u in recent) u.exerciseId: u.sets};
+    final searching = _query.trim().isNotEmpty;
 
     final l = AppL10n.of(context);
     return Scaffold(
@@ -159,7 +217,17 @@ class _ExerciseLibraryScreenState
                 onRetry: () => ref.invalidate(libraryExercisesProvider),
               ),
               data: (all) {
-                final list = _filter(all);
+                final list = _results(all, terms, usage);
+                final byId = {for (final e in all) e.id: e};
+                // Arama ve süzgeç yokken en üstte son yapılanlar.
+                final recentList = searching ||
+                        _category != null ||
+                        _muscle != null
+                    ? const <Exercise>[]
+                    : [
+                        for (final u in recent.take(_recentShown))
+                          if (byId[u.exerciseId] != null) byId[u.exerciseId]!,
+                      ];
                 return Column(
                   children: [
                     _CountRow(count: list.length, onNew: _addCustom),
@@ -177,6 +245,8 @@ class _ExerciseLibraryScreenState
                             )
                           : _GroupedList(
                               exercises: list,
+                              recent: recentList,
+                              ranked: searching,
                               onTap: (e) => widget.selectionMode
                                   ? Navigator.pop(context, e)
                                   : context.push(AppRoutes.exerciseDetail(e.id)),
@@ -333,16 +403,45 @@ class _OutlineChip extends StatelessWidget {
 
 class _GroupedList extends StatelessWidget {
   final List<Exercise> exercises;
+  // Arama/süzgeç yokken en üstte gösterilen son yapılanlar.
+  final List<Exercise> recent;
+  // Arama sonucu: alaka sırası korunur, kategoriye gruplanmaz.
+  final bool ranked;
   final void Function(Exercise) onTap;
   final bool selectionMode;
   const _GroupedList({
     required this.exercises,
     required this.onTap,
     required this.selectionMode,
+    this.recent = const [],
+    this.ranked = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    Widget row(Exercise e) => _ExerciseRow(
+          exercise: e,
+          selectionMode: selectionMode,
+          onTap: () => onTap(e),
+        );
+    const padding = EdgeInsets.fromLTRB(
+        AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.xxxl);
+    if (ranked) {
+      return ListView.builder(
+        padding: padding,
+        itemCount: exercises.length,
+        itemBuilder: (_, i) => row(exercises[i]),
+      );
+    }
+
+    final children = <Widget>[
+      if (recent.isNotEmpty) ...[
+        _SectionHeader(
+            label: AppL10n.of(context).elRecent, icon: Icons.history_rounded),
+        ...recent.map(row),
+        AppSpacing.vGapMd,
+      ],
+    ];
     // Kategoriye göre grupla, sabit sırada.
     final groups = <String, List<Exercise>>{};
     for (final e in exercises) {
@@ -351,7 +450,6 @@ class _GroupedList extends StatelessWidget {
     final orderedCats = _categoryOrder.where(groups.containsKey).toList()
       ..addAll(groups.keys.where((c) => !_categoryOrder.contains(c)));
 
-    final children = <Widget>[];
     for (final cat in orderedCats) {
       final items = groups[cat]!;
       children.add(_CategoryHeader(category: cat, count: items.length));
@@ -363,10 +461,29 @@ class _GroupedList extends StatelessWidget {
         ));
       }
     }
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.xxxl),
-      children: children,
+    return ListView(padding: padding, children: children);
+  }
+}
+
+/// "Son kullandıkların" başlığı — kategori başlıklarıyla aynı dil.
+class _SectionHeader extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  const _SectionHeader({required this.label, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.xs),
+      child: Row(
+        children: [
+          Icon(icon, size: AppIconSize.sm, color: context.colors.primary),
+          AppSpacing.hGapSm,
+          Text(label,
+              style: context.texts.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w800)),
+        ],
+      ),
     );
   }
 }

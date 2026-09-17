@@ -1483,6 +1483,12 @@ abstract class AppL10n {
   /// **'Search exercises…'**
   String get elSearchHint;
 
+  /// No description provided for @elRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently used'**
+  String get elRecent;
+
   /// No description provided for @elLoadError.
   ///
   /// In en, this message translates to:

@@ -796,6 +796,9 @@ class AppL10nTr extends AppL10n {
   String get elSearchHint => 'Hareket ara…';
 
   @override
+  String get elRecent => 'Son kullandıkların';
+
+  @override
   String get elLoadError => 'Hareketler yüklenemedi';
 
   @override

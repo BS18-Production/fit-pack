@@ -345,6 +345,30 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
     return result?.readTable(workoutSets);
   }
 
+  /// [since]'ten beri yapılan hareketler: kaç sette kullanıldığı ve en son
+  /// ne zaman — en yenisi önce (hareket arama v2: "son kullandıkların" ve
+  /// kişisel sıralama). Tarih aralığı `[since, …)`.
+  Future<List<ExerciseUsage>> getExerciseUsageSince(DateTime since) async {
+    final count = workoutSets.id.count();
+    final last = workoutSessions.date.max();
+    final q = selectOnly(workoutSets).join([
+      innerJoin(workoutSessions, workoutSessions.id.equalsExp(workoutSets.sessionId)),
+    ])
+      ..addColumns([workoutSets.exerciseId, count, last])
+      ..where(workoutSessions.date.isBiggerOrEqualValue(since))
+      ..groupBy([workoutSets.exerciseId])
+      ..orderBy([OrderingTerm.desc(last)]);
+    final rows = await q.get();
+    return [
+      for (final r in rows)
+        ExerciseUsage(
+          exerciseId: r.read(workoutSets.exerciseId)!,
+          sets: r.read(count) ?? 0,
+          lastUsed: r.read(last)!,
+        ),
+    ];
+  }
+
   /// Hareketin yapıldığı EN SON seanstaki setleri, set numarası sırasıyla
   /// (G-2): aktif seansta "ÖNCEKİ" sütunu ve ✓ önerisi set numarasına göre
   /// eşleşir. Isınma setleri dahildir — sıra numarası kayıttakiyle aynı kalsın.
@@ -368,6 +392,15 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
         .get();
   }
 
+}
+
+/// Bir hareketin son dönemdeki kullanımı (hareket arama v2).
+class ExerciseUsage {
+  final int exerciseId;
+  final int sets;
+  final DateTime lastUsed;
+  const ExerciseUsage(
+      {required this.exerciseId, required this.sets, required this.lastUsed});
 }
 
 /// Rutin hareketi + hareket bilgisi (join sonucu — UI'da ad/ekipman göster).

@@ -1,23 +1,31 @@
 import 'package:drift/drift.dart';
 import 'package:fit_pack/data/database/app_database.dart';
 import 'package:fit_pack/data/seed/exercises_seed.dart';
+import 'package:fit_pack/features/workout/exercise_search.dart';
 import 'package:fit_pack/features/workout/workout_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/test_database.dart';
 
-/// Seed'de adı [name] olan hareketin Türkçe/İngilizce [query] ile bulunup
-/// bulunmadığını döndürür (kütüphane arama mantığının aynısı).
+/// Seed üzerinde kütüphane araması (arama v2 — `exercise_search.dart`). Terim
+/// kuralı dosyası olmadan da kas/ekipman Türkçe terimleriyle bulunmalı.
+final _seedIndex = ExerciseSearchIndex([
+  for (var i = 0; i < exerciseSeedData.length; i++)
+    SearchableExercise(
+      id: i,
+      name: exerciseSeedData[i].name,
+      category: exerciseSeedData[i].category,
+      primaryMuscle: exerciseSeedData[i].primaryMuscle,
+      equipment: exerciseSeedData[i].equipment,
+      muscles: exerciseSeedData[i].muscles,
+      isCurated: true,
+    ),
+], ExerciseTermData.empty);
+
+/// Seed'de adı [name] olan hareket [query] ile bulunuyor mu.
 bool _seedMatches(String name, String query) {
-  final e = exerciseSeedData.firstWhere((x) => x.name == name);
-  final hay = WorkoutUi.searchHaystack(
-    name: e.name,
-    category: e.category,
-    primaryMuscle: e.primaryMuscle,
-    equipment: e.equipment,
-    muscles: e.muscles,
-  );
-  return WorkoutUi.matchesQuery(hay, query);
+  final i = exerciseSeedData.indexWhere((x) => x.name == name);
+  return _seedIndex.search(query).contains(i);
 }
 
 /// Antrenman V2 Faz A — hareket kütüphanesi (docs/09-workout-v2.md).

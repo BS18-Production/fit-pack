@@ -804,6 +804,9 @@ class AppL10nEn extends AppL10n {
   String get elSearchHint => 'Search exercises…';
 
   @override
+  String get elRecent => 'Recently used';
+
+  @override
   String get elLoadError => 'Couldn\'t load exercises';
 
   @override

@@ -486,6 +486,7 @@
   "rpe6": "Easy / warm-up set",
   "elPickTitle": "Pick Exercise",
   "elSearchHint": "Search exercises…",
+  "elRecent": "Recently used",
   "elLoadError": "Couldn't load exercises",
   "elNotFoundTitle": "No exercises found",
   "elFilterHint": "Change the filter or add a new exercise",

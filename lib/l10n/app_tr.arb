@@ -231,6 +231,7 @@
   "rpe6": "Rahat / ısınma seti",
   "elPickTitle": "Hareket Seç",
   "elSearchHint": "Hareket ara…",
+  "elRecent": "Son kullandıkların",
   "elLoadError": "Hareketler yüklenemedi",
   "elNotFoundTitle": "Hareket bulunamadı",
   "elFilterHint": "Filtreyi değiştir ya da yeni hareket ekle",

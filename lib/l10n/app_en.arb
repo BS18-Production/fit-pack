@@ -1093,5 +1093,82 @@
   },
   "signOutSyncFirst": "Sync first",
   "signOutAnyway": "Sign out anyway",
-  "signOutStillPending": "Still uploading — try again in a moment"
+  "signOutStillPending": "Still uploading — try again in a moment",
+  "settingsWeightIncrement": "Weight increment",
+  "progIncrease": "Last time: {sets} — every set reached {max}. Ready? Try +{inc}.",
+  "@progIncrease": {
+    "placeholders": {
+      "sets": {
+        "type": "String"
+      },
+      "max": {
+        "type": "int"
+      },
+      "inc": {
+        "type": "String"
+      }
+    }
+  },
+  "progAddRep": "Last time: {sets} (range {min}–{max}). Try one more rep per set.",
+  "@progAddRep": {
+    "placeholders": {
+      "sets": {
+        "type": "String"
+      },
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "progRepeat": "Last time: {sets} — some sets under {min}. Repeat the same weights.",
+  "@progRepeat": {
+    "placeholders": {
+      "sets": {
+        "type": "String"
+      },
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "progApplyWeight": "+{inc}",
+  "@progApplyWeight": {
+    "placeholders": {
+      "inc": {
+        "type": "String"
+      }
+    }
+  },
+  "progApplyReps": "+1 rep",
+  "progAppliedWeight": "Applied: +{inc} per set, {reps} reps",
+  "@progAppliedWeight": {
+    "placeholders": {
+      "inc": {
+        "type": "String"
+      },
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "progAppliedReps": "Applied: +1 rep per set",
+  "progInfoTitle": "How the target works",
+  "progInfoBody": "Double progression: keep the weight and add reps until every set reaches the top of your range ({min}–{max}). Then add weight (+{inc}) and start again at {min} reps. Nothing changes unless you tap the button — your routine stays the same and suggested sets are never marked done.",
+  "@progInfoBody": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "inc": {
+        "type": "String"
+      }
+    }
+  },
+  "progInfoSettings": "Change the increment in Settings → Weight increment."
 }

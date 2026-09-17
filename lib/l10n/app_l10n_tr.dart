@@ -1836,4 +1836,50 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get signOutStillPending => 'Hâlâ yükleniyor — birazdan tekrar dene';
+
+  @override
+  String get settingsWeightIncrement => 'Kilo artışı';
+
+  @override
+  String progIncrease(String sets, int max, String inc) {
+    return 'Geçen sefer: $sets — her sette $max tekrara ulaştın. Hazırsan +$inc dene.';
+  }
+
+  @override
+  String progAddRep(String sets, int min, int max) {
+    return 'Geçen sefer: $sets (aralık $min–$max). Her sette bir tekrar fazlasını dene.';
+  }
+
+  @override
+  String progRepeat(String sets, int min) {
+    return 'Geçen sefer: $sets — bazı setler $min tekrarın altında. Aynı kilolarla tekrar dene.';
+  }
+
+  @override
+  String progApplyWeight(String inc) {
+    return '+$inc';
+  }
+
+  @override
+  String get progApplyReps => '+1 tekrar';
+
+  @override
+  String progAppliedWeight(String inc, int reps) {
+    return 'Uygulandı: her sete +$inc, $reps tekrar';
+  }
+
+  @override
+  String get progAppliedReps => 'Uygulandı: her sete +1 tekrar';
+
+  @override
+  String get progInfoTitle => 'Hedef nasıl belirlenir?';
+
+  @override
+  String progInfoBody(int min, int max, String inc) {
+    return 'Çift ilerleme: aynı kiloda her set aralığın üstüne ($min–$max) ulaşana kadar tekrar ekle. Sonra kiloyu artır (+$inc) ve $min tekrardan yeniden başla. Düğmeye basmadıkça hiçbir şey değişmez — rutinin aynı kalır, önerilen set yapılmış sayılmaz.';
+  }
+
+  @override
+  String get progInfoSettings =>
+      'Artış miktarını Ayarlar → Kilo artışı\'ndan değiştirebilirsin.';
 }

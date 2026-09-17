@@ -538,5 +538,16 @@
   "signOutPendingMsg": "{count} kayıt henüz sunucuya yüklenmedi. Şimdi çıkarsan bir dahaki girişine kadar yüklenmezler.",
   "signOutSyncFirst": "Önce senkron et",
   "signOutAnyway": "Yine de çık",
-  "signOutStillPending": "Hâlâ yükleniyor — birazdan tekrar dene"
+  "signOutStillPending": "Hâlâ yükleniyor — birazdan tekrar dene",
+  "settingsWeightIncrement": "Kilo artışı",
+  "progIncrease": "Geçen sefer: {sets} — her sette {max} tekrara ulaştın. Hazırsan +{inc} dene.",
+  "progAddRep": "Geçen sefer: {sets} (aralık {min}–{max}). Her sette bir tekrar fazlasını dene.",
+  "progRepeat": "Geçen sefer: {sets} — bazı setler {min} tekrarın altında. Aynı kilolarla tekrar dene.",
+  "progApplyWeight": "+{inc}",
+  "progApplyReps": "+1 tekrar",
+  "progAppliedWeight": "Uygulandı: her sete +{inc}, {reps} tekrar",
+  "progAppliedReps": "Uygulandı: her sete +1 tekrar",
+  "progInfoTitle": "Hedef nasıl belirlenir?",
+  "progInfoBody": "Çift ilerleme: aynı kiloda her set aralığın üstüne ({min}–{max}) ulaşana kadar tekrar ekle. Sonra kiloyu artır (+{inc}) ve {min} tekrardan yeniden başla. Düğmeye basmadıkça hiçbir şey değişmez — rutinin aynı kalır, önerilen set yapılmış sayılmaz.",
+  "progInfoSettings": "Artış miktarını Ayarlar → Kilo artışı'ndan değiştirebilirsin."
 }

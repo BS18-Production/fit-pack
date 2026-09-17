@@ -6,6 +6,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/i18n/enum_labels.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/i18n/locale_provider.dart';
+import '../../core/prefs/training_prefs.dart';
 import '../../core/prefs/week_start_provider.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/units/units.dart';
@@ -74,6 +75,34 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
+  /// İlerleme önerisindeki kilo artışı (docs/21 #3). Seçenekler görüntü
+  /// biriminde; kayıt kg.
+  Future<void> _editIncrement(BuildContext context, WidgetRef ref) async {
+    final l = AppL10n.of(context);
+    final units = ref.read(unitsProvider);
+    final options = units.imperial ? incrementOptionsLb : incrementOptionsKg;
+    final currentKg = ref.read(effectiveIncrementKgProvider);
+    final picked = await pickOptionDialog(
+      context,
+      title: l.settingsWeightIncrement,
+      options: [
+        for (final v in options)
+          ('$v', units.lift(units.weightToKg(v))),
+      ],
+      current: options
+          .map((v) => '$v')
+          .firstWhere(
+              (v) => (units.weightToKg(double.parse(v)) - currentKg).abs() <
+                  0.001,
+              orElse: () => ''),
+    );
+    if (picked != null) {
+      await ref
+          .read(weightIncrementProvider.notifier)
+          .setIncrementKg(units.weightToKg(double.parse(picked)));
+    }
+  }
+
   Future<void> _editWeekStart(BuildContext context, WidgetRef ref) async {
     final l = AppL10n.of(context);
     // Gün adları locale'den — ekstra çeviri anahtarı gerekmez.
@@ -139,6 +168,14 @@ class SettingsScreen extends ConsumerWidget {
                     ? l.unitsImperial
                     : l.unitsMetric,
                 onTap: () => _editUnits(context, ref),
+              ),
+              SettingTile(
+                icon: Icons.trending_up_rounded,
+                title: l.settingsWeightIncrement,
+                value: ref
+                    .watch(unitsProvider)
+                    .lift(ref.watch(effectiveIncrementKgProvider)),
+                onTap: () => _editIncrement(context, ref),
               ),
               SettingTile(
                 icon: Icons.calendar_view_week_rounded,

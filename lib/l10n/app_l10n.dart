@@ -3330,6 +3330,72 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Still uploading — try again in a moment'**
   String get signOutStillPending;
+
+  /// No description provided for @settingsWeightIncrement.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight increment'**
+  String get settingsWeightIncrement;
+
+  /// No description provided for @progIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time: {sets} — every set reached {max}. Ready? Try +{inc}.'**
+  String progIncrease(String sets, int max, String inc);
+
+  /// No description provided for @progAddRep.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time: {sets} (range {min}–{max}). Try one more rep per set.'**
+  String progAddRep(String sets, int min, int max);
+
+  /// No description provided for @progRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time: {sets} — some sets under {min}. Repeat the same weights.'**
+  String progRepeat(String sets, int min);
+
+  /// No description provided for @progApplyWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'+{inc}'**
+  String progApplyWeight(String inc);
+
+  /// No description provided for @progApplyReps.
+  ///
+  /// In en, this message translates to:
+  /// **'+1 rep'**
+  String get progApplyReps;
+
+  /// No description provided for @progAppliedWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied: +{inc} per set, {reps} reps'**
+  String progAppliedWeight(String inc, int reps);
+
+  /// No description provided for @progAppliedReps.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied: +1 rep per set'**
+  String get progAppliedReps;
+
+  /// No description provided for @progInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How the target works'**
+  String get progInfoTitle;
+
+  /// No description provided for @progInfoBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Double progression: keep the weight and add reps until every set reaches the top of your range ({min}–{max}). Then add weight (+{inc}) and start again at {min} reps. Nothing changes unless you tap the button — your routine stays the same and suggested sets are never marked done.'**
+  String progInfoBody(int min, int max, String inc);
+
+  /// No description provided for @progInfoSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the increment in Settings → Weight increment.'**
+  String get progInfoSettings;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

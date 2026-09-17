@@ -11,6 +11,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/notifications/notification_prefs.dart';
 import '../../core/notifications/notification_service.dart';
+import '../../core/prefs/training_prefs.dart';
 import '../../core/units/units.dart';
 import '../../data/database/app_database.dart';
 import '../../core/utils/format.dart';
@@ -18,6 +19,7 @@ import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'exercise_detail_screen.dart';
+import 'progression.dart';
 import 'record_calc.dart';
 import 'session_progress.dart';
 import 'set_prefill.dart';
@@ -93,8 +95,18 @@ class _SessionExercise {
   // artışlar yeniden rozetlensin.
   double bestE1rm = 0;
   double bestWeightKg = 0;
+  // Sonraki hedef önerisi (docs/21 #3) — yalnız rutinli canlı seansta,
+  // kilo×tekrar harekette ve geçmiş varsa.
+  final ProgressionAdvice? advice;
+  // Kullanıcı öneriyi uyguladıysa kullanılan artış (kg); uygulanmadıysa null.
+  // Tekrar önerisinde (+1) yalnız "uygulandı" bayrağı olarak işler.
+  double? appliedIncrementKg;
   _SessionExercise(this.exercise, this.sets,
-      {required this.lastSets, required this.restSec, required Units units})
+      {required this.lastSets,
+      required this.restSec,
+      required Units units,
+      this.advice,
+      this.appliedIncrementKg})
       : previous = prevLabel(
             lastSets.where((s) => !s.isWarmup).lastOrNull,
             exercise.measurementType,
@@ -106,8 +118,19 @@ class _SessionExercise {
         for (final s in sets) (values: s.values, warmup: s.type == 'warmup')
       ];
 
-  List<SetValues> get lastValues =>
-      [for (final w in lastSets) SetValues.fromSet(w)];
+  /// Öneri kaynağı olarak geçen seans. Kullanıcı ilerlemeyi uyguladıysa
+  /// çalışma setleri öneriye çevrilir (ısınma setleri aynen kalır); "ÖNCEKİ"
+  /// sütunu ise her zaman gerçek geçmişi gösterir.
+  List<SetValues> get lastValues {
+    final a = advice;
+    final inc = appliedIncrementKg;
+    return [
+      for (final w in lastSets)
+        a != null && inc != null && !w.isWarmup
+            ? a.apply(SetValues.fromSet(w), incrementKg: inc)
+            : SetValues.fromSet(w),
+    ];
+  }
 
   /// [index]'teki set için ✓ önerisi (bkz. [suggestionFor]).
   SetValues? suggestionAt(int index) => suggestionFor(
@@ -147,7 +170,7 @@ String? prevLabel(WorkoutSet? s, String measure, Units units) {
       return '${units.distanceValue(s.distanceM!)} ${units.distanceUnit}';
     default:
       return (s.weightKg != null && s.reps != null)
-          ? '${units.weightValue(s.weightKg!)}×${s.reps}'
+          ? '${units.liftValue(s.weightKg!)}×${s.reps}'
           : null;
   }
 }
@@ -272,6 +295,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                   exerciseId: e.exercise.id,
                   restSec: e.restSec,
                   previous: e.previous,
+                  appliedIncrementKg: e.appliedIncrementKg,
                   sets: e.sets
                       .map((s) => DraftSet(
                             weight: s.weight,
@@ -306,9 +330,16 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _routineId = d.routineId;
     _startedAt = d.startedAt;
     _sessionDate = d.sessionDate;
+    // Hedef tekrar aralıkları rutinde — ilerleme önerisi için yeniden okunur.
+    final targets = <int, RoutineExercise>{
+      if (d.routineId != null)
+        for (final it in await dao.getRoutineExercises(d.routineId!))
+          it.exercise.id: it.routineExercise,
+    };
     for (final de in d.exercises) {
       final ex = await dao.getExerciseById(de.exerciseId);
       if (ex == null) continue; // silinmiş/arşivlenmiş hareketi atla
+      final lastSets = await dao.getLastSessionSetsForExercise(ex.id);
       final se = _SessionExercise(
         ex,
         de.sets
@@ -323,13 +354,43 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
               ..isRecord = s.isRecord)
             .toList(),
         // Geçen seans taslakta değil DB'de — devam ederken yeniden okunur.
-        lastSets: await dao.getLastSessionSetsForExercise(ex.id),
+        lastSets: lastSets,
         restSec: de.restSec,
         units: ref.read(unitsProvider),
+        advice: _adviceFor(ex, lastSets, targets[ex.id]),
+        appliedIncrementKg: de.appliedIncrementKg,
       );
       await _loadBests(se);
       _exercises.add(se);
     }
+  }
+
+  /// Sonraki hedef önerisi (docs/21 #3): yalnız canlı seansta, rutin hedefi
+  /// olan kilo×tekrar harekette. Isınma setleri hesaba katılmaz.
+  ProgressionAdvice? _adviceFor(
+      Exercise ex, List<WorkoutSet> lastSets, RoutineExercise? target) {
+    if (_isManual || target == null || ex.measurementType != 'weight_reps') {
+      return null;
+    }
+    return progressionFor(
+      lastWorkingSets: [
+        for (final s in lastSets)
+          if (!s.isWarmup) SetValues.fromSet(s),
+      ],
+      repsMin: target.targetRepsMin,
+      repsMax: target.targetRepsMax,
+    );
+  }
+
+  /// Öneriyi uygula / geri al — yalnız bu seansın önerilerini değiştirir,
+  /// girilmiş ve tamamlanmış setlere dokunmaz.
+  void _toggleAdvance(_SessionExercise ex) {
+    setState(() {
+      ex.appliedIncrementKg = ex.appliedIncrementKg == null
+          ? ref.read(effectiveIncrementKgProvider)
+          : null;
+    });
+    _saveDraft();
   }
 
   Future<void> _pickSessionDate() async {
@@ -377,13 +438,16 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         final isCardioLike = it.exercise.measurementType == 'time' ||
             it.exercise.measurementType == 'distance';
         final count = isCardioLike ? 1 : (it.routineExercise.targetSets ?? 3);
+        final lastSets =
+            await dao.getLastSessionSetsForExercise(it.exercise.id);
         final se = _SessionExercise(
           it.exercise,
           List.generate(count, (_) => _SetEntry()),
-          lastSets: await dao.getLastSessionSetsForExercise(it.exercise.id),
+          lastSets: lastSets,
           restSec: it.routineExercise.targetRestSec ??
               WorkoutUi.defaultRestSec(it.exercise.category),
           units: ref.read(unitsProvider),
+          advice: _adviceFor(it.exercise, lastSets, it.routineExercise),
         );
         await _loadBests(se); // anlık rekor rozeti için seans öncesi en iyiler
         _exercises.add(se);
@@ -786,6 +850,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                                     onAddSet: () => _addSet(e),
                                     onRemoveSet: () => _removeSet(e),
                                     onRemoveExercise: () => _removeExercise(e),
+                                    onToggleAdvance: () => _toggleAdvance(e),
                                     onChanged: () => setState(() {}),
                                   )),
                               AppSpacing.vGapMd,
@@ -1009,6 +1074,7 @@ class _ExerciseBlock extends ConsumerWidget {
   final void Function(_SetEntry) onToggle;
   final void Function(_SetEntry) onCycleType;
   final VoidCallback onAddSet, onRemoveSet, onRemoveExercise, onChanged;
+  final VoidCallback onToggleAdvance;
   const _ExerciseBlock(
       {super.key,
       required this.ex,
@@ -1017,7 +1083,8 @@ class _ExerciseBlock extends ConsumerWidget {
       required this.onAddSet,
       required this.onRemoveSet,
       required this.onRemoveExercise,
-      required this.onChanged});
+      required this.onChanged,
+      required this.onToggleAdvance});
 
   /// Ölçüm tipine göre orta sütun başlıkları (SET ve ✓ arasındakiler).
   /// Ağırlık sütunu birim tercihine göre KG/LB yazar (docs/16 §3).
@@ -1120,6 +1187,10 @@ class _ExerciseBlock extends ConsumerWidget {
                 ),
               ],
             ),
+            if (ex.advice != null) ...[
+              AppSpacing.vGapSm,
+              _ProgressionLine(ex: ex, onToggle: onToggleAdvance),
+            ],
             AppSpacing.vGapMd,
             // başlık satırı — ölçüm tipine göre sütunlar
             Padding(
@@ -1174,6 +1245,125 @@ class _ExerciseBlock extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Hareket başlığının altında sonraki hedef satırı (docs/21 #3): gerekçe +
+/// uygula/geri al. Metne dokununca kuralın açıklaması açılır.
+class _ProgressionLine extends ConsumerWidget {
+  final _SessionExercise ex;
+  final VoidCallback onToggle;
+  const _ProgressionLine({required this.ex, required this.onToggle});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final advice = ex.advice!;
+    final l = AppL10n.of(context);
+    final units = ref.watch(unitsProvider);
+    final inc = ref.watch(effectiveIncrementKgProvider);
+    final c = context.colors;
+    // "15 kg × 10, 10, 10" ya da piramitte "100×10, 120×9, 140×7 kg".
+    final sets = advice.uniformWeight
+        ? '${units.lift(advice.lastTopWeightKg)} × ${advice.lastReps.join(', ')}'
+        : '${[
+            for (var i = 0; i < advice.lastReps.length; i++)
+              '${units.liftValue(advice.lastWeightsKg[i])}×${advice.lastReps[i]}',
+          ].join(', ')} ${units.weightUnit}';
+    final applied = ex.appliedIncrementKg;
+    final increase = advice.kind == ProgressionKind.increaseWeight;
+
+    final String text;
+    if (applied != null) {
+      text = increase
+          ? l.progAppliedWeight(units.lift(applied), advice.repsMin)
+          : l.progAppliedReps;
+    } else {
+      text = switch (advice.kind) {
+        ProgressionKind.increaseWeight =>
+          l.progIncrease(sets, advice.repsMax, units.lift(inc)),
+        ProgressionKind.addRep =>
+          l.progAddRep(sets, advice.repsMin, advice.repsMax),
+        ProgressionKind.repeat => l.progRepeat(sets, advice.repsMin),
+      };
+    }
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md, AppSpacing.xs, AppSpacing.xs, AppSpacing.xs),
+      decoration: BoxDecoration(
+        color: c.primary.withValues(alpha: applied != null ? 0.14 : 0.07),
+        borderRadius: AppRadius.brMd,
+      ),
+      child: Row(
+        children: [
+          Icon(
+              applied != null
+                  ? Icons.check_circle_rounded
+                  : Icons.trending_up_rounded,
+              size: AppIconSize.sm,
+              color: c.primary),
+          AppSpacing.hGapSm,
+          Expanded(
+            child: InkWell(
+              onTap: () => _showProgressionInfo(context, advice, units, inc),
+              borderRadius: AppRadius.brSm,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: Text(text,
+                    style: context.texts.bodySmall
+                        ?.copyWith(color: c.onSurface, height: 1.3)),
+              ),
+            ),
+          ),
+          if (advice.actionable) ...[
+            AppSpacing.hGapXs,
+            TextButton(
+              onPressed: onToggle,
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+              ),
+              child: Text(applied != null
+                  ? l.commonUndo
+                  : increase
+                      ? l.progApplyWeight(units.lift(inc))
+                      : l.progApplyReps),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+void _showProgressionInfo(BuildContext context, ProgressionAdvice advice,
+    Units units, double incrementKg) {
+  final l = AppL10n.of(context);
+  showModalBottomSheet(
+    context: context,
+    showDragHandle: true,
+    builder: (ctx) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xxl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.progInfoTitle, style: ctx.texts.titleMedium),
+            AppSpacing.vGapSm,
+            Text(
+                l.progInfoBody(advice.repsMin, advice.repsMax,
+                    units.lift(incrementKg)),
+                style: ctx.texts.bodyMedium),
+            AppSpacing.vGapMd,
+            Text(l.progInfoSettings,
+                style: ctx.texts.bodySmall
+                    ?.copyWith(color: ctx.colors.onSurfaceVariant)),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class _H extends StatelessWidget {
@@ -1384,12 +1574,12 @@ class _SetRow extends StatelessWidget {
                   key: k('kg'),
                   value: set.weight == null
                       ? null
-                      : double.parse(
-                          units.weightFromKg(set.weight!).toStringAsFixed(1)),
+                      // 1,25 kg'lık artış kaybolmasın: metrikte iki ondalık.
+                      : double.parse(units.liftValue(set.weight!)),
                   decimal: true,
                   hint: sug?.weightKg == null
                       ? null
-                      : units.weightValue(sug!.weightKg!),
+                      : units.liftValue(sug!.weightKg!),
                   onChanged: (v) {
                     set.weight = v == null ? null : units.weightToKg(v);
                     onChanged();

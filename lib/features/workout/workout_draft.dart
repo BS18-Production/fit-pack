@@ -58,11 +58,15 @@ class DraftExercise {
   final int restSec;
   final String? previous;
   final List<DraftSet> sets;
+  // Kullanıcı ilerleme önerisini uyguladıysa kullanılan artış (kg) — devam
+  // edince öneriler aynı kalsın (docs/21 #3). Eski taslakta yok → null.
+  final double? appliedIncrementKg;
   DraftExercise({
     required this.exerciseId,
     required this.restSec,
     required this.previous,
     required this.sets,
+    this.appliedIncrementKg,
   });
 
   Map<String, dynamic> toJson() => {
@@ -70,6 +74,7 @@ class DraftExercise {
         'rest': restSec,
         'prev': previous,
         'sets': sets.map((s) => s.toJson()).toList(),
+        if (appliedIncrementKg != null) 'inc': appliedIncrementKg,
       };
 
   factory DraftExercise.fromJson(Map<String, dynamic> j) => DraftExercise(
@@ -79,6 +84,7 @@ class DraftExercise {
         sets: ((j['sets'] as List?) ?? [])
             .map((e) => DraftSet.fromJson(e as Map<String, dynamic>))
             .toList(),
+        appliedIncrementKg: (j['inc'] as num?)?.toDouble(),
       );
 }
 

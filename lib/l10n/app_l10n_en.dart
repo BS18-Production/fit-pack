@@ -1846,4 +1846,50 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get signOutStillPending => 'Still uploading — try again in a moment';
+
+  @override
+  String get settingsWeightIncrement => 'Weight increment';
+
+  @override
+  String progIncrease(String sets, int max, String inc) {
+    return 'Last time: $sets — every set reached $max. Ready? Try +$inc.';
+  }
+
+  @override
+  String progAddRep(String sets, int min, int max) {
+    return 'Last time: $sets (range $min–$max). Try one more rep per set.';
+  }
+
+  @override
+  String progRepeat(String sets, int min) {
+    return 'Last time: $sets — some sets under $min. Repeat the same weights.';
+  }
+
+  @override
+  String progApplyWeight(String inc) {
+    return '+$inc';
+  }
+
+  @override
+  String get progApplyReps => '+1 rep';
+
+  @override
+  String progAppliedWeight(String inc, int reps) {
+    return 'Applied: +$inc per set, $reps reps';
+  }
+
+  @override
+  String get progAppliedReps => 'Applied: +1 rep per set';
+
+  @override
+  String get progInfoTitle => 'How the target works';
+
+  @override
+  String progInfoBody(int min, int max, String inc) {
+    return 'Double progression: keep the weight and add reps until every set reaches the top of your range ($min–$max). Then add weight (+$inc) and start again at $min reps. Nothing changes unless you tap the button — your routine stays the same and suggested sets are never marked done.';
+  }
+
+  @override
+  String get progInfoSettings =>
+      'Change the increment in Settings → Weight increment.';
 }

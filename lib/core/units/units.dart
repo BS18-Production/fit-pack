@@ -64,6 +64,11 @@ class Units {
   /// Birimsiz sayı ("84.7" / "186.7") — birimin ayrı yazıldığı yerler için.
   String weightValue(num kg, {int frac = 1}) => _fmt(weightFromKg(kg), frac);
 
+  /// Antrenman kilosu: metrikte 1,25 kg'lık plakalar için iki ondalık
+  /// ("61.25"), imperial'de bir ondalık ("135.5"). Sondaki sıfırlar atılır.
+  String liftValue(num kg) => _fmt(weightFromKg(kg), imperial ? 1 : 2);
+  String lift(num kg) => '${liftValue(kg)} $weightUnit';
+
   // ── Uzunluk: çevre ölçüleri (DB: cm) ─────────────────────────────
   String get lengthUnit => imperial ? 'in' : 'cm';
   double lengthFromCm(num cm) => imperial ? cm / _cmPerIn : cm.toDouble();
@@ -102,6 +107,8 @@ class Units {
 
   static String _fmt(num v, int frac) {
     final r = double.parse(v.toStringAsFixed(frac));
-    return r == r.roundToDouble() ? '${r.round()}' : r.toStringAsFixed(frac);
+    if (r == r.roundToDouble()) return '${r.round()}';
+    // "62.50" → "62.5" (iki ondalıkta gereksiz sıfır kalmasın)
+    return r.toStringAsFixed(frac).replaceFirst(RegExp(r'0+$'), '');
   }
 }

@@ -248,17 +248,20 @@ void main() {
       await seed([(60, 12), (60, 12)]); // hepsi üst sınırda
       await open(tester);
 
+      // Artış metninde bölünmez boşluk var: "+1.25 kg" satır sonunda
+      // "+1.25 / kg" diye ayrılmasın diye (dar ekran cilası).
+      const nb = '\u00A0';
       expect(
         find.text(
           'Geçen sefer: 60 kg × 12, 12 — her sette 12 tekrara ulaştın. '
-          'Hazırsan +1.25 kg dene.',
+          'Hazırsan +1.25${nb}kg dene.',
         ),
         findsOneWidget,
       );
-      await tester.tap(find.text('+1.25 kg'));
+      await tester.tap(find.text('+1.25${nb}kg'));
       await tester.pump();
       expect(
-        find.text('Uygulandı: her sete +1.25 kg, 8 tekrar'),
+        find.text('Uygulandı: her sete +1.25${nb}kg, 8 tekrar'),
         findsOneWidget,
       );
       // Boş alanların ipucu uyarlanmış öneri: 61.25 kg × 8.

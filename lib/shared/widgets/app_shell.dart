@@ -39,6 +39,12 @@ class AppShell extends StatelessWidget {
             child: NavigationBar(
               selectedIndex: navigationShell.currentIndex,
               onDestinationSelected: (index) {
+                // Sekme değişince açık bildirim şeridi kapanır: "X silindi —
+                // Geri al" başka sekmede anlamsız (geri alma o ekrana ait) ve
+                // ait olmadığı içeriğin üstünde asılı kalıyordu.
+                if (index != navigationShell.currentIndex) {
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                }
                 // Aynı sekmeye tekrar dokununca o dalın köküne dön (standart
                 // davranış); farklı sekmede sadece görünen dal değişir.
                 navigationShell.goBranch(

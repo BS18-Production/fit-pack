@@ -1306,16 +1306,18 @@ class _ProgressionLine extends ConsumerWidget {
           ].join(', ')} ${units.weightUnit}';
     final applied = ex.appliedIncrementKg;
     final increase = advice.kind == ProgressionKind.increaseWeight;
+    // "+1.25 kg" satır sonunda "+1.25 / kg" diye bölünmesin: bölünmez boşluk.
+    String amount(double kg) => units.lift(kg).replaceAll(' ', '\u00A0');
 
     final String text;
     if (applied != null) {
       text = increase
-          ? l.progAppliedWeight(units.lift(applied), advice.repsMin)
+          ? l.progAppliedWeight(amount(applied), advice.repsMin)
           : l.progAppliedReps;
     } else {
       text = switch (advice.kind) {
         ProgressionKind.increaseWeight =>
-          l.progIncrease(sets, advice.repsMax, units.lift(inc)),
+          l.progIncrease(sets, advice.repsMax, amount(inc)),
         ProgressionKind.addRep =>
           l.progAddRep(sets, advice.repsMin, advice.repsMax),
         ProgressionKind.repeat => l.progRepeat(sets, advice.repsMin),
@@ -1361,7 +1363,7 @@ class _ProgressionLine extends ConsumerWidget {
               child: Text(applied != null
                   ? l.commonUndo
                   : increase
-                      ? l.progApplyWeight(units.lift(inc))
+                      ? l.progApplyWeight(amount(inc))
                       : l.progApplyReps),
             ),
           ],

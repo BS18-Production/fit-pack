@@ -5,40 +5,19 @@ import 'package:fit_pack/features/sync/sync_pull.dart';
 import 'package:fit_pack/features/sync/sync_push.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/fake_sync_server.dart';
+
 /// Çekme (pull) hattı — docs/18 §6.4–6.5.
 ///
 /// Ana senaryo Samet'in gerçek hatası: bir "cihazda" oluşup sunucuya giden veri,
 /// yerel verisi silinmiş ikinci bir "cihaza" giriş yapınca geri inmeli. Push ile
 /// pull'u aynı sahte sunucuda uçtan uca zincirliyoruz.
-class _FakeRemote implements SyncRemote {
-  /// tablo → (uid → satır). Gerçek Supabase upsert davranışı (uid çakışması).
-  final Map<String, Map<String, Map<String, Object?>>> store = {};
-
-  @override
-  Future<void> upsert(String table, List<Map<String, Object?>> rows) async {
-    final t = store.putIfAbsent(table, () => {});
-    for (final r in rows) {
-      t[r['uid']! as String] = Map.of(r);
-    }
-  }
-
-  @override
-  Future<List<Map<String, Object?>>> fetch(String table, String userId) async {
-    return (store[table]?.values ?? const <Map<String, Object?>>[])
-        .where((r) => r['user_id'] == userId)
-        .map(Map<String, Object?>.of)
-        .toList();
-  }
-
-  int count(String table) => store[table]?.length ?? 0;
-}
-
 void main() {
   const user = '00000000-0000-4000-8000-0000000000aa';
 
-  late _FakeRemote remote;
+  late FakeSyncServer remote;
 
-  setUp(() => remote = _FakeRemote());
+  setUp(() => remote = FakeSyncServer());
 
   Future<AppDatabase> freshDb() async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());

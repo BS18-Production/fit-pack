@@ -150,15 +150,36 @@ class _SlowRemote implements SyncRemote {
   final Future<void> Function(String table)? onFetch;
   final Map<String, List<Map<String, Object?>>> store = {};
 
+  int _rev = 0;
+
   @override
-  Future<void> upsert(String table, List<Map<String, Object?>> rows) async {
+  Future<List<AcceptedRow>> upsert(
+      String table, List<Map<String, Object?>> rows) async {
     await onUpsert?.call(table);
     store.putIfAbsent(table, () => []).addAll(rows);
+    return [
+      for (final r in rows) AcceptedRow(r['uid']! as String, ++_rev),
+    ];
   }
 
   @override
-  Future<List<Map<String, Object?>>> fetch(String table, String userId) async {
+  Future<List<Map<String, Object?>>> fetchSince(
+    String table,
+    String userId,
+    int sinceRev,
+    int limit,
+  ) async {
+    // Kanca AĞ AŞAMASINDA çalışır — tetikleyicilerin o sırada AÇIK olması
+    // gerektiğini ölçen şey budur (S-4).
     await onFetch?.call(table);
     return const [];
   }
+
+  @override
+  Future<List<Map<String, Object?>>> fetchByUids(
+    String table,
+    String userId,
+    List<String> uids,
+  ) async =>
+      const [];
 }

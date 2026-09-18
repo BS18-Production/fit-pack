@@ -4,9 +4,30 @@
 /// Security) verileri korur, bu yüzden istemcide bulunması güvenlidir. Yine de
 /// `service_role` / secret anahtarı BURAYA ASLA konmaz (sadece sunucu tarafı).
 class SupabaseConfig {
-  static const String url = 'https://jkviihbyogktwboreydn.supabase.co';
-  static const String anonKey =
-      'sb_publishable_kOvpAdgwp-WCV7erTa1baw_lfexIr-t';
+  /// Üretim projesi (`Fit Pack`). **Derleme zamanında** değiştirilebilir:
+  ///
+  /// ```
+  /// flutter run \
+  ///   --dart-define=SUPABASE_URL=https://qecbnrkbordkqeogmevi.supabase.co \
+  ///   --dart-define=SUPABASE_ANON_KEY=sb_publishable_aQZzc4k4q8DSZ5VQdCujTQ_nfOMZmw4
+  /// ```
+  ///
+  /// Böylece senkron değişiklikleri **test projesine** (`Fit Pack Dev`) karşı
+  /// denenir; gerçek antrenman verisine dokunulmaz (docs/20 §10.4).
+  /// Varsayılan üretimdir — bayrak unutulursa uygulama normal çalışır, yanlış
+  /// yere yazmaz.
+  static const String url = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://jkviihbyogktwboreydn.supabase.co',
+  );
+  static const String anonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: 'sb_publishable_kOvpAdgwp-WCV7erTa1baw_lfexIr-t',
+  );
+
+  /// Test projesine bağlı mıyız? Arayüzde/günlükte uyarı göstermek için.
+  static bool get isDevProject =>
+      !url.contains('jkviihbyogktwboreydn');
 
   /// Google yerel (native) giriş için **Web** OAuth client ID'si (docs/18
   /// §5.2.1 D). Supabase → Authentication → Providers → Google'daki

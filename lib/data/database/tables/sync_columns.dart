@@ -112,18 +112,17 @@ const syncForeignKeys = <String, Map<String, String>>{
 /// Sunucuya GİTMEYEN kolonlar: `id` cihaz içi kimlik, `sync_state` giden
 /// kutusu bayrağı — ikisi de yerele ait (docs/18 §4).
 ///
-/// Senkron v2 kolonları da şimdilik burada:
+/// Senkron v2 kolonları:
 /// - `local_seq` **kalıcı olarak yerel** (cihaz sayacı, sunucuyu ilgilendirmez).
-/// - `server_rev` sunucudan GELİR, istemci göndermez.
-/// - `changed_at_ms` Aşama 4'te gönderilmeye başlanacak — **sunucuda kolon
-///   açıldıktan sonra** (Aşama 3). Şimdi gönderilse bugünkü sunucu
-///   "böyle bir kolon yok" (42703) der ve **her gönderim** başarısız olurdu.
+/// - `server_rev` sunucudan GELİR, istemci göndermez (sunucu atar).
+/// - `changed_at_ms` **Aşama 4'ten beri GÖNDERİLİR** — sunucudaki çakışma
+///   kuralının ölçüsü budur (docs/20 §5.2). Gönderilmezse sunucu yazmayı
+///   "eski" sayıp sessizce reddeder.
 const localOnlyColumns = <String>{
   'id',
   'sync_state',
   'local_seq',
   'server_rev',
-  'changed_at_ms',
 };
 
 /// `uid` için unique index adı — tablo başına tek.

@@ -1,7 +1,7 @@
-import 'package:drift/drift.dart';
-
 import '../../data/database/app_database.dart';
+import '../../data/database/daos/sync_meta_dao.dart';
 import '../../data/database/tables/sync_columns.dart';
+import 'sync_apply.dart';
 import 'sync_controller.dart' show syncLog;
 import 'sync_push.dart';
 
@@ -36,32 +36,67 @@ class PullResult {
       );
 }
 
-/// Çekme (pull) hattı (docs/18 §6.4–6.5).
+/// Çekme (pull) hattı — **sayfalı, artımlı, iki aşamalı** (docs/20 §6.1).
 ///
-/// Girişte çalışır: sunucudaki kullanıcı verisini yerele indirir. Böylece
-/// telefon değiştiren / uygulamayı yeniden kuran kullanıcı **verisini geri
-/// alır** — gönderim (outbox) tek başına bunun yalnız yarısıydı.
+/// Girişte ve açılışta çalışır: sunucudaki kullanıcı verisini yerele indirir.
+/// Böylece telefon değiştiren / uygulamayı yeniden kuran kullanıcı **verisini
+/// geri alır** — gönderim (outbox) tek başına bunun yalnız yarısıydı.
 ///
-/// **Çakışma kuralı: en son yazan kazanır** (`updated_at` karşılaştırması,
-/// docs/18 §6.5). Uygulama ağırlıkla *ekleme* olduğu için çakışma nadir.
-///
-/// **Tetikleyiciler pull boyunca KAPALI** (docs/18 §6.4): sunucunun `updated_at`
-/// damgası korunur ve inen satır kuyruğa geri girmez (yankı olmaz). Turun
-/// başında kaldırılır, sonunda tek kaynaktan (`createInsertTriggerSql` /
-/// `createUpdateTriggerSql`) geri kurulur.
+/// **v1'e göre ne değişti:**
+/// - **Artımlı:** her tablonun imleci (`server_rev`) senkron defterinde durur;
+///   ikinci açılışta yalnız DEĞİŞENLER iner. Eskiden her açılışta her şey
+///   indiriliyordu.
+/// - **Sayfalı:** sayfa boyu 500. Sayfalama `server_rev` üzerinden
+///   (anahtar tabanlı) — sayfalar arasında yeni satır eklense de satır
+///   atlanmaz ya da iki kez gelmez (docs/20 §1 hata #5).
+/// - **İki aşamalı:** ağ beklemesi veritabanına dokunmadan yapılır,
+///   tetikleyiciler o sırada AÇIK kalır → çekme sürerken kullanıcının yazdığı
+///   satır kuyruğa girer (hata #2).
+/// - **Çakışma ölçüsü `changed_at_ms`** (milisaniye), `updated_at` değil.
 class SyncPull {
   final AppDatabase db;
   final SyncRemote remote;
+  final SyncApply apply;
 
-  SyncPull(this.db, this.remote);
+  /// Sayfa boyu. 500 < PostgREST'in 1.000 sınırı → sunucu sessizce kesemez.
+  final int pageSize;
 
-  /// Sunucudaki bu kullanıcıya ait her şeyi indirir. Bağımlılık sırasıyla:
-  /// referans verilen tablo (ebeveyn) önce iner ki çocuğun `*_uid`'i çözülsün.
-  Future<PullResult> pullAll({required String userId}) async {
+  /// **İmleç payı** (docs/20 §12.1). İmleç, son görülen `server_rev`'den bu
+  /// kadar geriye kaydırılarak saklanır.
+  ///
+  /// NEDEN: `server_rev` transaction'ın BAŞINDA (tetikleyicide) atanır ama
+  /// satır ancak COMMIT'te görünür olur. İki gönderim üst üste binerse küçük
+  /// numaralı satır, büyük numaralı satırdan SONRA görünebilir; imleç
+  /// çoktan geçmişse o satır bir daha hiç inmez. Payla birlikte aynı aralık
+  /// bir sonraki turda yeniden okunur. Tekrar indirme zararsızdır: uygulama
+  /// kuralı `changed_at_ms` karşılaştırıp eskiyi atar (idempotent).
+  final int cursorLag;
+
+  SyncPull(
+    this.db,
+    this.remote, {
+    SyncApply? apply,
+    this.pageSize = 500,
+    this.cursorLag = 1000,
+  }) : apply = apply ?? SyncApply(db);
+
+  SyncMetaDao get _meta => SyncMetaDao(db);
+
+  /// Sunucudaki bu kullanıcıya ait değişiklikleri indirir. Bağımlılık
+  /// sırasıyla: referans verilen tablo (ebeveyn) önce iner ki çocuğun
+  /// `*_uid`'i çözülsün.
+  ///
+  /// [full] verilirse imleçler yok sayılır ve her şey baştan okunur — docs/20
+  /// §12.1'in ikinci katmanı (düzenli tam uzlaştırma). Yeni girişte de
+  /// imleç zaten yoktur, yani ilk tur doğal olarak tamdır.
+  Future<PullResult> pullAll({
+    required String userId,
+    bool full = false,
+  }) async {
     var result = const PullResult();
     for (final table in syncPushOrder) {
       try {
-        result += await _pullTable(table, userId);
+        result += await _pullTable(table, userId, full: full);
       } catch (e, st) {
         syncLog('$table çekilemedi: $e\n$st', error: e);
         result += PullResult(error: e);
@@ -76,233 +111,90 @@ class SyncPull {
     return result;
   }
 
-  /// Tetikleyicileri **susturur** (düşürmez), [body]'yi çalıştırır, her
-  /// durumda geri açar (docs/20 K-4, S-4).
+  /// Bir tabloyu imleçten itibaren sayfa sayfa indirir ve uygular.
   ///
-  /// Eskiden tetikleyiciler DÜŞÜRÜLÜYORDU. O aralıkta kullanıcının yazdığı
-  /// satır da tetikleyicisiz kalıyordu: uid'siz, damgasız, kuyruğa girmemiş →
-  /// sunucuya hiç gitmiyordu. Ayrıca çekme sırasında uygulama ölürse
-  /// tetikleyiciler geri kurulmuyordu (senkron sessizce ölürdü; açılıştaki
-  /// onarım bunu da karşılıyor).
-  ///
-  /// Bayrak **yalnız inen satırların yazıldığı transaction** boyunca kapalı
-  /// kalır — ağ beklenirken değil. Böylece kullanıcı çekme sürerken bir şey
-  /// kaydederse tetikleyici çalışır ve o satır kuyruğa girer (S-4).
-  Future<void> _withCaptureOff(Future<void> Function() body) async {
-    await db.customStatement(setCaptureSql(false));
-    try {
-      await body();
-    } finally {
-      await db.customStatement(setCaptureSql(true));
-    }
-  }
-
-  Future<PullResult> _pullTable(String table, String userId) async {
-    final serverRows = await remote.fetch(table, userId);
-    if (serverRows.isEmpty) return const PullResult();
-    syncLog('$table ← sunucudan ${serverRows.length} satır');
+  /// Her sayfa için: **ağ aşaması** (veritabanına dokunulmaz, tetikleyiciler
+  /// açık) → **uygulama aşaması** (kısa transaction, tetikleyiciler susturulmuş).
+  /// Uygulama transaction'ı yarıda ölürse geri alınır: imleç eski değerde
+  /// kalır, bir sonraki tur o sayfayı tekrar indirir (idempotent).
+  Future<PullResult> _pullTable(
+    String table,
+    String userId, {
+    required bool full,
+  }) async {
+    final cursorKey = SyncMetaDao.pullCursorKey(userId, table);
+    var cursor = full ? 0 : (int.tryParse(await _meta.read(cursorKey) ?? '') ?? 0);
 
     var inserted = 0, updated = 0, skipped = 0;
-    final info = db.allTables.firstWhere((t) => t.actualTableName == table);
-    // Kolon tipini `Object?` tutuyoruz: drift'in tip sınıfı sürümler arası
-    // değişiyor, `_decode` değerle DriftSqlType sabitlerini karşılaştırıyor
-    // (gönderimdeki `_encode` ile aynı desen).
-    final types = <String, Object?>{
-      for (final c in info.$columns) c.name: c.type
-    };
-    final fks = syncForeignKeys[table] ?? const {};
+    final types = apply.columnTypes(table);
 
-    // Bayrak YALNIZ inen satırlar yazılırken kapalı: ağ beklenirken
-    // kullanıcının yaptığı yazma tetikleyiciyi çalıştırmalı (S-4).
-    await _withCaptureOff(() => db.transaction(() async {
-      for (final server in serverRows) {
-        final local = await _toLocalRow(table, server, types, fks);
-        if (local == null) {
-          skipped++; // ebeveyn referansı henüz yok → beklet
-          continue;
-        }
-        final outcome = await _applyRow(table, local);
-        switch (outcome) {
-          case _Applied.inserted:
-            inserted++;
-          case _Applied.updated:
-            updated++;
-          case _Applied.skipped:
-            skipped++;
-        }
+    while (true) {
+      // ── AĞ AŞAMASI — veritabanına dokunmaz, tetikleyiciler AÇIK ──
+      final page = await remote.fetchSince(table, userId, cursor, pageSize);
+      if (page.isEmpty) break;
+
+      // Sunucu istediğimizden fazlasını döndürmemeli. Döndürüyorsa sayfalama
+      // varsayımı çökmüştür (sessizce satır atlamaktansa durup bağıralım).
+      if (page.length > pageSize) {
+        throw StateError(
+          '$table: sayfa boyu aşıldı — istenen $pageSize, gelen ${page.length}',
+        );
       }
-    }));
+
+      final lastRev = _maxRev(page);
+      syncLog('$table ← sunucudan ${page.length} satır '
+          '(imleç $cursor → $lastRev)');
+
+      // ── UYGULAMA AŞAMASI — kısa transaction, tetikleyiciler susturulmuş ──
+      await apply.withCaptureOff(() => db.transaction(() async {
+            for (final server in page) {
+              switch (await apply.applyServerRow(table, server, types: types)) {
+                case ApplyOutcome.inserted:
+                  inserted++;
+                case ApplyOutcome.updated:
+                  updated++;
+                case ApplyOutcome.skipped:
+                  skipped++;
+              }
+            }
+            // İmleç sayfayla AYNI transaction'da ilerler: ikisi ayrı olsaydı
+            // arada ölüm imleci veriden ileri bırakır ve o sayfa kaybolurdu.
+            //
+            // Yalnız İLERİ yazılır. Sürümsüz satır gelirse `lastRev` 0 olur;
+            // onu yazmak imleci sıfırlayıp her açılışta tam çekmeye döndürürdü.
+            if (lastRev > cursor) {
+              await _meta.write(cursorKey, _laggedCursor(lastRev).toString());
+            }
+          }));
+
+      if (lastRev <= cursor) {
+        // Sunucu ilerlemedi (sürümsüz satır ya da bozuk sıralama) — sonsuz
+        // döngüye girmektense dur. Sayfa yine de uygulandı, veri kaybı yok.
+        syncLog('$table: imleç ilerlemedi ($cursor), sayfalama durduruldu');
+        break;
+      }
+      cursor = lastRev;
+
+      if (page.length < pageSize) break; // son sayfa
+    }
+
     return PullResult(inserted: inserted, updated: updated, skipped: skipped);
   }
 
-  /// Sunucu JSON'unu yerel satıra çevirir (gönderimdeki `_rowToJson`'un tersi):
-  /// - `id`/`sync_state` yerele ait, sunucudan gelmez → id atlanır, sync_state=0
-  /// - `*_uid` yabancı anahtarlar yerel integer id'ye çevrilir
-  /// - boolean/tarih değerleri SQLite biçimine döner
-  ///
-  /// Ebeveyn `uid` yerelde bulunamazsa `null` döner (satır bu turda atlanır).
-  Future<Map<String, Object?>?> _toLocalRow(
-    String table,
-    Map<String, Object?> server,
-    Map<String, Object?> types,
-    Map<String, String> fks,
-  ) async {
-    final out = <String, Object?>{};
-    for (final entry in types.entries) {
-      final col = entry.key;
-      if (col == 'id') continue; // yerel autoincrement — sunucudan gelmez
-      if (col == 'sync_state') {
-        out[col] = 0; // inen satır temiz
-        continue;
-      }
-      if (fks.containsKey(col)) {
-        final serverUid = server[serverFkColumn(col)];
-        if (serverUid == null) {
-          out[col] = null;
-          continue;
-        }
-        final localId = await _localIdOf(fks[col]!, serverUid as String);
-        if (localId == null) return null; // ebeveyn henüz inmedi → beklet
-        out[col] = localId;
-        continue;
-      }
-      out[col] = _decode(server[col], entry.value);
+  /// Sayfadaki en büyük `server_rev`. Sunucu sıralı döndürür, yine de en
+  /// büyüğü arıyoruz: sıralama bozulursa imleç geri gitmesin.
+  int _maxRev(List<Map<String, Object?>> page) {
+    var max = 0;
+    for (final row in page) {
+      final rev = row['server_rev'];
+      if (rev is int && rev > max) max = rev;
     }
-    return out;
+    return max;
   }
 
-  Future<int?> _localIdOf(String table, String uid) async {
-    final r = await db.customSelect('SELECT id FROM $table WHERE uid = ?',
-        variables: [Variable(uid)]).get();
-    return r.isEmpty ? null : r.first.data['id'] as int;
-  }
-
-  /// Çevrilmiş satırı yerele yazar ve ne yaptığını döner.
-  Future<_Applied> _applyRow(String table, Map<String, Object?> local) async {
-    // Profil TEK satırdır (kullanıcı başına bir profil). uid ile eşleştirmek,
-    // junk/yeniden-onboarding satırı ayrı bir uid taşıdığında ikinci profil
-    // satırı OLUŞTURUR. Bu yüzden özel: mevcut tek satırı sunucununkiyle
-    // değiştir (uid dahil) → junk kendiliğinden gerçek veriyle değişir.
-    if (table == 'user_profile') {
-      return _applyProfile(local);
-    }
-
-    final uid = local['uid'] as String?;
-    if (uid == null) return _Applied.skipped;
-
-    final existing = await db.customSelect(
-        'SELECT id, updated_at FROM $table WHERE uid = ?',
-        variables: [Variable(uid)]).get();
-
-    if (existing.isNotEmpty) {
-      if (_serverWins(local['updated_at'], existing.first.data['updated_at'])) {
-        await _update(table, 'uid = ?', [Variable(uid)], local);
-        return _Applied.updated;
-      }
-      return _Applied.skipped; // yerel daha yeni → koru (gönderilecek)
-    }
-
-    // Katalog tablosunda (exercises/foods) aynı isimli seed satırı varsa onu
-    // benimse — cihazlar seed satırlarına FARKLI uid ürettiği için uid eşleşmez
-    // ve pull aksi halde her seansta kullanılan hareketi ikizler.
-    if (catalogTableNames.contains(table)) {
-      final adopt = await _findAdoptableCatalogRow(table, local['name']);
-      if (adopt != null) {
-        await _update(table, 'id = ?', [Variable(adopt)], local);
-        return _Applied.updated;
-      }
-    }
-
-    await _insert(table, local);
-    return _Applied.inserted;
-  }
-
-  Future<_Applied> _applyProfile(Map<String, Object?> local) async {
-    final row = await db
-        .customSelect('SELECT id, uid, updated_at FROM user_profile LIMIT 1')
-        .get();
-    if (row.isEmpty) {
-      await _insert('user_profile', local);
-      return _Applied.inserted;
-    }
-    final localUid = row.first.data['uid'] as String?;
-    final serverUid = local['uid'] as String?;
-    // Aynı profil kimliği + yerel daha yeni ise: kullanıcı çevrimdışı düzenledi,
-    // koru (gönderilecek). Diğer her durumda (farklı uid = junk, ya da sunucu
-    // daha yeni) sunucuyu benimse.
-    if (localUid == serverUid &&
-        !_serverWins(local['updated_at'], row.first.data['updated_at'])) {
-      return _Applied.skipped;
-    }
-    await _update('user_profile', 'id = ?',
-        [Variable(row.first.data['id'] as int)], local);
-    return _Applied.updated;
-  }
-
-  Future<int?> _findAdoptableCatalogRow(String table, Object? name) async {
-    if (name == null) return null;
-    final r = await db.customSelect(
-      'SELECT id FROM $table '
-      'WHERE name = ? AND user_id IS NULL AND is_custom = 0 LIMIT 1',
-      variables: [Variable(name)],
-    ).get();
-    return r.isEmpty ? null : r.first.data['id'] as int;
-  }
-
-  /// Sunucu satırı yereli geçer mi? `updated_at` epoch saniyeleri karşılaştırılır.
-  /// Eşitlikte sunucu kazanır (idempotent tekrar pull zarar vermez). Yerelin
-  /// damgası yoksa (eski satır) sunucu kazanır.
-  bool _serverWins(Object? serverTs, Object? localTs) {
-    if (serverTs is! int) return false; // sunucu damgasız → dokunma
-    if (localTs is! int) return true;
-    return serverTs >= localTs;
-  }
-
-  Future<void> _insert(String table, Map<String, Object?> row) async {
-    final cols = row.keys.toList();
-    final placeholders = List.filled(cols.length, '?').join(', ');
-    await db.customStatement(
-      'INSERT INTO $table (${cols.join(', ')}) VALUES ($placeholders)',
-      cols.map((c) => row[c]).toList(),
-    );
-  }
-
-  Future<void> _update(
-    String table,
-    String where,
-    List<Variable> whereArgs,
-    Map<String, Object?> row,
-  ) async {
-    // id sunucudan gelmez; uid dahil kalan tüm kolonları yaz.
-    final cols = row.keys.where((c) => c != 'id').toList();
-    final setClause = cols.map((c) => '$c = ?').join(', ');
-    await db.customStatement(
-      'UPDATE $table SET $setClause WHERE $where',
-      [...cols.map((c) => row[c]), ...whereArgs.map((v) => v.value)],
-    );
-  }
-
-  /// PostgREST/Postgres değerini SQLite'ın (drift'in) beklediği biçime çevirir —
-  /// gönderimdeki `_encode`'un tersi.
-  static Object? _decode(Object? value, Object? type) {
-    if (value == null) return null;
-    switch (type) {
-      case DriftSqlType.bool:
-        // Postgres boolean → SQLite 0/1
-        if (value is bool) return value ? 1 : 0;
-        return value == true || value == 1 ? 1 : 0;
-      case DriftSqlType.dateTime:
-        // timestamptz (ISO 8601) → drift'in tuttuğu unix saniye
-        if (value is String) {
-          final dt = DateTime.tryParse(value);
-          if (dt == null) return null;
-          return dt.millisecondsSinceEpoch ~/ 1000;
-        }
-        return value;
-      default:
-        return value;
-    }
+  /// Saklanacak imleç = son görülen sürüm − pay (0'ın altına inmez).
+  int _laggedCursor(int lastRev) {
+    final v = lastRev - cursorLag;
+    return v < 0 ? 0 : v;
   }
 }
-
-enum _Applied { inserted, updated, skipped }

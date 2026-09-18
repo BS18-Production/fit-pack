@@ -4,32 +4,19 @@ import 'package:fit_pack/features/sync/sync_controller.dart';
 import 'package:fit_pack/features/sync/sync_push.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/fake_sync_server.dart';
+
 /// Senkron zamanlaması — ne zaman çalışır, ne zaman çalışmaz (docs/18 §6).
-class _CountingRemote implements SyncRemote {
-  int calls = 0;
-  bool fail = false;
-
-  @override
-  Future<void> upsert(String table, List<Map<String, Object?>> rows) async {
-    calls++;
-    if (fail) throw Exception('ağ yok');
-  }
-
-  @override
-  Future<List<Map<String, Object?>>> fetch(String table, String userId) async =>
-      const [];
-}
-
 void main() {
   late AppDatabase db;
-  late _CountingRemote remote;
+  late FakeSyncServer remote;
   late SyncController ctrl;
   String? user = '00000000-0000-4000-8000-000000000001';
 
   setUp(() async {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     await db.customSelect('SELECT 1').get();
-    remote = _CountingRemote();
+    remote = FakeSyncServer();
     user = '00000000-0000-4000-8000-000000000001';
     ctrl = SyncController(
       db: db,
@@ -53,32 +40,32 @@ void main() {
 
     await ctrl.syncNow();
 
-    expect(remote.calls, 0, reason: 'oturumsuz sunucuya gidilmez');
+    expect(remote.upsertCalls, 0, reason: 'oturumsuz sunucuya gidilmez');
     expect(await ctrl.pendingCount(), 1, reason: 'kayıp yok, kuyrukta');
   });
 
   test('bekleyen yoksa boşa tur atmaz', () async {
     await ctrl.syncNow();
-    expect(remote.calls, 0);
+    expect(remote.upsertCalls, 0);
   });
 
   test('DÖNGÜ KORUMASI: başarılı turdan sonra kendini tetiklemez', () async {
     await addRoutine('Push');
     await ctrl.syncNow();
-    final after = remote.calls;
+    final after = remote.upsertCalls;
     expect(after, greaterThan(0));
     expect(await ctrl.pendingCount(), 0);
 
     // Temiz işaretleme de bir yazmadır; ikinci tur bekleyen bulamamalı.
     await ctrl.syncNow();
-    expect(remote.calls, after,
+    expect(remote.upsertCalls, after,
         reason: 'senkron kendi yazmasıyla yeniden tetiklenmemeli');
   });
 
   test('eşzamanlı çağrıda tek tur çalışır', () async {
     await addRoutine('A');
     await Future.wait([ctrl.syncNow(), ctrl.syncNow(), ctrl.syncNow()]);
-    expect(remote.calls, 1, reason: 'aynı satır üç kez gönderilmemeli');
+    expect(remote.upsertCalls, 1, reason: 'aynı satır üç kez gönderilmemeli');
   });
 
   test('hata sonrası artan bekleme basamağı ilerler', () async {
@@ -107,7 +94,7 @@ void main() {
     }
     await Future<void>.delayed(const Duration(milliseconds: 80));
 
-    expect(remote.calls, lessThanOrEqualTo(2),
+    expect(remote.upsertCalls, lessThanOrEqualTo(2),
         reason: '10 yazma için 10 istek atılmamalı');
     expect(await ctrl.pendingCount(), 0, reason: 'hepsi gönderilmiş olmalı');
   });

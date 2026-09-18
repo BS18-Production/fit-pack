@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../data/database/app_database.dart';
 import '../../data/database/tables/sync_columns.dart';
+import 'sync_apply.dart';
 import 'sync_controller.dart' show syncLog;
 
 /// Bir gönderim turunun sonucu — arayüz ve testler bunu okur.
@@ -12,27 +13,73 @@ class PushResult {
   /// Gönderilemeyen satır sayısı (kuyrukta kaldı, sonra tekrar denenecek).
   final int failed;
 
+  /// Sunucunun REDDETTİĞİ satır sayısı — sunucudaki sürüm daha yeniydi ya da
+  /// o kimlik silinmişti. Bunlar hata DEĞİLDİR: satır sunucununkiyle
+  /// değiştirilip temizlenir, tekrar gönderilmez (docs/20 §5.1 adım 5).
+  final int rejected;
+
   /// İlk hata — hata ayıklama/görüntüleme için.
   final Object? error;
 
-  const PushResult({this.pushed = 0, this.failed = 0, this.error});
+  const PushResult({
+    this.pushed = 0,
+    this.failed = 0,
+    this.rejected = 0,
+    this.error,
+  });
 
-  bool get hasWork => pushed > 0 || failed > 0;
+  bool get hasWork => pushed > 0 || failed > 0 || rejected > 0;
   bool get ok => failed == 0 && error == null;
+}
+
+/// Sunucunun KABUL ettiği bir satır (docs/20 §5.1 adım 4).
+class AcceptedRow {
+  final String uid;
+
+  /// Sunucunun bu yazmaya verdiği sürüm numarası. Yerele yazılır; çekme
+  /// imleci ve "bu satırın sunucudaki hali hangisi" sorusu buna bakar.
+  final int serverRev;
+
+  const AcceptedRow(this.uid, this.serverRev);
 }
 
 /// Sunucuya yazma yüzeyi. Gerçek uygulaması Supabase'i çağırır; testler bunu
 /// taklit ederek ağ olmadan arıza senaryolarını (kopan bağlantı, çift
-/// gönderim) çalıştırır (docs/18 §10).
+/// gönderim, ret) çalıştırır (docs/18 §10).
 abstract class SyncRemote {
-  /// Satırları `uid` çakışmasına göre upsert eder. **Dönmesi = sunucu onayı.**
+  /// Satırları `(user_id, uid)` çakışmasına göre upsert eder ve **sunucunun
+  /// KABUL ETTİKLERİNİ** döndürür (docs/20 §5.1).
+  ///
+  /// Dönen listede olmayan satır **reddedilmiştir**: sunucudaki sürüm daha
+  /// yeni (ya da o kimlik silinmiş). Sunucudaki `sync_guard` tetikleyicisi
+  /// reddi `RETURNING`'den düşürerek bildirir — ayrı bir hata kodu yoktur.
+  ///
   /// Hata fırlatırsa satırlar kuyrukta KALIR.
-  Future<void> upsert(String table, List<Map<String, Object?>> rows);
+  Future<List<AcceptedRow>> upsert(
+      String table, List<Map<String, Object?>> rows);
 
-  /// Bir tablonun bu kullanıcıya ait TÜM satırlarını çeker (docs/18 §6.4).
-  /// RLS "own rows" politikası sunucuda süzer; yine de `userId` ile filtreleriz
-  /// (katalog tablolarında kullanıcının kendi + kullandığı satırlar için).
-  Future<List<Map<String, Object?>>> fetch(String table, String userId);
+  /// Sürümü [sinceRev]'den BÜYÜK satırları, sürüm sırasına göre, en çok
+  /// [limit] tane çeker (docs/20 §6.1). İmleç tabanlı sayfalama: sayfalar
+  /// arasında yeni satır eklense de satır atlanmaz ya da iki kez gelmez.
+  ///
+  /// RLS "own rows" politikası sunucuda süzer; yine de `userId` ile
+  /// filtreleriz (katalog tablolarında kullanıcının kendi + kullandığı
+  /// satırlar için).
+  Future<List<Map<String, Object?>>> fetchSince(
+    String table,
+    String userId,
+    int sinceRev,
+    int limit,
+  );
+
+  /// Belirli kimliklerin sunucudaki hâlini çeker — **reddedilen gönderimler**
+  /// için (docs/20 §5.1 adım 5). Reddedilen satır sunucudakiyle değiştirilir,
+  /// yoksa sonsuza kadar tekrar gönderilmeye çalışılır.
+  Future<List<Map<String, Object?>>> fetchByUids(
+    String table,
+    String userId,
+    List<String> uids,
+  );
 }
 
 /// Giden kutusu gönderim hattı (docs/18 §6).
@@ -48,10 +95,15 @@ class SyncPush {
   final AppDatabase db;
   final SyncRemote remote;
 
+  /// Reddedilen satırların sunucudaki hâlini yerele yazan ortak kural
+  /// (docs/20 §6.2). Çekme ile AYNI nesne/kural kullanılır.
+  final SyncApply apply;
+
   /// Tek seferde gönderilen satır sayısı — büyük kuyruklarda istek şişmesin.
   final int batchSize;
 
-  SyncPush(this.db, this.remote, {this.batchSize = 200});
+  SyncPush(this.db, this.remote, {SyncApply? apply, this.batchSize = 200})
+      : apply = apply ?? SyncApply(db);
 
   /// Bekleyen her şeyi gönderir. `userId` = Supabase `auth.uid()`.
   ///
@@ -59,6 +111,7 @@ class SyncPush {
   Future<PushResult> pushAll({required String userId}) async {
     var pushed = 0;
     var failed = 0;
+    var rejected = 0;
     Object? firstError;
 
     // Ön geçiş 1: KİMLİKSİZ satırları onar. Tetikleyiciler (v10) her yeni
@@ -87,7 +140,9 @@ class SyncPush {
     // Bağımlılık sırası: referans verilen tablo önce gider.
     for (final table in syncPushOrder) {
       try {
-        pushed += await _pushTable(table, userId);
+        final r = await _pushTable(table, userId);
+        pushed += r.pushed;
+        rejected += r.rejected;
       } catch (e, st) {
         firstError ??= e;
         failed += await _pendingCount(table);
@@ -98,7 +153,12 @@ class SyncPush {
       }
     }
 
-    return PushResult(pushed: pushed, failed: failed, error: firstError);
+    return PushResult(
+      pushed: pushed,
+      failed: failed,
+      rejected: rejected,
+      error: firstError,
+    );
   }
 
   /// `uid`'i olmayan satırlara kimlik üretir. Kimliksiz satır gönderilemez —
@@ -157,17 +217,18 @@ class SyncPush {
     return r.read<int>('c');
   }
 
-  /// Tek tabloyu gönderir, onaylananları temiz işaretler, gönderilen sayısını
-  /// döndürür. Hata fırlatırsa satırlar kuyrukta kalır.
-  Future<int> _pushTable(String table, String userId) async {
+  /// Tek tabloyu gönderir, onaylananları temiz işaretler, reddedilenleri
+  /// sunucununkiyle değiştirir. Hata fırlatırsa satırlar kuyrukta kalır.
+  Future<_TablePush> _pushTable(String table, String userId) async {
     var total = 0;
+    var rejected = 0;
     while (true) {
       final rows = await db
           .customSelect(
             'SELECT * FROM $table WHERE sync_state = 1 ORDER BY id LIMIT $batchSize',
           )
           .get();
-      if (rows.isEmpty) return total;
+      if (rows.isEmpty) return _TablePush(total, rejected);
 
       final payload = <Map<String, Object?>>[];
       // uid → o satırı okuduğumuz andaki `local_seq` (cihaz sayacı). Temiz
@@ -196,37 +257,109 @@ class SyncPush {
         syncLog('$table: $skipped satır atlandı (kimlik/referans eksik) '
             '→ kuyrukta bekliyor');
       }
-      if (payload.isEmpty) return total;
+      if (payload.isEmpty) return _TablePush(total, rejected);
 
       // ⚠️ Sunucu onayı burada. Hata fırlarsa aşağıya inilmez → temiz
       // işaretleme YAPILMAZ, satırlar kuyrukta kalır.
       syncLog('$table → ${payload.length} satır gönderiliyor');
-      await remote.upsert(table, payload);
+      final accepted = await remote.upsert(table, payload);
 
-      await _markClean(table, stamps, userId);
-      total += payload.length;
-      if (rows.length < batchSize) return total;
+      // KABUL EDİLENLER: temiz işaretle, sunucu sürümünü yaz.
+      await _markClean(table, accepted, stamps, userId);
+      total += accepted.length;
+
+      // REDDEDİLENLER (dönmeyenler): sunucudaki sürüm daha yeni ya da o kimlik
+      // silinmiş. Sunucudaki hâlini indirip uygula → satır temizlenir ve bir
+      // daha gönderilmez. Bu adım olmadan satır sonsuza kadar kuyrukta kalır
+      // ve her turda boşuna gönderilir (docs/20 §5.1 adım 5).
+      final acceptedUids = accepted.map((a) => a.uid).toSet();
+      final rejectedUids = stamps.keys
+          .where((uid) => !acceptedUids.contains(uid))
+          .toList();
+      if (rejectedUids.isNotEmpty) {
+        syncLog('$table: ${rejectedUids.length} satır reddedildi '
+            '(sunucu daha yeni) → sunucudaki sürüm alınıyor');
+        rejected += await _resolveRejected(table, rejectedUids, stamps, userId);
+      }
+
+      // Bu turda hiçbir satır ilerlemediyse dur: aksi halde aynı sayfayı
+      // sonsuza kadar okuruz (çözülemeyen ret + dolu kuyruk).
+      if (accepted.isEmpty && rejectedUids.isEmpty) {
+        return _TablePush(total, rejected);
+      }
+      if (rows.length < batchSize) return _TablePush(total, rejected);
     }
   }
 
-  /// Yalnız gönderdiğimiz sürümü temiz işaretler. `local_seq` değiştiyse satır
-  /// gönderimden SONRA (ya da gönderim SÜRERKEN) düzenlenmiştir → kuyrukta
-  /// bırakılır, yoksa o düzenleme sessizce kaybolurdu.
+  /// Reddedilen satırların sunucudaki hâlini indirip yerele uygular.
+  ///
+  /// Sunucuda satır YOKSA (silinmiş kimlik — Aşama 5) yerel satır kuyruktan
+  /// çıkarılır ama SİLİNMEZ: senkron yerel veriyi asla silmez (kural 4).
+  /// Silmeyi taşıyan mekanizma mezar taşlarıdır, Aşama 5'te gelir.
+  Future<int> _resolveRejected(
+    String table,
+    List<String> uids,
+    Map<String, Object?> stamps,
+    String userId,
+  ) async {
+    final serverRows = await remote.fetchByUids(table, userId, uids);
+    final byUid = {
+      for (final r in serverRows)
+        if (r['uid'] is String) r['uid'] as String: r,
+    };
+
+    var resolved = 0;
+    final types = apply.columnTypes(table);
+    await apply.withCaptureOff(() => db.transaction(() async {
+          for (final uid in uids) {
+            final server = byUid[uid];
+            if (server != null) {
+              await apply.applyServerRow(table, server, types: types);
+            }
+            // Temizle — ama YALNIZ gönderdiğimiz sürüm hâlâ duruyorsa.
+            // `local_seq` değiştiyse kullanıcı arada satırı yeniden düzenledi;
+            // o düzenleme gönderilmeli, kuyrukta kalsın.
+            await db.customStatement(
+              'UPDATE $table SET sync_state = 0, user_id = ? '
+              'WHERE uid = ? AND sync_state = 1 AND local_seq IS ?',
+              [userId, uid, stamps[uid]],
+            );
+            resolved++;
+          }
+        }));
+    return resolved;
+  }
+
+  /// Yalnız **sunucunun kabul ettiği** ve gönderdiğimiz sürümü temiz
+  /// işaretler. `local_seq` değiştiyse satır gönderimden SONRA (ya da gönderim
+  /// SÜRERKEN) düzenlenmiştir → kuyrukta bırakılır, yoksa o düzenleme sessizce
+  /// kaybolurdu.
+  ///
+  /// `server_rev` yerele yazılır: satırın sunucudaki hangi sürüme karşılık
+  /// geldiği cihazda bilinir.
   ///
   /// `user_id` de yerele yazılır: (a) satırın kime ait olduğu cihazda bilinir
   /// → hesap değişimi tespiti (docs/18 §5.1 Kural 3), (b) senkron edilmiş
   /// katalog satırı bundan sonra düzenlendiğinde tekrar kuyruğa girer.
   Future<void> _markClean(
-      String table, Map<String, Object?> stamps, String userId) async {
-    await db.transaction(() async {
-      for (final e in stamps.entries) {
-        await db.customStatement(
-          'UPDATE $table SET sync_state = 0, user_id = ? '
-          'WHERE uid = ? AND sync_state = 1 AND local_seq IS ?',
-          [userId, e.key, e.value],
-        );
-      }
-    });
+    String table,
+    List<AcceptedRow> accepted,
+    Map<String, Object?> stamps,
+    String userId,
+  ) async {
+    if (accepted.isEmpty) return;
+    // Temiz işaretleme de bir yazmadır; tetikleyici `sync_state` değişimini
+    // zaten görmezden gelir, ama `server_rev` yazması onu uyandırmasın diye
+    // bayrak kapatılır (docs/20 K-4).
+    await apply.withCaptureOff(() => db.transaction(() async {
+          for (final row in accepted) {
+            await db.customStatement(
+              'UPDATE $table SET sync_state = 0, user_id = ?, server_rev = ? '
+              'WHERE uid = ? AND sync_state = 1 AND local_seq IS ?',
+              [userId, row.serverRev, row.uid, stamps[row.uid]],
+            );
+          }
+        }));
   }
 
   /// Yerel satırı sunucu JSON'una çevirir:
@@ -304,4 +437,11 @@ class SyncPush {
         return value;
     }
   }
+}
+
+/// Tek tablonun gönderim sonucu — kabul edilen ve reddedilip çözülen sayısı.
+class _TablePush {
+  final int pushed;
+  final int rejected;
+  const _TablePush(this.pushed, this.rejected);
 }

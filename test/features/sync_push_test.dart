@@ -6,58 +6,17 @@ import 'package:fit_pack/data/database/tables/sync_columns.dart';
 import 'package:fit_pack/features/sync/sync_push.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../helpers/fake_sync_server.dart';
+
 /// Giden kutusu arıza testleri — docs/18 §10 kabul kriteri.
 ///
 /// Bu 6 test yeşil olmadan "veri güvende" diyemeyiz. Her biri gerçek bir
 /// kayıp senaryosunu kilitler: uygulama ölmesi, ağın kopması, yeniden
 /// gönderimde çift kayıt, onaysız temiz işaretleme, senkron sırasında
 /// düzenleme, satırın silinmesi.
-class _FakeRemote implements SyncRemote {
-  /// tablo → gönderilen satırlar (uid'e göre — sunucu upsert davranışı).
-  final Map<String, Map<String, Map<String, Object?>>> store = {};
-  final List<String> calls = [];
-
-  /// true ise her çağrı patlar (ağ yok).
-  bool fail = false;
-
-  /// Onay DÖNMEDEN patlar: sunucu satırı yazdı ama istemci onayı alamadı.
-  bool failAfterWrite = false;
-
-  /// Gönderim SÜRERKEN çalışır — kullanıcının tam o anda satırı düzenlemesini
-  /// taklit eder (T-5). Yalnız bir kez tetiklenir.
-  Future<void> Function()? onUpsert;
-
-  @override
-  Future<void> upsert(String table, List<Map<String, Object?>> rows) async {
-    calls.add(table);
-    if (fail) throw Exception('ağ yok');
-    final interrupt = onUpsert;
-    if (interrupt != null) {
-      onUpsert = null;
-      await interrupt();
-    }
-    final t = store.putIfAbsent(table, () => {});
-    for (final r in rows) {
-      t[r['uid']! as String] = r; // uid çakışması → üzerine yazar
-    }
-    if (failAfterWrite) throw Exception('onay alınamadı');
-  }
-
-  @override
-  Future<List<Map<String, Object?>>> fetch(String table, String userId) async {
-    calls.add('fetch:$table');
-    if (fail) throw Exception('ağ yok');
-    return (store[table]?.values.toList() ?? const [])
-        .where((r) => r['user_id'] == userId)
-        .toList();
-  }
-
-  int rowCount(String table) => store[table]?.length ?? 0;
-}
-
 void main() {
   late AppDatabase db;
-  late _FakeRemote remote;
+  late FakeSyncServer remote;
   late SyncPush push;
   const user = '00000000-0000-4000-8000-000000000001';
 
@@ -65,7 +24,7 @@ void main() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     // Şema kurulsun (onCreate → tetikleyiciler dahil).
     await db.customSelect('SELECT 1').get();
-    remote = _FakeRemote();
+    remote = FakeSyncServer();
     push = SyncPush(db, remote);
   });
 
@@ -172,10 +131,14 @@ void main() {
       // BİTTİKTEN sonra yapıyordu — yani hiçbir zaman yarışı ölçmedi.
       //
       // Gerçek yarış: satır sunucuya yazılırken kullanıcı düzenliyor.
-      // Tetikleyici `updated_at`'i saniye çözünürlüğüyle "şimdi"ye çeker
-      // (sync_columns.dart:124); düzenleme gönderimle aynı saniyedeyse damga
-      // değişmez, istemci satırı kendi gönderdiği sürüm sanıp temiz işaretler
-      // ve **düzenleme sessizce kaybolur** (docs/20 §1 hata #3).
+      // Eskiden `updated_at` (saniye) karşılaştırılıyordu; düzenleme
+      // gönderimle aynı saniyedeyse damga değişmiyor, istemci satırı kendi
+      // gönderdiği sürüm sanıp temiz işaretliyor ve **düzenleme sessizce
+      // kayboluyordu** (docs/20 §1 hata #3).
+      //
+      // **2026-09-18'de yeşile döndü:** Aşama 1 cihaz sayacını (`local_seq`)
+      // getirdi, temiz işaretleme artık ona bakıyor — saniye çözünürlüğü
+      // sorunu ortadan kalktı.
       await addRoutine('Push');
       remote.onUpsert = () async {
         await db.customStatement("UPDATE routines SET name = 'Pull'");
@@ -189,22 +152,27 @@ void main() {
           await db.customSelect('SELECT name FROM routines').getSingle();
       expect(local.read<String>('name'), 'Pull');
     },
-    skip: 'KIRMIZI — docs/20 Aşama 1 (changed_at_ms) ile yeşile dönecek',
   );
 
-  test('T-5c · yerel kolonlar sunucuya gönderilmez', () async {
-    // Senkron v2 ile üç yeni kolon geldi. `local_seq` cihaz sayacı,
-    // `server_rev` sunucudan gelir, `changed_at_ms` ise ancak sunucuda kolon
-    // açıldıktan SONRA (Aşama 3/4) gönderilecek. Bugün gönderilirlerse sunucu
-    // "böyle bir kolon yok" (42703) der ve HER gönderim düşer.
+  test('T-5c · yerele ait kolonlar sunucuya gönderilmez', () async {
+    // `id` cihaz içi kimlik, `sync_state` giden kutusu bayrağı, `local_seq`
+    // cihaz sayacı — üçü de yerele aittir. `server_rev` sunucudan GELİR,
+    // istemci göndermez (gönderirse sunucunun atadığı sürümü ezmeye çalışır).
+    //
+    // `changed_at_ms` ise Aşama 4'ten beri GÖNDERİLİR: sunucudaki çakışma
+    // kuralının ölçüsü odur, gönderilmezse sunucu yazmayı "eski" sayıp
+    // sessizce reddeder (docs/20 §5.2).
     await addRoutine('Push');
     await push.pushAll(userId: user);
 
-    final sent = remote.store['routines']!.values.single;
+    // `sent` = istemcinin gönderdiği ham yük. `store` sunucunun yazdığı hâl
+    // ve orada `server_rev` doğal olarak bulunur.
+    final sent = remote.sent['routines']!.single;
     expect(sent.keys, isNot(contains('local_seq')));
     expect(sent.keys, isNot(contains('server_rev')));
-    expect(sent.keys, isNot(contains('changed_at_ms')));
     expect(sent.keys, isNot(contains('id')));
+    expect(sent['changed_at_ms'], isA<int>(),
+        reason: 'çakışma kuralının ölçüsü — gönderilmezse sunucu reddeder');
     expect(sent.keys, isNot(contains('sync_state')));
     // Gitmesi gerekenler yerinde:
     expect(sent['uid'], isNotNull);

@@ -125,12 +125,37 @@ bağlı).
       - ⚠️ **ÜRETİME UYGULANMADI.** Aşama 4 ile aynı sürümde çıkar: ölçüldü ki
         `changed_at_ms` göndermeyen eski istemcinin GÜNCELLEMESİ sessizce
         reddediliyor (eklemesi geçiyor).
-- [ ] **Sıradaki: Aşama 4 — sayfalı, artımlı çekme + koşullu gönderim**
-      (docs/20 §5.1, §6.1, ~1,5 gün). İstemci tarafı, sunucu değişikliği yok:
-      iki aşamalı çekme + `server_rev` imleci (payıyla birlikte, §12.1),
-      `upsert().select()` ile kabul/ret işleme, `changed_at_ms` gönderimi,
-      `SupabaseConfig`'e `--dart-define` geçişi (docs/20 §10.4).
-      Bitince 3 + 4 birlikte üretime çıkar.
+- [x] **Aşama 4 — sayfalı, artımlı çekme + koşullu gönderim ✅ (2026-09-18)**
+      - **Gönderim:** `changed_at_ms` artık gönderiliyor (sunucunun çakışma
+        ölçüsü); `upsert().select()` dönen satırlar = kabul edilenler;
+        `server_rev` yerele yazılıyor. **Ret işleme yeni:** dönmeyen satırın
+        sunucudaki hâli `fetchByUids` ile alınıp uygulanıyor ve satır
+        kuyruktan çıkıyor — yoksa sonsuza kadar boşuna gönderilirdi.
+        Ret çözümü `local_seq`'e bakıyor: o sırada yapılan düzenleme yutulmuyor.
+      - **Çekme:** iki aşamalı (ağ / uygulama), tablo başına `server_rev`
+        imleci `sync_meta`'da ve **kullanıcıya özel**; sayfa boyu 500 +
+        "sunucu fazla döndürürse dur" kontrolü; artımlı — ikinci turda
+        değişen yoksa hiçbir satır inmiyor (eskiden her açılışta her şey).
+      - **İmleç payı (1.000)** docs/20 §12.1'in birinci katmanı; ikinci
+        katman `pullAll(full: true)` olarak hazır (çağıran henüz yok).
+      - **Satır uygulama kuralı `SyncApply`'a çıkarıldı** — çekme ve gönderim
+        reddi aynı kuralı kullanıyor; çakışma ölçüsü `changed_at_ms`
+        (`updated_at` yalnız v2 öncesi satırlar için geri düşüş).
+      - **Test altyapısı:** dört ayrı sahte sunucu tek `FakeSyncServer`'da
+        birleşti ve artık gerçek `sync_guard` kuralını uyguluyor — "sunucu
+        reddetti" durumu eskiden hiç test edilmiyordu.
+      - **Eski kırmızı test T-5b yeşile döndü** (Aşama 1'in `local_seq`'i
+        çözmüş); `skip` kaldırıldı.
+      - **Gerçek PostgREST doğrulaması** (docs/20 §10.5): kısmi kabul, ret,
+        sayfalama, `in.()` ve RLS gerçek HTTP çağrılarıyla ölçüldü.
+      - analyze 0 · test **394/394** (atlanan yok).
+- [ ] **Sıradaki: 3 + 4'ü üretime çıkar** (aynı sürüm — docs/20 §11):
+      1. Üretim projesinin panel yedeğini al.
+      2. `supabase/migrations/20260918120000_sync_v2_stage3.sql`'i üretime uygula.
+      3. **Aynı gün** uygulama sürümünü cihaza kur.
+      Arada eski istemci YAZAMAZ (ölçüldü: güncellemesi sessizce reddediliyor).
+      Öncesinde cihazda duman testi: `--dart-define` ile `Fit Pack Dev`'e
+      bağlanıp açılış + bir kayıt + senkron (docs/20 §10.3, §10.4).
 - **Şema sürümü kararı (2026-09-18):** v11'i **senkron v2** aldı (uygulaması
       önce başladı). Haftalık değerlendirmenin hedef yönü alanı **v12** olacak
       — docs/22 §9 soru 4 buna göre güncellendi.

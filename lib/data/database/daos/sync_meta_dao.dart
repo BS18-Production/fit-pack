@@ -24,6 +24,15 @@ class SyncMetaDao extends DatabaseAccessor<AppDatabase> with _$SyncMetaDaoMixin 
   /// temizlikle aynı transaction'da güncellensin (docs/20 §7.3).
   static const keyLastUser = 'last_user_id';
 
+  /// Bir tablonun çekme imleci: "bu kullanıcı için `server_rev`'i bundan
+  /// büyük satırları henüz görmedim" (docs/20 §6.1).
+  ///
+  /// Anahtar kullanıcıyı İÇERİR: aynı cihazda başka hesaba girilirse o
+  /// hesabın imleci sıfırdan başlar, öncekinin imleci yanlışlıkla
+  /// kullanılmaz (hesap izolasyonu — docs/20 §7).
+  static String pullCursorKey(String userId, String table) =>
+      'cursor:$userId:$table';
+
   Future<String?> read(String key) async {
     final row = await (select(syncMeta)..where((t) => t.key.equals(key)))
         .getSingleOrNull();

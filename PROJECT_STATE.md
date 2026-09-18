@@ -13,7 +13,7 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
-## 🔵 Senkron v2 — Aşama 0, 1, 2, 3 ✅ — 2026-09-18
+## 🔵 Senkron v2 — Aşama 0, 1, 2, 3, 4 ✅ — 2026-09-18
 
 - **Sunucu test ortamı — karar değişti (Samet, 2026-09-18):** yerel Docker
   yığını (~9,7 GB disk) yerine **ikinci ücretsiz bulut projesi**:
@@ -47,7 +47,19 @@
 - **Yeni risk belgelendi (docs/20 §12.1):** `server_rev` transaction başında
   atanıp commit'te görünür olduğundan çekme imleci bir satırı kalıcı
   atlayabilir. Aşama 4 imleç payı + düzenli tam uzlaştırma ile kapatacak.
-- analyze 0 · test **383/383**. Simülatörde gerçek veriyle doğrulandı.
+- **Aşama 4 (istemci):** gönderim artık `changed_at_ms` yolluyor ve
+  sunucunun **kabul/ret** cevabını okuyor; reddedilen satır sunucudakiyle
+  değiştirilip kuyruktan çıkıyor (eskiden sonsuza kadar tekrar gönderilirdi).
+  Çekme **artımlı ve sayfalı**: tablo başına `server_rev` imleci, sayfa boyu
+  500, ikinci turda değişen yoksa hiçbir şey inmiyor. İmleç payı §12.1'i
+  kapatıyor. Satır uygulama kuralı `SyncApply`'da tek yerde.
+  `--dart-define` ile test projesine bağlanılabiliyor.
+  **11 yeni test + gerçek PostgREST doğrulaması** (docs/20 §10.5).
+- **Eskiden beri duran kırmızı test (T-5b) yeşile döndü** — Aşama 1'in cihaz
+  sayacı çözmüş; `skip` kaldırıldı, artık atlanan test yok.
+- analyze 0 · test **394/394**. Simülatörde gerçek veriyle doğrulandı (Aşama 2).
+- **Bekleyen:** 3 + 4 üretime **birlikte** çıkar; öncesinde yedek + cihazda
+  duman testi (NEXT_TASKS "Sıradaki").
 
 ## 🧹 A Paketi — birikmiş işler kapatıldı — 2026-09-18
 

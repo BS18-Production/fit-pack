@@ -29,6 +29,53 @@ bağlı).
    "geçmişten öğün kopyala"**.
 5. Diğerleri (docs/21 sırası): #8 → #5 → #7 → #2 tam → #10, #9, #13, #12.
 
+## 🧹 A Paketi — karar gerektirmeyen birikmiş işler (2026-09-18)
+
+Samet: "A'daki tüm maddelerin hepsini yap." analyze 0 · test **357/357**
+(+1 belgelenmiş kırmızı).
+
+- [x] **Açılışta Karşılama ekranı kırpması düzeldi** — kök neden: uygulama
+      yeniden açılırken diskten gelen oturum olayı "hesap değişimi" sanılıyor,
+      `busy` açılıyor ve yönlendirme erteleniyordu. Karar saf fonksiyona
+      taşındı (`authActionFor`) + 5 test.
+- [x] **Duman testi gerçek oldu** (E-16): `widget_test.dart` artık uygulamanın
+      kökünü ayağa kaldırıyor. **Gerçek hata buldu:** Supabase başlatılamazsa
+      (ağ yok/yanlış config) kök widget çöküyordu — oysa main.dart "bulut
+      opsiyonel" diyor. `syncRemoteProvider` artık istemciyi çağrı anında
+      çözüyor.
+- [x] **Senkron yarış testleri dürüstleştirildi** (E-15): T-1 artık gerçekten
+      dosyayı kapatıp açıyor; T-5 düzenlemeyi **gönderim sırasında** yapıyor.
+      Aynı saniyedeki düzenlemenin kaybolduğu durum **kırmızı test** olarak
+      işaretlendi (docs/20 Aşama 1 `changed_at_ms` ile yeşile dönecek).
+- [x] **Silme bildirimi sekme değişince kapanıyor** — "Geri al" başka sekmede
+      anlamsızdı.
+- [x] **Yemek grupları (C-5)** — kategori kolonu vardı ama **boştu**: 111 hazır
+      yemek gruplandı (et/süt/tahıl/baklagil/sebze/meyve/yağ/hazır yemek/diğer),
+      mevcut kurulumlar için geriye dönük doldurma (`seedVersion` 2→3),
+      Yemekler ekranına çip filtresi. 9 test.
+- [x] **Oturum belirteci güvenli kasada** — düz metin `shared_preferences`
+      yerine iOS Keychain / Android Keystore. Göç: eski değer taşınır, geri
+      okunarak doğrulanır, ancak o zaman silinir; kasa çalışmazsa eski
+      davranışa düşülür (kullanıcı oturumundan olmaz). 9 test + **simülatörde
+      gerçek hesapla doğrulandı** (oturum korundu, anahtar prefs'ten silindi).
+- [x] **iOS izin metni artık cihaz dilinde** — `Runner/tr.lproj` +
+      `en.lproj/InfoPlist.strings`, Xcode projesine variant group olarak
+      eklendi; `flutter build ios` ile doğrulandı. Info.plist'teki değer
+      diğer diller için yedek (İngilizce).
+- [x] **CI'a gecelik iOS derlemesi** (03:30 TSİ, imzasız) — macOS koşucusu
+      pahalı olduğu için her push'ta değil.
+- [x] **"+1.25 kg" satır sonunda bölünmüyor** (bölünmez boşluk).
+- [x] **Duplike hareket teşhisi (#1) — temiz:** gerçek cihazdaki 1015 harekette
+      kelime sırası/noktalama çakışması **0**. Kaynak veriye kalıcı test
+      eklendi (yeni varyant eklenirse yakalanır).
+- [x] **Bayat çıktı:** ana sayfa istatistikleri (H-05) zaten reaktif —
+      `FutureProvider` kalmamış; atıf ekranı (C-6) zaten var ve Ayarlar'a bağlı.
+- [x] **Supabase CLI kuruldu** (2.117.0) + Docker istemcisi ve colima
+      (yönetici şifresi gerektirmeyen yol) kuruldu.
+- [ ] **Docker ENGELLİ — disk:** `supabase start` yerel yığını ~6-8 GB imaj
+      indirir; diskte **8,6 GB** boş yer var. Samet yer açmadan başlatılmadı
+      (dolu disk riski). Senkron v2 Aşama 0 bunu bekliyor.
+
 ## 🧰 Süreç — ChatGPT değerlendirmesi sonrası (2026-09-17)
 
 - [x] **Tasarım dokümanı eşiği artık etkiye bağlı** (CONVENTIONS §7b): kalıcı
@@ -373,7 +420,9 @@ doğrulandı. Ayrıntı ve numaralandırma: [CODE_REVIEW.md § Dış İnceleme](
         tetiklenmiyor; elle liste 8 provider, kodda 23 `watchTables` var.
       - **Su tekilliği** (#8 kalan yarısı): gün başına tekillik kısıtı — şema
         değişikliği, migration + test aynı commit'te (ADR-007).
-- [ ] **Açılışta oturum açıkken birkaç saniye Karşılama ekranı görünüyor**
+- [x] ~~Açılışta oturum açıkken birkaç saniye Karşılama ekranı görünüyor~~ →
+      A paketinde düzeltildi (2026-09-18). Eski kayıt:
+      **Açılışta oturum açıkken birkaç saniye Karşılama ekranı görünüyordu**
       (2026-09-16, emülatörde gözlendi — Supabase projesi duraklatılmışken).
       Router `initialLocation: welcome`; `bootstrap()` `_appliedUserId`'yi
       `await _readOnboarded()` SONRASI atıyor → arada gelen oturum olayı
@@ -383,10 +432,10 @@ doğrulandı. Ayrıntı ve numaralandırma: [CODE_REVIEW.md § Dış İnceleme](
       daha uzun sürer. Pull penceresi (#2) ile birlikte ele alınmalı.
       Ayrıca ağ hatası yakalanmamış istisna (`Unhandled Exception:
       AuthRetryableFetchException`) olarak günlüğe düşüyor.
-- [ ] **Senkron testleri gerçekten yarışı sınamalı** (E-15): `sync_push_test`
+- [x] ~~Senkron testleri gerçekten yarışı sınamalı~~ → A paketinde yapıldı. (E-15): `sync_push_test`
       T-5 düzenlemeyi `pushAll` bittikten SONRA yapıyor; T-1 dosyayı kapatıp
       açmıyor. İsimleri vaat ettiklerini ölçmüyorlar.
-- [ ] **Açılış dumanı testi + CI** (E-16): `widget_test.dart` yalnız `1+1==2`;
+- [x] ~~Açılış dumanı testi + CI~~ → ikisi de yapıldı (CI 2026-09-17, duman testi 2026-09-18). (E-16): `widget_test.dart` yalnız `1+1==2`;
       repoda takip edilen iş akışı yok.
 
 - [x] **Bağımsız bulgular düzeltildi** (2026-09-15): #11 kilo sorgusu
@@ -444,11 +493,13 @@ deep link, senkron, veritabanı ve seed doğrulandı (docs/18 §15.6).
       `com.sametorhan.fit_pack` + SHA-1 imza parmak izi) → kimliği aynı Authorized
       Client IDs listesine ekle → `googleNativeOnAndroid = true`. Bugün çalışan
       tarayıcı akışı bozulmadan yapılmalı.
-- [ ] **Info.plist izin metinleri tek dilli (Türkçe)**: `NSCameraUsageDescription`
+- [x] ~~Info.plist izin metinleri tek dilli~~ → A paketinde çözüldü (tr/en.lproj).
+      Eski kayıt: **Info.plist izin metinleri tek dilliydi**: `NSCameraUsageDescription`
       cihaz dilinden bağımsız hep aynı görünüyor. Lokalizasyon `tr.lproj/en.lproj +
       InfoPlist.strings` ister ve Xcode proje dosyasına dokunur → yayın hazırlığına
       bırakıldı.
-- [ ] **Oturum belirteçleri `shared_preferences`'ta düz metin** (iOS ve Android,
+- [x] ~~Oturum belirteçleri düz metin~~ → A paketinde güvenli kasaya taşındı.
+      Eski kayıt: **Oturum belirteçleri `shared_preferences`'ta düz metindi** (iOS ve Android,
       supabase_flutter varsayılanı). Keychain/Keystore'a taşımak yayın öncesi
       güvenlik maddesi.
 - [ ] **Berna'nın telefonundaki kopya 2026-08-01'de dolar** (ücretsiz Apple ID
@@ -553,7 +604,8 @@ maddeler kaybolmasın diye aynen buraya alındı; bir kısmı bugün geçersiz
 olabilir — Samet'le gözden geçirilecek.
 
 ### ✅ Haftalık Seri + Kişisel Rekor (PR) Kutlaması (2026-07-11)
-- [ ] **Yan bulgu (H-05 kanıtı):** seans bitişi `_finish` yalnız 3 provider
+- [x] ~~Yan bulgu (H-05)~~ → reaktif katman geldiğinde çözülmüş; 2026-09-18'de
+      doğrulandı (ilgili ekranlarda `FutureProvider` kalmamış). Eski kayıt: seans bitişi `_finish` yalnız 3 provider
       invalidate ediyor — `last30WorkoutStatsProvider` / `weekDashboardProvider`
       tazelenmiyor (Ana Sayfa momentum istatistikleri seans sonrası eski
       kalıyor; uygulama yeniden açılınca düzeliyor). Tek tek invalidate
@@ -575,11 +627,11 @@ olabilir — Samet'le gözden geçirilecek.
 - [ ] **Samet kararı bekleyen:** H-04 yayın imzası (keystore + targetSdk; telefondaki kurulumu etkiler), M-08 Google girişi (tamamla ya da düğmeyi gizle)
 
 ### 🔧 Cihaz Geri Bildirimi Düzeltmeleri (2026-06-30) — `fix/active-session-persistence`
-- [ ] **#1 Duplike hareketler** — free-exercise-db merge'ünde isim çakışması olabilir; dedupe migration. **YAPILMADI** (önce teşhis).
+- [x] ~~#1 Duplike hareketler~~ → teşhis yapıldı (2026-09-18): gerçek katalogda çakışma 0; kaynak veriye kalıcı test eklendi.
 
 ### ✅ Geçmişe Dönük Veri Girişi TAMAM (2026-06-29) — `feat/historical-entry`
-- [ ] **C-5** Yemekler grup filtresi (foods.category kolonu hazır, UI kaldı)
-- [ ] **C-6** Ayarlar "Açık veri kaynakları" atıf ekranı (OFF=ODbL, free-exercise-db=public domain, muscle_selector=MIT)
+- [x] ~~C-5 Yemekler grup filtresi~~ → A paketinde yapıldı (kolon boştu: 111 yemek gruplandı + filtre).
+- [x] ~~C-6 atıf ekranı~~ → zaten yapılmış (`attribution_screen.dart`, Ayarlar → Açık veri kaynakları). Eski kayıt: **C-6** (OFF=ODbL, free-exercise-db=public domain, muscle_selector=MIT)
 - [ ] **Açık karar:** barkod kamera tarayıcısını çıkar → ~5MB küçülür (OFF metin araması yedeklediği için). Samet'e soruldu, beklemede.
 
 ### 🎨 Sprint D — Tasarım Reskin (DEVAM EDİYOR)

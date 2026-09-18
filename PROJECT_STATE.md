@@ -13,6 +13,25 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
+## 🧹 A Paketi — birikmiş işler kapatıldı — 2026-09-18
+
+Karar gerektirmeyen tüm açık maddeler tek pakette bitirildi:
+
+- **Açılış:** oturum açıkken Karşılama ekranı kırpması giderildi; gerçek duman
+  testi eklendi ve Supabase başlatılamadığında kök widget'ın çökmesini önledi.
+- **Senkron testleri** vaat ettikleri yarışı gerçekten ölçüyor; aynı saniyedeki
+  düzenleme kaybı belgelenmiş **kırmızı test** (docs/20 Aşama 1 çözecek).
+- **Yemek grupları:** 111 hazır yemek gruplandı, mevcut kurulumlara geriye
+  dönük dolduruldu, Yemekler ekranına filtre geldi.
+- **Güvenlik:** oturum belirteci artık iOS Keychain / Android Keystore'da;
+  göç simülatörde gerçek hesapla doğrulandı (oturum korundu).
+- **iOS:** kamera izin metni cihaz diline göre (tr/en.lproj); CI'a gecelik
+  imzasız iOS derlemesi eklendi.
+- **Teşhis:** hareket kataloğunda duplike yok (1015 kayıt, 0 çakışma).
+- analyze 0 · test **357/357** (+1 belgelenmiş kırmızı).
+- **Engel:** yerel Supabase (Docker) için diskte yer yok — ~6-8 GB imaj
+  gerekiyor, 8,6 GB boş. Samet yer açınca senkron v2 Aşama 0 başlayabilir.
+
 ## 🧰 Çalışma Düzeni — 2026-09-17 (akşam)
 
 Dış değerlendirme (ChatGPT) sonrası süreç sadeleştirildi, katman eklenmedi:

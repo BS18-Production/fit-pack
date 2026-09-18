@@ -607,10 +607,10 @@ Her aşama **tek başına commit edilebilir**, testleri yeşil ve uygulama
 
 | Aşama | İçerik | Çözdüğü | Sunucu değişikliği | Tahmini |
 |---|---|---|---|---|
-| **0 — Kırmızı testler** | S-1, S-3, S-4, S-6 bugünkü koda karşı yazılır ve **kırmızı** oldukları görülür (`skip` ile işaretlenip commit edilir) | E-15 | yok | 0,5 gün |
+| **0 — Kırmızı testler** ✅ | S-1, S-2, S-4, S-6 bugünkü koda karşı yazıldı, kırmızı oldukları görüldü, `skip` ile commit edildi (`test/features/sync_v2_stage0_test.dart`, 2026-09-18). S-3 (süreç ölümü) zaten yeşil: `sync_push_test` T-1. | E-15 | yok | ✅ |
 | **1 — Yerel sağlamlık** | Şema v11 (kolonlar + `sync_meta` + `sync_tombstones` tabloları, tetikleyicilerde `capture` ve `local_seq`); `_markClean` → `local_seq`; çekmede DROP TRIGGER yerine `capture` bayrağı; `beforeOpen` onarımı; `notifyUpdates` | #2, #3, #9 | yok | 1,5 gün |
 | **2 — Açılış ve kapı** | `bootstrap` sırası + yerel hesap kontrolü; başlangıç konumu; nötr açılış ekranı; `accountError`; `switch_in_progress`; gönderilmemiş veri uyarısı | #6, Karşılama, §7.4 | yok | 1 gün |
-| **3 — Sunucu v2 (sürüm)** | `03_sync_v2.sql`: kolonlar, dizi, `sync_guard`, dizin; **önce yedek**; dalda test | #4 hazırlığı | **var** | 0,5 gün |
+| **3 — Sunucu v2 (sürüm)** | `supabase/migrations/…_sync_v2.sql`: kolonlar, dizi, `sync_guard`, dizin; **önce yedek**; dalda test | #4 hazırlığı | **var** | 0,5 gün |
 | **4 — Sayfalı, artımlı çekme + koşullu gönderim** | İki aşamalı çekme, imleç; `upsert().select()`; ret işleme; `changed_at_ms` gönderimi | #4, #5 | — | 1,5 gün |
 | **5 — Silme protokolü** | Silme tetikleyicileri; `sync_delete` RPC; mezar taşı gönderimi; çekmede silme uygulama; rutin fark kaydı; `deleted_records` tablosu + sunucu silme tetikleyicileri | #1 | **var** | 2 gün |
 | **6 — Sahiplik + katalog kimliği + su** | Sunucu anahtarı `(user_id, uid)`; belirlenimci katalog kimliği + `sync_remap_uids`; hesap değişiminde katalog sıfırlama; su olay kaydı | #7, #8, isimle benimseme | **var** | 2 gün |

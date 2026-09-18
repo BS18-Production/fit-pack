@@ -575,7 +575,7 @@ korundu; "sunucu onaylamadan temiz işaretleme" kuralı gerçek arızalarda sın
 | # | Belirti | Kök neden | Çözüm |
 |---|---|---|---|
 | 1 | Hiç senkron logu yok | `dart:developer`'ın `log()`'u VM servis kanalına gider, **logcat'te görünmez** | `debugPrint` |
-| 2 | `permission denied for table X (42501)` | **RLS ≠ GRANT.** Postgres'te ikisi ayrı katman; RLS satırı, GRANT tabloyu açar. Supabase panelinden oluşturulan tablolara yetki otomatik verilir, **ham SQL ile oluşturulanlara verilmez** | `supabase/02_grants.sql` |
+| 2 | `permission denied for table X (42501)` | **RLS ≠ GRANT.** Postgres'te ikisi ayrı katman; RLS satırı, GRANT tabloyu açar. Supabase panelinden oluşturulan tablolara yetki otomatik verilir, **ham SQL ile oluşturulanlara verilmez** | `supabase/migrations/…_grants.sql` |
 | 3 | `Failed host lookup` | Ofis Wi-Fi'si (kurumsal DNS) alan adını çözmedi | Mobil veri |
 | 4 | `gönderilen 0, kalan 0` — satırlar **sessizce** atlanıyor | v10 öncesi oluşmuş katalog satırlarının `uid`'i NULL; kimliksiz satır gönderilemiyor, **ona referans veren 6 set de** gönderilemiyor | `_repairMissingUids()` + atlanan satır artık log basıyor |
 
@@ -765,7 +765,7 @@ Kod öncesi ya da paralel:
 | Aşama | İçerik | Bağımlılık |
 |---|---|---|
 | **A** ✅ | Şema v9 (uid/userId/updatedAt/syncState) + migration + test | **TAMAM** |
-| **B** ✅ | Supabase mirror tablolar + RLS (SQL) | **TAMAM** — `supabase/01_schema.sql` çalıştırıldı |
+| **B** ✅ | Supabase mirror tablolar + RLS (SQL) | **TAMAM** — `supabase/migrations/…_schema.sql` çalıştırıldı |
 | **E** ✅ | Outbox senkron katmanı + testler | **TAMAM** — canlı doğrulandı (§6.7) |
 | **C** ✅ | Zorunlu giriş kapısı + onboarding sırası | **TAMAM** (2026-07-23, §5.4) |
 | **D** 🟡 | Google yerel akış — KOD TAMAM, Web client ID bekliyor (§5.2.2) | Samet: client ID |

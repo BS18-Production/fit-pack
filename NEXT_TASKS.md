@@ -29,6 +29,23 @@ bağlı).
    "geçmişten öğün kopyala"**.
 5. Diğerleri (docs/21 sırası): #8 → #5 → #7 → #2 tam → #10, #9, #13, #12.
 
+## 🔵 Senkron v2 — Aşama 0 ✅ ve yerel ortam (2026-09-18)
+
+- [x] **Yerel test ortamı kuruldu:** Supabase CLI 2.117.0 + Docker (colima,
+      4 çekirdek / 5,8 GB). Eski Docker Desktop'tan kalan `credsStore: desktop`
+      ayarı imaj indirmeyi engelliyordu, kaldırıldı.
+- [x] **Aşama 0 — kırmızı testler** (`test/features/sync_v2_stage0_test.dart`):
+      S-1 (uçuştaki düzenleme), S-2 (aynı saniyedeki iki düzenleme), S-4
+      (çekme sırasında ekleme), S-6 (düşen tetikleyicinin onarımı). Dördü de
+      bugünkü kodda kırmızı olduğu görülüp `skip` ile işaretlendi. S-3 (süreç
+      ölümü) zaten yeşil (sync_push_test T-1).
+- [x] **Sunucu SQL'leri `supabase/migrations/` altına alındı** — yerel yığın
+      şemayı buradan kuruyor; `supabase db reset` / `supabase test db` (pgTAP)
+      için gereken standart düzen.
+- [ ] **Sıradaki: Aşama 1 — yerel sağlamlık** (şema v11/v12: `changed_at_ms`,
+      `local_seq`, `capture` bayrağı, `beforeOpen` onarımı). Bu aşama bitince
+      yukarıdaki dört testin `skip` işareti kalkacak.
+
 ## 🧹 A Paketi — karar gerektirmeyen birikmiş işler (2026-09-18)
 
 Samet: "A'daki tüm maddelerin hepsini yap." analyze 0 · test **357/357**

@@ -105,13 +105,32 @@ bağlı).
       tekrar yükleme). Sıra düzeltildi (önce tetikleyicileri düşür) ve göç
       testine v10 tetikleyicileri eklendi — şema anlık görüntüsünde
       tetikleyici olmadığı için bu hata testten kaçmıştı.
-- [ ] **Sıradaki: Aşama 3 — sunucu sürümü** (`supabase/migrations/…_sync_v2.sql`):
-      `changed_at_ms` / `server_rev` kolonları, `sync_rev_seq` dizisi,
-      `sync_guard` tetikleyicisi, `(user_id, uid)` anahtarı. Test ortamı
-      (`Fit Pack Dev`) hazır; pgTAP testleri `supabase/tests/sync_v2.sql`
-      altına yazılacak. **Üretime hiçbir şey uygulanmadan önce test
-      projesinde yeşile dönecek.** **Sunucu değişikliği** → yayın kuralı:
-      3 ve 4 aynı sürümde çıkar.
+- [x] **Aşama 3 — sunucu sürümü ✅ (2026-09-18)**
+      (`supabase/migrations/20260918120000_sync_v2_stage3.sql`):
+      12 tabloya `changed_at_ms` + `server_rev`, ortak `sync_rev_seq` dizisi,
+      `sync_guard` tetikleyicisi (çakışma kuralı artık sunucuda), çekme imleci
+      dizini `(user_id, server_rev)`, gönderimin çakışma hedefi
+      `(user_id, uid)` tekil dizini, `deleted_records` tablosu.
+      **`Fit Pack Dev`'de 29/29 pgTAP testi yeşil**
+      (`supabase/tests/sync_v2_stage3.sql`); migration idempotent (iki kez
+      çalıştırıldı). Geçmiş satırlar dolduruluyor
+      (`changed_at_ms` = `updated_at` × 1000).
+      - **Tasarımdan iki bilinçli sapma:** eşit damga REDDEDİLİR (§5.2'nin
+        kuralı; taslak kod istemciyi kazandırıyordu) ve `updated_at` sunucu
+        saatinden yazılır. docs/20 §4.2'ye işlendi.
+      - **Yeni risk bulundu ve belgelendi — docs/20 §12.1:** `server_rev`
+        transaction başında atanıp commit'te görünür olduğu için çekme imleci
+        bir satırı kalıcı olarak atlayabilir. Aşama 4 iki katmanla kapatacak:
+        imleç payı (1.000) + düzenli tam uzlaştırma.
+      - ⚠️ **ÜRETİME UYGULANMADI.** Aşama 4 ile aynı sürümde çıkar: ölçüldü ki
+        `changed_at_ms` göndermeyen eski istemcinin GÜNCELLEMESİ sessizce
+        reddediliyor (eklemesi geçiyor).
+- [ ] **Sıradaki: Aşama 4 — sayfalı, artımlı çekme + koşullu gönderim**
+      (docs/20 §5.1, §6.1, ~1,5 gün). İstemci tarafı, sunucu değişikliği yok:
+      iki aşamalı çekme + `server_rev` imleci (payıyla birlikte, §12.1),
+      `upsert().select()` ile kabul/ret işleme, `changed_at_ms` gönderimi,
+      `SupabaseConfig`'e `--dart-define` geçişi (docs/20 §10.4).
+      Bitince 3 + 4 birlikte üretime çıkar.
 - **Şema sürümü kararı (2026-09-18):** v11'i **senkron v2** aldı (uygulaması
       önce başladı). Haftalık değerlendirmenin hedef yönü alanı **v12** olacak
       — docs/22 §9 soru 4 buna göre güncellendi.

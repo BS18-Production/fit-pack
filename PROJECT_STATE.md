@@ -13,7 +13,7 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
-## 🔵 Senkron v2 — Aşama 0, 1, 2 ✅ — 2026-09-18
+## 🔵 Senkron v2 — Aşama 0, 1, 2, 3 ✅ — 2026-09-18
 
 - **Sunucu test ortamı — karar değişti (Samet, 2026-09-18):** yerel Docker
   yığını (~9,7 GB disk) yerine **ikinci ücretsiz bulut projesi**:
@@ -35,6 +35,18 @@
   tamamlanıyor; gönderilmemiş kayıt varken farklı hesap girerse veri
   silinmiyor (seçim ekranı); hesap doğrulanamazsa içeri alınmıyor; nötr
   açılış ekranı; `last_user_id` senkron defterinde.
+- **Aşama 3 (sunucu):** çakışma çözümü artık **sunucuda**. 12 tabloya
+  `changed_at_ms` + `server_rev`, ortak `sync_rev_seq` dizisi, `sync_guard`
+  tetikleyicisi, çekme imleci dizini, `deleted_records` tablosu. Kural:
+  gelen damga sunucudakinden yeni değilse yazma atlanır ve satır `RETURNING`
+  sonucunda görünmez — istemci reddi buradan anlar. Silinmiş kimlik hiçbir
+  yazmayla geri gelmez. `Fit Pack Dev`'de **29/29 pgTAP testi yeşil**,
+  migration idempotent. **Üretime uygulanmadı** — Aşama 4 ile aynı sürümde
+  çıkar (ölçüldü: `changed_at_ms` göndermeyen eski istemcinin güncellemesi
+  sessizce reddediliyor).
+- **Yeni risk belgelendi (docs/20 §12.1):** `server_rev` transaction başında
+  atanıp commit'te görünür olduğundan çekme imleci bir satırı kalıcı
+  atlayabilir. Aşama 4 imleç payı + düzenli tam uzlaştırma ile kapatacak.
 - analyze 0 · test **383/383**. Simülatörde gerçek veriyle doğrulandı.
 
 ## 🧹 A Paketi — birikmiş işler kapatıldı — 2026-09-18

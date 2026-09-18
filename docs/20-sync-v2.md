@@ -245,9 +245,22 @@ Samet'in verisi var → anahtar değişimi veri kaybetmeden yapılır (önce yed
 
 **Tetikleyici `sync_guard` (BEFORE INSERT OR UPDATE, her tablo):**
 
+> **Uygulandı (2026-09-18).** Kesin SQL:
+> `supabase/migrations/20260918120000_sync_v2_stage3.sql`. Aşağıdaki taslaktan
+> **iki sapma** var, ikisi de bilinçli:
+> 1. **Eşit damga reddedilir** (`<=`, taslakta `<`). §5.2'nin kuralı budur:
+>    eşitlikte sunucu kazanır. Taslak koddaki `<` istemciyi kazandırıyordu.
+>    Ayrıca zaman aşımı sonrası aynı satırın yeniden gönderimi `server_rev`'i
+>    boşuna artırmaz, öteki cihaz onu gereksiz yere indirmez.
+> 2. **`updated_at` sunucu saatinden yazılır.** İstemcinin saati saparsa v1
+>    çekmesinin (`updated_at` imleci) satırı kaçırmasını önler.
+>
+> `deleted_records` tablosu da bu aşamada kuruluyor (Aşama 5 yerine): tetikleyici
+> zaten ona bakıyor, ayrıca kurmak fonksiyonu iki kez yazmak olurdu. İşareti
+> **yazan** silme tetikleyicileri ve `sync_delete` RPC'si Aşama 5'te gelir.
+
 ```sql
--- Taslak — kesin SQL uygulama aşamasında yazılır ve bir Supabase dalında
--- (branch) denenir.
+-- Taslak (yukarıdaki iki sapmayla birlikte uygulandı).
 create or replace function public.sync_guard() returns trigger
 language plpgsql as $$
 begin
@@ -569,11 +582,22 @@ Mevcut 263 test korunur. Senkron v2 şu testler yeşil olmadan "bitti" sayılmaz
 **ikinci bulut projesinde** (`Fit Pack Dev`) çalıştırılır; bkz. §10.4
 (2026-09-18 kararı, §13 Karar 7'nin yerini aldı):
 
-- Eski `changed_at_ms` ile güncelleme → satır değişmez, `RETURNING` boş.
-- Yeni `changed_at_ms` → değişir, `server_rev` artar.
-- Gelecekten damga → kırpılır.
-- `sync_delete` başka kullanıcının satırına dokunamaz (RLS).
-- `(user_id, uid)`: iki kullanıcı aynı `uid` → ikisi de yazılır.
+**Aşama 3 — 29 test, hepsi yeşil (2026-09-18):** yapı (12 tabloda kolon,
+tetikleyici, iki dizin), ekleme, daha yeni damga → kabul, daha eski damga →
+ret, eşit damga → ret, saat kırpma (1 saat ileri kırpılır, 1 dakika ileri
+kırpılmaz), silme kazanır (ekleme ve güncelleme ayrı ayrı), ortak dizi,
+işaret tablosu yetkileri.
+
+**Ayrıca elle doğrulandı:** `changed_at_ms` göndermeyen bir "eski istemci"nin
+EKLEMESİ geçiyor, GÜNCELLEMESİ sessizce reddediliyor — §11'deki "3 ve 4 aynı
+sürümde çıkar" kuralının gerekçesi ölçülerek teyit edildi.
+
+**Sonraki aşamalara kalanlar:**
+
+- `sync_delete` başka kullanıcının satırına dokunamaz (RLS) → Aşama 5.
+- `(user_id, uid)`: iki kullanıcı aynı `uid` → ikisi de yazılır → Aşama 6
+  (bugün birincil anahtar hâlâ yalnız `uid`; tekil dizin kuruldu ama anahtar
+  değişmedi).
 
 ### 10.4 Sunucu test ortamı — `Fit Pack Dev` (2026-09-18 kararı)
 
@@ -647,7 +671,7 @@ Her aşama **tek başına commit edilebilir**, testleri yeşil ve uygulama
 | **0 — Kırmızı testler** ✅ | S-1, S-2, S-4, S-6 bugünkü koda karşı yazıldı, kırmızı oldukları görüldü, `skip` ile commit edildi (`test/features/sync_v2_stage0_test.dart`, 2026-09-18). S-3 (süreç ölümü) zaten yeşil: `sync_push_test` T-1. | E-15 | yok | ✅ |
 | **1 — Yerel sağlamlık** ✅ | Şema v11: `changed_at_ms` / `local_seq` / `server_rev` + `sync_meta` + `sync_tombstones`; 36 tetikleyici (`capture` bayraklı, silme izi dahil); `_markClean` → `local_seq`; çekmede DROP TRIGGER yerine `capture`; açılışta onarım. **2026-09-18** — S-1, S-2, S-4, S-6 yeşile döndü; v10→v11 göç testi (7 test). | #2, #3, #9 | yok | ✅ |
 | **2 — Açılış ve kapı** ✅ | `bootstrap` yerel hesap kontrolünü de yapıyor; nötr açılış ekranı (`/splash`) ve başlangıç konumu kapıdan; `accountError` → "Hesap doğrulanamadı" ekranı; `switch_in_progress` ile yarıda kalan temizlik açılışta tamamlanıyor; `last_user_id` deftere taşındı; gönderilmemiş kayıt + farklı hesap → seçim ekranı (veri silinmiyor). **2026-09-18**, 18 test. | #6, Karşılama, §7.4 | yok | ✅ |
-| **3 — Sunucu v2 (sürüm)** | `supabase/migrations/…_sync_v2.sql`: kolonlar, dizi, `sync_guard`, dizin; **önce yedek**; dalda test | #4 hazırlığı | **var** | 0,5 gün |
+| **3 — Sunucu v2 (sürüm)** ✅ | `supabase/migrations/20260918120000_sync_v2_stage3.sql`: 12 tabloya `changed_at_ms` + `server_rev`, ortak `sync_rev_seq` dizisi, `sync_guard` tetikleyicisi, `(user_id, server_rev)` dizini, `(user_id, uid)` tekil dizini, `deleted_records` tablosu. **2026-09-18**, `Fit Pack Dev`'de **29/29 pgTAP testi yeşil** (`supabase/tests/sync_v2_stage3.sql`). **Üretime UYGULANMADI** — Aşama 4 ile birlikte çıkacak. | #4 hazırlığı | **var** | ✅ |
 | **4 — Sayfalı, artımlı çekme + koşullu gönderim** | İki aşamalı çekme, imleç; `upsert().select()`; ret işleme; `changed_at_ms` gönderimi | #4, #5 | — | 1,5 gün |
 | **5 — Silme protokolü** | Silme tetikleyicileri; `sync_delete` RPC; mezar taşı gönderimi; çekmede silme uygulama; rutin fark kaydı; `deleted_records` tablosu + sunucu silme tetikleyicileri | #1 | **var** | 2 gün |
 | **6 — Sahiplik + katalog kimliği + su** | Sunucu anahtarı `(user_id, uid)`; belirlenimci katalog kimliği + `sync_remap_uids`; hesap değişiminde katalog sıfırlama; su olay kaydı | #7, #8, isimle benimseme | **var** | 2 gün |
@@ -677,6 +701,46 @@ pratikte sorun değil, ama kural olarak yazıldı).
 | Mezar taşı birikimi | Sunucu tablosu büyür | Satır başına birkaç bayt; saklama süresi kararı §13 Soru 4 |
 | İlk tam çekme büyük | Yavaş ilk giriş | Sayfa başına transaction; ilerleme göstergesi ("Verilerin indiriliyor…") |
 | Eski uygulama sürümü | Yazmaları reddedilir | §11 son paragraf |
+| **`server_rev` boşluğu — imleç bir satırı atlayabilir** (2026-09-18'de Aşama 3 yazılırken görüldü) | Satır öteki cihaza **hiç** ulaşmaz | §12.1 — Aşama 4'te imleç gecikmesi + düzenli tam uzlaştırma |
+
+### 12.1 `server_rev` boşluğu (Aşama 4'ün çözmesi gereken)
+
+**Sorun.** `server_rev` tetikleyicide `nextval` ile atanır — yani
+**transaction'ın başında**, ama satır ancak **commit'te** görünür olur. İki
+gönderim üst üste binerse numaralar sıraya girmez:
+
+```
+A gönderimi  → rev 10 aldı, henüz commit etmedi
+B gönderimi  → rev 11 aldı, commit etti
+çekme        → rev 11'i gördü, imleci 11 yaptı
+A            → şimdi commit etti; rev 10 artık görünür
+sonraki çekme → "rev > 11" diyor; rev 10'u BİR DAHA görmez
+```
+
+Sonuç: A'nın satırı öteki cihaza hiç inmez. Satır yerelde temiz olduğu için
+tekrar gönderilmez de — yeniden düzenlenene kadar kalıcı kayıp. Bu, epiğin
+kapatmaya çalıştığı "sessiz kayıp" sınıfının ta kendisi.
+
+**Ne kadar olası.** Tek kullanıcı, iki cihaz (telefon + simülatör) ve gönderim
+tek cümlelik bir `upsert` (milisaniyeler). Çakışma penceresi dar ama sıfır
+değil: iki cihaz aynı anda gönderirse olur.
+
+**Önlem (Aşama 4'te uygulanacak, iki katman):**
+
+1. **İmleç gecikmesi.** Çekme imleci son görülen `server_rev`'i değil,
+   **son görülen − pay** değerini saklar (öneri: 1.000). Aynı satırın tekrar
+   inmesi zararsızdır — uygulama kuralı (§6.2) `changed_at_ms` karşılaştırıp
+   eskiyi atar, yani işlem **idempotent**. Maliyet yalnız birkaç yüz satırlık
+   fazladan indirme; bu veri boyutunda ölçülemez.
+2. **Düzenli tam uzlaştırma.** Haftada bir (ya da elle "Şimdi eşitle") imleç
+   0'dan başlatılır ve her şey yeniden okunur. Pay ne kadar geniş olursa
+   olsun kapatamadığı uzun süreli açık transaction durumunu bu yakalar.
+
+**Neden sunucuda çözülmedi.** Sıraya sokmanın kesin yolu yazmaları tek tek
+kilitlemek (kullanıcı başına advisory lock) ya da imleci commit sırasına
+(`xmin` anlık görüntüsü) bağlamak. İkisi de bu ölçekteki bir uygulama için
+gereğinden karmaşık; idempotent tekrar indirme aynı garantiyi çok daha ucuza
+veriyor. Karar gerekirse §13 Soru 8'e taşınır.
 
 ---
 

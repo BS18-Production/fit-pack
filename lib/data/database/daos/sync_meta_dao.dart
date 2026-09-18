@@ -33,6 +33,11 @@ class SyncMetaDao extends DatabaseAccessor<AppDatabase> with _$SyncMetaDaoMixin 
   static String pullCursorKey(String userId, String table) =>
       'cursor:$userId:$table';
 
+  /// Son **tam uzlaştırmanın** zamanı (unix saniye) — docs/20 §12.1 ikinci
+  /// katman. İmleç payı dar bir pencereyi kapatır; uzun süre açık kalmış bir
+  /// sunucu transaction'ını ancak her şeyi baştan okumak yakalar.
+  static String fullPullKey(String userId) => 'full_pull_at:$userId';
+
   Future<String?> read(String key) async {
     final row = await (select(syncMeta)..where((t) => t.key.equals(key)))
         .getSingleOrNull();

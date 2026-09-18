@@ -72,12 +72,17 @@ class SyncPull {
   /// kuralı `changed_at_ms` karşılaştırıp eskiyi atar (idempotent).
   final int cursorLag;
 
+  /// Kendiliğinden tam uzlaştırma aralığı (docs/20 §12.1 ikinci katman).
+  /// Haftada bir: bu veri boyutunda maliyeti birkaç yüz satır indirmek.
+  final Duration fullPullInterval;
+
   SyncPull(
     this.db,
     this.remote, {
     SyncApply? apply,
     this.pageSize = 500,
     this.cursorLag = 1000,
+    this.fullPullInterval = const Duration(days: 7),
   }) : apply = apply ?? SyncApply(db);
 
   SyncMetaDao get _meta => SyncMetaDao(db);
@@ -89,10 +94,20 @@ class SyncPull {
   /// [full] verilirse imleçler yok sayılır ve her şey baştan okunur — docs/20
   /// §12.1'in ikinci katmanı (düzenli tam uzlaştırma). Yeni girişte de
   /// imleç zaten yoktur, yani ilk tur doğal olarak tamdır.
+  ///
+  /// Çağıran istemese de **[fullPullInterval] geçmişse tam tur yapılır**:
+  /// ikinci katmanın kimsenin çağırmasına bağlı olmaması gerekir, yoksa
+  /// yalnız kâğıt üstünde kalır.
   Future<PullResult> pullAll({
     required String userId,
     bool full = false,
   }) async {
+    final vadesiGeldi = full || await _fullPullDue(userId);
+    if (vadesiGeldi && !full) {
+      syncLog('tam uzlaştırma zamanı (docs/20 §12.1) — imleçler yok sayılıyor');
+    }
+    full = vadesiGeldi;
+
     var result = const PullResult();
     for (final table in syncPushOrder) {
       try {
@@ -105,10 +120,29 @@ class SyncPull {
         break;
       }
     }
+    // Damga YALNIZ tur temiz bittiğinde yazılır: yarıda kalan tam tur
+    // "yapıldı" sayılırsa atlanmış satır bir hafta daha görünmez kalır.
+    if (full && result.ok) {
+      await _meta.write(
+        SyncMetaDao.fullPullKey(userId),
+        (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
+      );
+    }
+
     syncLog('pull bitti — eklenen ${result.inserted}, '
         'güncellenen ${result.updated}, atlanan ${result.skipped}',
         error: result.error);
     return result;
+  }
+
+  /// Tam uzlaştırmanın vakti geldi mi? İlk kez çekiliyorsa damga yoktur;
+  /// o tur zaten imleçsiz (tam) olduğu için damgayı yazıp geçiyoruz.
+  Future<bool> _fullPullDue(String userId) async {
+    final raw = await _meta.read(SyncMetaDao.fullPullKey(userId));
+    final last = int.tryParse(raw ?? '');
+    if (last == null) return true;
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    return now - last >= fullPullInterval.inSeconds;
   }
 
   /// Bir tabloyu imleçten itibaren sayfa sayfa indirir ve uygular.

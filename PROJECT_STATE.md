@@ -57,7 +57,12 @@
   **11 yeni test + gerçek PostgREST doğrulaması** (docs/20 §10.5).
 - **Eskiden beri duran kırmızı test (T-5b) yeşile döndü** — Aşama 1'in cihaz
   sayacı çözmüş; `skip` kaldırıldı, artık atlanan test yok.
-- analyze 0 · test **394/394**. Simülatörde gerçek veriyle doğrulandı (Aşama 2).
+- **Cihaz duman testi ✅ (2026-09-18):** temiz iOS simülatörü test projesine
+  bağlandı; giriş → tam uzlaştırma → profil gönderimi → `server_rev` yerele
+  yazıldı. Sunucu tarafında değiştirilen satır yeniden açılışta indi, kuyruğa
+  geri girmedi, imleç payla yazıldı. Gönderim + çekme + sürüm damgalama gerçek
+  cihaz ve gerçek sunucu üzerinde birlikte çalışıyor.
+- analyze 0 · test **396/396**. Simülatörde gerçek veriyle doğrulandı.
 - **Bekleyen:** 3 + 4 üretime **birlikte** çıkar; öncesinde yedek + cihazda
   duman testi (NEXT_TASKS "Sıradaki").
 

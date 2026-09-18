@@ -661,6 +661,15 @@ düşürmesidir**. Gerçek HTTP çağrılarıyla `Fit Pack Dev` üzerinde ölç�
 Test hesabı ve verisi sonrasında silindi. Yöntem ve tuzaklar:
 `supabase/tests/README.md`.
 
+**Cihaz duman testi (aynı gün, temiz iOS simülatörü, test projesine bağlı):**
+giriş → açılışta tam uzlaştırma çalıştı → profil `changed_at_ms` ile
+gönderildi, sunucu `server_rev` atadı, istemci onu yerele yazdı. Sonra sunucu
+tarafında satır değiştirildi (kalori 2200 → 2750, `server_rev` 45 → 46);
+uygulama yeniden açılınca değişiklik **yerele indi**, satır kuyruğa geri
+GİRMEDİ ve imleç payla (46 − 1000 → 0) yazıldı. Yani gönderim, çekme, sürüm
+damgalama ve imleç payı gerçek cihaz + gerçek sunucu üzerinde birlikte
+çalışıyor.
+
 ### 10.3 Uçtan uca (elle, cihazda)
 
 Telefon + simülatör aynı hesapla: (1) telefonda öğün sil → simülatör
@@ -692,7 +701,7 @@ Her aşama **tek başına commit edilebilir**, testleri yeşil ve uygulama
 | **1 — Yerel sağlamlık** ✅ | Şema v11: `changed_at_ms` / `local_seq` / `server_rev` + `sync_meta` + `sync_tombstones`; 36 tetikleyici (`capture` bayraklı, silme izi dahil); `_markClean` → `local_seq`; çekmede DROP TRIGGER yerine `capture`; açılışta onarım. **2026-09-18** — S-1, S-2, S-4, S-6 yeşile döndü; v10→v11 göç testi (7 test). | #2, #3, #9 | yok | ✅ |
 | **2 — Açılış ve kapı** ✅ | `bootstrap` yerel hesap kontrolünü de yapıyor; nötr açılış ekranı (`/splash`) ve başlangıç konumu kapıdan; `accountError` → "Hesap doğrulanamadı" ekranı; `switch_in_progress` ile yarıda kalan temizlik açılışta tamamlanıyor; `last_user_id` deftere taşındı; gönderilmemiş kayıt + farklı hesap → seçim ekranı (veri silinmiyor). **2026-09-18**, 18 test. | #6, Karşılama, §7.4 | yok | ✅ |
 | **3 — Sunucu v2 (sürüm)** ✅ | `supabase/migrations/20260918120000_sync_v2_stage3.sql`: 12 tabloya `changed_at_ms` + `server_rev`, ortak `sync_rev_seq` dizisi, `sync_guard` tetikleyicisi, `(user_id, server_rev)` dizini, `(user_id, uid)` tekil dizini, `deleted_records` tablosu. **2026-09-18**, `Fit Pack Dev`'de **29/29 pgTAP testi yeşil** (`supabase/tests/sync_v2_stage3.sql`). **Üretime UYGULANMADI** — Aşama 4 ile birlikte çıkacak. | #4 hazırlığı | **var** | ✅ |
-| **4 — Sayfalı, artımlı çekme + koşullu gönderim** ✅ | İki aşamalı çekme + tablo başına `server_rev` imleci (`sync_meta`'da, kullanıcıya özel) ve **imleç payı** (§12.1); sayfa boyu 500 + tutarlılık kontrolü; `upsert().select()` ile kabul/ret; ret çözümü (`fetchByUids` → uygula → temizle, `local_seq` korumasıyla); `changed_at_ms` gönderimi; `server_rev` yerele yazılıyor; satır uygulama kuralı `SyncApply`'da tek yerde; `--dart-define` ile test projesine yönlendirme. **2026-09-18**, 11 yeni test (toplam 394) + gerçek PostgREST doğrulaması. | #4, #5 | — | ✅ |
+| **4 — Sayfalı, artımlı çekme + koşullu gönderim** ✅ | İki aşamalı çekme + tablo başına `server_rev` imleci (`sync_meta`'da, kullanıcıya özel) ve **imleç payı** (§12.1); sayfa boyu 500 + tutarlılık kontrolü; `upsert().select()` ile kabul/ret; ret çözümü (`fetchByUids` → uygula → temizle, `local_seq` korumasıyla); `changed_at_ms` gönderimi; `server_rev` yerele yazılıyor; satır uygulama kuralı `SyncApply`'da tek yerde; `--dart-define` ile test projesine yönlendirme. Haftalık **tam uzlaştırma** kendiliğinden çalışıyor (§12.1 ikinci katman). **2026-09-18**, 13 yeni test (toplam 396) + gerçek PostgREST doğrulaması + cihaz duman testi. | #4, #5 | — | ✅ |
 | **5 — Silme protokolü** | Silme tetikleyicileri; `sync_delete` RPC; mezar taşı gönderimi; çekmede silme uygulama; rutin fark kaydı; `deleted_records` tablosu + sunucu silme tetikleyicileri | #1 | **var** | 2 gün |
 | **6 — Sahiplik + katalog kimliği + su** | Sunucu anahtarı `(user_id, uid)`; belirlenimci katalog kimliği + `sync_remap_uids`; hesap değişiminde katalog sıfırlama; su olay kaydı | #7, #8, isimle benimseme | **var** | 2 gün |
 | **7 — Durum ve operasyon** | Hata sınıflandırma; "Son yedekleme"; 3 gün uyarısı; kalıcı hata satırı (`sync_state = 2`) | C-36, duraklatma | yok | 1 gün |
@@ -752,9 +761,15 @@ değil: iki cihaz aynı anda gönderirse olur.
    inmesi zararsızdır — uygulama kuralı (§6.2) `changed_at_ms` karşılaştırıp
    eskiyi atar, yani işlem **idempotent**. Maliyet yalnız birkaç yüz satırlık
    fazladan indirme; bu veri boyutunda ölçülemez.
-2. **Düzenli tam uzlaştırma.** Haftada bir (ya da elle "Şimdi eşitle") imleç
-   0'dan başlatılır ve her şey yeniden okunur. Pay ne kadar geniş olursa
-   olsun kapatamadığı uzun süreli açık transaction durumunu bu yakalar.
+2. **Düzenli tam uzlaştırma.** Haftada bir imleç 0'dan başlatılır ve her şey
+   yeniden okunur. Pay ne kadar geniş olursa olsun kapatamadığı uzun süreli
+   açık transaction durumunu bu yakalar.
+
+**Durum: ikisi de uygulandı (Aşama 4).** Pay `SyncPull.cursorLag` (1.000);
+tam uzlaştırma `SyncPull.fullPullInterval` (7 gün) ile **kendiliğinden**
+çalışır — son turun damgası `sync_meta`'da (`full_pull_at:<kullanıcı>`) ve
+yalnız tur temiz bittiğinde yazılır. Çağıranın bir şey yapması gerekmez;
+gerekseydi ikinci katman kâğıt üstünde kalırdı.
 
 **Neden sunucuda çözülmedi.** Sıraya sokmanın kesin yolu yazmaları tek tek
 kilitlemek (kullanıcı başına advisory lock) ya da imleci commit sırasına

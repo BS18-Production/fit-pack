@@ -191,6 +191,62 @@ void main() {
     );
   });
 
+  test('tam uzlaştırma kendiliğinden vadesinde çalışır (docs/20 §12.1)',
+      () async {
+    // İkinci katman kimsenin çağırmasına bağlı olmamalı; olsaydı yalnız
+    // kâğıt üstünde kalırdı.
+    await addRoutine('Bir');
+    await push.pushAll(userId: user);
+
+    final meta = SyncMetaDao(db);
+    final pull = SyncPull(db, remote, cursorLag: 0);
+
+    // İlk tur: damga yok → tam tur yapılır ve damga yazılır.
+    await pull.pullAll(userId: user);
+    final damga = await meta.read(SyncMetaDao.fullPullKey(user));
+    expect(damga, isNotNull, reason: 'tam tur damgası yazılmalı');
+
+    // Vade dolmadan ikinci tur: imleç kullanılır, her şey baştan okunmaz.
+    remote.calls.clear();
+    await pull.pullAll(userId: user);
+    expect(remote.calls.where((c) => c == 'fetchSince:routines').length, 1,
+        reason: 'artımlı tur — imleç kullanılmalı');
+    final ikinciTurBos = await db
+        .customSelect('SELECT COUNT(*) c FROM routines')
+        .getSingle();
+    expect(ikinciTurBos.read<int>('c'), 1);
+
+    // Damgayı 8 gün geriye al → vade doldu.
+    final sekizGunOnce = DateTime.now()
+            .subtract(const Duration(days: 8))
+            .millisecondsSinceEpoch ~/
+        1000;
+    await meta.write(SyncMetaDao.fullPullKey(user), '$sekizGunOnce');
+
+    final ucuncu = await pull.pullAll(userId: user);
+    expect(ucuncu.changed + ucuncu.skipped, 1,
+        reason: 'vade dolunca satır imleç yok sayılarak yeniden okunmalı');
+    expect(
+      int.parse((await meta.read(SyncMetaDao.fullPullKey(user)))!),
+      greaterThan(sekizGunOnce),
+      reason: 'damga tazelenmeli',
+    );
+  });
+
+  test('yarıda kalan tam tur "yapıldı" sayılmaz', () async {
+    await addRoutine('Bir');
+    await push.pushAll(userId: user);
+
+    remote.fail = true; // çekme patlasın
+    final pull = SyncPull(db, remote, cursorLag: 0);
+    final result = await pull.pullAll(userId: user);
+
+    expect(result.ok, isFalse);
+    expect(await SyncMetaDao(db).read(SyncMetaDao.fullPullKey(user)), isNull,
+        reason: 'hatalı tur damgalanırsa atlanmış satır bir hafta görünmez '
+            'kalır');
+  });
+
   test('tam uzlaştırma (full) imleci yok sayar', () async {
     await addRoutine('Bir');
     await push.pushAll(userId: user);

@@ -148,7 +148,15 @@ bağlı).
         çözmüş); `skip` kaldırıldı.
       - **Gerçek PostgREST doğrulaması** (docs/20 §10.5): kısmi kabul, ret,
         sayfalama, `in.()` ve RLS gerçek HTTP çağrılarıyla ölçüldü.
-      - analyze 0 · test **394/394** (atlanan yok).
+      - **Haftalık tam uzlaştırma kendiliğinden çalışıyor** (§12.1 ikinci
+        katman): `full_pull_at:<kullanıcı>` defterde, yalnız temiz biten tur
+        damgalanıyor. Çağıranın bir şey yapması gerekmiyor.
+      - **Cihaz duman testi ✅** (temiz iOS simülatörü, test projesine bağlı):
+        giriş → tam uzlaştırma → profil gönderildi, `server_rev` yerele
+        yazıldı. Sunucu tarafında değiştirilince (2200 → 2750) uygulama
+        yeniden açılışta değişikliği indirdi, satır kuyruğa geri girmedi,
+        imleç payla yazıldı. Yöntem: `supabase/tests/README.md`.
+      - analyze 0 · test **396/396** (atlanan yok).
 - [ ] **Sıradaki: 3 + 4'ü üretime çıkar** (aynı sürüm — docs/20 §11):
       1. Üretim projesinin panel yedeğini al.
       2. `supabase/migrations/20260918120000_sync_v2_stage3.sql`'i üretime uygula.

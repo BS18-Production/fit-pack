@@ -1,0 +1,2 @@
+/* Barkod tarayıcı izin metni — cihaz dili İngilizce olduğunda gösterilir. */
+"NSCameraUsageDescription" = "Used to scan product barcodes and fill in nutrition facts automatically.";

@@ -1,0 +1,2 @@
+/* Barkod tarayıcı izin metni — cihaz dili Türkçe olduğunda gösterilir. */
+"NSCameraUsageDescription" = "Ürün barkodunu okuyup besin değerlerini otomatik doldurmak için kamerayı kullanır.";

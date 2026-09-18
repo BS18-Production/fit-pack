@@ -7,9 +7,11 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<!-- Barkod tarayıcı (mobile_scanner, Beslenme → ürün ekle). iOS'ta bu
-	     metin yoksa kamera açılırken uygulama çöker. -->
+	     metin yoksa kamera açılırken uygulama çöker.
+	     Cihaz diline göre metin: Runner/tr.lproj + en.lproj/InfoPlist.strings.
+	     Buradaki değer yalnız desteklenmeyen dillerdeki yedektir. -->
 	<key>NSCameraUsageDescription</key>
-	<string>Ürün barkodunu okuyup besin değerlerini otomatik doldurmak için kamerayı kullanır.</string>
+	<string>Used to scan product barcodes and fill in nutrition facts automatically.</string>
 	<!-- Supabase dönüş adresi: Google girişi, e-posta doğrulama ve şifre
 	     sıfırlama bağlantıları uygulamaya bu şemayla döner (docs/18 §5.2).
 	     Android'deki manifest intent-filter'ın iOS karşılığı. -->

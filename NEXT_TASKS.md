@@ -63,9 +63,35 @@ bağlı).
       emülatörünü kaldır (~13 GB; "Android'e dokunma" kararına aykırı),
       (c) kişisel büyük dosyalardan yer aç (Claude sanal makinesi 12 GB,
       Chrome modeli 4 GB, duvar kağıtları 3,7 GB).
-- [ ] **Sıradaki: Aşama 2 — açılış ve kapı** (docs/20 §11): `bootstrap`
-      sırası, nötr açılış ekranı, `accountError`, `switch_in_progress`,
-      gönderilmemiş veri uyarısı. Sunucuya dokunmaz.
+- [x] **Aşama 2 — açılış ve kapı ✅** (docs/20 §7.1, §7.3–§7.5):
+      • `bootstrap` artık **yerel hesap kontrolünü** de çalıştırıyor.
+      • Nötr açılış ekranı (`/splash`): kapı karar verene kadar Karşılama
+        değil marka işareti görünüyor.
+      • **Yarıda kalan hesap temizliği** açılışta tamamlanıyor
+        (`switch_in_progress`) — yarım temizlik = önceki hesabın verisinin
+        sızması.
+      • `last_user_id` shared_preferences'tan senkron defterine taşındı
+        (temizlikle aynı veritabanı işleminde güncelleniyor).
+      • **Gönderilmemiş kayıt + farklı hesap:** veri SİLİNMİYOR; "N kayıt
+        henüz yüklenmedi" ekranı çıkıyor, öne çıkan seçenek geri dönmek.
+      • Hesap doğrulanamazsa içeri alınmıyor ("Hesap doğrulanamadı" ekranı,
+        Tekrar dene / Çıkış yap).
+      • Hesap temizliği artık mezar taşı üretmiyor (üretseydi yeni
+        kullanıcının sunucudaki kayıtlarını silerdi).
+      18 test · analyze 0 · test **383/383**.
+- [x] **Simülatörde gerçek veriyle doğrulandı (2026-09-18):** v10 → v11 göçü
+      sorunsuz; 3 seans / 10 set / 2 öğün / 2 ölçüm yerinde, 36 tetikleyici
+      kurulu, damgalar dolu, mezar taşı yok, `last_user_id` deftere taşındı.
+      **Göç bir kusur gösterdi:** eski tetikleyiciler doldurma sırasında
+      çalışıp 28 satırı gereksiz yere yeniden kuyruğa aldı (veri kaybı yok,
+      tekrar yükleme). Sıra düzeltildi (önce tetikleyicileri düşür) ve göç
+      testine v10 tetikleyicileri eklendi — şema anlık görüntüsünde
+      tetikleyici olmadığı için bu hata testten kaçmıştı.
+- [ ] **Sıradaki: Aşama 3 — sunucu sürümü** (`supabase/migrations/…_sync_v2.sql`):
+      `changed_at_ms` / `server_rev` kolonları, `sync_rev_seq` dizisi,
+      `sync_guard` tetikleyicisi, `(user_id, uid)` anahtarı. Yerel Supabase
+      hazır; pgTAP testleri burada yazılacak. **Sunucu değişikliği** → yayın
+      kuralı: 3 ve 4 aynı sürümde çıkar.
 - **Şema sürümü kararı (2026-09-18):** v11'i **senkron v2** aldı (uygulaması
       önce başladı). Haftalık değerlendirmenin hedef yönü alanı **v12** olacak
       — docs/22 §9 soru 4 buna göre güncellendi.

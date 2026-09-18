@@ -50,6 +50,8 @@ class AuthGate extends ChangeNotifier {
   bool _onboarded = false;
   bool _busy = false;
   bool _recovering = false;
+  bool _accountError = false;
+  int _pendingConflictRows = 0;
   String? _appliedUserId;
 
   /// Profil kurulumu tamamlandı mı (`user_profile.onboarded`). Hesaba bağlıdır:
@@ -82,6 +84,43 @@ class AuthGate extends ChangeNotifier {
   /// kilitler.
   bool get recovering => _recovering;
 
+  /// Hesap kontrolü başarısız oldu mu (docs/20 §7.5). Kapı kullanıcıyı İÇERİ
+  /// ALMAZ: kontrol yapılamadıysa bir önceki hesabın verisi görünebilir.
+  bool get accountError => _accountError;
+
+  /// Başka bir hesap girdi ama cihazda **gönderilmemiş** kayıt var (§7.4).
+  /// 0'dan büyükse kullanıcıya seçim ekranı gösterilir; veri SİLİNMEDİ.
+  int get pendingConflictRows => _pendingConflictRows;
+
+  /// §7.4 seçimi: "kayıtları silip devam et".
+  Future<void> discardPendingAndContinue() async {
+    final userId = currentUserId;
+    if (userId == null) return;
+    _busy = true;
+    notifyListeners();
+    try {
+      await AccountSwitchGuard.wipeAndAdopt(_db, userId);
+      _pendingConflictRows = 0;
+      _appliedUserId = userId;
+      await _runPull(userId);
+      await _readOnboarded();
+    } catch (e) {
+      _accountError = true;
+      syncLog('hesap değişimi tamamlanamadı', error: e);
+    } finally {
+      _busy = false;
+      notifyListeners();
+    }
+  }
+
+  /// §7.5: "Tekrar dene" — hesap kontrolünü baştan çalıştırır.
+  Future<void> retryAccountCheck() async {
+    final userId = currentUserId;
+    if (userId == null) return;
+    _appliedUserId = null; // kontrol yeniden çalışsın
+    await _applyAccount(userId);
+  }
+
   /// Yeni şifre başarıyla yazıldıktan sonra çağrılır — kilit kalkar, kullanıcı
   /// normal akışına (onboarding ya da Ana Sayfa) devam eder.
   void clearRecovery() {
@@ -105,6 +144,21 @@ class AuthGate extends ChangeNotifier {
     // ekranı görünür (2026-09-16'da emülatörde gözlendi).
     final alreadyApplied = userId != null && userId == _appliedUserId;
     if (userId != null) _appliedUserId = userId;
+    // Yerel hesap kontrolü açılışta da çalışır (docs/20 §7.1 madde 2): ağ
+    // gerektirmez, aynı kullanıcıda anında döner. Eskiden atlanıyordu — yarım
+    // kalmış bir temizlik bir sonraki girişe kadar açıkta kalırdı.
+    try {
+      await AccountSwitchGuard.resumeIfInterrupted(_db);
+      if (userId != null) {
+        final outcome = await AccountSwitchGuard.apply(_db, userId);
+        if (outcome == AccountSwitch.pendingConflict) {
+          _pendingConflictRows = await AccountSwitchGuard.pendingRowCount(_db);
+        }
+      }
+    } catch (e) {
+      _accountError = true;
+      syncLog('açılışta hesap kontrolü başarısız', error: e);
+    }
     await _readOnboarded();
     // Her açılışta pull tekrarlanmasın: olay bizden önce geldiyse zaten başladı.
     if (userId != null && !alreadyApplied) unawaited(_backgroundPull(userId));
@@ -150,7 +204,14 @@ class AuthGate extends ChangeNotifier {
     _busy = true;
     notifyListeners();
     try {
-      await AccountSwitchGuard.apply(_db, userId);
+      _accountError = false;
+      final outcome = await AccountSwitchGuard.apply(_db, userId);
+      if (outcome == AccountSwitch.pendingConflict) {
+        // Veri SİLİNMEDİ; kullanıcı seçim ekranında karar verecek (§7.4).
+        _pendingConflictRows = await AccountSwitchGuard.pendingRowCount(_db);
+        return;
+      }
+      _pendingConflictRows = 0;
       // Sunucudaki veriyi indir (docs/18 §6.4). Bunu onboarding kararından ÖNCE
       // yaparız: sunucuda `onboarded = 1` profil varsa kullanıcı onboarding'i
       // TEKRAR görmez — telefon değiştiren/yeniden kuran kişi verisine kavuşur.
@@ -160,7 +221,8 @@ class AuthGate extends ChangeNotifier {
       await _readOnboarded();
     } catch (e) {
       // Kontrol başarısızsa içeri ALMA — sızıntı riskine karşı kapı kapalı
-      // kalır, kullanıcı tekrar deneyebilir.
+      // kalır, kullanıcı tekrar deneyebilir (§7.5).
+      _accountError = true;
       syncLog('hesap kontrolü başarısız', error: e);
     } finally {
       _busy = false;
@@ -279,9 +341,25 @@ String? gateRedirect({
   required bool onboarded,
   bool busy = false,
   bool recovering = false,
+  bool accountError = false,
+  bool pendingConflict = false,
 }) {
   // Hesap değişimi sürerken karar verme — veri temizlenirken ekran değişmesin.
   if (busy) return null;
+
+  // docs/20 §7.5: hesap kontrolü yapılamadıysa İÇERİ ALMA. Girilirse önceki
+  // hesabın verisi görünebilir; "emin değilsek kapıyı açma" kuralı.
+  if (accountError && signedIn) {
+    return location == AppRoutes.accountError ? null : AppRoutes.accountError;
+  }
+
+  // docs/20 §7.4: gönderilmemiş kayıt varken farklı hesap → veri SİLİNMEDİ,
+  // karar kullanıcıya ait. Seçim yapılmadan içeri girilmez.
+  if (pendingConflict && signedIn) {
+    return location == AppRoutes.accountConflict
+        ? null
+        : AppRoutes.accountConflict;
+  }
 
   // Şifre kurtarma her şeyin önünde: oturum açık ama kullanıcı yeni şifresini
   // belirlemeden uygulamaya giremez. `signedIn` şartı, oturumu düşen (bağlantı
@@ -290,15 +368,21 @@ String? gateRedirect({
     return location == AppRoutes.resetPassword ? null : AppRoutes.resetPassword;
   }
 
+  // Nötr açılış ekranı yalnız kapı MEŞGULKEN durur; karar verilir verilmez
+  // hedefe gidilir (aşağıdaki kurallar). Boş kalırsa kullanıcı orada asılı
+  // kalırdı.
   final atGate = location == AppRoutes.welcome || location == AppRoutes.auth;
 
-  if (!signedIn) return atGate ? null : AppRoutes.welcome;
+  if (!signedIn) {
+    return atGate ? null : AppRoutes.welcome;
+  }
   if (!onboarded) {
     return location == AppRoutes.onboarding ? null : AppRoutes.onboarding;
   }
   // Girişi tamamlamış kullanıcı kapıya/onboarding'e geri dönemez. Kurtarma
   // ekranı da buraya dahil: bayrak kapalıyken orada işi yok.
   if (atGate ||
+      location == AppRoutes.splash ||
       location == AppRoutes.onboarding ||
       location == AppRoutes.resetPassword) {
     return AppRoutes.home;

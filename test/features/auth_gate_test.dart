@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:fit_pack/core/router/app_routes.dart';
 import 'package:fit_pack/data/database/app_database.dart';
+import 'package:fit_pack/data/database/daos/sync_meta_dao.dart';
 import 'package:fit_pack/features/auth/account_switch.dart';
 import 'package:fit_pack/features/auth/auth_gate.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -288,10 +289,20 @@ void main() {
       expect(await count('body_measurements'), 1);
     });
 
+    /// Senkron v2 §7.4: kuyrukta bekleyen kayıt varken temizlik YAPILMAZ,
+    /// kullanıcıya seçim sunulur. Bu grup "veri gönderilmiş" senaryoyu
+    /// ölçtüğü için satırlar temiz işaretlenir.
+    Future<void> markSynced() async {
+      for (final t in ['body_measurements', 'exercises', 'user_profile']) {
+        await db.customStatement('UPDATE $t SET sync_state = 0');
+      }
+    }
+
     test('farklı kullanıcı girince yerel kullanıcı verisi temizlenir',
         () async {
       await seedUserData();
       await AccountSwitchGuard.apply(db, userA);
+      await markSynced();
 
       final result = await AccountSwitchGuard.apply(db, userB);
 
@@ -310,10 +321,12 @@ void main() {
     test('temizlik sonrası cihaz yeni kullanıcıya kayıtlıdır', () async {
       await seedUserData();
       await AccountSwitchGuard.apply(db, userA);
+      await markSynced();
       await AccountSwitchGuard.apply(db, userB);
 
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString(AccountSwitchGuard.lastUserKey), userB);
+      // Sahiplik artık senkron defterinde (docs/20 §7.3) — temizlikle aynı
+      // veritabanı işleminde güncellensin diye prefs'ten taşındı.
+      expect(await db.syncMetaDao.read(SyncMetaDao.keyLastUser), userB);
       // B tekrar girerse artık silme olmaz.
       expect(await AccountSwitchGuard.apply(db, userB), AccountSwitch.sameUser);
     });

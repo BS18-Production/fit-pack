@@ -15,6 +15,8 @@ import 'package:fit_pack/features/body_metrics/body_metrics_screen.dart';
 import 'package:fit_pack/features/auth/auth_gate.dart';
 import 'package:fit_pack/features/auth/auth_screen.dart';
 import 'package:fit_pack/features/auth/reset_password_screen.dart';
+import 'package:fit_pack/features/auth/account_gate_screens.dart';
+import 'package:fit_pack/features/auth/splash_screen.dart';
 import 'package:fit_pack/features/auth/welcome_screen.dart';
 import 'package:fit_pack/features/cloud/cloud_account_screen.dart';
 import 'package:fit_pack/features/profile/profile_screen.dart';
@@ -42,7 +44,9 @@ Widget _glass(Widget child) => GlassBackground(child: child);
 /// `refreshListenable` sayesinde giriş/çıkış anında kapı devreye girer.
 GoRouter createAppRouter({required AuthGate gate}) => GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: AppRoutes.welcome,
+  // Nötr ekranla başla; nereye gidileceğine `gateRedirect` karar verir
+  // (docs/20 §7.1 madde 3-4).
+  initialLocation: AppRoutes.splash,
   refreshListenable: gate,
   redirect: (context, state) => gateRedirect(
     location: state.matchedLocation,
@@ -50,6 +54,8 @@ GoRouter createAppRouter({required AuthGate gate}) => GoRouter(
     onboarded: gate.onboarded,
     busy: gate.busy,
     recovering: gate.recovering,
+    accountError: gate.accountError,
+    pendingConflict: gate.pendingConflictRows > 0,
   ),
   // OAuth (Google) dönüşü — docs/18 §5.2. Supabase, `fitpack://login-callback`
   // deep link'ini KENDİ dinleyicisiyle işler (kod → oturum takası; logta
@@ -81,6 +87,22 @@ GoRouter createAppRouter({required AuthGate gate}) => GoRouter(
       path: AppRoutes.resetPassword,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => _glass(const ResetPasswordScreen()),
+    ),
+    GoRoute(
+      path: AppRoutes.splash,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const SplashScreen()),
+    ),
+    // Kapının iki "dur" ekranı (docs/20 §7.4, §7.5).
+    GoRoute(
+      path: AppRoutes.accountError,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const AccountErrorScreen()),
+    ),
+    GoRoute(
+      path: AppRoutes.accountConflict,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const AccountConflictScreen()),
     ),
     GoRoute(
       path: AppRoutes.onboarding,

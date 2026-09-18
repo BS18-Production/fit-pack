@@ -157,6 +157,54 @@ abstract class AppL10n {
   /// **'Retry'**
   String get commonRetry;
 
+  /// No description provided for @accountErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t verify account'**
+  String get accountErrorTitle;
+
+  /// No description provided for @accountErrorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t confirm that the data on this device belongs to you. For safety you weren\'t let in — another account\'s data could have been shown. Check your connection and try again.'**
+  String get accountErrorBody;
+
+  /// No description provided for @accountConflictTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsynced records on this device'**
+  String get accountConflictTitle;
+
+  /// No description provided for @accountConflictBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} records from the previous account haven\'t been uploaded yet. Continuing with the new account deletes them.'**
+  String accountConflictBody(int count);
+
+  /// No description provided for @accountConflictGoBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back to previous account'**
+  String get accountConflictGoBack;
+
+  /// No description provided for @accountConflictDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete records and continue'**
+  String get accountConflictDiscard;
+
+  /// No description provided for @accountConflictDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete records?'**
+  String get accountConflictDiscardTitle;
+
+  /// No description provided for @accountConflictDiscardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} records will be permanently deleted. This can\'t be undone.'**
+  String accountConflictDiscardBody(int count);
+
   /// No description provided for @commonInvalidNumber.
   ///
   /// In en, this message translates to:

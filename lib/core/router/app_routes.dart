@@ -46,6 +46,10 @@ class AppRoutes {
   static const cloud = '/cloud';
   static const profile = '/profile';
   static const settings = '/settings';
+  /// Kapı karar verene kadar gösterilen nötr ekran (docs/20 §7.1).
+  static const splash = '/splash';
+  static const accountError = '/account-error';
+  static const accountConflict = '/account-conflict';
   static const attribution = '/settings/attribution';
   static const notifications = '/settings/notifications';
 

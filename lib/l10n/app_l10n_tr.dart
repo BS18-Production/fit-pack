@@ -39,6 +39,35 @@ class AppL10nTr extends AppL10n {
   String get commonRetry => 'Tekrar dene';
 
   @override
+  String get accountErrorTitle => 'Hesap doğrulanamadı';
+
+  @override
+  String get accountErrorBody =>
+      'Bu cihazdaki verinin sana ait olduğunu doğrulayamadık. Güvenlik için uygulamaya girilmedi — başka bir hesabın verisi görünebilirdi. Bağlantını kontrol edip tekrar dene.';
+
+  @override
+  String get accountConflictTitle => 'Yüklenmemiş kayıtlar var';
+
+  @override
+  String accountConflictBody(int count) {
+    return 'Bu cihazda önceki hesaba ait $count kayıt henüz yüklenmedi. Yeni hesapla devam edersen bu kayıtlar silinir.';
+  }
+
+  @override
+  String get accountConflictGoBack => 'Önceki hesaba geri dön';
+
+  @override
+  String get accountConflictDiscard => 'Kayıtları silip devam et';
+
+  @override
+  String get accountConflictDiscardTitle => 'Kayıtlar silinsin mi?';
+
+  @override
+  String accountConflictDiscardBody(int count) {
+    return '$count kayıt kalıcı olarak silinecek. Bu işlem geri alınamaz.';
+  }
+
+  @override
   String get commonInvalidNumber => 'Geçersiz sayı';
 
   @override

@@ -10,6 +10,20 @@
   "commonNext": "Next",
   "commonDone": "Done",
   "commonRetry": "Retry",
+  "accountErrorTitle": "Couldn't verify account",
+  "accountErrorBody": "We couldn't confirm that the data on this device belongs to you. For safety you weren't let in — another account's data could have been shown. Check your connection and try again.",
+  "accountConflictTitle": "Unsynced records on this device",
+  "accountConflictBody": "{count} records from the previous account haven't been uploaded yet. Continuing with the new account deletes them.",
+  "@accountConflictBody": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "accountConflictGoBack": "Go back to previous account",
+  "accountConflictDiscard": "Delete records and continue",
+  "accountConflictDiscardTitle": "Delete records?",
+  "accountConflictDiscardBody": "{count} records will be permanently deleted. This can't be undone.",
+  "@accountConflictDiscardBody": {
+    "placeholders": { "count": { "type": "int" } }
+  },
   "commonInvalidNumber": "Invalid number",
   "commonRangeHint": "Range: {min} – {max}",
   "@commonRangeHint": {

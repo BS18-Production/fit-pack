@@ -47,6 +47,14 @@ void main() {
       "INSERT INTO routines (name, created_at, uid, updated_at, sync_state) "
       "VALUES ('Kuyrukta', 1700000000, 'uid-2', 1700000456, 1)",
     );
+    // v10 tetikleyicilerini de kur: gerçek cihazda bunlar KURULUYDU ve
+    // doldurma UPDATE'lerinde çalışıp her satırı yeniden kuyruğa aldılar.
+    // Şema anlık görüntüsünde tetikleyici olmadığı için bu hata testten
+    // kaçmıştı (2026-09-18, simülatörde yakalandı).
+    for (final t in syncedTableNames) {
+      await old.customStatement(createInsertTriggerSqlV10(t));
+      await old.customStatement(createUpdateTriggerSqlV10(t));
+    }
     await old.close();
 
     final db = AppDatabase.forTesting(schema.newConnection());

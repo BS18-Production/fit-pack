@@ -16,6 +16,7 @@ import 'daos/nutrition_dao.dart';
 import 'daos/body_dao.dart';
 import 'daos/achievement_dao.dart';
 import 'daos/user_profile_dao.dart';
+import 'daos/sync_meta_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -43,6 +44,7 @@ part 'app_database.g.dart';
     BodyDao,
     AchievementDao,
     UserProfileDao,
+    SyncMetaDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -381,12 +383,15 @@ class AppDatabase extends _$AppDatabase {
             await _addColumnIfMissing(m, table.$1, table.$4);
           }
           for (final name in syncedTableNames) {
-            await m.database.customStatement(backfillChangedAtMsSql(name));
-            await m.database.customStatement(backfillLocalSeqSql(name));
-            // Eski tetikleyiciler `capture`/`local_seq` bilmiyor → yenile.
+            // ÖNCE eski tetikleyicileri düşür: v10 tetikleyicileri `capture`
+            // bayrağını tanımıyor, aşağıdaki doldurma UPDATE'lerinde çalışıp
+            // bütün satırları yeniden kuyruğa alırlardı (cihazda görüldü:
+            // göçten sonra 28 satır gereksiz yere tekrar yüklendi).
             await m.database.customStatement(dropInsertTriggerSql(name));
             await m.database.customStatement(dropUpdateTriggerSql(name));
             await m.database.customStatement(dropDeleteTriggerSql(name));
+            await m.database.customStatement(backfillChangedAtMsSql(name));
+            await m.database.customStatement(backfillLocalSeqSql(name));
             await m.database.customStatement(createInsertTriggerSql(name));
             await m.database.customStatement(createUpdateTriggerSql(name));
             await m.database.customStatement(createDeleteTriggerSql(name));

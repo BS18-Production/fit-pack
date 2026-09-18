@@ -39,6 +39,35 @@ class AppL10nEn extends AppL10n {
   String get commonRetry => 'Retry';
 
   @override
+  String get accountErrorTitle => 'Couldn\'t verify account';
+
+  @override
+  String get accountErrorBody =>
+      'We couldn\'t confirm that the data on this device belongs to you. For safety you weren\'t let in — another account\'s data could have been shown. Check your connection and try again.';
+
+  @override
+  String get accountConflictTitle => 'Unsynced records on this device';
+
+  @override
+  String accountConflictBody(int count) {
+    return '$count records from the previous account haven\'t been uploaded yet. Continuing with the new account deletes them.';
+  }
+
+  @override
+  String get accountConflictGoBack => 'Go back to previous account';
+
+  @override
+  String get accountConflictDiscard => 'Delete records and continue';
+
+  @override
+  String get accountConflictDiscardTitle => 'Delete records?';
+
+  @override
+  String accountConflictDiscardBody(int count) {
+    return '$count records will be permanently deleted. This can\'t be undone.';
+  }
+
+  @override
   String get commonInvalidNumber => 'Invalid number';
 
   @override

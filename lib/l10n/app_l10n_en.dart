@@ -406,6 +406,33 @@ class AppL10nEn extends AppL10n {
   String get foodsNew => 'New food';
 
   @override
+  String get foodCatMeat => 'Meat, fish, eggs';
+
+  @override
+  String get foodCatDairy => 'Dairy';
+
+  @override
+  String get foodCatGrain => 'Grains & starches';
+
+  @override
+  String get foodCatLegume => 'Legumes';
+
+  @override
+  String get foodCatVegetable => 'Vegetables';
+
+  @override
+  String get foodCatFruit => 'Fruit';
+
+  @override
+  String get foodCatFat => 'Fats & nuts';
+
+  @override
+  String get foodCatDish => 'Prepared dishes';
+
+  @override
+  String get foodCatOther => 'Other';
+
+  @override
   String foodsAdded(String name) {
     return '$name added';
   }

@@ -769,6 +769,60 @@ abstract class AppL10n {
   /// **'New food'**
   String get foodsNew;
 
+  /// No description provided for @foodCatMeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Meat, fish, eggs'**
+  String get foodCatMeat;
+
+  /// No description provided for @foodCatDairy.
+  ///
+  /// In en, this message translates to:
+  /// **'Dairy'**
+  String get foodCatDairy;
+
+  /// No description provided for @foodCatGrain.
+  ///
+  /// In en, this message translates to:
+  /// **'Grains & starches'**
+  String get foodCatGrain;
+
+  /// No description provided for @foodCatLegume.
+  ///
+  /// In en, this message translates to:
+  /// **'Legumes'**
+  String get foodCatLegume;
+
+  /// No description provided for @foodCatVegetable.
+  ///
+  /// In en, this message translates to:
+  /// **'Vegetables'**
+  String get foodCatVegetable;
+
+  /// No description provided for @foodCatFruit.
+  ///
+  /// In en, this message translates to:
+  /// **'Fruit'**
+  String get foodCatFruit;
+
+  /// No description provided for @foodCatFat.
+  ///
+  /// In en, this message translates to:
+  /// **'Fats & nuts'**
+  String get foodCatFat;
+
+  /// No description provided for @foodCatDish.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepared dishes'**
+  String get foodCatDish;
+
+  /// No description provided for @foodCatOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get foodCatOther;
+
   /// No description provided for @foodsAdded.
   ///
   /// In en, this message translates to:

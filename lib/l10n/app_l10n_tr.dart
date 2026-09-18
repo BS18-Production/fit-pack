@@ -402,6 +402,33 @@ class AppL10nTr extends AppL10n {
   String get foodsNew => 'Yeni yemek';
 
   @override
+  String get foodCatMeat => 'Et, balık, yumurta';
+
+  @override
+  String get foodCatDairy => 'Süt ürünleri';
+
+  @override
+  String get foodCatGrain => 'Tahıl ve nişasta';
+
+  @override
+  String get foodCatLegume => 'Baklagil';
+
+  @override
+  String get foodCatVegetable => 'Sebze';
+
+  @override
+  String get foodCatFruit => 'Meyve';
+
+  @override
+  String get foodCatFat => 'Yağ ve kuruyemiş';
+
+  @override
+  String get foodCatDish => 'Hazır yemek';
+
+  @override
+  String get foodCatOther => 'Diğer';
+
+  @override
   String foodsAdded(String name) {
     return '$name eklendi';
   }

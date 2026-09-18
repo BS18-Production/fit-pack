@@ -24,6 +24,49 @@ final allFoodsProvider = StreamProvider<List<Food>>((ref) {
       db, [db.foods], () => ref.read(nutritionDaoProvider).getAllFoods());
 });
 
+/// Yemek grupları (C-5) — `foods.category` değerleri. Sıra ekrandaki çip
+/// sırasıdır: en çok kullanılandan başlar.
+const foodCategoryOrder = <String>[
+  'meat',
+  'dairy',
+  'grain',
+  'legume',
+  'vegetable',
+  'fruit',
+  'fat',
+  'dish',
+  'other',
+];
+
+/// Grup kodunu kullanıcı diline çevirir. Bilinmeyen kod olduğu gibi gösterilir
+/// (dış kaynaktan gelen yemekte beklenmedik değer ekranı boş bırakmasın).
+String foodCategoryLabel(AppL10n l, String category) => switch (category) {
+  'meat' => l.foodCatMeat,
+  'dairy' => l.foodCatDairy,
+  'grain' => l.foodCatGrain,
+  'legume' => l.foodCatLegume,
+  'vegetable' => l.foodCatVegetable,
+  'fruit' => l.foodCatFruit,
+  'fat' => l.foodCatFat,
+  'dish' => l.foodCatDish,
+  'other' => l.foodCatOther,
+  _ => category,
+};
+
+/// Listede gerçekten bulunan gruplar, [foodCategoryOrder] sırasıyla.
+/// Hiç kategorili yemek yoksa boş döner → çip şeridi çizilmez.
+List<String> availableFoodCategories(Iterable<Food> foods) {
+  final present = {
+    for (final f in foods)
+      if (f.category != null && f.category!.isNotEmpty) f.category!,
+  };
+  return [
+    for (final c in foodCategoryOrder)
+      if (present.remove(c)) c,
+    ...present.toList()..sort(),
+  ];
+}
+
 class FoodsScreen extends ConsumerStatefulWidget {
   const FoodsScreen({super.key});
 
@@ -34,6 +77,7 @@ class FoodsScreen extends ConsumerStatefulWidget {
 class _FoodsScreenState extends ConsumerState<FoodsScreen> {
   final _searchController = TextEditingController();
   String _query = '';
+  String? _category; // null = tümü
 
   @override
   void dispose() {
@@ -43,9 +87,13 @@ class _FoodsScreenState extends ConsumerState<FoodsScreen> {
 
   List<Food> _filtered(List<Food> all) {
     final q = _query.trim().toLowerCase();
-    final list = q.isEmpty
-        ? [...all]
-        : all.where((f) => f.name.toLowerCase().contains(q)).toList();
+    final cat = _category;
+    final list = [
+      for (final f in all)
+        if ((q.isEmpty || f.name.toLowerCase().contains(q)) &&
+            (cat == null || f.category == cat))
+          f,
+    ];
     list.sort((a, b) {
       if (a.isCustom != b.isCustom) return a.isCustom ? -1 : 1;
       return a.name.toLowerCase().compareTo(b.name.toLowerCase());
@@ -234,6 +282,36 @@ class _FoodsScreenState extends ConsumerState<FoodsScreen> {
               onChanged: (v) => setState(() => _query = v),
             ),
           ),
+          // Grup çipleri (C-5). Yalnız kategorili yemek varsa çizilir —
+          // dış kaynaktan gelen kategorisiz listede yer kaplamasın.
+          ?foodsAsync.whenOrNull(
+            data: (all) {
+              final cats = availableFoodCategories(all);
+              if (cats.isEmpty) return null;
+              return SizedBox(
+                height: 40,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg, vertical: 0),
+                  children: [
+                    _CategoryChip(
+                      label: l.exAll,
+                      selected: _category == null,
+                      onSelected: () => setState(() => _category = null),
+                    ),
+                    for (final c in cats)
+                      _CategoryChip(
+                        label: foodCategoryLabel(l, c),
+                        selected: _category == c,
+                        onSelected: () => setState(
+                            () => _category = _category == c ? null : c),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
           Expanded(
             child: foodsAsync.when(
               loading: () => ListView(
@@ -285,6 +363,25 @@ class _FoodsScreenState extends ConsumerState<FoodsScreen> {
       ),
     );
   }
+}
+
+class _CategoryChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onSelected;
+  const _CategoryChip(
+      {required this.label, required this.selected, required this.onSelected});
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(right: AppSpacing.sm),
+    child: FilterChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onSelected(),
+      visualDensity: VisualDensity.compact,
+    ),
+  );
 }
 
 class _FoodRow extends StatelessWidget {

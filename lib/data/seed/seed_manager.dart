@@ -16,7 +16,7 @@ class SeedManager {
   /// v2 (2026-07-25): küratörlü hareketlere form görseli backfill'i
   /// (`_backfillExerciseImages`, docs/11 §12) — artırılmazsa mevcut
   /// kurulumlarda hiç çalışmaz (M-04 dersi).
-  static const seedVersion = 2;
+  static const seedVersion = 3; // 3: yemek kategorileri (C-5)
   static const seedVersionKey = 'seed_version';
 
   Future<void> seedIfNeeded() async {
@@ -36,6 +36,9 @@ class SeedManager {
       // JSON'dan ada göre doldurur. İlk çalıştırmadan sonra no-op
       // (custom/OpenFoodFacts yemeklere ve loglara dokunmaz).
       await _backfillFoodUnits();
+      // Yemek grupları (C-5): kategori JSON'a 2026-09-17'de eklendi; mevcut
+      // kurulumlarda kolon boş kaldığı için ada göre doldurulur.
+      await _backfillFoodCategories();
       // Antrenman V2 (docs/09-workout-v2.md): mevcut kurulumlara yeni
       // İngilizce hareket kütüphanesini getir (eksikleri ekle + meta doldur).
       await _backfillExercises();
@@ -232,6 +235,35 @@ class SeedManager {
     await db.workoutDao.insertExercises(await _extendedExerciseCompanions());
   }
 
+  /// Hazır yemeklerin grubunu (et, sebze, tahıl…) ada göre doldurur.
+  /// Idempotent: kategorisi dolu olan, kullanıcının kendi eklediği ve dış
+  /// kaynaktan (OpenFoodFacts) gelen yemeklere dokunmaz.
+  Future<void> _backfillFoodCategories() async {
+    final all = await db.nutritionDao.getAllFoods();
+    final needs = all
+        .where((f) => f.source == 'local' && !f.isCustom && f.category == null)
+        .toList();
+    if (needs.isEmpty) return; // zaten dolu → ucuz çıkış
+
+    final jsonStr =
+        await rootBundle.loadString('assets/data/turkish_foods.json');
+    final List<dynamic> foodList = json.decode(jsonStr);
+    final byName = <String, String>{
+      for (final f in foodList)
+        if ((f as Map<String, dynamic>)['category'] != null)
+          f['name'] as String: f['category'] as String,
+    };
+
+    for (final food in needs) {
+      final category = byName[food.name];
+      if (category == null) continue;
+      await db.nutritionDao.updateFood(
+        food.id,
+        FoodsCompanion(category: Value(category)),
+      );
+    }
+  }
+
   Future<void> _seedTurkishFoods() async {
     final jsonStr = await rootBundle.loadString('assets/data/turkish_foods.json');
     final List<dynamic> foodList = json.decode(jsonStr);
@@ -242,6 +274,7 @@ class SeedManager {
       final unit = f['unit_label'];
       return FoodsCompanion(
         name: Value(f['name'] as String),
+        category: Value(f['category'] as String?),
         kcalPer100g: Value((f['kcal_per_100g'] as num).toDouble()),
         proteinPer100g: Value((f['protein_per_100g'] as num).toDouble()),
         carbPer100g: Value((f['carb_per_100g'] as num).toDouble()),

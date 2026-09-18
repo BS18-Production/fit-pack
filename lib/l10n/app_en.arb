@@ -287,6 +287,15 @@
   "scanFrameHint": "Line up the barcode in the frame",
   "scanManualAdd": "Add manually",
   "foodsNew": "New food",
+  "foodCatMeat": "Meat, fish, eggs",
+  "foodCatDairy": "Dairy",
+  "foodCatGrain": "Grains & starches",
+  "foodCatLegume": "Legumes",
+  "foodCatVegetable": "Vegetables",
+  "foodCatFruit": "Fruit",
+  "foodCatFat": "Fats & nuts",
+  "foodCatDish": "Prepared dishes",
+  "foodCatOther": "Other",
   "foodsAdded": "{name} added",
   "@foodsAdded": {
     "placeholders": {

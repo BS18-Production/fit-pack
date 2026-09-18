@@ -74,6 +74,11 @@ const syncedTableNames = <String>[
   'foods',
 ];
 
+/// Sunucudaki **silme işaretleri** tablosu (docs/20 §4.2). Çekme onu diğer
+/// tablolarla aynı yoldan okur; satırları `table_name` + `uid` taşır, içerik
+/// taşımaz. Yerel karşılığı yok — inen işaret doğrudan yerel silmeye çevrilir.
+const syncDeletedTable = 'deleted_records';
+
 /// Ortak katalog barındıran tablolar: yalnız `is_custom = 1` satırlar
 /// kullanıcıya aittir ve senkron edilir. Kalanı cihazda seed olarak durur —
 /// 1022 hareketi her kullanıcının hesabına kopyalamak israf olurdu.

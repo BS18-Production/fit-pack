@@ -18,6 +18,9 @@ class PushResult {
   /// değiştirilip temizlenir, tekrar gönderilmez (docs/20 §5.1 adım 5).
   final int rejected;
 
+  /// Sunucuya iletilen **silme** sayısı (mezar taşı — docs/20 §5.3).
+  final int deleted;
+
   /// İlk hata — hata ayıklama/görüntüleme için.
   final Object? error;
 
@@ -25,10 +28,11 @@ class PushResult {
     this.pushed = 0,
     this.failed = 0,
     this.rejected = 0,
+    this.deleted = 0,
     this.error,
   });
 
-  bool get hasWork => pushed > 0 || failed > 0 || rejected > 0;
+  bool get hasWork => pushed > 0 || failed > 0 || rejected > 0 || deleted > 0;
   bool get ok => failed == 0 && error == null;
 }
 
@@ -76,6 +80,18 @@ abstract class SyncRemote {
   /// için (docs/20 §5.1 adım 5). Reddedilen satır sunucudakiyle değiştirilir,
   /// yoksa sonsuza kadar tekrar gönderilmeye çalışılır.
   Future<List<Map<String, Object?>>> fetchByUids(
+    String table,
+    String userId,
+    List<String> uids,
+  );
+
+  /// Verilen kimlikleri sunucuda **gerçekten siler** ve silinenleri döndürür
+  /// (docs/20 §5.3). Sunucu satırın yerine yalnız bir işaret bırakır; öteki
+  /// cihaz silmeyi o işaretten öğrenir.
+  ///
+  /// Dönen listede olmayan kimlik "sunucuda zaten yoktu" demektir — hata
+  /// değil: hiç gönderilmemiş bir satırın silinmesi sunucuya bilgi taşımaz.
+  Future<List<String>> deleteRows(
     String table,
     String userId,
     List<String> uids,
@@ -153,10 +169,27 @@ class SyncPush {
       }
     }
 
+    // MEZAR TAŞLARI EN SONA. Aynı turda "ekle + sil" olan satır sunucuda önce
+    // oluşup sonra silinmiş olur — tersi sırada silme boşa giderdi (satır
+    // henüz sunucuda yok) ve ardından ekleme onu diriltirdi.
+    //
+    // Yazmalar hata verdiyse gönderilmez: eksik ebeveynle silme göndermek
+    // sunucuda tutarsız ara durum bırakır. Mezar taşları kuyrukta kalır.
+    var deleted = 0;
+    if (firstError == null) {
+      try {
+        deleted = await _pushTombstones(userId);
+      } catch (e, st) {
+        firstError ??= e;
+        syncLog('mezar taşları gönderilemedi: $e\n$st', error: e);
+      }
+    }
+
     return PushResult(
       pushed: pushed,
       failed: failed,
       rejected: rejected,
+      deleted: deleted,
       error: firstError,
     );
   }
@@ -289,6 +322,51 @@ class SyncPush {
       }
       if (rows.length < batchSize) return _TablePush(total, rejected);
     }
+  }
+
+  /// Mezar taşlarını (yerel silmeleri) sunucuya iletir — docs/20 §5.3.
+  ///
+  /// **Tablo sırası TERS:** çocuk önce. `workout_sets` silinmeden
+  /// `workout_sessions` silinirse sunucudaki zincirleme silme setleri de
+  /// götürür; sorun değil ama o zaman setlerin işaretleri sunucu tarafında
+  /// oluşur ve bu cihazın mezar taşları boşa gider. Çocuğu önce göndermek
+  /// niyeti olduğu gibi aktarır.
+  Future<int> _pushTombstones(String userId) async {
+    var total = 0;
+    for (final table in syncPushOrder.reversed) {
+      while (true) {
+        final rows = await db
+            .customSelect(
+              'SELECT id, uid FROM sync_tombstones '
+              'WHERE table_name = ? AND sync_state = 1 '
+              'ORDER BY id LIMIT $batchSize',
+              variables: [Variable(table)],
+            )
+            .get();
+        if (rows.isEmpty) break;
+
+        final uids = [for (final r in rows) r.data['uid'] as String];
+        syncLog('$table → ${uids.length} silme gönderiliyor');
+
+        // ⚠️ Sunucu onayı burada. Hata fırlarsa aşağıya inilmez → mezar
+        // taşları kuyrukta kalır ve bir sonraki turda tekrar denenir.
+        final silinen = await remote.deleteRows(table, userId, uids);
+        total += silinen.length;
+
+        // Gönderdiğimiz HER kimliğin mezar taşı kalkar — dönmeyenler
+        // "sunucuda zaten yoktu" demektir (hiç gönderilmemiş satır).
+        // Bırakılsalardı sonsuza kadar tekrar gönderilirlerdi.
+        final ids = [for (final r in rows) r.data['id'] as int];
+        await db.customStatement(
+          'DELETE FROM sync_tombstones WHERE id IN '
+          '(${List.filled(ids.length, '?').join(', ')})',
+          ids,
+        );
+
+        if (rows.length < batchSize) break;
+      }
+    }
+    return total;
   }
 
   /// Reddedilen satırların sunucudaki hâlini indirip yerele uygular.

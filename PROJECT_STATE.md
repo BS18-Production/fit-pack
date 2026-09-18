@@ -13,7 +13,7 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
-## 🔵 Senkron v2 — Aşama 0, 1, 2, 3, 4 ✅ — 2026-09-18
+## 🔵 Senkron v2 — Aşama 0, 1, 2, 3, 4, 5 ✅ — 2026-09-18
 
 - **Sunucu test ortamı — karar değişti (Samet, 2026-09-18):** yerel Docker
   yığını (~9,7 GB disk) yerine **ikinci ücretsiz bulut projesi**:
@@ -62,7 +62,17 @@
   yazıldı. Sunucu tarafında değiştirilen satır yeniden açılışta indi, kuyruğa
   geri girmedi, imleç payla yazıldı. Gönderim + çekme + sürüm damgalama gerçek
   cihaz ve gerçek sunucu üzerinde birlikte çalışıyor.
-- analyze 0 · test **396/396**. Simülatörde gerçek veriyle doğrulandı.
+- **Aşama 5 (silme protokolü):** epiğin ana vaadi — **silme artık öteki
+  cihaza taşınıyor**. Sunucuda satır gerçekten siliniyor, yerine yalnız kimlik
+  işareti kalıyor; istemci mezar taşlarını yazmalardan sonra gönderiyor,
+  çekmede işaretler her şeyden önce iniyor. Rutin kaydetme artık fark
+  uyguluyor: tek hedef değişikliği bütün rutini silip yeniden yaratmıyor.
+  18 pgTAP + 14 istemci testi + gerçek HTTP doğrulaması.
+- **Aşama 5'te iki hata yalnız GERÇEK İSTEMCİ ROLÜYLE ölçünce çıktı**
+  (docs/20 §10.6): silme izi tetikleyicisi yetki hatasıyla **her silmeyi**
+  patlatıyordu, ve hesap silme yabancı anahtar ihlaliyle bozuluyordu.
+  **Ders:** sunucu testleri superuser'la değil, istemcinin rolüyle de koşmalı.
+- analyze 0 · test **410/410**. Simülatörde gerçek veriyle doğrulandı.
 - **Bekleyen:** 3 + 4 üretime **birlikte** çıkar; öncesinde yedek + cihazda
   duman testi (NEXT_TASKS "Sıradaki").
 

@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart';
+
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/sync_meta_dao.dart';
 import '../../data/database/tables/sync_columns.dart';
@@ -109,7 +111,18 @@ class SyncPull {
     full = vadesiGeldi;
 
     var result = const PullResult();
-    for (final table in syncPushOrder) {
+
+    // SİLME İŞARETLERİ ÖNCE (docs/20 §6.1). Sonra çekilseydi, aynı turda
+    // silinmiş bir satırın canlı kopyası önce inip ekranda bir an görünür,
+    // sonra kaybolurdu.
+    try {
+      result += await _pullDeletions(userId, full: full);
+    } catch (e, st) {
+      syncLog('silme işaretleri çekilemedi: $e\n$st', error: e);
+      result += PullResult(error: e);
+    }
+
+    for (final table in result.ok ? syncPushOrder : const <String>[]) {
       try {
         result += await _pullTable(table, userId, full: full);
       } catch (e, st) {
@@ -213,6 +226,75 @@ class SyncPull {
     }
 
     return PullResult(inserted: inserted, updated: updated, skipped: skipped);
+  }
+
+  /// Sunucudaki silme işaretlerini indirip yerele uygular (docs/20 §5.3).
+  ///
+  /// İşaret yalnız `table_name` + `uid` taşır — silinen kaydın içeriği
+  /// sunucuda tutulmaz. Yerelde o satır varsa **silinir**; bekleyen düzenlemesi
+  /// olsa bile, çünkü silme her zaman kazanır (K-3).
+  ///
+  /// Silme `capture = 0` ile yapılır: yoksa yerel tetikleyici yeni bir mezar
+  /// taşı üretir ve silme sunucuya geri yankılanır.
+  Future<PullResult> _pullDeletions(String userId, {required bool full}) async {
+    final cursorKey = SyncMetaDao.pullCursorKey(userId, syncDeletedTable);
+    var cursor =
+        full ? 0 : (int.tryParse(await _meta.read(cursorKey) ?? '') ?? 0);
+    var applied = 0;
+
+    while (true) {
+      final page =
+          await remote.fetchSince(syncDeletedTable, userId, cursor, pageSize);
+      if (page.isEmpty) break;
+      if (page.length > pageSize) {
+        throw StateError('$syncDeletedTable: sayfa boyu aşıldı — '
+            'istenen $pageSize, gelen ${page.length}');
+      }
+
+      final lastRev = _maxRev(page);
+      syncLog('$syncDeletedTable ← ${page.length} silme işareti '
+          '(imleç $cursor → $lastRev)');
+
+      await apply.withCaptureOff(() => db.transaction(() async {
+            for (final mark in page) {
+              final table = mark['table_name'];
+              final uid = mark['uid'];
+              if (table is! String || uid is! String) continue;
+              // Bilmediğimiz bir tablo adı geldiyse dokunma: ham adı SQL'e
+              // koymak enjeksiyon kapısı olurdu.
+              if (!syncPushOrder.contains(table)) continue;
+              applied += await _deleteLocal(table, uid);
+            }
+            if (lastRev > cursor) {
+              await _meta.write(cursorKey, _laggedCursor(lastRev).toString());
+            }
+          }));
+
+      if (lastRev <= cursor) break;
+      cursor = lastRev;
+      if (page.length < pageSize) break;
+    }
+
+    // Silinen satırlar `updated` sayılır: kullanıcı açısından "veri değişti".
+    return PullResult(updated: applied);
+  }
+
+  /// Yerel satırı siler ve bekleyen mezar taşını temizler.
+  ///
+  /// Mezar taşı temizliği şart: satır zaten sunucuda silinmiş, bizim silme
+  /// isteğimiz gereksiz. Bırakılsaydı her turda boşuna `sync_delete`
+  /// çağrılırdı.
+  Future<int> _deleteLocal(String table, String uid) async {
+    final silinen = await db.customUpdate(
+      'DELETE FROM $table WHERE uid = ?',
+      variables: [Variable(uid)],
+      updateKind: UpdateKind.delete,
+    );
+    await db.customStatement(
+      'DELETE FROM sync_tombstones WHERE table_name = ? AND uid = ?',
+      [table, uid],
+    );
+    return silinen;
   }
 
   /// Sayfadaki en büyük `server_rev`. Sunucu sıralı döndürür, yine de en

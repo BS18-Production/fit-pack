@@ -1,3 +1,4 @@
+import 'package:fit_pack/data/database/tables/sync_columns.dart';
 import 'package:fit_pack/features/sync/sync_push.dart';
 
 /// **Sunucuyu taklit eden sahte uç** — Aşama 3'te yazılan `sync_guard`
@@ -103,13 +104,17 @@ class FakeSyncServer implements SyncRemote {
       await interrupt();
     }
 
-    final rows = (store[table]?.values ?? const <Map<String, Object?>>[])
-        .where((r) => r['user_id'] == userId)
-        .where((r) => (r['server_rev'] as int? ?? 0) > sinceRev)
-        .map(Map<String, Object?>.of)
-        .toList()
-      ..sort((a, b) =>
-          (a['server_rev'] as int? ?? 0).compareTo(b['server_rev'] as int? ?? 0));
+    // Silme işaretleri gerçek sunucuda da normal bir tablodur
+    // (`deleted_records`); çekme onu diğerleriyle aynı yoldan okur.
+    final rows = table == syncDeletedTable
+        ? _deletedPage(userId, sinceRev)
+        : (store[table]?.values ?? const <Map<String, Object?>>[])
+            .where((r) => r['user_id'] == userId)
+            .where((r) => (r['server_rev'] as int? ?? 0) > sinceRev)
+            .map(Map<String, Object?>.of)
+            .toList();
+    rows.sort((a, b) =>
+        (a['server_rev'] as int? ?? 0).compareTo(b['server_rev'] as int? ?? 0));
     return rows.take(limit).toList();
   }
 
@@ -125,6 +130,55 @@ class FakeSyncServer implements SyncRemote {
         .where((r) => r['user_id'] == userId && uids.contains(r['uid']))
         .map(Map<String, Object?>.of)
         .toList();
+  }
+
+  /// Sunucudaki silme işaretleri: tablo → silinen uid'ler.
+  /// Gerçek sunucuda `deleted_records`; burada da aynı işi görür.
+  final Map<String, Set<String>> deletedMarks = {};
+
+  @override
+  Future<List<String>> deleteRows(
+    String table,
+    String userId,
+    List<String> uids,
+  ) async {
+    calls.add('deleteRows:$table');
+    if (fail) throw Exception('ağ yok');
+    final t = store[table];
+    final silinen = <String>[];
+    for (final uid in uids) {
+      final row = t?[uid];
+      // Sunucuda olmayan kimlik silinmez ve İŞARET BIRAKMAZ — hiç
+      // gönderilmemiş satırın silinmesi bilgi taşımaz (docs/20 §5.3).
+      if (row == null || row['user_id'] != userId) continue;
+      t!.remove(uid);
+      deletedMarks.putIfAbsent(table, () => {}).add(uid);
+      _rev++;
+      _deletedRev['$table/$uid'] = _rev;
+      silinen.add(uid);
+    }
+    return silinen;
+  }
+
+  final Map<String, int> _deletedRev = {};
+
+  List<Map<String, Object?>> _deletedPage(String userId, int sinceRev) {
+    final out = <Map<String, Object?>>[];
+    deletedMarks.forEach((table, uids) {
+      for (final uid in uids) {
+        final rev = _deletedRev['$table/$uid'] ?? 0;
+        if (rev > sinceRev) {
+          out.add(<String, Object?>{
+            'user_id': userId,
+            'table_name': table,
+            'uid': uid,
+            'server_rev': rev,
+            'deleted_at_ms': rev,
+          });
+        }
+      }
+    });
+    return out;
   }
 
   int rowCount(String table) => store[table]?.length ?? 0;

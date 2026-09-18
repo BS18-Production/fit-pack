@@ -52,9 +52,17 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
   Future<int> addRoutineExercise(RoutineExercisesCompanion entry) =>
       into(routineExercises).insert(entry);
 
-  /// Rutin + hareket listesini TEK transaction'da yazar. Düzenlemede "önce
-  /// sil sonra yeniden yaz" adımları atomikleşir: ortada hata olursa rutinin
-  /// mevcut hareketleri kaybolmaz. Rutin id'sini döner.
+  /// Rutin + hareket listesini TEK transaction'da yazar. Rutin id'sini döner.
+  ///
+  /// **Düzenlemede FARK uygulanır** (docs/20 §5.4): eskiden "hepsini sil,
+  /// yeniden ekle" yapılıyordu. Senkron v2'yle her silme bir mezar taşı, her
+  /// ekleme yeni bir kimlik üretiyor — yani hedef sürede tek bir tekrar
+  /// sayısını değiştirmek, rutinin BÜTÜN hareketlerini sunucuda silip yeniden
+  /// yaratıyordu. Fark uygulaması bunu dokunulan satırla sınırlar.
+  ///
+  /// Eşleştirme **sıraya** göre: i. satır i. satırla karşılaştırılır. Aynıysa
+  /// hiç yazılmaz (gereksiz yazma satırı kuyruğa sokar), farklıysa güncellenir;
+  /// artan satırlar eklenir, eksilenler silinir.
   Future<int> saveRoutineWithExercises({
     required RoutinesCompanion routine,
     required bool isNew,
@@ -65,19 +73,69 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
         final int id;
         if (isNew) {
           id = await createRoutine(routine);
-        } else {
-          id = routine.id.value;
-          await updateRoutine(routine);
-          await clearRoutineExercises(id);
+          final items = buildExercises(id);
+          if (items.isNotEmpty) {
+            await batch((b) => b.insertAll(routineExercises, items));
+          }
+          return id;
         }
-        final items = buildExercises(id);
-        if (items.isNotEmpty) {
-          await batch((b) => b.insertAll(routineExercises, items));
-        }
+
+        id = routine.id.value;
+        await updateRoutine(routine);
+        await _applyRoutineExerciseDiff(id, buildExercises(id));
         return id;
       });
 
-  /// Rutinin tüm hareketlerini siler (oluşturucuda yeniden yazmadan önce).
+  /// Rutinin hareket listesini [items] ile eşitler — farkı uygular.
+  Future<void> _applyRoutineExerciseDiff(
+    int routineId,
+    List<RoutineExercisesCompanion> items,
+  ) async {
+    final mevcut = await (select(routineExercises)
+          ..where((e) => e.routineId.equals(routineId))
+          ..orderBy([(e) => OrderingTerm.asc(e.orderIndex)]))
+        .get();
+
+    final ortak = mevcut.length < items.length ? mevcut.length : items.length;
+
+    for (var i = 0; i < ortak; i++) {
+      if (_sameRoutineExercise(mevcut[i], items[i])) continue;
+      await (update(routineExercises)..where((e) => e.id.equals(mevcut[i].id)))
+          .write(items[i]);
+    }
+
+    for (var i = ortak; i < items.length; i++) {
+      await into(routineExercises).insert(items[i]);
+    }
+
+    if (mevcut.length > items.length) {
+      final fazlalik = [
+        for (var i = ortak; i < mevcut.length; i++) mevcut[i].id,
+      ];
+      await (delete(routineExercises)..where((e) => e.id.isIn(fazlalik))).go();
+    }
+  }
+
+  /// Mevcut satır ile yazılmak istenen aynı mı? Aynıysa hiç yazma: gereksiz
+  /// UPDATE satırı senkron kuyruğuna sokar ve sunucuya boşuna trafik çıkarır.
+  ///
+  /// Companion'da **belirtilmemiş** (`absent`) alan "değiştirme" demektir, o
+  /// yüzden farklılık sayılmaz.
+  static bool _sameRoutineExercise(
+    RoutineExercise mevcut,
+    RoutineExercisesCompanion yeni,
+  ) {
+    bool ayni<T>(Value<T> v, T simdiki) => !v.present || v.value == simdiki;
+    return ayni(yeni.exerciseId, mevcut.exerciseId) &&
+        ayni(yeni.orderIndex, mevcut.orderIndex) &&
+        ayni(yeni.targetSets, mevcut.targetSets) &&
+        ayni(yeni.targetRepsMin, mevcut.targetRepsMin) &&
+        ayni(yeni.targetRepsMax, mevcut.targetRepsMax) &&
+        ayni(yeni.targetRestSec, mevcut.targetRestSec) &&
+        ayni(yeni.note, mevcut.note);
+  }
+
+  /// Rutinin tüm hareketlerini siler.
   Future<void> clearRoutineExercises(int routineId) =>
       (delete(routineExercises)..where((e) => e.routineId.equals(routineId)))
           .go();

@@ -403,4 +403,9 @@ class _TooManyRowsServer implements SyncRemote {
   Future<List<Map<String, Object?>>> fetchByUids(
           String table, String userId, List<String> uids) =>
       inner.fetchByUids(table, userId, uids);
+
+  @override
+  Future<List<String>> deleteRows(
+          String table, String userId, List<String> uids) =>
+      inner.deleteRows(table, userId, uids);
 }

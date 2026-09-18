@@ -77,6 +77,26 @@ class SupabaseSyncRemote implements SyncRemote {
     return rows.cast<Map<String, Object?>>();
   }
 
+  @override
+  Future<List<String>> deleteRows(
+    String table,
+    String userId,
+    List<String> uids,
+  ) async {
+    if (uids.isEmpty) return const [];
+    // Doğrudan DELETE yerine RPC: tablo adı sunucuda sabit listeye karşı
+    // doğrulanıyor ve gerçekten silinen kimlikler dönüyor (docs/20 §5.3).
+    // Silme işaretlerini sunucudaki AFTER DELETE tetikleyicisi yazar.
+    final rows = await client.rpc<List<dynamic>>(
+      'sync_delete',
+      params: {'p_table': table, 'p_uids': uids},
+    );
+    return [
+      for (final r in rows)
+        if (r is Map && r['uid'] is String) r['uid'] as String,
+    ];
+  }
+
   /// `server_rev` JSON'dan int ya da (büyük sayılarda) String gelebilir.
   static int _asInt(Object? v) {
     if (v is int) return v;

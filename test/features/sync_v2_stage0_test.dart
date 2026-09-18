@@ -182,4 +182,12 @@ class _SlowRemote implements SyncRemote {
     List<String> uids,
   ) async =>
       const [];
+
+  @override
+  Future<List<String>> deleteRows(
+    String table,
+    String userId,
+    List<String> uids,
+  ) async =>
+      const [];
 }

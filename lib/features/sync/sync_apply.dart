@@ -131,6 +131,13 @@ class SyncApply {
       return ApplyOutcome.skipped; // yerel daha yeni → koru (gönderilecek)
     }
 
+    // Satır yerelde YOK ve bu kimlik için bekleyen bir MEZAR TAŞI var:
+    // kullanıcı burada sildi, silme henüz sunucuya gitmedi (docs/20 §6.2).
+    // Eklersek satır bir an geri gelir, sonra kendi silmemiz onu tekrar
+    // götürür — kullanıcı "sildiğim geri geldi" diye görür. Silme her zaman
+    // kazandığı için hiç eklemiyoruz.
+    if (await _hasTombstone(table, uid)) return ApplyOutcome.skipped;
+
     // Katalog tablosunda (exercises/foods) aynı isimli seed satırı varsa onu
     // benimse — cihazlar seed satırlarına FARKLI uid ürettiği için uid eşleşmez
     // ve pull aksi halde her seansta kullanılan hareketi ikizler.
@@ -166,6 +173,16 @@ class SyncApply {
     await _update('user_profile', 'id = ?',
         [Variable(row.first.data['id'] as int)], local);
     return ApplyOutcome.updated;
+  }
+
+  /// Bu kimlik için gönderilmeyi bekleyen bir yerel silme var mı?
+  Future<bool> _hasTombstone(String table, String uid) async {
+    final r = await db.customSelect(
+      'SELECT 1 FROM sync_tombstones '
+      'WHERE table_name = ? AND uid = ? AND sync_state = 1 LIMIT 1',
+      variables: [Variable(table), Variable(uid)],
+    ).get();
+    return r.isNotEmpty;
   }
 
   Future<int?> _findAdoptableCatalogRow(String table, Object? name) async {

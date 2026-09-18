@@ -670,6 +670,34 @@ GİRMEDİ ve imleç payla (46 − 1000 → 0) yazıldı. Yani gönderim, çekme,
 damgalama ve imleç payı gerçek cihaz + gerçek sunucu üzerinde birlikte
 çalışıyor.
 
+### 10.6 Aşama 5 doğrulaması (2026-09-18)
+
+**pgTAP (18 test):** işaretin yazılması, satırın gerçekten silinmesi,
+zincirleme silmelerin de iz bırakması, silinmiş kimliğin dirilememesi,
+`sync_delete`'in tablo adı doğrulaması ve RLS'i, hesap silmenin bozulmaması.
+
+**Gerçek HTTP (`Fit Pack Dev`):** `rpc/sync_delete` yalnız gerçekten silinen
+kimliği döndürdü (olmayan kimlik dönmedi), satır gitti, işaret
+`deleted_records`'ta çekmenin okuduğu biçimde belirdi, bilinmeyen tablo adı
+**HTTP 400** verdi, silinen kimliğin geri eklenmesi **boş yanıt** ile
+reddedildi.
+
+**İki hata bu aşamada yakalandı ve ikisi de yalnız gerçek rolle ölçünce çıktı:**
+
+1. **Her silme patlıyordu.** `sync_mark_deleted` `auth.users`'a bakıyor, ama
+   istemci rolü `authenticated`'ın o tabloya SELECT yetkisi yok (olmamalı da).
+   Superuser olarak koşan ilk test seti yeşildi; `set local role authenticated`
+   eklenince `permission denied for table users` çıktı. Çözüm: fonksiyon
+   **SECURITY DEFINER** + `search_path = ''`.
+2. **Hesap silme patlıyordu.** `delete from auth.users` zincirinde işaret
+   yazmaya kalkınca yabancı anahtar ihlali (`23503`) — çünkü kullanıcı satırı
+   o anda çoktan silinmiş oluyor. Çözüm: kullanıcı yoksa işaret yazma.
+   Ölçülerek doğrulandı (docs/20 §5.3).
+
+**Ders:** sunucu testleri **istemcinin rolüyle** de koşmalı. Superuser her
+yetki hatasını gizler ve gizlediği hata üretimde "hiçbir silme çalışmıyor"
+olarak çıkardı.
+
 ### 10.3 Uçtan uca (elle, cihazda)
 
 Telefon + simülatör aynı hesapla: (1) telefonda öğün sil → simülatör
@@ -702,7 +730,7 @@ Her aşama **tek başına commit edilebilir**, testleri yeşil ve uygulama
 | **2 — Açılış ve kapı** ✅ | `bootstrap` yerel hesap kontrolünü de yapıyor; nötr açılış ekranı (`/splash`) ve başlangıç konumu kapıdan; `accountError` → "Hesap doğrulanamadı" ekranı; `switch_in_progress` ile yarıda kalan temizlik açılışta tamamlanıyor; `last_user_id` deftere taşındı; gönderilmemiş kayıt + farklı hesap → seçim ekranı (veri silinmiyor). **2026-09-18**, 18 test. | #6, Karşılama, §7.4 | yok | ✅ |
 | **3 — Sunucu v2 (sürüm)** ✅ | `supabase/migrations/20260918120000_sync_v2_stage3.sql`: 12 tabloya `changed_at_ms` + `server_rev`, ortak `sync_rev_seq` dizisi, `sync_guard` tetikleyicisi, `(user_id, server_rev)` dizini, `(user_id, uid)` tekil dizini, `deleted_records` tablosu. **2026-09-18**, `Fit Pack Dev`'de **29/29 pgTAP testi yeşil** (`supabase/tests/sync_v2_stage3.sql`). **Üretime UYGULANMADI** — Aşama 4 ile birlikte çıkacak. | #4 hazırlığı | **var** | ✅ |
 | **4 — Sayfalı, artımlı çekme + koşullu gönderim** ✅ | İki aşamalı çekme + tablo başına `server_rev` imleci (`sync_meta`'da, kullanıcıya özel) ve **imleç payı** (§12.1); sayfa boyu 500 + tutarlılık kontrolü; `upsert().select()` ile kabul/ret; ret çözümü (`fetchByUids` → uygula → temizle, `local_seq` korumasıyla); `changed_at_ms` gönderimi; `server_rev` yerele yazılıyor; satır uygulama kuralı `SyncApply`'da tek yerde; `--dart-define` ile test projesine yönlendirme. Haftalık **tam uzlaştırma** kendiliğinden çalışıyor (§12.1 ikinci katman). **2026-09-18**, 13 yeni test (toplam 396) + gerçek PostgREST doğrulaması + cihaz duman testi. | #4, #5 | — | ✅ |
-| **5 — Silme protokolü** | Silme tetikleyicileri; `sync_delete` RPC; mezar taşı gönderimi; çekmede silme uygulama; rutin fark kaydı; `deleted_records` tablosu + sunucu silme tetikleyicileri | #1 | **var** | 2 gün |
+| **5 — Silme protokolü** ✅ | Sunucu: `sync_mark_deleted` tetikleyicisi (12 tablo, SECURITY DEFINER) + `sync_delete` RPC (tablo adı sabit listeye karşı doğrulanır, RLS geçerli). İstemci: mezar taşı gönderimi (yazmalardan SONRA, çocuk tablo önce), çekmede silme uygulama (işaretler her şeyden önce), bekleyen silme varken satırın geri eklenmemesi, rutin **fark** kaydı. **2026-09-18**, 18 pgTAP + 14 istemci testi (toplam 410) + gerçek HTTP doğrulaması. | #1 | **var** | ✅ |
 | **6 — Sahiplik + katalog kimliği + su** | Sunucu anahtarı `(user_id, uid)`; belirlenimci katalog kimliği + `sync_remap_uids`; hesap değişiminde katalog sıfırlama; su olay kaydı | #7, #8, isimle benimseme | **var** | 2 gün |
 | **7 — Durum ve operasyon** | Hata sınıflandırma; "Son yedekleme"; 3 gün uyarısı; kalıcı hata satırı (`sync_state = 2`) | C-36, duraklatma | yok | 1 gün |
 **Toplam:** yaklaşık 10 iş günü. Sunucu test ortamı **kuruldu**

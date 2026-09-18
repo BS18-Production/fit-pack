@@ -157,6 +157,27 @@ bağlı).
         yeniden açılışta değişikliği indirdi, satır kuyruğa geri girmedi,
         imleç payla yazıldı. Yöntem: `supabase/tests/README.md`.
       - analyze 0 · test **396/396** (atlanan yok).
+- [x] **Aşama 5 — silme protokolü ✅ (2026-09-18)** — hata #1'i kapatır
+      ("sildiğim öğün geri geliyor").
+      **Sunucu** (`supabase/migrations/20260918140000_sync_v2_stage5.sql`):
+      `sync_mark_deleted` tetikleyicisi (12 tablo) silinen satırın yalnız
+      kimliğini `deleted_records`'a yazıyor; `sync_delete` RPC'si tablo adını
+      sabit listeye karşı doğruluyor ve gerçekten silinenleri döndürüyor
+      (RLS geçerli). 18 pgTAP testi.
+      **İstemci:** mezar taşı gönderimi (yazmalardan SONRA, çocuk tablo önce),
+      çekmede silme uygulama (işaretler her şeyden önce iner), bekleyen silme
+      varken satırın sunucudan geri eklenmemesi, rutin kaydetmede **fark**
+      uygulaması (§5.4 — tek hedef değişikliği artık bütün rutini silip
+      yeniden yaratmıyor). 14 test.
+      - **İki hata yalnız GERÇEK ROLLE ölçünce çıktı** (docs/20 §10.6):
+        (a) silme izi tetikleyicisi `auth.users`'a bakıyor ama istemci
+        rolünün yetkisi yok → **her silme patlıyordu**; SECURITY DEFINER
+        yapıldı. (b) `delete from auth.users` zincirinde işaret yazılınca
+        yabancı anahtar ihlali → **hesap silme patlıyordu**; kullanıcı yoksa
+        işaret yazılmıyor. **Ders: sunucu testleri istemci rolüyle de koşmalı.**
+      - Gerçek HTTP doğrulaması: RPC, işaret okuma, bilinmeyen tablo (400),
+        dirilme reddi.
+      - analyze 0 · test **410/410**.
 - [ ] **Sıradaki: 3 + 4'ü üretime çıkar** (aynı sürüm — docs/20 §11):
       1. Üretim projesinin panel yedeğini al.
       2. `supabase/migrations/20260918120000_sync_v2_stage3.sql`'i üretime uygula.
@@ -164,6 +185,7 @@ bağlı).
       Arada eski istemci YAZAMAZ (ölçüldü: güncellemesi sessizce reddediliyor).
       Öncesinde cihazda duman testi: `--dart-define` ile `Fit Pack Dev`'e
       bağlanıp açılış + bir kayıt + senkron (docs/20 §10.3, §10.4).
+      **Aşama 5 kendi sürümünde, 3+4'ten SONRA çıkar** (docs/20 §11).
 - **Şema sürümü kararı (2026-09-18):** v11'i **senkron v2** aldı (uygulaması
       önce başladı). Haftalık değerlendirmenin hedef yönü alanı **v12** olacak
       — docs/22 §9 soru 4 buna göre güncellendi.

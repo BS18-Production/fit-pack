@@ -64,3 +64,13 @@ yerele yazdı. Sonra sunucu tarafında satır değiştirildi (kalori 2200 → 27
 `server_rev` 45 → 46); uygulama yeniden açılınca **değişiklik yerele indi**,
 satır kuyruğa geri GİRMEDİ (tetikleyiciler doğru susturulmuş) ve imleç payla
 (46 − 1000 → 0) yazıldı.
+
+## Aşama 5 (silme protokolü)
+
+| Dosya | Kapsam |
+|---|---|
+| `sync_v2_stage5.sql` | silme izi, zincirleme silme, `sync_delete` doğrulaması ve RLS, hesap silme (18 test) |
+
+**Testler istemcinin rolüyle de koşar** (`set local role authenticated`) ve
+bu zorunludur: superuser olarak koşan ilk sürüm yeşildi, ama gerçek rolle
+**her silme** `permission denied for table users` ile patlıyordu.

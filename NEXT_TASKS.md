@@ -31,9 +31,15 @@ bağlı).
 
 ## 🔵 Senkron v2 — Aşama 0 ✅ ve yerel ortam (2026-09-18)
 
-- [x] **Yerel test ortamı kuruldu:** Supabase CLI 2.117.0 + Docker (colima,
-      4 çekirdek / 5,8 GB). Eski Docker Desktop'tan kalan `credsStore: desktop`
-      ayarı imaj indirmeyi engelliyordu, kaldırıldı.
+- [x] **Yerel test ortamı kuruldu, sonra disk için kaldırıldı:** Supabase CLI
+      2.117.0 duruyor; Docker sanal makinesi (colima) + 8,5 GB imaj kuruldu,
+      12 servis çalıştı, 12 mirror tablosu `supabase/migrations/`'dan kuruldu.
+      **2026-09-18 akşam disk 557 MB'a düşünce sanal makine kaldırıldı**
+      (9,7 GB). Aşama 3'e başlarken `colima start --dns 1.1.1.1 --dns 8.8.8.8`
+      + `supabase start` ile ~15 dk'da geri gelir.
+      İki tuzak: eski Docker Desktop'tan kalan `credsStore: desktop` imaj
+      indirmeyi engelliyor (kaldırıldı); colima'nın varsayılan DNS'i imaj
+      sunucularını çözemiyor (açık DNS şart).
 - [x] **Aşama 0 — kırmızı testler** (`test/features/sync_v2_stage0_test.dart`):
       S-1 (uçuştaki düzenleme), S-2 (aynı saniyedeki iki düzenleme), S-4
       (çekme sırasında ekleme), S-6 (düşen tetikleyicinin onarımı). Dördü de
@@ -51,7 +57,13 @@ bağlı).
       onarım (eksik tetikleyici + kapalı kalmış bayrak).
       **Aşama 0'ın dört testi yeşile döndü**; v10→v11 göç testi (7 test).
       analyze 0 · test **368/368**.
-- [ ] **🔴 ENGEL — simülatör derlemesi çalışmıyor (Claude'un hatası):**
+- [x] ~~ENGEL — simülatör derlemesi~~ → **çözüldü (2026-09-18):** Samet'in
+      kararıyla Claude sanal makinesi silindi (11 GB), iOS platformu geri
+      indirildi, simülatör çalışıyor. **Ders:** "bu bileşen kullanılmıyor"
+      demeden önce bir derleme denenmeli — iOS 26.5 Xcode'un tek iOS
+      SDK'sıymış. Disk: temizlik +17,6 GB, Claude VM +11 GB, geri indirme
+      −19 GB, Docker VM +9,7 GB (kaldırıldı) → şu an **17 GB boş**.
+      Eski kayıt:
       disk temizliğinde silinen **iOS 26.5 platformu** meğer kullanılıyormuş:
       Xcode'un tek iOS SDK'sı o ve silinince `flutter run` hiçbir simülatör
       hedefi bulamıyor ("iOS 26.5 is not installed"). Yeniden indirme **8,5 GB**

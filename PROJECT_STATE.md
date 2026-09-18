@@ -13,10 +13,12 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
-## 🔵 Senkron v2 — Aşama 0 ve 1 ✅ — 2026-09-18
+## 🔵 Senkron v2 — Aşama 0, 1, 2 ✅ — 2026-09-18
 
-- **Yerel test ortamı:** Supabase CLI + Docker (colima). Yerel yığın ayakta,
-  12 mirror tablosu `supabase/migrations/`'dan kuruluyor.
+- **Yerel test ortamı:** Supabase CLI kurulu; yerel yığın bir kez ayağa
+  kaldırılıp doğrulandı (12 servis, 12 mirror tablosu
+  `supabase/migrations/`'dan). Docker sanal makinesi disk için kaldırıldı,
+  Aşama 3'te ~15 dk'da geri gelir.
 - **Aşama 0:** dört kritik hata için kırmızı testler yazıldı.
 - **Aşama 1 (şema v11):** milisaniyelik damga, cihaz sayacı, `server_rev`;
   `sync_meta` + `sync_tombstones`; 36 tetikleyici (silme izi dahil, `capture`
@@ -24,7 +26,11 @@
   düşürmüyor; açılışta onarım. **Aşama 0'ın dört testi yeşile döndü.**
 - **Yakalanan hata:** yeni kolonlar gönderilen veriye sızıyordu; sunucuda o
   kolonlar olmadığı için her gönderim düşerdi (test eklendi).
-- analyze 0 · test **369/369**.
+- **Aşama 2 (açılış ve hesap):** yarıda kalan hesap temizliği açılışta
+  tamamlanıyor; gönderilmemiş kayıt varken farklı hesap girerse veri
+  silinmiyor (seçim ekranı); hesap doğrulanamazsa içeri alınmıyor; nötr
+  açılış ekranı; `last_user_id` senkron defterinde.
+- analyze 0 · test **383/383**. Simülatörde gerçek veriyle doğrulandı.
 
 ## 🧹 A Paketi — birikmiş işler kapatıldı — 2026-09-18
 

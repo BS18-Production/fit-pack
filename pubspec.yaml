@@ -65,6 +65,7 @@ dependencies:
   # G-1: mola sonu sesi (geri sayım tıkı + bitiş bipi) — medya sesiyle,
   # müziğin üstüne karışarak çalar. Sesler assets/sounds/ (projede üretildi).
   audioplayers: ^6.7.1
+  flutter_secure_storage: ^11.2.0
 
 dev_dependencies:
   flutter_test:

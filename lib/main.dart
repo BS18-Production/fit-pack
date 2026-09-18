@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'core/auth/secure_session_storage.dart';
 import 'app.dart';
 import 'core/config/supabase_config.dart';
 import 'core/onboarding/first_run_hints.dart';
@@ -35,6 +37,14 @@ void main() async {
       url: SupabaseConfig.url,
       // Yeni sb_publishable_ anahtarı (eski anonKey yerine).
       publishableKey: SupabaseConfig.anonKey,
+      // Oturum belirteci düz metin yerine cihazın anahtar kasasında
+      // (iOS Keychain / Android Keystore). Eski düz metin değer ilk açılışta
+      // taşınır — kullanıcı oturumundan olmaz.
+      authOptions: FlutterAuthClientOptions(
+        localStorage: SecureSessionStorage(
+          persistSessionKey: sessionStorageKey(SupabaseConfig.url),
+        ),
+      ),
     );
   } catch (_) {
     // Ağ yok / yanlış config → bulut özellikleri pasif, yerel akış bozulmaz.

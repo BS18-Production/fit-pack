@@ -8,9 +8,10 @@ import 'sync_pull.dart';
 import 'sync_push.dart';
 
 /// Sunucu yüzeyi. Supabase başlatılamadıysa (ağ yok / yanlış config) yine de
-/// nesne kurulur — çağrı hata fırlatır, satırlar kuyrukta kalır.
+/// nesne kurulur; istemci çağrı anında çözülür → hata yalnız o çağrıda çıkar,
+/// satırlar kuyrukta kalır, uygulama yerelde çalışmayı sürdürür.
 final syncRemoteProvider = Provider<SyncRemote>(
-  (ref) => SupabaseSyncRemote(Supabase.instance.client),
+  (ref) => SupabaseSyncRemote(() => Supabase.instance.client),
 );
 
 final syncPushProvider = Provider<SyncPush>(

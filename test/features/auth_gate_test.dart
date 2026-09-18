@@ -6,6 +6,7 @@ import 'package:fit_pack/features/auth/account_switch.dart';
 import 'package:fit_pack/features/auth/auth_gate.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthChangeEvent;
 
 /// Zorunlu giriş kapısı (docs/18 §5.1) — yönlendirme tablosu + hesap değişimi.
 void main() {
@@ -153,6 +154,80 @@ void main() {
             onboarded: true,
             busy: true),
         isNull,
+      );
+    });
+  });
+
+  group('authActionFor — oturum olayı karşılığı', () {
+    const user = 'u-1';
+    const other = 'u-2';
+
+    test(
+      'yeniden açılışta diskten gelen oturum hesap kontrolü BAŞLATMAZ',
+      () {
+        // 2026-09-16 regresyonu: `initialSession` hesap değişimi sanılıyordu →
+        // busy açılıyor, router kararı erteleniyor ve oturum açıkken birkaç
+        // saniye Karşılama ekranı görünüyordu.
+        expect(
+          authActionFor(
+            event: AuthChangeEvent.initialSession,
+            userId: user,
+            appliedUserId: null,
+          ),
+          AuthAction.markApplied,
+        );
+      },
+    );
+
+    test('bootstrap işaretlediyse aynı olay yalnız haber verir', () {
+      expect(
+        authActionFor(
+          event: AuthChangeEvent.initialSession,
+          userId: user,
+          appliedUserId: user,
+        ),
+        AuthAction.notifyOnly,
+      );
+    });
+
+    test('yeni giriş ve hesap değişimi hesap kontrolü ister', () {
+      expect(
+        authActionFor(
+          event: AuthChangeEvent.signedIn,
+          userId: user,
+          appliedUserId: null,
+        ),
+        AuthAction.applyAccount,
+      );
+      expect(
+        authActionFor(
+          event: AuthChangeEvent.signedIn,
+          userId: other,
+          appliedUserId: user,
+        ),
+        AuthAction.applyAccount,
+      );
+    });
+
+    test('token yenileme tekrar tekrar gelse de kontrol çalışmaz', () {
+      expect(
+        authActionFor(
+          event: AuthChangeEvent.tokenRefreshed,
+          userId: user,
+          appliedUserId: user,
+        ),
+        AuthAction.notifyOnly,
+      );
+    });
+
+    test('oturum yoksa kapı devreye girer', () {
+      expect(
+        authActionFor(
+          event: AuthChangeEvent.signedOut,
+          userId: null,
+          appliedUserId: user,
+        ),
+        AuthAction.signedOut,
       );
     });
   });

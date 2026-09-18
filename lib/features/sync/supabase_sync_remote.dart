@@ -12,9 +12,18 @@ import 'sync_push.dart';
 /// Metodun dönmesi = **sunucu onayı**. Hata fırlatırsa `SyncPush` satırları
 /// kuyrukta bırakır (docs/18 §6.3 kural 2).
 class SupabaseSyncRemote implements SyncRemote {
-  final SupabaseClient client;
+  /// İstemci **çağrı anında** çözülür. Kurulumda çözülseydi Supabase
+  /// başlatılamadığında (ağ yok/yanlış config) `Supabase.instance` fırlatır ve
+  /// uygulamanın kökü çökerdi — oysa bulut opsiyonel katman (main.dart).
+  /// Bugün: satırlar kuyrukta kalır, uygulama yerelde çalışır.
+  final SupabaseClient Function() _client;
 
-  SupabaseSyncRemote(this.client);
+  SupabaseSyncRemote(SupabaseClient Function() client) : _client = client;
+
+  /// Hazır bir istemciyle (test/DI) kurmak için.
+  SupabaseSyncRemote.of(SupabaseClient client) : _client = (() => client);
+
+  SupabaseClient get client => _client();
 
   @override
   Future<void> upsert(String table, List<Map<String, Object?>> rows) async {

@@ -98,14 +98,16 @@ class AuthGate extends ChangeNotifier {
   /// pull'u tetiklenir (bloklamaz). Böylece açılış anında değil de sessizce
   /// sunucudaki değişiklikler (ve varsa junk profilin gerçekle değişmesi) iner.
   Future<void> bootstrap() async {
-    await _readOnboarded();
     final userId = currentUserId;
-    if (userId != null) {
-      // Yeniden başlatmadaki `initialSession` olayını "zaten uygulandı" say →
-      // her açılışta pull tekrarlanmasın.
-      _appliedUserId = userId;
-      unawaited(_backgroundPull(userId));
-    }
+    // İşaretleme `_readOnboarded` BEKLENMEDEN önce yapılır: o await sürerken
+    // gelen `initialSession` olayı hesap kontrolünü tetiklerse `busy` açılır,
+    // router kararı ertelenir ve oturum açıkken birkaç saniye Karşılama
+    // ekranı görünür (2026-09-16'da emülatörde gözlendi).
+    final alreadyApplied = userId != null && userId == _appliedUserId;
+    if (userId != null) _appliedUserId = userId;
+    await _readOnboarded();
+    // Her açılışta pull tekrarlanmasın: olay bizden önce geldiyse zaten başladı.
+    if (userId != null && !alreadyApplied) unawaited(_backgroundPull(userId));
   }
 
   /// Onboarding bitince çağrılır — kapı anında açılır.
@@ -123,20 +125,25 @@ class AuthGate extends ChangeNotifier {
     if (state.event == AuthChangeEvent.passwordRecovery) {
       _recovering = true;
     }
-    // Çıkış → kapı devreye girsin. Kurtarma yarıda bırakıldıysa kilidi de bırak
-    // (oturum yokken kilit kullanıcıyı boş ekranda hapsederdi).
-    if (userId == null) {
-      _recovering = false;
-      notifyListeners();
-      return;
+    switch (authActionFor(
+      event: state.event,
+      userId: userId,
+      appliedUserId: _appliedUserId,
+    )) {
+      // Çıkış → kapı devreye girsin. Kurtarma yarıda bırakıldıysa kilidi de
+      // bırak (oturum yokken kilit kullanıcıyı boş ekranda hapsederdi).
+      case AuthAction.signedOut:
+        _recovering = false;
+        notifyListeners();
+      case AuthAction.notifyOnly:
+        notifyListeners();
+      case AuthAction.markApplied:
+        _appliedUserId = userId;
+        notifyListeners();
+        unawaited(_backgroundPull(userId!));
+      case AuthAction.applyAccount:
+        unawaited(_applyAccount(userId!));
     }
-    // Token yenileme gibi olaylar aynı kullanıcı için tekrar tekrar gelir;
-    // hesap kontrolünü yalnız kullanıcı GERÇEKTEN değiştiğinde çalıştır.
-    if (userId == _appliedUserId) {
-      notifyListeners();
-      return;
-    }
-    unawaited(_applyAccount(userId));
   }
 
   Future<void> _applyAccount(String userId) async {
@@ -218,6 +225,40 @@ final authGateProvider = Provider<AuthGate>((ref) {
   ref.onDispose(gate.dispose);
   return gate;
 });
+
+/// Oturum olayına verilecek karşılık — saf mantık, [gateRedirect] gibi ayrı
+/// tutulur ki test edilebilsin.
+enum AuthAction {
+  /// Oturum yok → kapı devreye girsin.
+  signedOut,
+
+  /// Aynı kullanıcı (token yenileme vb.) → yalnız dinleyicilere haber ver.
+  notifyOnly,
+
+  /// Uygulama yeniden açıldı, oturum diskten geldi → uygulanmış say, veriyi
+  /// arka planda tazele. **Hesap kontrolü çalıştırma.**
+  markApplied,
+
+  /// Gerçekten başka (ya da ilk kez giren) kullanıcı → hesap kontrolü.
+  applyAccount,
+}
+
+/// [AuthGate] oturum olayını nasıl karşılasın?
+///
+/// Kritik ayrım: `initialSession` **hesap değişimi değildir** — uygulama
+/// yeniden açılırken depodaki oturumun bildirilmesidir. Hesap kontrolü
+/// başlatılırsa `busy` açılır, `gateRedirect` kararı erteler ve kullanıcı
+/// oturumu açıkken birkaç saniye Karşılama ekranında kalır (2026-09-16).
+AuthAction authActionFor({
+  required AuthChangeEvent event,
+  required String? userId,
+  required String? appliedUserId,
+}) {
+  if (userId == null) return AuthAction.signedOut;
+  if (userId == appliedUserId) return AuthAction.notifyOnly;
+  if (event == AuthChangeEvent.initialSession) return AuthAction.markApplied;
+  return AuthAction.applyAccount;
+}
 
 /// Yönlendirme tablosu (docs/18 §5.1) — saf mantık, test edilebilir olsun diye
 /// GoRouter'dan ayrı:

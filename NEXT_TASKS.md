@@ -51,6 +51,18 @@ bağlı).
       onarım (eksik tetikleyici + kapalı kalmış bayrak).
       **Aşama 0'ın dört testi yeşile döndü**; v10→v11 göç testi (7 test).
       analyze 0 · test **368/368**.
+- [ ] **🔴 ENGEL — simülatör derlemesi çalışmıyor (Claude'un hatası):**
+      disk temizliğinde silinen **iOS 26.5 platformu** meğer kullanılıyormuş:
+      Xcode'un tek iOS SDK'sı o ve silinince `flutter run` hiçbir simülatör
+      hedefi bulamıyor ("iOS 26.5 is not installed"). Yeniden indirme **8,5 GB**
+      istiyor, diskte **~4 GB** boş var (Supabase imajları + Docker sanal
+      makinesi ~9,7 GB yer aldı). Aşama 1 bu yüzden simülatörde
+      doğrulanamadı — testler yeşil ama cihazda görülmedi.
+      **Samet'in kararı gerekiyor:** (a) Docker sanal makinesini kaldır
+      (~9,7 GB; yerel Supabase Aşama 3'te yeniden kurulur), (b) Android
+      emülatörünü kaldır (~13 GB; "Android'e dokunma" kararına aykırı),
+      (c) kişisel büyük dosyalardan yer aç (Claude sanal makinesi 12 GB,
+      Chrome modeli 4 GB, duvar kağıtları 3,7 GB).
 - [ ] **Sıradaki: Aşama 2 — açılış ve kapı** (docs/20 §11): `bootstrap`
       sırası, nötr açılış ekranı, `accountError`, `switch_in_progress`,
       gönderilmemiş veri uyarısı. Sunucuya dokunmaz.

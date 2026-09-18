@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-09-17
+> **Son güncelleme:** 2026-09-18
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -8,17 +8,22 @@
 > Ayrıntı: [CODE_REVIEW.md § Dış İnceleme](CODE_REVIEW.md). docs/20 —
 > Senkron v2 tasarımı yazıldı ve onaylandı. **Sıra (Samet, 2026-09-17
 > akşam):** sağlamlık paketi → haftalık değerlendirme + hedef yönü →
-> Docker + Supabase CLI ve senkron v2 → ilerleme fotoğrafları + geçmişten
-> öğün kopyala (ayrıntı: NEXT_TASKS "Güncel sıra").
+> senkron v2 → ilerleme fotoğrafları + geçmişten öğün kopyala
+> (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
 ## 🔵 Senkron v2 — Aşama 0, 1, 2 ✅ — 2026-09-18
 
-- **Yerel test ortamı:** Supabase CLI kurulu; yerel yığın bir kez ayağa
-  kaldırılıp doğrulandı (12 servis, 12 mirror tablosu
-  `supabase/migrations/`'dan). Docker sanal makinesi disk için kaldırıldı,
-  Aşama 3'te ~15 dk'da geri gelir.
+- **Sunucu test ortamı — karar değişti (Samet, 2026-09-18):** yerel Docker
+  yığını (~9,7 GB disk) yerine **ikinci ücretsiz bulut projesi**:
+  **`Fit Pack Dev`** (`qecbnrkbordkqeogmevi`, eu-central-1). 12 mirror
+  tablosu + RLS + yetkiler kuruldu, pgTAP 1.3.3 açıldı ve doğrulandı.
+  Üretim projesi (`jkviihbyogktwboreydn`) sunucu denemelerinde artık hiç
+  kullanılmıyor. Ayrıntı: **docs/20 §10.4**. Gerekçe: disk bu projede iki kez
+  yolu tıkadı; test ortamının işini bulut kopyası diskten yemeden yapıyor.
+  Bedeli: `supabase test db` hazır koşucusu yok (test SQL'i doğrudan
+  çalıştırılıyor) ve ücretsiz planın 2 proje sınırı doldu.
 - **Aşama 0:** dört kritik hata için kırmızı testler yazıldı.
 - **Aşama 1 (şema v11):** milisaniyelik damga, cihaz sayacı, `server_rev`;
   `sync_meta` + `sync_tombstones`; 36 tetikleyici (silme izi dahil, `capture`

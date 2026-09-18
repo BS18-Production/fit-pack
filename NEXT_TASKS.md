@@ -22,7 +22,8 @@ bağlı).
      sınırlılığı yazılır. Farklı hareketler tek "gelişim puanı"na toplanmaz.
    - Bildirim kısa, dokununca bu ekran açılır. Hedef kullanıcı onayı olmadan
      değişmez.
-3. **Docker + Supabase CLI kurulumu → senkron v2** (docs/20, ~10,5 gün).
+3. **Senkron v2** (docs/20, ~10 gün). Sunucu test ortamı kuruldu:
+   `Fit Pack Dev` bulut projesi (docs/20 §10.4) — yerel Docker kurulmuyor.
    Mevcut yerel ve bulut kayıtlarının kimlikleri korunarak taşınması da
    sınanır (S-18 + katalog kimliği taşıması), yalnız yeni kurulum değil.
 4. **#4 İlerleme fotoğrafları** (docs/19 dilim 1, yalnız cihazda) + **#2
@@ -31,15 +32,20 @@ bağlı).
 
 ## 🔵 Senkron v2 — Aşama 0 ✅ ve yerel ortam (2026-09-18)
 
-- [x] **Yerel test ortamı kuruldu, sonra disk için kaldırıldı:** Supabase CLI
-      2.117.0 duruyor; Docker sanal makinesi (colima) + 8,5 GB imaj kuruldu,
-      12 servis çalıştı, 12 mirror tablosu `supabase/migrations/`'dan kuruldu.
-      **2026-09-18 akşam disk 557 MB'a düşünce sanal makine kaldırıldı**
-      (9,7 GB). Aşama 3'e başlarken `colima start --dns 1.1.1.1 --dns 8.8.8.8`
-      + `supabase start` ile ~15 dk'da geri gelir.
-      İki tuzak: eski Docker Desktop'tan kalan `credsStore: desktop` imaj
-      indirmeyi engelliyor (kaldırıldı); colima'nın varsayılan DNS'i imaj
-      sunucularını çözemiyor (açık DNS şart).
+- [x] **Sunucu test ortamı — `Fit Pack Dev` ✅ (2026-09-18):** Samet'in
+      kararıyla yerel Docker yığınından vazgeçildi (~9,7 GB disk; bu projede
+      disk iki kez yolu tıkadı). Yerine **ikinci ücretsiz bulut projesi**:
+      `Fit Pack Dev` / `qecbnrkbordkqeogmevi`, eu-central-1. İki migration
+      kuruldu (12 tablo, RLS açık, yetkiler verildi), pgTAP 1.3.3 `extensions`
+      şemasında açıldı ve örnek testle doğrulandı. Ayrıntı + sıfırlama ve
+      istemciyi yöneltme komutları: **docs/20 §10.4**.
+      - Ücretsiz plan organizasyon başına 2 aktif proje veriyor; **ikisi de
+        doldu** — üçüncü proje açılamaz.
+      - Ücretsiz proje 7 gün dokunulmazsa duraklar, panelden ~1 dk'da uyanır.
+      - Supabase CLI 2.117.0 kurulu duruyor (`db reset --linked` için).
+      - Eski yerel kurulum denemesinden iki tuzak kayda geçti: Docker
+        Desktop'tan kalan `credsStore: desktop` imaj indirmeyi engelliyor;
+        colima'nın varsayılan DNS'i imaj sunucularını çözemiyor.
 - [x] **Aşama 0 — kırmızı testler** (`test/features/sync_v2_stage0_test.dart`):
       S-1 (uçuştaki düzenleme), S-2 (aynı saniyedeki iki düzenleme), S-4
       (çekme sırasında ekleme), S-6 (düşen tetikleyicinin onarımı). Dördü de
@@ -101,9 +107,11 @@ bağlı).
       tetikleyici olmadığı için bu hata testten kaçmıştı.
 - [ ] **Sıradaki: Aşama 3 — sunucu sürümü** (`supabase/migrations/…_sync_v2.sql`):
       `changed_at_ms` / `server_rev` kolonları, `sync_rev_seq` dizisi,
-      `sync_guard` tetikleyicisi, `(user_id, uid)` anahtarı. Yerel Supabase
-      hazır; pgTAP testleri burada yazılacak. **Sunucu değişikliği** → yayın
-      kuralı: 3 ve 4 aynı sürümde çıkar.
+      `sync_guard` tetikleyicisi, `(user_id, uid)` anahtarı. Test ortamı
+      (`Fit Pack Dev`) hazır; pgTAP testleri `supabase/tests/sync_v2.sql`
+      altına yazılacak. **Üretime hiçbir şey uygulanmadan önce test
+      projesinde yeşile dönecek.** **Sunucu değişikliği** → yayın kuralı:
+      3 ve 4 aynı sürümde çıkar.
 - **Şema sürümü kararı (2026-09-18):** v11'i **senkron v2** aldı (uygulaması
       önce başladı). Haftalık değerlendirmenin hedef yönü alanı **v12** olacak
       — docs/22 §9 soru 4 buna göre güncellendi.

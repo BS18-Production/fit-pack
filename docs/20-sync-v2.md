@@ -566,8 +566,8 @@ Mevcut 263 test korunur. Senkron v2 şu testler yeşil olmadan "bitti" sayılmaz
 ### 10.2 Sunucu (Postgres) testleri
 
 `supabase/tests/sync_v2.sql` (pgTAP — Postgres için test çerçevesi) —
-**yerel Docker'da** `supabase start` + `supabase test db` ile çalıştırılır
-(§13 Karar 7):
+**ikinci bulut projesinde** (`Fit Pack Dev`) çalıştırılır; bkz. §10.4
+(2026-09-18 kararı, §13 Karar 7'nin yerini aldı):
 
 - Eski `changed_at_ms` ile güncelleme → satır değişmez, `RETURNING` boş.
 - Yeni `changed_at_ms` → değişir, `server_rev` artar.
@@ -575,10 +575,47 @@ Mevcut 263 test korunur. Senkron v2 şu testler yeşil olmadan "bitti" sayılmaz
 - `sync_delete` başka kullanıcının satırına dokunamaz (RLS).
 - `(user_id, uid)`: iki kullanıcı aynı `uid` → ikisi de yazılır.
 
-> Yerel ortam: Docker (Docker Desktop ya da daha hafif OrbStack) + Supabase
-> komut satırı aracı (`brew install supabase/tap/supabase`). Bu Mac'te ikisi de
-> henüz kurulu değil. Supabase dalı (bulut kopya) alternatifi saatte ~0,013 $;
-> yalnız yayın öncesi son prova için düşünülür.
+### 10.4 Sunucu test ortamı — `Fit Pack Dev` (2026-09-18 kararı)
+
+**Karar özeti:** sunucu değişiklikleri **ikinci bir ücretsiz bulut projesinde**
+denenir; yerel Docker yığını kurulmaz.
+
+| | Proje | Referans (`ref`) |
+|---|---|---|
+| Üretim | Fit Pack | `jkviihbyogktwboreydn` |
+| **Test** | **Fit Pack Dev** | **`qecbnrkbordkqeogmevi`** |
+
+İkisi de `eu-central-1`, ücretsiz plan (organizasyon başına 2 aktif proje
+sınırının ikisi de kullanıldı — üçüncü bir proje açılamaz).
+
+**Neden yerel Docker değil.** Yerel yığın ~9,7 GB disk istiyor; bu projede
+disk iki kez yolu tıkadı (iOS platformunun silinmesi, Docker sanal makinesinin
+kaldırılması). Test ortamının işi "gerçek veriye dokunmadan denemek" — bunu
+ikinci bulut projesi diskten hiç yemeden yapıyor.
+
+**Ne kaybediliyor.** `supabase test db` hazır koşucusu yerelde çalışır,
+uzakta çalışmaz. Karşılığı: pgTAP eklentisi `extensions` şemasında açıldı
+(sürüm 1.3.3, 2026-09-18'de doğrulandı) ve test SQL'i doğrudan
+çalıştırılıyor; TAP çıktısı aynı şekilde okunuyor. Çağrılar
+`extensions.plan(...)` / `extensions.has_table(...)` gibi şema önekiyle
+yazılır.
+
+**Sıfırlama.** `supabase link --project-ref qecbnrkbordkqeogmevi` +
+`supabase db reset --linked` (yalnız test projesinde; üretimde **asla**).
+
+**Uyku.** Ücretsiz proje 7 gün dokunulmazsa duraklar; panelden ~1 dk'da
+uyanır.
+
+**İstemciyi test projesine yöneltme (Aşama 4).**
+`lib/core/config/supabase_config.dart` bugün sabit değer tutuyor; Aşama 4'te
+`String.fromEnvironment` ile `--dart-define` geçişi eklenecek:
+
+```
+flutter run --dart-define=SUPABASE_URL=https://qecbnrkbordkqeogmevi.supabase.co \
+            --dart-define=SUPABASE_ANON_KEY=sb_publishable_aQZzc4k4q8DSZ5VQdCujTQ_nfOMZmw4
+```
+
+(publishable anahtar istemciye gömülmek için tasarlıdır — RLS korur.)
 
 ### 10.3 Uçtan uca (elle, cihazda)
 
@@ -615,12 +652,12 @@ Her aşama **tek başına commit edilebilir**, testleri yeşil ve uygulama
 | **5 — Silme protokolü** | Silme tetikleyicileri; `sync_delete` RPC; mezar taşı gönderimi; çekmede silme uygulama; rutin fark kaydı; `deleted_records` tablosu + sunucu silme tetikleyicileri | #1 | **var** | 2 gün |
 | **6 — Sahiplik + katalog kimliği + su** | Sunucu anahtarı `(user_id, uid)`; belirlenimci katalog kimliği + `sync_remap_uids`; hesap değişiminde katalog sıfırlama; su olay kaydı | #7, #8, isimle benimseme | **var** | 2 gün |
 | **7 — Durum ve operasyon** | Hata sınıflandırma; "Son yedekleme"; 3 gün uyarısı; kalıcı hata satırı (`sync_state = 2`) | C-36, duraklatma | yok | 1 gün |
-**Toplam:** yaklaşık 10 iş günü. Başlamadan önce yerel Supabase test
-ortamının kurulumu (~yarım gün). Her aşama sonunda cihazda
+**Toplam:** yaklaşık 10 iş günü. Sunucu test ortamı **kuruldu**
+(`Fit Pack Dev`, §10.4 — yerel Docker yerine ikinci bulut projesi). Her aşama sonunda cihazda
 duman testi (açılış + bir kayıt + senkron) ve PROJECT_STATE güncellemesi.
 
 **Sunucu değişikliklerinde sıra:** yedek al (`pg_dump` ya da panel yedeği) →
-dalda dene → ana projeye uygula → **aynı gün** uygulama sürümünü çıkar.
+`Fit Pack Dev`'de dene (§10.4) → ana projeye uygula → **aynı gün** uygulama sürümünü çıkar.
 Eski uygulama sürümü yeni şemayla çalışmaya devam etmeli: yeni kolonların
 varsayılanı var (`changed_at_ms default 0`); eski istemci `server_rev`
 göndermez (sunucu atar). Eski istemcinin koşulsuz yazması `changed_at_ms = 0`
@@ -653,7 +690,7 @@ pratikte sorun değil, ama kural olarak yazıldı).
 | 4 | Silme işaretlerinin saklanması | ✅ **Karar (Samet onayladı, 2026-09-17)** | İşaretler **süresiz** tutulur (satır başına ~100 bayt). İleride temizlik gerekirse: 1 yıldan eski işaretler silinir **ve** son eşitlemesi o sınırdan eski olan cihaz tam yeniden eşitleme yapar (eski kopyasını sunucununkiyle değiştirir). Silinen içeriğin kendisi sunucuda zaten tutulmaz (K-3). |
 | 5 | Su kaydının olay kaydına dönmesi | ✅ **Karar (Samet onayladı, 2026-09-17)** | Evet (§8). |
 | 6 | Belirlenimci katalog kimliği | ✅ **Karar (Samet):** şimdi | Aşama 6'ya alındı; yöntem §7.2. |
-| 7 | Sunucu testleri | ✅ **Karar (Samet onayladı, 2026-09-17)** | **Yerel Docker** (`supabase start` + pgTAP): ücretsiz, çevrimdışı, saniyeler içinde sıfırlanır, tekrar tekrar çalışır; gerçek veriye dokunmaz. Supabase dalı yalnız yayın öncesi son prova için. |
+| 7 | Sunucu testleri | 🔄 **Karar değişti (Samet, 2026-09-18)** | ~~Yerel Docker~~ → **ikinci ücretsiz bulut projesi** `Fit Pack Dev` + pgTAP (§10.4). Gerekçe: yerel yığın ~9,7 GB disk istiyor, disk bu projede iki kez yolu tıkadı; bulut kopyası aynı işi diskten yemeden yapıyor. Kaybedilen: `supabase test db` hazır koşucusu (test SQL'i doğrudan çalıştırılıyor). |
 
 ## 14. Sözlük
 

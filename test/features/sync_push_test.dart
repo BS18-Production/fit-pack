@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:drift/native.dart';
 import 'package:fit_pack/data/database/app_database.dart';
 import 'package:fit_pack/data/database/tables/sync_columns.dart';
@@ -21,10 +23,19 @@ class _FakeRemote implements SyncRemote {
   /// Onay DÖNMEDEN patlar: sunucu satırı yazdı ama istemci onayı alamadı.
   bool failAfterWrite = false;
 
+  /// Gönderim SÜRERKEN çalışır — kullanıcının tam o anda satırı düzenlemesini
+  /// taklit eder (T-5). Yalnız bir kez tetiklenir.
+  Future<void> Function()? onUpsert;
+
   @override
   Future<void> upsert(String table, List<Map<String, Object?>> rows) async {
     calls.add(table);
     if (fail) throw Exception('ağ yok');
+    final interrupt = onUpsert;
+    if (interrupt != null) {
+      onUpsert = null;
+      await interrupt();
+    }
     final t = store.putIfAbsent(table, () => {});
     for (final r in rows) {
       t[r['uid']! as String] = r; // uid çakışması → üzerine yazar
@@ -71,16 +82,29 @@ void main() {
   }
 
   test('T-1 · uygulama ölse de kuyruk diskte kalır', () async {
-    await addRoutine('Push');
-    expect(await pending('routines'), 1);
+    // Bellek-içi DB süreç ölümünü ölçemez (kapanınca zaten kaybolur) → gerçek
+    // dosya: yaz, bağlantıyı KAPAT, yeni AppDatabase ile AÇ.
+    final dir = Directory.systemTemp.createTempSync('fitpack_t1');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final file = File('${dir.path}/fit_pack.sqlite');
 
-    // Uygulamanın öldürülüp yeniden açılmasını taklit et: aynı dosya/bağlantı
-    // üzerinden yeni bir AppDatabase. Kuyruk bellekte değil, kolonda.
-    final again = await db
+    final first = AppDatabase.forTesting(NativeDatabase(file));
+    await first.customStatement(
+        "INSERT INTO routines (name, created_at) VALUES ('Push', 1700000000)");
+    final beforeKill = await first
         .customSelect('SELECT sync_state FROM routines')
         .getSingle();
-    expect(again.read<int>('sync_state'), 1,
+    expect(beforeKill.read<int>('sync_state'), 1);
+    await first.close(); // ← uygulama öldürüldü
+
+    final reopened = AppDatabase.forTesting(NativeDatabase(file));
+    addTearDown(reopened.close);
+    final after = await reopened
+        .customSelect('SELECT name, sync_state FROM routines')
+        .getSingle();
+    expect(after.read<int>('sync_state'), 1,
         reason: 'kuyruk diskte durmalı, süreç ölümüne dayanmalı');
+    expect(after.read<String>('name'), 'Push');
   });
 
   test('T-2 · ağ koparsa satır kuyrukta kalır ve tekrar denenir', () async {
@@ -126,12 +150,9 @@ void main() {
         reason: 'onay alınamadıysa satır kirli kalmalı');
   });
 
-  test('T-5 · gönderim sırasında düzenlenen satır temiz işaretlenmez', () async {
+  test('T-5 · gönderimden SONRA düzenlenen satır yeniden kuyruğa girer',
+      () async {
     await addRoutine('Push');
-
-    // Gönderim anında kullanıcı satırı değiştirsin: remote.upsert çağrılırken
-    // araya gir. Bunu, upsert'ten sonra düzenleyip ikinci tur bekleyerek
-    // taklit ediyoruz — kritik olan, düzenlemenin kaybolmaması.
     await push.pushAll(userId: user);
     expect(await pending('routines'), 0);
 
@@ -143,6 +164,33 @@ void main() {
     expect(remote.store['routines']!.values.first['name'], 'Pull',
         reason: 'son hâl sunucuya gitmeli');
   });
+
+  test(
+    'T-5b · gönderim SIRASINDA düzenlenen satır temiz işaretlenmemeli',
+    () async {
+      // E-15: eski T-5 adı bunu vaat ediyordu ama düzenlemeyi `pushAll`
+      // BİTTİKTEN sonra yapıyordu — yani hiçbir zaman yarışı ölçmedi.
+      //
+      // Gerçek yarış: satır sunucuya yazılırken kullanıcı düzenliyor.
+      // Tetikleyici `updated_at`'i saniye çözünürlüğüyle "şimdi"ye çeker
+      // (sync_columns.dart:124); düzenleme gönderimle aynı saniyedeyse damga
+      // değişmez, istemci satırı kendi gönderdiği sürüm sanıp temiz işaretler
+      // ve **düzenleme sessizce kaybolur** (docs/20 §1 hata #3).
+      await addRoutine('Push');
+      remote.onUpsert = () async {
+        await db.customStatement("UPDATE routines SET name = 'Pull'");
+      };
+
+      await push.pushAll(userId: user);
+
+      expect(await pending('routines'), 1,
+          reason: 'gönderim sırasındaki düzenleme kuyrukta kalmalı');
+      final local =
+          await db.customSelect('SELECT name FROM routines').getSingle();
+      expect(local.read<String>('name'), 'Pull');
+    },
+    skip: 'KIRMIZI — docs/20 Aşama 1 (changed_at_ms) ile yeşile dönecek',
+  );
 
   test('T-6 · senkron yerel satırı SİLMEZ, yalnız bayrağı çevirir', () async {
     await addRoutine('Push');

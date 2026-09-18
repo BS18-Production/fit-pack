@@ -608,7 +608,7 @@ Her aşama **tek başına commit edilebilir**, testleri yeşil ve uygulama
 | Aşama | İçerik | Çözdüğü | Sunucu değişikliği | Tahmini |
 |---|---|---|---|---|
 | **0 — Kırmızı testler** ✅ | S-1, S-2, S-4, S-6 bugünkü koda karşı yazıldı, kırmızı oldukları görüldü, `skip` ile commit edildi (`test/features/sync_v2_stage0_test.dart`, 2026-09-18). S-3 (süreç ölümü) zaten yeşil: `sync_push_test` T-1. | E-15 | yok | ✅ |
-| **1 — Yerel sağlamlık** | Şema v11 (kolonlar + `sync_meta` + `sync_tombstones` tabloları, tetikleyicilerde `capture` ve `local_seq`); `_markClean` → `local_seq`; çekmede DROP TRIGGER yerine `capture` bayrağı; `beforeOpen` onarımı; `notifyUpdates` | #2, #3, #9 | yok | 1,5 gün |
+| **1 — Yerel sağlamlık** ✅ | Şema v11: `changed_at_ms` / `local_seq` / `server_rev` + `sync_meta` + `sync_tombstones`; 36 tetikleyici (`capture` bayraklı, silme izi dahil); `_markClean` → `local_seq`; çekmede DROP TRIGGER yerine `capture`; açılışta onarım. **2026-09-18** — S-1, S-2, S-4, S-6 yeşile döndü; v10→v11 göç testi (7 test). | #2, #3, #9 | yok | ✅ |
 | **2 — Açılış ve kapı** | `bootstrap` sırası + yerel hesap kontrolü; başlangıç konumu; nötr açılış ekranı; `accountError`; `switch_in_progress`; gönderilmemiş veri uyarısı | #6, Karşılama, §7.4 | yok | 1 gün |
 | **3 — Sunucu v2 (sürüm)** | `supabase/migrations/…_sync_v2.sql`: kolonlar, dizi, `sync_guard`, dizin; **önce yedek**; dalda test | #4 hazırlığı | **var** | 0,5 gün |
 | **4 — Sayfalı, artımlı çekme + koşullu gönderim** | İki aşamalı çekme, imleç; `upsert().select()`; ret işleme; `changed_at_ms` gönderimi | #4, #5 | — | 1,5 gün |

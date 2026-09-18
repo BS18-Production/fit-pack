@@ -59,38 +59,41 @@ class SyncPull {
   /// referans verilen tablo (ebeveyn) önce iner ki çocuğun `*_uid`'i çözülsün.
   Future<PullResult> pullAll({required String userId}) async {
     var result = const PullResult();
-    await _withTriggersDisabled(() async {
-      for (final table in syncPushOrder) {
-        try {
-          result += await _pullTable(table, userId);
-        } catch (e, st) {
-          syncLog('$table çekilemedi: $e\n$st', error: e);
-          result += PullResult(error: e);
-          // Bir tablo başarısızsa dur: sonraki tablolar buna referans verebilir,
-          // yarım çekilmiş ebeveynle çocuk eklemek FK kırar.
-          break;
-        }
+    for (final table in syncPushOrder) {
+      try {
+        result += await _pullTable(table, userId);
+      } catch (e, st) {
+        syncLog('$table çekilemedi: $e\n$st', error: e);
+        result += PullResult(error: e);
+        // Bir tablo başarısızsa dur: sonraki tablolar buna referans verebilir,
+        // yarım çekilmiş ebeveynle çocuk eklemek FK kırar.
+        break;
       }
-    });
+    }
     syncLog('pull bitti — eklenen ${result.inserted}, '
         'güncellenen ${result.updated}, atlanan ${result.skipped}',
         error: result.error);
     return result;
   }
 
-  /// Tetikleyicileri kaldırır, [body]'yi çalıştırır, HER durumda geri kurar.
-  Future<void> _withTriggersDisabled(Future<void> Function() body) async {
-    for (final table in syncedTableNames) {
-      await db.customStatement(dropInsertTriggerSql(table));
-      await db.customStatement(dropUpdateTriggerSql(table));
-    }
+  /// Tetikleyicileri **susturur** (düşürmez), [body]'yi çalıştırır, her
+  /// durumda geri açar (docs/20 K-4, S-4).
+  ///
+  /// Eskiden tetikleyiciler DÜŞÜRÜLÜYORDU. O aralıkta kullanıcının yazdığı
+  /// satır da tetikleyicisiz kalıyordu: uid'siz, damgasız, kuyruğa girmemiş →
+  /// sunucuya hiç gitmiyordu. Ayrıca çekme sırasında uygulama ölürse
+  /// tetikleyiciler geri kurulmuyordu (senkron sessizce ölürdü; açılıştaki
+  /// onarım bunu da karşılıyor).
+  ///
+  /// Bayrak **yalnız inen satırların yazıldığı transaction** boyunca kapalı
+  /// kalır — ağ beklenirken değil. Böylece kullanıcı çekme sürerken bir şey
+  /// kaydederse tetikleyici çalışır ve o satır kuyruğa girer (S-4).
+  Future<void> _withCaptureOff(Future<void> Function() body) async {
+    await db.customStatement(setCaptureSql(false));
     try {
       await body();
     } finally {
-      for (final table in syncedTableNames) {
-        await db.customStatement(createInsertTriggerSql(table));
-        await db.customStatement(createUpdateTriggerSql(table));
-      }
+      await db.customStatement(setCaptureSql(true));
     }
   }
 
@@ -109,7 +112,9 @@ class SyncPull {
     };
     final fks = syncForeignKeys[table] ?? const {};
 
-    await db.transaction(() async {
+    // Bayrak YALNIZ inen satırlar yazılırken kapalı: ağ beklenirken
+    // kullanıcının yaptığı yazma tetikleyiciyi çalıştırmalı (S-4).
+    await _withCaptureOff(() => db.transaction(() async {
       for (final server in serverRows) {
         final local = await _toLocalRow(table, server, types, fks);
         if (local == null) {
@@ -126,7 +131,7 @@ class SyncPull {
             skipped++;
         }
       }
-    });
+    }));
     return PullResult(inserted: inserted, updated: updated, skipped: skipped);
   }
 

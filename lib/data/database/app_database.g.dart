@@ -50,6 +50,39 @@ class $ExercisesTable extends Exercises
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -252,6 +285,9 @@ class $ExercisesTable extends Exercises
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     name,
     category,
@@ -304,6 +340,27 @@ class $ExercisesTable extends Exercises
       context.handle(
         _syncStateMeta,
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -451,6 +508,18 @@ class $ExercisesTable extends Exercises
         DriftSqlType.int,
         data['${effectivePrefix}sync_state'],
       ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -553,6 +622,20 @@ class Exercise extends DataClass implements Insertable<Exercise> {
   /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
   final int id;
   final String name;
   final String category;
@@ -575,6 +658,9 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     this.userId,
     this.updatedAt,
     this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
     required this.id,
     required this.name,
     required this.category,
@@ -607,6 +693,15 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     }
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(syncState);
+    }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
     }
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
@@ -656,6 +751,15 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       syncState: syncState == null && nullToAbsent
           ? const Value.absent()
           : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
       id: Value(id),
       name: Value(name),
       category: Value(category),
@@ -702,6 +806,9 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       category: serializer.fromJson<String>(json['category']),
@@ -729,6 +836,9 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'category': serializer.toJson<String>(category),
@@ -754,6 +864,9 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     Value<String?> userId = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
     int? id,
     String? name,
     String? category,
@@ -776,6 +889,9 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
     id: id ?? this.id,
     name: name ?? this.name,
     category: category ?? this.category,
@@ -802,6 +918,11 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       category: data.category.present ? data.category.value : this.category,
@@ -841,6 +962,9 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('category: $category, ')
@@ -868,6 +992,9 @@ class Exercise extends DataClass implements Insertable<Exercise> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     name,
     category,
@@ -894,6 +1021,9 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
           other.id == this.id &&
           other.name == this.name &&
           other.category == this.category &&
@@ -918,6 +1048,9 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
   final Value<String?> userId;
   final Value<DateTime?> updatedAt;
   final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
   final Value<int> id;
   final Value<String> name;
   final Value<String> category;
@@ -940,6 +1073,9 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.category = const Value.absent(),
@@ -963,6 +1099,9 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     required String name,
     required String category,
@@ -988,6 +1127,9 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     Expression<String>? userId,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
     Expression<int>? id,
     Expression<String>? name,
     Expression<String>? category,
@@ -1011,6 +1153,9 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (category != null) 'category': category,
@@ -1036,6 +1181,9 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     Value<String?>? userId,
     Value<DateTime?>? updatedAt,
     Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
     Value<int>? id,
     Value<String>? name,
     Value<String>? category,
@@ -1059,6 +1207,9 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
       id: id ?? this.id,
       name: name ?? this.name,
       category: category ?? this.category,
@@ -1093,6 +1244,15 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(syncState.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
     }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
@@ -1155,6 +1315,9 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('category: $category, ')
@@ -1223,6 +1386,39 @@ class $WorkoutSessionsTable extends WorkoutSessions
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
@@ -1370,6 +1566,9 @@ class $WorkoutSessionsTable extends WorkoutSessions
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     date,
     phase,
@@ -1418,6 +1617,27 @@ class $WorkoutSessionsTable extends WorkoutSessions
       context.handle(
         _syncStateMeta,
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -1532,6 +1752,18 @@ class $WorkoutSessionsTable extends WorkoutSessions
         DriftSqlType.int,
         data['${effectivePrefix}sync_state'],
       ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -1618,6 +1850,20 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
   /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
   final int id;
   final DateTime date;
   final int phase;
@@ -1636,6 +1882,9 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
     this.userId,
     this.updatedAt,
     this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
     required this.id,
     required this.date,
     required this.phase,
@@ -1664,6 +1913,15 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
     }
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(syncState);
+    }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
     }
     map['id'] = Variable<int>(id);
     map['date'] = Variable<DateTime>(date);
@@ -1707,6 +1965,15 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
       syncState: syncState == null && nullToAbsent
           ? const Value.absent()
           : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
       id: Value(id),
       date: Value(date),
       phase: Value(phase),
@@ -1745,6 +2012,9 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
       id: serializer.fromJson<int>(json['id']),
       date: serializer.fromJson<DateTime>(json['date']),
       phase: serializer.fromJson<int>(json['phase']),
@@ -1768,6 +2038,9 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
       'id': serializer.toJson<int>(id),
       'date': serializer.toJson<DateTime>(date),
       'phase': serializer.toJson<int>(phase),
@@ -1789,6 +2062,9 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
     Value<String?> userId = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
     int? id,
     DateTime? date,
     int? phase,
@@ -1807,6 +2083,9 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
     id: id ?? this.id,
     date: date ?? this.date,
     phase: phase ?? this.phase,
@@ -1827,6 +2106,11 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
       id: data.id.present ? data.id.value : this.id,
       date: data.date.present ? data.date.value : this.date,
       phase: data.phase.present ? data.phase.value : this.phase,
@@ -1856,6 +2140,9 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('phase: $phase, ')
@@ -1879,6 +2166,9 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     date,
     phase,
@@ -1901,6 +2191,9 @@ class WorkoutSession extends DataClass implements Insertable<WorkoutSession> {
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
           other.id == this.id &&
           other.date == this.date &&
           other.phase == this.phase &&
@@ -1921,6 +2214,9 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
   final Value<String?> userId;
   final Value<DateTime?> updatedAt;
   final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
   final Value<int> id;
   final Value<DateTime> date;
   final Value<int> phase;
@@ -1939,6 +2235,9 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.date = const Value.absent(),
     this.phase = const Value.absent(),
@@ -1958,6 +2257,9 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     required DateTime date,
     required int phase,
@@ -1979,6 +2281,9 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
     Expression<String>? userId,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
     Expression<int>? id,
     Expression<DateTime>? date,
     Expression<int>? phase,
@@ -1998,6 +2303,9 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
       if (id != null) 'id': id,
       if (date != null) 'date': date,
       if (phase != null) 'phase': phase,
@@ -2019,6 +2327,9 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
     Value<String?>? userId,
     Value<DateTime?>? updatedAt,
     Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
     Value<int>? id,
     Value<DateTime>? date,
     Value<int>? phase,
@@ -2038,6 +2349,9 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
       id: id ?? this.id,
       date: date ?? this.date,
       phase: phase ?? this.phase,
@@ -2068,6 +2382,15 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(syncState.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
     }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
@@ -2118,6 +2441,9 @@ class WorkoutSessionsCompanion extends UpdateCompanion<WorkoutSession> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('phase: $phase, ')
@@ -2182,6 +2508,39 @@ class $WorkoutSetsTable extends WorkoutSets
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
@@ -2345,6 +2704,9 @@ class $WorkoutSetsTable extends WorkoutSets
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     sessionId,
     exerciseId,
@@ -2393,6 +2755,27 @@ class $WorkoutSetsTable extends WorkoutSets
       context.handle(
         _syncStateMeta,
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -2507,6 +2890,18 @@ class $WorkoutSetsTable extends WorkoutSets
         DriftSqlType.int,
         data['${effectivePrefix}sync_state'],
       ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -2593,6 +2988,20 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
   /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
   final int id;
   final int sessionId;
   final int exerciseId;
@@ -2611,6 +3020,9 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
     this.userId,
     this.updatedAt,
     this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
     required this.id,
     required this.sessionId,
     required this.exerciseId,
@@ -2639,6 +3051,15 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
     }
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(syncState);
+    }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
     }
     map['id'] = Variable<int>(id);
     map['session_id'] = Variable<int>(sessionId);
@@ -2680,6 +3101,15 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       syncState: syncState == null && nullToAbsent
           ? const Value.absent()
           : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
       id: Value(id),
       sessionId: Value(sessionId),
       exerciseId: Value(exerciseId),
@@ -2714,6 +3144,9 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
       id: serializer.fromJson<int>(json['id']),
       sessionId: serializer.fromJson<int>(json['sessionId']),
       exerciseId: serializer.fromJson<int>(json['exerciseId']),
@@ -2737,6 +3170,9 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
       'id': serializer.toJson<int>(id),
       'sessionId': serializer.toJson<int>(sessionId),
       'exerciseId': serializer.toJson<int>(exerciseId),
@@ -2758,6 +3194,9 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
     Value<String?> userId = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
     int? id,
     int? sessionId,
     int? exerciseId,
@@ -2776,6 +3215,9 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
     id: id ?? this.id,
     sessionId: sessionId ?? this.sessionId,
     exerciseId: exerciseId ?? this.exerciseId,
@@ -2796,6 +3238,11 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
       id: data.id.present ? data.id.value : this.id,
       sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
       exerciseId: data.exerciseId.present
@@ -2827,6 +3274,9 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('sessionId: $sessionId, ')
           ..write('exerciseId: $exerciseId, ')
@@ -2850,6 +3300,9 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     sessionId,
     exerciseId,
@@ -2872,6 +3325,9 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
           other.id == this.id &&
           other.sessionId == this.sessionId &&
           other.exerciseId == this.exerciseId &&
@@ -2892,6 +3348,9 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
   final Value<String?> userId;
   final Value<DateTime?> updatedAt;
   final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
   final Value<int> id;
   final Value<int> sessionId;
   final Value<int> exerciseId;
@@ -2910,6 +3369,9 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.sessionId = const Value.absent(),
     this.exerciseId = const Value.absent(),
@@ -2929,6 +3391,9 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     required int sessionId,
     required int exerciseId,
@@ -2950,6 +3415,9 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     Expression<String>? userId,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
     Expression<int>? id,
     Expression<int>? sessionId,
     Expression<int>? exerciseId,
@@ -2969,6 +3437,9 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
       if (id != null) 'id': id,
       if (sessionId != null) 'session_id': sessionId,
       if (exerciseId != null) 'exercise_id': exerciseId,
@@ -2990,6 +3461,9 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     Value<String?>? userId,
     Value<DateTime?>? updatedAt,
     Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
     Value<int>? id,
     Value<int>? sessionId,
     Value<int>? exerciseId,
@@ -3009,6 +3483,9 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
       id: id ?? this.id,
       sessionId: sessionId ?? this.sessionId,
       exerciseId: exerciseId ?? this.exerciseId,
@@ -3039,6 +3516,15 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(syncState.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
     }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
@@ -3089,6 +3575,9 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('sessionId: $sessionId, ')
           ..write('exerciseId: $exerciseId, ')
@@ -3152,6 +3641,39 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
@@ -3239,6 +3761,9 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     name,
     note,
@@ -3281,6 +3806,27 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
       context.handle(
         _syncStateMeta,
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -3354,6 +3900,18 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
         DriftSqlType.int,
         data['${effectivePrefix}sync_state'],
       ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -3416,6 +3974,20 @@ class Routine extends DataClass implements Insertable<Routine> {
   /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
   final int id;
   final String name;
   final String? note;
@@ -3428,6 +4000,9 @@ class Routine extends DataClass implements Insertable<Routine> {
     this.userId,
     this.updatedAt,
     this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
     required this.id,
     required this.name,
     this.note,
@@ -3450,6 +4025,15 @@ class Routine extends DataClass implements Insertable<Routine> {
     }
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(syncState);
+    }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
     }
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
@@ -3477,6 +4061,15 @@ class Routine extends DataClass implements Insertable<Routine> {
       syncState: syncState == null && nullToAbsent
           ? const Value.absent()
           : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
       id: Value(id),
       name: Value(name),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
@@ -3499,6 +4092,9 @@ class Routine extends DataClass implements Insertable<Routine> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       note: serializer.fromJson<String?>(json['note']),
@@ -3516,6 +4112,9 @@ class Routine extends DataClass implements Insertable<Routine> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'note': serializer.toJson<String?>(note),
@@ -3531,6 +4130,9 @@ class Routine extends DataClass implements Insertable<Routine> {
     Value<String?> userId = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
     int? id,
     String? name,
     Value<String?> note = const Value.absent(),
@@ -3543,6 +4145,9 @@ class Routine extends DataClass implements Insertable<Routine> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
     id: id ?? this.id,
     name: name ?? this.name,
     note: note.present ? note.value : this.note,
@@ -3559,6 +4164,11 @@ class Routine extends DataClass implements Insertable<Routine> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       note: data.note.present ? data.note.value : this.note,
@@ -3582,6 +4192,9 @@ class Routine extends DataClass implements Insertable<Routine> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('note: $note, ')
@@ -3599,6 +4212,9 @@ class Routine extends DataClass implements Insertable<Routine> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     name,
     note,
@@ -3615,6 +4231,9 @@ class Routine extends DataClass implements Insertable<Routine> {
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
           other.id == this.id &&
           other.name == this.name &&
           other.note == this.note &&
@@ -3629,6 +4248,9 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
   final Value<String?> userId;
   final Value<DateTime?> updatedAt;
   final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
   final Value<int> id;
   final Value<String> name;
   final Value<String?> note;
@@ -3641,6 +4263,9 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.note = const Value.absent(),
@@ -3654,6 +4279,9 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     required String name,
     this.note = const Value.absent(),
@@ -3668,6 +4296,9 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     Expression<String>? userId,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
     Expression<int>? id,
     Expression<String>? name,
     Expression<String>? note,
@@ -3681,6 +4312,9 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (note != null) 'note': note,
@@ -3696,6 +4330,9 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     Value<String?>? userId,
     Value<DateTime?>? updatedAt,
     Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
     Value<int>? id,
     Value<String>? name,
     Value<String?>? note,
@@ -3709,6 +4346,9 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
       id: id ?? this.id,
       name: name ?? this.name,
       note: note ?? this.note,
@@ -3733,6 +4373,15 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(syncState.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
     }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
@@ -3765,6 +4414,9 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('note: $note, ')
@@ -3823,6 +4475,39 @@ class $RoutineExercisesTable extends RoutineExercises
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
@@ -3936,6 +4621,9 @@ class $RoutineExercisesTable extends RoutineExercises
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     routineId,
     exerciseId,
@@ -3980,6 +4668,27 @@ class $RoutineExercisesTable extends RoutineExercises
       context.handle(
         _syncStateMeta,
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -4071,6 +4780,18 @@ class $RoutineExercisesTable extends RoutineExercises
         DriftSqlType.int,
         data['${effectivePrefix}sync_state'],
       ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -4141,6 +4862,20 @@ class RoutineExercise extends DataClass implements Insertable<RoutineExercise> {
   /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
   final int id;
   final int routineId;
   final int exerciseId;
@@ -4155,6 +4890,9 @@ class RoutineExercise extends DataClass implements Insertable<RoutineExercise> {
     this.userId,
     this.updatedAt,
     this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
     required this.id,
     required this.routineId,
     required this.exerciseId,
@@ -4179,6 +4917,15 @@ class RoutineExercise extends DataClass implements Insertable<RoutineExercise> {
     }
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(syncState);
+    }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
     }
     map['id'] = Variable<int>(id);
     map['routine_id'] = Variable<int>(routineId);
@@ -4214,6 +4961,15 @@ class RoutineExercise extends DataClass implements Insertable<RoutineExercise> {
       syncState: syncState == null && nullToAbsent
           ? const Value.absent()
           : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
       id: Value(id),
       routineId: Value(routineId),
       exerciseId: Value(exerciseId),
@@ -4244,6 +5000,9 @@ class RoutineExercise extends DataClass implements Insertable<RoutineExercise> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
       id: serializer.fromJson<int>(json['id']),
       routineId: serializer.fromJson<int>(json['routineId']),
       exerciseId: serializer.fromJson<int>(json['exerciseId']),
@@ -4263,6 +5022,9 @@ class RoutineExercise extends DataClass implements Insertable<RoutineExercise> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
       'id': serializer.toJson<int>(id),
       'routineId': serializer.toJson<int>(routineId),
       'exerciseId': serializer.toJson<int>(exerciseId),
@@ -4280,6 +5042,9 @@ class RoutineExercise extends DataClass implements Insertable<RoutineExercise> {
     Value<String?> userId = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
     int? id,
     int? routineId,
     int? exerciseId,
@@ -4294,6 +5059,9 @@ class RoutineExercise extends DataClass implements Insertable<RoutineExercise> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
     id: id ?? this.id,
     routineId: routineId ?? this.routineId,
     exerciseId: exerciseId ?? this.exerciseId,
@@ -4316,6 +5084,11 @@ class RoutineExercise extends DataClass implements Insertable<RoutineExercise> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
       id: data.id.present ? data.id.value : this.id,
       routineId: data.routineId.present ? data.routineId.value : this.routineId,
       exerciseId: data.exerciseId.present
@@ -4347,6 +5120,9 @@ class RoutineExercise extends DataClass implements Insertable<RoutineExercise> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('routineId: $routineId, ')
           ..write('exerciseId: $exerciseId, ')
@@ -4366,6 +5142,9 @@ class RoutineExercise extends DataClass implements Insertable<RoutineExercise> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     routineId,
     exerciseId,
@@ -4384,6 +5163,9 @@ class RoutineExercise extends DataClass implements Insertable<RoutineExercise> {
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
           other.id == this.id &&
           other.routineId == this.routineId &&
           other.exerciseId == this.exerciseId &&
@@ -4400,6 +5182,9 @@ class RoutineExercisesCompanion extends UpdateCompanion<RoutineExercise> {
   final Value<String?> userId;
   final Value<DateTime?> updatedAt;
   final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
   final Value<int> id;
   final Value<int> routineId;
   final Value<int> exerciseId;
@@ -4414,6 +5199,9 @@ class RoutineExercisesCompanion extends UpdateCompanion<RoutineExercise> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.routineId = const Value.absent(),
     this.exerciseId = const Value.absent(),
@@ -4429,6 +5217,9 @@ class RoutineExercisesCompanion extends UpdateCompanion<RoutineExercise> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     required int routineId,
     required int exerciseId,
@@ -4445,6 +5236,9 @@ class RoutineExercisesCompanion extends UpdateCompanion<RoutineExercise> {
     Expression<String>? userId,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
     Expression<int>? id,
     Expression<int>? routineId,
     Expression<int>? exerciseId,
@@ -4460,6 +5254,9 @@ class RoutineExercisesCompanion extends UpdateCompanion<RoutineExercise> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
       if (id != null) 'id': id,
       if (routineId != null) 'routine_id': routineId,
       if (exerciseId != null) 'exercise_id': exerciseId,
@@ -4477,6 +5274,9 @@ class RoutineExercisesCompanion extends UpdateCompanion<RoutineExercise> {
     Value<String?>? userId,
     Value<DateTime?>? updatedAt,
     Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
     Value<int>? id,
     Value<int>? routineId,
     Value<int>? exerciseId,
@@ -4492,6 +5292,9 @@ class RoutineExercisesCompanion extends UpdateCompanion<RoutineExercise> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
       id: id ?? this.id,
       routineId: routineId ?? this.routineId,
       exerciseId: exerciseId ?? this.exerciseId,
@@ -4518,6 +5321,15 @@ class RoutineExercisesCompanion extends UpdateCompanion<RoutineExercise> {
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(syncState.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
     }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
@@ -4556,6 +5368,9 @@ class RoutineExercisesCompanion extends UpdateCompanion<RoutineExercise> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('routineId: $routineId, ')
           ..write('exerciseId: $exerciseId, ')
@@ -4615,6 +5430,39 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
@@ -4772,6 +5620,9 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     name,
     barcode,
@@ -4820,6 +5671,27 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
       context.handle(
         _syncStateMeta,
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -4944,6 +5816,18 @@ class $FoodsTable extends Foods with TableInfo<$FoodsTable, Food> {
         DriftSqlType.int,
         data['${effectivePrefix}sync_state'],
       ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -5030,6 +5914,20 @@ class Food extends DataClass implements Insertable<Food> {
   /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
   final int id;
   final String name;
   final String? barcode;
@@ -5048,6 +5946,9 @@ class Food extends DataClass implements Insertable<Food> {
     this.userId,
     this.updatedAt,
     this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
     required this.id,
     required this.name,
     this.barcode,
@@ -5076,6 +5977,15 @@ class Food extends DataClass implements Insertable<Food> {
     }
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(syncState);
+    }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
     }
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
@@ -5113,6 +6023,15 @@ class Food extends DataClass implements Insertable<Food> {
       syncState: syncState == null && nullToAbsent
           ? const Value.absent()
           : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
       id: Value(id),
       name: Value(name),
       barcode: barcode == null && nullToAbsent
@@ -5147,6 +6066,9 @@ class Food extends DataClass implements Insertable<Food> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       barcode: serializer.fromJson<String?>(json['barcode']),
@@ -5172,6 +6094,9 @@ class Food extends DataClass implements Insertable<Food> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
       'barcode': serializer.toJson<String?>(barcode),
@@ -5193,6 +6118,9 @@ class Food extends DataClass implements Insertable<Food> {
     Value<String?> userId = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
     int? id,
     String? name,
     Value<String?> barcode = const Value.absent(),
@@ -5211,6 +6139,9 @@ class Food extends DataClass implements Insertable<Food> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
     id: id ?? this.id,
     name: name ?? this.name,
     barcode: barcode.present ? barcode.value : this.barcode,
@@ -5233,6 +6164,11 @@ class Food extends DataClass implements Insertable<Food> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       barcode: data.barcode.present ? data.barcode.value : this.barcode,
@@ -5266,6 +6202,9 @@ class Food extends DataClass implements Insertable<Food> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('barcode: $barcode, ')
@@ -5289,6 +6228,9 @@ class Food extends DataClass implements Insertable<Food> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     name,
     barcode,
@@ -5311,6 +6253,9 @@ class Food extends DataClass implements Insertable<Food> {
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
           other.id == this.id &&
           other.name == this.name &&
           other.barcode == this.barcode &&
@@ -5331,6 +6276,9 @@ class FoodsCompanion extends UpdateCompanion<Food> {
   final Value<String?> userId;
   final Value<DateTime?> updatedAt;
   final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
   final Value<int> id;
   final Value<String> name;
   final Value<String?> barcode;
@@ -5349,6 +6297,9 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.barcode = const Value.absent(),
@@ -5368,6 +6319,9 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     required String name,
     this.barcode = const Value.absent(),
@@ -5391,6 +6345,9 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     Expression<String>? userId,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
     Expression<int>? id,
     Expression<String>? name,
     Expression<String>? barcode,
@@ -5410,6 +6367,9 @@ class FoodsCompanion extends UpdateCompanion<Food> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (barcode != null) 'barcode': barcode,
@@ -5432,6 +6392,9 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     Value<String?>? userId,
     Value<DateTime?>? updatedAt,
     Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
     Value<int>? id,
     Value<String>? name,
     Value<String?>? barcode,
@@ -5451,6 +6414,9 @@ class FoodsCompanion extends UpdateCompanion<Food> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
       id: id ?? this.id,
       name: name ?? this.name,
       barcode: barcode ?? this.barcode,
@@ -5481,6 +6447,15 @@ class FoodsCompanion extends UpdateCompanion<Food> {
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(syncState.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
     }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
@@ -5533,6 +6508,9 @@ class FoodsCompanion extends UpdateCompanion<Food> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('barcode: $barcode, ')
@@ -5596,6 +6574,39 @@ class $FoodLogsTable extends FoodLogs with TableInfo<$FoodLogsTable, FoodLog> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
@@ -5701,6 +6712,9 @@ class $FoodLogsTable extends FoodLogs with TableInfo<$FoodLogsTable, FoodLog> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     date,
     mealType,
@@ -5745,6 +6759,27 @@ class $FoodLogsTable extends FoodLogs with TableInfo<$FoodLogsTable, FoodLog> {
       context.handle(
         _syncStateMeta,
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -5851,6 +6886,18 @@ class $FoodLogsTable extends FoodLogs with TableInfo<$FoodLogsTable, FoodLog> {
         DriftSqlType.int,
         data['${effectivePrefix}sync_state'],
       ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -5921,6 +6968,20 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
   /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
   final int id;
   final DateTime date;
   final String mealType;
@@ -5935,6 +6996,9 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
     this.userId,
     this.updatedAt,
     this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
     required this.id,
     required this.date,
     required this.mealType,
@@ -5960,6 +7024,15 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(syncState);
     }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
+    }
     map['id'] = Variable<int>(id);
     map['date'] = Variable<DateTime>(date);
     map['meal_type'] = Variable<String>(mealType);
@@ -5984,6 +7057,15 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
       syncState: syncState == null && nullToAbsent
           ? const Value.absent()
           : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
       id: Value(id),
       date: Value(date),
       mealType: Value(mealType),
@@ -6006,6 +7088,9 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
       id: serializer.fromJson<int>(json['id']),
       date: serializer.fromJson<DateTime>(json['date']),
       mealType: serializer.fromJson<String>(json['mealType']),
@@ -6025,6 +7110,9 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
       'id': serializer.toJson<int>(id),
       'date': serializer.toJson<DateTime>(date),
       'mealType': serializer.toJson<String>(mealType),
@@ -6042,6 +7130,9 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
     Value<String?> userId = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
     int? id,
     DateTime? date,
     String? mealType,
@@ -6056,6 +7147,9 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
     id: id ?? this.id,
     date: date ?? this.date,
     mealType: mealType ?? this.mealType,
@@ -6072,6 +7166,11 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
       id: data.id.present ? data.id.value : this.id,
       date: data.date.present ? data.date.value : this.date,
       mealType: data.mealType.present ? data.mealType.value : this.mealType,
@@ -6099,6 +7198,9 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('mealType: $mealType, ')
@@ -6118,6 +7220,9 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     date,
     mealType,
@@ -6136,6 +7241,9 @@ class FoodLog extends DataClass implements Insertable<FoodLog> {
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
           other.id == this.id &&
           other.date == this.date &&
           other.mealType == this.mealType &&
@@ -6152,6 +7260,9 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
   final Value<String?> userId;
   final Value<DateTime?> updatedAt;
   final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
   final Value<int> id;
   final Value<DateTime> date;
   final Value<String> mealType;
@@ -6166,6 +7277,9 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.date = const Value.absent(),
     this.mealType = const Value.absent(),
@@ -6181,6 +7295,9 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     required DateTime date,
     required String mealType,
@@ -6203,6 +7320,9 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     Expression<String>? userId,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
     Expression<int>? id,
     Expression<DateTime>? date,
     Expression<String>? mealType,
@@ -6218,6 +7338,9 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
       if (id != null) 'id': id,
       if (date != null) 'date': date,
       if (mealType != null) 'meal_type': mealType,
@@ -6235,6 +7358,9 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     Value<String?>? userId,
     Value<DateTime?>? updatedAt,
     Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
     Value<int>? id,
     Value<DateTime>? date,
     Value<String>? mealType,
@@ -6250,6 +7376,9 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
       id: id ?? this.id,
       date: date ?? this.date,
       mealType: mealType ?? this.mealType,
@@ -6276,6 +7405,15 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(syncState.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
     }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
@@ -6314,6 +7452,9 @@ class FoodLogsCompanion extends UpdateCompanion<FoodLog> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('mealType: $mealType, ')
@@ -6375,6 +7516,39 @@ class $RecipeItemsTable extends RecipeItems
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -6429,6 +7603,9 @@ class $RecipeItemsTable extends RecipeItems
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     recipeId,
     foodId,
@@ -6468,6 +7645,27 @@ class $RecipeItemsTable extends RecipeItems
       context.handle(
         _syncStateMeta,
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -6522,6 +7720,18 @@ class $RecipeItemsTable extends RecipeItems
         DriftSqlType.int,
         data['${effectivePrefix}sync_state'],
       ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -6572,6 +7782,20 @@ class RecipeItem extends DataClass implements Insertable<RecipeItem> {
   /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
   final int id;
   final int recipeId;
   final int foodId;
@@ -6581,6 +7805,9 @@ class RecipeItem extends DataClass implements Insertable<RecipeItem> {
     this.userId,
     this.updatedAt,
     this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
     required this.id,
     required this.recipeId,
     required this.foodId,
@@ -6601,6 +7828,15 @@ class RecipeItem extends DataClass implements Insertable<RecipeItem> {
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(syncState);
     }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
+    }
     map['id'] = Variable<int>(id);
     map['recipe_id'] = Variable<int>(recipeId);
     map['food_id'] = Variable<int>(foodId);
@@ -6620,6 +7856,15 @@ class RecipeItem extends DataClass implements Insertable<RecipeItem> {
       syncState: syncState == null && nullToAbsent
           ? const Value.absent()
           : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
       id: Value(id),
       recipeId: Value(recipeId),
       foodId: Value(foodId),
@@ -6637,6 +7882,9 @@ class RecipeItem extends DataClass implements Insertable<RecipeItem> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
       id: serializer.fromJson<int>(json['id']),
       recipeId: serializer.fromJson<int>(json['recipeId']),
       foodId: serializer.fromJson<int>(json['foodId']),
@@ -6651,6 +7899,9 @@ class RecipeItem extends DataClass implements Insertable<RecipeItem> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
       'id': serializer.toJson<int>(id),
       'recipeId': serializer.toJson<int>(recipeId),
       'foodId': serializer.toJson<int>(foodId),
@@ -6663,6 +7914,9 @@ class RecipeItem extends DataClass implements Insertable<RecipeItem> {
     Value<String?> userId = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
     int? id,
     int? recipeId,
     int? foodId,
@@ -6672,6 +7926,9 @@ class RecipeItem extends DataClass implements Insertable<RecipeItem> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
     id: id ?? this.id,
     recipeId: recipeId ?? this.recipeId,
     foodId: foodId ?? this.foodId,
@@ -6683,6 +7940,11 @@ class RecipeItem extends DataClass implements Insertable<RecipeItem> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
       id: data.id.present ? data.id.value : this.id,
       recipeId: data.recipeId.present ? data.recipeId.value : this.recipeId,
       foodId: data.foodId.present ? data.foodId.value : this.foodId,
@@ -6697,6 +7959,9 @@ class RecipeItem extends DataClass implements Insertable<RecipeItem> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('recipeId: $recipeId, ')
           ..write('foodId: $foodId, ')
@@ -6711,6 +7976,9 @@ class RecipeItem extends DataClass implements Insertable<RecipeItem> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     recipeId,
     foodId,
@@ -6724,6 +7992,9 @@ class RecipeItem extends DataClass implements Insertable<RecipeItem> {
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
           other.id == this.id &&
           other.recipeId == this.recipeId &&
           other.foodId == this.foodId &&
@@ -6735,6 +8006,9 @@ class RecipeItemsCompanion extends UpdateCompanion<RecipeItem> {
   final Value<String?> userId;
   final Value<DateTime?> updatedAt;
   final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
   final Value<int> id;
   final Value<int> recipeId;
   final Value<int> foodId;
@@ -6744,6 +8018,9 @@ class RecipeItemsCompanion extends UpdateCompanion<RecipeItem> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.recipeId = const Value.absent(),
     this.foodId = const Value.absent(),
@@ -6754,6 +8031,9 @@ class RecipeItemsCompanion extends UpdateCompanion<RecipeItem> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     required int recipeId,
     required int foodId,
@@ -6766,6 +8046,9 @@ class RecipeItemsCompanion extends UpdateCompanion<RecipeItem> {
     Expression<String>? userId,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
     Expression<int>? id,
     Expression<int>? recipeId,
     Expression<int>? foodId,
@@ -6776,6 +8059,9 @@ class RecipeItemsCompanion extends UpdateCompanion<RecipeItem> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
       if (id != null) 'id': id,
       if (recipeId != null) 'recipe_id': recipeId,
       if (foodId != null) 'food_id': foodId,
@@ -6788,6 +8074,9 @@ class RecipeItemsCompanion extends UpdateCompanion<RecipeItem> {
     Value<String?>? userId,
     Value<DateTime?>? updatedAt,
     Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
     Value<int>? id,
     Value<int>? recipeId,
     Value<int>? foodId,
@@ -6798,6 +8087,9 @@ class RecipeItemsCompanion extends UpdateCompanion<RecipeItem> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
       id: id ?? this.id,
       recipeId: recipeId ?? this.recipeId,
       foodId: foodId ?? this.foodId,
@@ -6819,6 +8111,15 @@ class RecipeItemsCompanion extends UpdateCompanion<RecipeItem> {
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(syncState.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
     }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
@@ -6842,6 +8143,9 @@ class RecipeItemsCompanion extends UpdateCompanion<RecipeItem> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('recipeId: $recipeId, ')
           ..write('foodId: $foodId, ')
@@ -6898,6 +8202,39 @@ class $WaterIntakeTable extends WaterIntake
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -6938,6 +8275,9 @@ class $WaterIntakeTable extends WaterIntake
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     date,
     amountMl,
@@ -6976,6 +8316,27 @@ class $WaterIntakeTable extends WaterIntake
       context.handle(
         _syncStateMeta,
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -7019,6 +8380,18 @@ class $WaterIntakeTable extends WaterIntake
       syncState: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}sync_state'],
+      ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
       ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -7066,6 +8439,20 @@ class WaterIntakeData extends DataClass implements Insertable<WaterIntakeData> {
   /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
   final int id;
   final DateTime date;
   final int amountMl;
@@ -7074,6 +8461,9 @@ class WaterIntakeData extends DataClass implements Insertable<WaterIntakeData> {
     this.userId,
     this.updatedAt,
     this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
     required this.id,
     required this.date,
     required this.amountMl,
@@ -7093,6 +8483,15 @@ class WaterIntakeData extends DataClass implements Insertable<WaterIntakeData> {
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(syncState);
     }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
+    }
     map['id'] = Variable<int>(id);
     map['date'] = Variable<DateTime>(date);
     map['amount_ml'] = Variable<int>(amountMl);
@@ -7111,6 +8510,15 @@ class WaterIntakeData extends DataClass implements Insertable<WaterIntakeData> {
       syncState: syncState == null && nullToAbsent
           ? const Value.absent()
           : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
       id: Value(id),
       date: Value(date),
       amountMl: Value(amountMl),
@@ -7127,6 +8535,9 @@ class WaterIntakeData extends DataClass implements Insertable<WaterIntakeData> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
       id: serializer.fromJson<int>(json['id']),
       date: serializer.fromJson<DateTime>(json['date']),
       amountMl: serializer.fromJson<int>(json['amountMl']),
@@ -7140,6 +8551,9 @@ class WaterIntakeData extends DataClass implements Insertable<WaterIntakeData> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
       'id': serializer.toJson<int>(id),
       'date': serializer.toJson<DateTime>(date),
       'amountMl': serializer.toJson<int>(amountMl),
@@ -7151,6 +8565,9 @@ class WaterIntakeData extends DataClass implements Insertable<WaterIntakeData> {
     Value<String?> userId = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
     int? id,
     DateTime? date,
     int? amountMl,
@@ -7159,6 +8576,9 @@ class WaterIntakeData extends DataClass implements Insertable<WaterIntakeData> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
     id: id ?? this.id,
     date: date ?? this.date,
     amountMl: amountMl ?? this.amountMl,
@@ -7169,6 +8589,11 @@ class WaterIntakeData extends DataClass implements Insertable<WaterIntakeData> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
       id: data.id.present ? data.id.value : this.id,
       date: data.date.present ? data.date.value : this.date,
       amountMl: data.amountMl.present ? data.amountMl.value : this.amountMl,
@@ -7182,6 +8607,9 @@ class WaterIntakeData extends DataClass implements Insertable<WaterIntakeData> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('amountMl: $amountMl')
@@ -7190,8 +8618,18 @@ class WaterIntakeData extends DataClass implements Insertable<WaterIntakeData> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(uid, userId, updatedAt, syncState, id, date, amountMl);
+  int get hashCode => Object.hash(
+    uid,
+    userId,
+    updatedAt,
+    syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
+    id,
+    date,
+    amountMl,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -7200,6 +8638,9 @@ class WaterIntakeData extends DataClass implements Insertable<WaterIntakeData> {
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
           other.id == this.id &&
           other.date == this.date &&
           other.amountMl == this.amountMl);
@@ -7210,6 +8651,9 @@ class WaterIntakeCompanion extends UpdateCompanion<WaterIntakeData> {
   final Value<String?> userId;
   final Value<DateTime?> updatedAt;
   final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
   final Value<int> id;
   final Value<DateTime> date;
   final Value<int> amountMl;
@@ -7218,6 +8662,9 @@ class WaterIntakeCompanion extends UpdateCompanion<WaterIntakeData> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.date = const Value.absent(),
     this.amountMl = const Value.absent(),
@@ -7227,6 +8674,9 @@ class WaterIntakeCompanion extends UpdateCompanion<WaterIntakeData> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     required DateTime date,
     this.amountMl = const Value.absent(),
@@ -7236,6 +8686,9 @@ class WaterIntakeCompanion extends UpdateCompanion<WaterIntakeData> {
     Expression<String>? userId,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
     Expression<int>? id,
     Expression<DateTime>? date,
     Expression<int>? amountMl,
@@ -7245,6 +8698,9 @@ class WaterIntakeCompanion extends UpdateCompanion<WaterIntakeData> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
       if (id != null) 'id': id,
       if (date != null) 'date': date,
       if (amountMl != null) 'amount_ml': amountMl,
@@ -7256,6 +8712,9 @@ class WaterIntakeCompanion extends UpdateCompanion<WaterIntakeData> {
     Value<String?>? userId,
     Value<DateTime?>? updatedAt,
     Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
     Value<int>? id,
     Value<DateTime>? date,
     Value<int>? amountMl,
@@ -7265,6 +8724,9 @@ class WaterIntakeCompanion extends UpdateCompanion<WaterIntakeData> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
       id: id ?? this.id,
       date: date ?? this.date,
       amountMl: amountMl ?? this.amountMl,
@@ -7286,6 +8748,15 @@ class WaterIntakeCompanion extends UpdateCompanion<WaterIntakeData> {
     if (syncState.present) {
       map['sync_state'] = Variable<int>(syncState.value);
     }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
+    }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
@@ -7305,6 +8776,9 @@ class WaterIntakeCompanion extends UpdateCompanion<WaterIntakeData> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('amountMl: $amountMl')
@@ -7359,6 +8833,39 @@ class $BodyMeasurementsTable extends BodyMeasurements
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
@@ -7459,6 +8966,9 @@ class $BodyMeasurementsTable extends BodyMeasurements
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     date,
     weightKg,
@@ -7503,6 +9013,27 @@ class $BodyMeasurementsTable extends BodyMeasurements
       context.handle(
         _syncStateMeta,
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -7586,6 +9117,18 @@ class $BodyMeasurementsTable extends BodyMeasurements
         DriftSqlType.int,
         data['${effectivePrefix}sync_state'],
       ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -7656,6 +9199,20 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
   /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
   final int id;
   final DateTime date;
   final double? weightKg;
@@ -7670,6 +9227,9 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
     this.userId,
     this.updatedAt,
     this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
     required this.id,
     required this.date,
     this.weightKg,
@@ -7694,6 +9254,15 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
     }
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(syncState);
+    }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
     }
     map['id'] = Variable<int>(id);
     map['date'] = Variable<DateTime>(date);
@@ -7733,6 +9302,15 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
       syncState: syncState == null && nullToAbsent
           ? const Value.absent()
           : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
       id: Value(id),
       date: Value(date),
       weightKg: weightKg == null && nullToAbsent
@@ -7769,6 +9347,9 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
       id: serializer.fromJson<int>(json['id']),
       date: serializer.fromJson<DateTime>(json['date']),
       weightKg: serializer.fromJson<double?>(json['weightKg']),
@@ -7788,6 +9369,9 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
       'id': serializer.toJson<int>(id),
       'date': serializer.toJson<DateTime>(date),
       'weightKg': serializer.toJson<double?>(weightKg),
@@ -7805,6 +9389,9 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
     Value<String?> userId = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
     int? id,
     DateTime? date,
     Value<double?> weightKg = const Value.absent(),
@@ -7819,6 +9406,9 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
     id: id ?? this.id,
     date: date ?? this.date,
     weightKg: weightKg.present ? weightKg.value : this.weightKg,
@@ -7835,6 +9425,11 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
       id: data.id.present ? data.id.value : this.id,
       date: data.date.present ? data.date.value : this.date,
       weightKg: data.weightKg.present ? data.weightKg.value : this.weightKg,
@@ -7856,6 +9451,9 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('weightKg: $weightKg, ')
@@ -7875,6 +9473,9 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     date,
     weightKg,
@@ -7893,6 +9494,9 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
           other.id == this.id &&
           other.date == this.date &&
           other.weightKg == this.weightKg &&
@@ -7909,6 +9513,9 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
   final Value<String?> userId;
   final Value<DateTime?> updatedAt;
   final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
   final Value<int> id;
   final Value<DateTime> date;
   final Value<double?> weightKg;
@@ -7923,6 +9530,9 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.date = const Value.absent(),
     this.weightKg = const Value.absent(),
@@ -7938,6 +9548,9 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     required DateTime date,
     this.weightKg = const Value.absent(),
@@ -7953,6 +9566,9 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
     Expression<String>? userId,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
     Expression<int>? id,
     Expression<DateTime>? date,
     Expression<double>? weightKg,
@@ -7968,6 +9584,9 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
       if (id != null) 'id': id,
       if (date != null) 'date': date,
       if (weightKg != null) 'weight_kg': weightKg,
@@ -7985,6 +9604,9 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
     Value<String?>? userId,
     Value<DateTime?>? updatedAt,
     Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
     Value<int>? id,
     Value<DateTime>? date,
     Value<double?>? weightKg,
@@ -8000,6 +9622,9 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
       id: id ?? this.id,
       date: date ?? this.date,
       weightKg: weightKg ?? this.weightKg,
@@ -8026,6 +9651,15 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(syncState.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
     }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
@@ -8064,6 +9698,9 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('weightKg: $weightKg, ')
@@ -8125,6 +9762,39 @@ class $ProgressPhotosTable extends ProgressPhotos
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -8173,6 +9843,9 @@ class $ProgressPhotosTable extends ProgressPhotos
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     date,
     angle,
@@ -8212,6 +9885,27 @@ class $ProgressPhotosTable extends ProgressPhotos
       context.handle(
         _syncStateMeta,
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -8266,6 +9960,18 @@ class $ProgressPhotosTable extends ProgressPhotos
         DriftSqlType.int,
         data['${effectivePrefix}sync_state'],
       ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -8316,6 +10022,20 @@ class ProgressPhoto extends DataClass implements Insertable<ProgressPhoto> {
   /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
   final int id;
   final DateTime date;
   final String angle;
@@ -8325,6 +10045,9 @@ class ProgressPhoto extends DataClass implements Insertable<ProgressPhoto> {
     this.userId,
     this.updatedAt,
     this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
     required this.id,
     required this.date,
     required this.angle,
@@ -8345,6 +10068,15 @@ class ProgressPhoto extends DataClass implements Insertable<ProgressPhoto> {
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(syncState);
     }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
+    }
     map['id'] = Variable<int>(id);
     map['date'] = Variable<DateTime>(date);
     map['angle'] = Variable<String>(angle);
@@ -8364,6 +10096,15 @@ class ProgressPhoto extends DataClass implements Insertable<ProgressPhoto> {
       syncState: syncState == null && nullToAbsent
           ? const Value.absent()
           : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
       id: Value(id),
       date: Value(date),
       angle: Value(angle),
@@ -8381,6 +10122,9 @@ class ProgressPhoto extends DataClass implements Insertable<ProgressPhoto> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
       id: serializer.fromJson<int>(json['id']),
       date: serializer.fromJson<DateTime>(json['date']),
       angle: serializer.fromJson<String>(json['angle']),
@@ -8395,6 +10139,9 @@ class ProgressPhoto extends DataClass implements Insertable<ProgressPhoto> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
       'id': serializer.toJson<int>(id),
       'date': serializer.toJson<DateTime>(date),
       'angle': serializer.toJson<String>(angle),
@@ -8407,6 +10154,9 @@ class ProgressPhoto extends DataClass implements Insertable<ProgressPhoto> {
     Value<String?> userId = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
     int? id,
     DateTime? date,
     String? angle,
@@ -8416,6 +10166,9 @@ class ProgressPhoto extends DataClass implements Insertable<ProgressPhoto> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
     id: id ?? this.id,
     date: date ?? this.date,
     angle: angle ?? this.angle,
@@ -8427,6 +10180,11 @@ class ProgressPhoto extends DataClass implements Insertable<ProgressPhoto> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
       id: data.id.present ? data.id.value : this.id,
       date: data.date.present ? data.date.value : this.date,
       angle: data.angle.present ? data.angle.value : this.angle,
@@ -8441,6 +10199,9 @@ class ProgressPhoto extends DataClass implements Insertable<ProgressPhoto> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('angle: $angle, ')
@@ -8455,6 +10216,9 @@ class ProgressPhoto extends DataClass implements Insertable<ProgressPhoto> {
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     date,
     angle,
@@ -8468,6 +10232,9 @@ class ProgressPhoto extends DataClass implements Insertable<ProgressPhoto> {
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
           other.id == this.id &&
           other.date == this.date &&
           other.angle == this.angle &&
@@ -8479,6 +10246,9 @@ class ProgressPhotosCompanion extends UpdateCompanion<ProgressPhoto> {
   final Value<String?> userId;
   final Value<DateTime?> updatedAt;
   final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
   final Value<int> id;
   final Value<DateTime> date;
   final Value<String> angle;
@@ -8488,6 +10258,9 @@ class ProgressPhotosCompanion extends UpdateCompanion<ProgressPhoto> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.date = const Value.absent(),
     this.angle = const Value.absent(),
@@ -8498,6 +10271,9 @@ class ProgressPhotosCompanion extends UpdateCompanion<ProgressPhoto> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     required DateTime date,
     required String angle,
@@ -8510,6 +10286,9 @@ class ProgressPhotosCompanion extends UpdateCompanion<ProgressPhoto> {
     Expression<String>? userId,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
     Expression<int>? id,
     Expression<DateTime>? date,
     Expression<String>? angle,
@@ -8520,6 +10299,9 @@ class ProgressPhotosCompanion extends UpdateCompanion<ProgressPhoto> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
       if (id != null) 'id': id,
       if (date != null) 'date': date,
       if (angle != null) 'angle': angle,
@@ -8532,6 +10314,9 @@ class ProgressPhotosCompanion extends UpdateCompanion<ProgressPhoto> {
     Value<String?>? userId,
     Value<DateTime?>? updatedAt,
     Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
     Value<int>? id,
     Value<DateTime>? date,
     Value<String>? angle,
@@ -8542,6 +10327,9 @@ class ProgressPhotosCompanion extends UpdateCompanion<ProgressPhoto> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
       id: id ?? this.id,
       date: date ?? this.date,
       angle: angle ?? this.angle,
@@ -8563,6 +10351,15 @@ class ProgressPhotosCompanion extends UpdateCompanion<ProgressPhoto> {
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(syncState.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
     }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
@@ -8586,6 +10383,9 @@ class ProgressPhotosCompanion extends UpdateCompanion<ProgressPhoto> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('date: $date, ')
           ..write('angle: $angle, ')
@@ -8948,6 +10748,39 @@ class $UserProfileTable extends UserProfile
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<int> id = GeneratedColumn<int>(
@@ -9117,6 +10950,9 @@ class $UserProfileTable extends UserProfile
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     currentPhase,
     currentWeek,
@@ -9166,6 +11002,27 @@ class $UserProfileTable extends UserProfile
       context.handle(
         _syncStateMeta,
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
       );
     }
     if (data.containsKey('id')) {
@@ -9294,6 +11151,18 @@ class $UserProfileTable extends UserProfile
         DriftSqlType.int,
         data['${effectivePrefix}sync_state'],
       ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -9384,6 +11253,20 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
   /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
   final int id;
   final int currentPhase;
   final int currentWeek;
@@ -9403,6 +11286,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     this.userId,
     this.updatedAt,
     this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
     required this.id,
     required this.currentPhase,
     required this.currentWeek,
@@ -9432,6 +11318,15 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     }
     if (!nullToAbsent || syncState != null) {
       map['sync_state'] = Variable<int>(syncState);
+    }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
     }
     map['id'] = Variable<int>(id);
     map['current_phase'] = Variable<int>(currentPhase);
@@ -9474,6 +11369,15 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       syncState: syncState == null && nullToAbsent
           ? const Value.absent()
           : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
       id: Value(id),
       currentPhase: Value(currentPhase),
       currentWeek: Value(currentWeek),
@@ -9513,6 +11417,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       userId: serializer.fromJson<String?>(json['userId']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
       id: serializer.fromJson<int>(json['id']),
       currentPhase: serializer.fromJson<int>(json['currentPhase']),
       currentWeek: serializer.fromJson<int>(json['currentWeek']),
@@ -9537,6 +11444,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       'userId': serializer.toJson<String?>(userId),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
       'id': serializer.toJson<int>(id),
       'currentPhase': serializer.toJson<int>(currentPhase),
       'currentWeek': serializer.toJson<int>(currentWeek),
@@ -9559,6 +11469,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     Value<String?> userId = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
     int? id,
     int? currentPhase,
     int? currentWeek,
@@ -9578,6 +11491,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     userId: userId.present ? userId.value : this.userId,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
     id: id ?? this.id,
     currentPhase: currentPhase ?? this.currentPhase,
     currentWeek: currentWeek ?? this.currentWeek,
@@ -9601,6 +11517,11 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       userId: data.userId.present ? data.userId.value : this.userId,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
       id: data.id.present ? data.id.value : this.id,
       currentPhase: data.currentPhase.present
           ? data.currentPhase.value
@@ -9639,6 +11560,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('currentPhase: $currentPhase, ')
           ..write('currentWeek: $currentWeek, ')
@@ -9658,11 +11582,14 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     uid,
     userId,
     updatedAt,
     syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
     id,
     currentPhase,
     currentWeek,
@@ -9677,7 +11604,7 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     birthDate,
     gender,
     activityLevel,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -9686,6 +11613,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           other.userId == this.userId &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
           other.id == this.id &&
           other.currentPhase == this.currentPhase &&
           other.currentWeek == this.currentWeek &&
@@ -9707,6 +11637,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
   final Value<String?> userId;
   final Value<DateTime?> updatedAt;
   final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
   final Value<int> id;
   final Value<int> currentPhase;
   final Value<int> currentWeek;
@@ -9726,6 +11659,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.currentPhase = const Value.absent(),
     this.currentWeek = const Value.absent(),
@@ -9746,6 +11682,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     this.userId = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
     this.id = const Value.absent(),
     this.currentPhase = const Value.absent(),
     this.currentWeek = const Value.absent(),
@@ -9766,6 +11705,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     Expression<String>? userId,
     Expression<DateTime>? updatedAt,
     Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
     Expression<int>? id,
     Expression<int>? currentPhase,
     Expression<int>? currentWeek,
@@ -9786,6 +11728,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
       if (userId != null) 'user_id': userId,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
       if (id != null) 'id': id,
       if (currentPhase != null) 'current_phase': currentPhase,
       if (currentWeek != null) 'current_week': currentWeek,
@@ -9808,6 +11753,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     Value<String?>? userId,
     Value<DateTime?>? updatedAt,
     Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
     Value<int>? id,
     Value<int>? currentPhase,
     Value<int>? currentWeek,
@@ -9828,6 +11776,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
       userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
       id: id ?? this.id,
       currentPhase: currentPhase ?? this.currentPhase,
       currentWeek: currentWeek ?? this.currentWeek,
@@ -9859,6 +11810,15 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     }
     if (syncState.present) {
       map['sync_state'] = Variable<int>(syncState.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
     }
     if (id.present) {
       map['id'] = Variable<int>(id.value);
@@ -9912,6 +11872,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
           ..write('userId: $userId, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
           ..write('id: $id, ')
           ..write('currentPhase: $currentPhase, ')
           ..write('currentWeek: $currentWeek, ')
@@ -9926,6 +11889,645 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
           ..write('birthDate: $birthDate, ')
           ..write('gender: $gender, ')
           ..write('activityLevel: $activityLevel')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncMetaTable extends SyncMeta
+    with TableInfo<$SyncMetaTable, SyncMetaEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncMetaTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [key, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_meta';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncMetaEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('key')) {
+      context.handle(
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  SyncMetaEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncMetaEntry(
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      ),
+    );
+  }
+
+  @override
+  $SyncMetaTable createAlias(String alias) {
+    return $SyncMetaTable(attachedDatabase, alias);
+  }
+}
+
+class SyncMetaEntry extends DataClass implements Insertable<SyncMetaEntry> {
+  final String key;
+  final String? value;
+  const SyncMetaEntry({required this.key, this.value});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['key'] = Variable<String>(key);
+    if (!nullToAbsent || value != null) {
+      map['value'] = Variable<String>(value);
+    }
+    return map;
+  }
+
+  SyncMetaCompanion toCompanion(bool nullToAbsent) {
+    return SyncMetaCompanion(
+      key: Value(key),
+      value: value == null && nullToAbsent
+          ? const Value.absent()
+          : Value(value),
+    );
+  }
+
+  factory SyncMetaEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncMetaEntry(
+      key: serializer.fromJson<String>(json['key']),
+      value: serializer.fromJson<String?>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String?>(value),
+    };
+  }
+
+  SyncMetaEntry copyWith({
+    String? key,
+    Value<String?> value = const Value.absent(),
+  }) => SyncMetaEntry(
+    key: key ?? this.key,
+    value: value.present ? value.value : this.value,
+  );
+  SyncMetaEntry copyWithCompanion(SyncMetaCompanion data) {
+    return SyncMetaEntry(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncMetaEntry(')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(key, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncMetaEntry &&
+          other.key == this.key &&
+          other.value == this.value);
+}
+
+class SyncMetaCompanion extends UpdateCompanion<SyncMetaEntry> {
+  final Value<String> key;
+  final Value<String?> value;
+  final Value<int> rowid;
+  const SyncMetaCompanion({
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SyncMetaCompanion.insert({
+    required String key,
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : key = Value(key);
+  static Insertable<SyncMetaEntry> custom({
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SyncMetaCompanion copyWith({
+    Value<String>? key,
+    Value<String?>? value,
+    Value<int>? rowid,
+  }) {
+    return SyncMetaCompanion(
+      key: key ?? this.key,
+      value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncMetaCompanion(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncTombstonesTable extends SyncTombstones
+    with TableInfo<$SyncTombstonesTable, SyncTombstone> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncTombstonesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _sourceTableMeta = const VerificationMeta(
+    'sourceTable',
+  );
+  @override
+  late final GeneratedColumn<String> sourceTable = GeneratedColumn<String>(
+    'table_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _uidMeta = const VerificationMeta('uid');
+  @override
+  late final GeneratedColumn<String> uid = GeneratedColumn<String>(
+    'uid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStateMeta = const VerificationMeta(
+    'syncState',
+  );
+  @override
+  late final GeneratedColumn<int> syncState = GeneratedColumn<int>(
+    'sync_state',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    sourceTable,
+    uid,
+    changedAtMs,
+    localSeq,
+    syncState,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_tombstones';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SyncTombstone> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('table_name')) {
+      context.handle(
+        _sourceTableMeta,
+        sourceTable.isAcceptableOrUnknown(
+          data['table_name']!,
+          _sourceTableMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceTableMeta);
+    }
+    if (data.containsKey('uid')) {
+      context.handle(
+        _uidMeta,
+        uid.isAcceptableOrUnknown(data['uid']!, _uidMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_uidMeta);
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('sync_state')) {
+      context.handle(
+        _syncStateMeta,
+        syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncTombstone map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncTombstone(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      sourceTable: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}table_name'],
+      )!,
+      uid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uid'],
+      )!,
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      syncState: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sync_state'],
+      ),
+    );
+  }
+
+  @override
+  $SyncTombstonesTable createAlias(String alias) {
+    return $SyncTombstonesTable(attachedDatabase, alias);
+  }
+}
+
+class SyncTombstone extends DataClass implements Insertable<SyncTombstone> {
+  final int id;
+
+  /// Silinen satırın tablosu (`workout_sets` gibi).
+  final String sourceTable;
+
+  /// Silinen satırın sunucu kimliği.
+  final String uid;
+
+  /// Silme zamanı (milisaniye).
+  final int? changedAtMs;
+
+  /// Gönderim onayı için cihaz sayacı.
+  final int? localSeq;
+
+  /// 0 = gönderildi, 1 = kuyrukta.
+  final int? syncState;
+  const SyncTombstone({
+    required this.id,
+    required this.sourceTable,
+    required this.uid,
+    this.changedAtMs,
+    this.localSeq,
+    this.syncState,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['table_name'] = Variable<String>(sourceTable);
+    map['uid'] = Variable<String>(uid);
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || syncState != null) {
+      map['sync_state'] = Variable<int>(syncState);
+    }
+    return map;
+  }
+
+  SyncTombstonesCompanion toCompanion(bool nullToAbsent) {
+    return SyncTombstonesCompanion(
+      id: Value(id),
+      sourceTable: Value(sourceTable),
+      uid: Value(uid),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      syncState: syncState == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncState),
+    );
+  }
+
+  factory SyncTombstone.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncTombstone(
+      id: serializer.fromJson<int>(json['id']),
+      sourceTable: serializer.fromJson<String>(json['sourceTable']),
+      uid: serializer.fromJson<String>(json['uid']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      syncState: serializer.fromJson<int?>(json['syncState']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'sourceTable': serializer.toJson<String>(sourceTable),
+      'uid': serializer.toJson<String>(uid),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'syncState': serializer.toJson<int?>(syncState),
+    };
+  }
+
+  SyncTombstone copyWith({
+    int? id,
+    String? sourceTable,
+    String? uid,
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> syncState = const Value.absent(),
+  }) => SyncTombstone(
+    id: id ?? this.id,
+    sourceTable: sourceTable ?? this.sourceTable,
+    uid: uid ?? this.uid,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    syncState: syncState.present ? syncState.value : this.syncState,
+  );
+  SyncTombstone copyWithCompanion(SyncTombstonesCompanion data) {
+    return SyncTombstone(
+      id: data.id.present ? data.id.value : this.id,
+      sourceTable: data.sourceTable.present
+          ? data.sourceTable.value
+          : this.sourceTable,
+      uid: data.uid.present ? data.uid.value : this.uid,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      syncState: data.syncState.present ? data.syncState.value : this.syncState,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncTombstone(')
+          ..write('id: $id, ')
+          ..write('sourceTable: $sourceTable, ')
+          ..write('uid: $uid, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('syncState: $syncState')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, sourceTable, uid, changedAtMs, localSeq, syncState);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncTombstone &&
+          other.id == this.id &&
+          other.sourceTable == this.sourceTable &&
+          other.uid == this.uid &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.syncState == this.syncState);
+}
+
+class SyncTombstonesCompanion extends UpdateCompanion<SyncTombstone> {
+  final Value<int> id;
+  final Value<String> sourceTable;
+  final Value<String> uid;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> syncState;
+  const SyncTombstonesCompanion({
+    this.id = const Value.absent(),
+    this.sourceTable = const Value.absent(),
+    this.uid = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.syncState = const Value.absent(),
+  });
+  SyncTombstonesCompanion.insert({
+    this.id = const Value.absent(),
+    required String sourceTable,
+    required String uid,
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.syncState = const Value.absent(),
+  }) : sourceTable = Value(sourceTable),
+       uid = Value(uid);
+  static Insertable<SyncTombstone> custom({
+    Expression<int>? id,
+    Expression<String>? sourceTable,
+    Expression<String>? uid,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? syncState,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sourceTable != null) 'table_name': sourceTable,
+      if (uid != null) 'uid': uid,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (syncState != null) 'sync_state': syncState,
+    });
+  }
+
+  SyncTombstonesCompanion copyWith({
+    Value<int>? id,
+    Value<String>? sourceTable,
+    Value<String>? uid,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? syncState,
+  }) {
+    return SyncTombstonesCompanion(
+      id: id ?? this.id,
+      sourceTable: sourceTable ?? this.sourceTable,
+      uid: uid ?? this.uid,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      syncState: syncState ?? this.syncState,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (sourceTable.present) {
+      map['table_name'] = Variable<String>(sourceTable.value);
+    }
+    if (uid.present) {
+      map['uid'] = Variable<String>(uid.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (syncState.present) {
+      map['sync_state'] = Variable<int>(syncState.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncTombstonesCompanion(')
+          ..write('id: $id, ')
+          ..write('sourceTable: $sourceTable, ')
+          ..write('uid: $uid, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('syncState: $syncState')
           ..write(')'))
         .toString();
   }
@@ -9953,6 +12555,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ProgressPhotosTable progressPhotos = $ProgressPhotosTable(this);
   late final $AchievementsTable achievements = $AchievementsTable(this);
   late final $UserProfileTable userProfile = $UserProfileTable(this);
+  late final $SyncMetaTable syncMeta = $SyncMetaTable(this);
+  late final $SyncTombstonesTable syncTombstones = $SyncTombstonesTable(this);
   late final WorkoutDao workoutDao = WorkoutDao(this as AppDatabase);
   late final NutritionDao nutritionDao = NutritionDao(this as AppDatabase);
   late final BodyDao bodyDao = BodyDao(this as AppDatabase);
@@ -9980,6 +12584,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     progressPhotos,
     achievements,
     userProfile,
+    syncMeta,
+    syncTombstones,
   ];
 }
 
@@ -9989,6 +12595,9 @@ typedef $$ExercisesTableCreateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       required String name,
       required String category,
@@ -10013,6 +12622,9 @@ typedef $$ExercisesTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<String> name,
       Value<String> category,
@@ -10104,6 +12716,21 @@ class $$ExercisesTableFilterComposer
 
   ColumnFilters<int> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10272,6 +12899,21 @@ class $$ExercisesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -10378,6 +13020,17 @@ class $$ExercisesTableAnnotationComposer
 
   GeneratedColumn<int> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
 
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -10528,6 +13181,9 @@ class $$ExercisesTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> category = const Value.absent(),
@@ -10550,6 +13206,9 @@ class $$ExercisesTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 name: name,
                 category: category,
@@ -10574,6 +13233,9 @@ class $$ExercisesTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required String name,
                 required String category,
@@ -10596,6 +13258,9 @@ class $$ExercisesTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 name: name,
                 category: category,
@@ -10703,6 +13368,9 @@ typedef $$WorkoutSessionsTableCreateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       required DateTime date,
       required int phase,
@@ -10723,6 +13391,9 @@ typedef $$WorkoutSessionsTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<DateTime> date,
       Value<int> phase,
@@ -10795,6 +13466,21 @@ class $$WorkoutSessionsTableFilterComposer
 
   ColumnFilters<int> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -10918,6 +13604,21 @@ class $$WorkoutSessionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -11004,6 +13705,17 @@ class $$WorkoutSessionsTableAnnotationComposer
 
   GeneratedColumn<int> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
 
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -11110,6 +13822,9 @@ class $$WorkoutSessionsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<int> phase = const Value.absent(),
@@ -11128,6 +13843,9 @@ class $$WorkoutSessionsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 date: date,
                 phase: phase,
@@ -11148,6 +13866,9 @@ class $$WorkoutSessionsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required DateTime date,
                 required int phase,
@@ -11166,6 +13887,9 @@ class $$WorkoutSessionsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 date: date,
                 phase: phase,
@@ -11242,6 +13966,9 @@ typedef $$WorkoutSetsTableCreateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       required int sessionId,
       required int exerciseId,
@@ -11262,6 +13989,9 @@ typedef $$WorkoutSetsTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<int> sessionId,
       Value<int> exerciseId,
@@ -11346,6 +14076,21 @@ class $$WorkoutSetsTableFilterComposer
 
   ColumnFilters<int> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11480,6 +14225,21 @@ class $$WorkoutSetsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -11603,6 +14363,17 @@ class $$WorkoutSetsTableAnnotationComposer
   GeneratedColumn<int> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
 
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
+
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -11721,6 +14492,9 @@ class $$WorkoutSetsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<int> sessionId = const Value.absent(),
                 Value<int> exerciseId = const Value.absent(),
@@ -11739,6 +14513,9 @@ class $$WorkoutSetsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 sessionId: sessionId,
                 exerciseId: exerciseId,
@@ -11759,6 +14536,9 @@ class $$WorkoutSetsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required int sessionId,
                 required int exerciseId,
@@ -11777,6 +14557,9 @@ class $$WorkoutSetsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 sessionId: sessionId,
                 exerciseId: exerciseId,
@@ -11877,6 +14660,9 @@ typedef $$RoutinesTableCreateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       required String name,
       Value<String?> note,
@@ -11891,6 +14677,9 @@ typedef $$RoutinesTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<String> name,
       Value<String?> note,
@@ -11954,6 +14743,21 @@ class $$RoutinesTableFilterComposer
 
   ColumnFilters<int> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12047,6 +14851,21 @@ class $$RoutinesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -12103,6 +14922,17 @@ class $$RoutinesTableAnnotationComposer
 
   GeneratedColumn<int> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
 
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -12189,6 +15019,9 @@ class $$RoutinesTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String?> note = const Value.absent(),
@@ -12201,6 +15034,9 @@ class $$RoutinesTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 name: name,
                 note: note,
@@ -12215,6 +15051,9 @@ class $$RoutinesTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required String name,
                 Value<String?> note = const Value.absent(),
@@ -12227,6 +15066,9 @@ class $$RoutinesTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 name: name,
                 note: note,
@@ -12298,6 +15140,9 @@ typedef $$RoutineExercisesTableCreateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       required int routineId,
       required int exerciseId,
@@ -12314,6 +15159,9 @@ typedef $$RoutineExercisesTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<int> routineId,
       Value<int> exerciseId,
@@ -12399,6 +15247,21 @@ class $$RoutineExercisesTableFilterComposer
 
   ColumnFilters<int> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12513,6 +15376,21 @@ class $$RoutineExercisesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -12615,6 +15493,17 @@ class $$RoutineExercisesTableAnnotationComposer
 
   GeneratedColumn<int> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
 
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -12728,6 +15617,9 @@ class $$RoutineExercisesTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<int> routineId = const Value.absent(),
                 Value<int> exerciseId = const Value.absent(),
@@ -12742,6 +15634,9 @@ class $$RoutineExercisesTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 routineId: routineId,
                 exerciseId: exerciseId,
@@ -12758,6 +15653,9 @@ class $$RoutineExercisesTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required int routineId,
                 required int exerciseId,
@@ -12772,6 +15670,9 @@ class $$RoutineExercisesTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 routineId: routineId,
                 exerciseId: exerciseId,
@@ -12872,6 +15773,9 @@ typedef $$FoodsTableCreateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       required String name,
       Value<String?> barcode,
@@ -12892,6 +15796,9 @@ typedef $$FoodsTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<String> name,
       Value<String?> barcode,
@@ -12993,6 +15900,21 @@ class $$FoodsTableFilterComposer extends Composer<_$AppDatabase, $FoodsTable> {
 
   ColumnFilters<int> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -13166,6 +16088,21 @@ class $$FoodsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -13252,6 +16189,17 @@ class $$FoodsTableAnnotationComposer
 
   GeneratedColumn<int> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
 
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -13414,6 +16362,9 @@ class $$FoodsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String?> barcode = const Value.absent(),
@@ -13432,6 +16383,9 @@ class $$FoodsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 name: name,
                 barcode: barcode,
@@ -13452,6 +16406,9 @@ class $$FoodsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required String name,
                 Value<String?> barcode = const Value.absent(),
@@ -13470,6 +16427,9 @@ class $$FoodsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 name: name,
                 barcode: barcode,
@@ -13582,6 +16542,9 @@ typedef $$FoodLogsTableCreateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       required DateTime date,
       required String mealType,
@@ -13598,6 +16561,9 @@ typedef $$FoodLogsTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<DateTime> date,
       Value<String> mealType,
@@ -13658,6 +16624,21 @@ class $$FoodLogsTableFilterComposer
 
   ColumnFilters<int> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -13754,6 +16735,21 @@ class $$FoodLogsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -13838,6 +16834,17 @@ class $$FoodLogsTableAnnotationComposer
 
   GeneratedColumn<int> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
 
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -13927,6 +16934,9 @@ class $$FoodLogsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<String> mealType = const Value.absent(),
@@ -13941,6 +16951,9 @@ class $$FoodLogsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 date: date,
                 mealType: mealType,
@@ -13957,6 +16970,9 @@ class $$FoodLogsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required DateTime date,
                 required String mealType,
@@ -13971,6 +16987,9 @@ class $$FoodLogsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 date: date,
                 mealType: mealType,
@@ -14054,6 +17073,9 @@ typedef $$RecipeItemsTableCreateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       required int recipeId,
       required int foodId,
@@ -14065,6 +17087,9 @@ typedef $$RecipeItemsTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<int> recipeId,
       Value<int> foodId,
@@ -14138,6 +17163,21 @@ class $$RecipeItemsTableFilterComposer
 
   ColumnFilters<int> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14227,6 +17267,21 @@ class $$RecipeItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -14304,6 +17359,17 @@ class $$RecipeItemsTableAnnotationComposer
 
   GeneratedColumn<int> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
 
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -14390,6 +17456,9 @@ class $$RecipeItemsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<int> recipeId = const Value.absent(),
                 Value<int> foodId = const Value.absent(),
@@ -14399,6 +17468,9 @@ class $$RecipeItemsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 recipeId: recipeId,
                 foodId: foodId,
@@ -14410,6 +17482,9 @@ class $$RecipeItemsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required int recipeId,
                 required int foodId,
@@ -14419,6 +17494,9 @@ class $$RecipeItemsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 recipeId: recipeId,
                 foodId: foodId,
@@ -14510,6 +17588,9 @@ typedef $$WaterIntakeTableCreateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       required DateTime date,
       Value<int> amountMl,
@@ -14520,6 +17601,9 @@ typedef $$WaterIntakeTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<DateTime> date,
       Value<int> amountMl,
@@ -14551,6 +17635,21 @@ class $$WaterIntakeTableFilterComposer
 
   ColumnFilters<int> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14599,6 +17698,21 @@ class $$WaterIntakeTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -14635,6 +17749,17 @@ class $$WaterIntakeTableAnnotationComposer
 
   GeneratedColumn<int> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
 
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -14681,6 +17806,9 @@ class $$WaterIntakeTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<int> amountMl = const Value.absent(),
@@ -14689,6 +17817,9 @@ class $$WaterIntakeTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 date: date,
                 amountMl: amountMl,
@@ -14699,6 +17830,9 @@ class $$WaterIntakeTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required DateTime date,
                 Value<int> amountMl = const Value.absent(),
@@ -14707,6 +17841,9 @@ class $$WaterIntakeTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 date: date,
                 amountMl: amountMl,
@@ -14742,6 +17879,9 @@ typedef $$BodyMeasurementsTableCreateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       required DateTime date,
       Value<double?> weightKg,
@@ -14758,6 +17898,9 @@ typedef $$BodyMeasurementsTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<DateTime> date,
       Value<double?> weightKg,
@@ -14795,6 +17938,21 @@ class $$BodyMeasurementsTableFilterComposer
 
   ColumnFilters<int> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -14873,6 +18031,21 @@ class $$BodyMeasurementsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -14939,6 +18112,17 @@ class $$BodyMeasurementsTableAnnotationComposer
 
   GeneratedColumn<int> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
 
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -15011,6 +18195,9 @@ class $$BodyMeasurementsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<double?> weightKg = const Value.absent(),
@@ -15025,6 +18212,9 @@ class $$BodyMeasurementsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 date: date,
                 weightKg: weightKg,
@@ -15041,6 +18231,9 @@ class $$BodyMeasurementsTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required DateTime date,
                 Value<double?> weightKg = const Value.absent(),
@@ -15055,6 +18248,9 @@ class $$BodyMeasurementsTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 date: date,
                 weightKg: weightKg,
@@ -15096,6 +18292,9 @@ typedef $$ProgressPhotosTableCreateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       required DateTime date,
       required String angle,
@@ -15107,6 +18306,9 @@ typedef $$ProgressPhotosTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<DateTime> date,
       Value<String> angle,
@@ -15139,6 +18341,21 @@ class $$ProgressPhotosTableFilterComposer
 
   ColumnFilters<int> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15192,6 +18409,21 @@ class $$ProgressPhotosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -15233,6 +18465,17 @@ class $$ProgressPhotosTableAnnotationComposer
 
   GeneratedColumn<int> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
 
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -15284,6 +18527,9 @@ class $$ProgressPhotosTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<String> angle = const Value.absent(),
@@ -15293,6 +18539,9 @@ class $$ProgressPhotosTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 date: date,
                 angle: angle,
@@ -15304,6 +18553,9 @@ class $$ProgressPhotosTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 required DateTime date,
                 required String angle,
@@ -15313,6 +18565,9 @@ class $$ProgressPhotosTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 date: date,
                 angle: angle,
@@ -15528,6 +18783,9 @@ typedef $$UserProfileTableCreateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<int> currentPhase,
       Value<int> currentWeek,
@@ -15549,6 +18807,9 @@ typedef $$UserProfileTableUpdateCompanionBuilder =
       Value<String?> userId,
       Value<DateTime?> updatedAt,
       Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
       Value<int> id,
       Value<int> currentPhase,
       Value<int> currentWeek,
@@ -15591,6 +18852,21 @@ class $$UserProfileTableFilterComposer
 
   ColumnFilters<int> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15694,6 +18970,21 @@ class $$UserProfileTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -15785,6 +19076,17 @@ class $$UserProfileTableAnnotationComposer
 
   GeneratedColumn<int> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
 
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
@@ -15878,6 +19180,9 @@ class $$UserProfileTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<int> currentPhase = const Value.absent(),
                 Value<int> currentWeek = const Value.absent(),
@@ -15897,6 +19202,9 @@ class $$UserProfileTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 currentPhase: currentPhase,
                 currentWeek: currentWeek,
@@ -15918,6 +19226,9 @@ class $$UserProfileTableTableManager
                 Value<String?> userId = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
                 Value<int> id = const Value.absent(),
                 Value<int> currentPhase = const Value.absent(),
                 Value<int> currentWeek = const Value.absent(),
@@ -15937,6 +19248,9 @@ class $$UserProfileTableTableManager
                 userId: userId,
                 updatedAt: updatedAt,
                 syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
                 id: id,
                 currentPhase: currentPhase,
                 currentWeek: currentWeek,
@@ -15977,6 +19291,364 @@ typedef $$UserProfileTableProcessedTableManager =
       UserProfileData,
       PrefetchHooks Function()
     >;
+typedef $$SyncMetaTableCreateCompanionBuilder =
+    SyncMetaCompanion Function({
+      required String key,
+      Value<String?> value,
+      Value<int> rowid,
+    });
+typedef $$SyncMetaTableUpdateCompanionBuilder =
+    SyncMetaCompanion Function({
+      Value<String> key,
+      Value<String?> value,
+      Value<int> rowid,
+    });
+
+class $$SyncMetaTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncMetaTable> {
+  $$SyncMetaTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncMetaTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncMetaTable> {
+  $$SyncMetaTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncMetaTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncMetaTable> {
+  $$SyncMetaTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+}
+
+class $$SyncMetaTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncMetaTable,
+          SyncMetaEntry,
+          $$SyncMetaTableFilterComposer,
+          $$SyncMetaTableOrderingComposer,
+          $$SyncMetaTableAnnotationComposer,
+          $$SyncMetaTableCreateCompanionBuilder,
+          $$SyncMetaTableUpdateCompanionBuilder,
+          (
+            SyncMetaEntry,
+            BaseReferences<_$AppDatabase, $SyncMetaTable, SyncMetaEntry>,
+          ),
+          SyncMetaEntry,
+          PrefetchHooks Function()
+        > {
+  $$SyncMetaTableTableManager(_$AppDatabase db, $SyncMetaTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncMetaTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncMetaTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SyncMetaTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> key = const Value.absent(),
+                Value<String?> value = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncMetaCompanion(key: key, value: value, rowid: rowid),
+          createCompanionCallback:
+              ({
+                required String key,
+                Value<String?> value = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SyncMetaCompanion.insert(
+                key: key,
+                value: value,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncMetaTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncMetaTable,
+      SyncMetaEntry,
+      $$SyncMetaTableFilterComposer,
+      $$SyncMetaTableOrderingComposer,
+      $$SyncMetaTableAnnotationComposer,
+      $$SyncMetaTableCreateCompanionBuilder,
+      $$SyncMetaTableUpdateCompanionBuilder,
+      (
+        SyncMetaEntry,
+        BaseReferences<_$AppDatabase, $SyncMetaTable, SyncMetaEntry>,
+      ),
+      SyncMetaEntry,
+      PrefetchHooks Function()
+    >;
+typedef $$SyncTombstonesTableCreateCompanionBuilder =
+    SyncTombstonesCompanion Function({
+      Value<int> id,
+      required String sourceTable,
+      required String uid,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> syncState,
+    });
+typedef $$SyncTombstonesTableUpdateCompanionBuilder =
+    SyncTombstonesCompanion Function({
+      Value<int> id,
+      Value<String> sourceTable,
+      Value<String> uid,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> syncState,
+    });
+
+class $$SyncTombstonesTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncTombstonesTable> {
+  $$SyncTombstonesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceTable => $composableBuilder(
+    column: $table.sourceTable,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get uid => $composableBuilder(
+    column: $table.uid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$SyncTombstonesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncTombstonesTable> {
+  $$SyncTombstonesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceTable => $composableBuilder(
+    column: $table.sourceTable,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get uid => $composableBuilder(
+    column: $table.uid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$SyncTombstonesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncTombstonesTable> {
+  $$SyncTombstonesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceTable => $composableBuilder(
+    column: $table.sourceTable,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get uid =>
+      $composableBuilder(column: $table.uid, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get syncState =>
+      $composableBuilder(column: $table.syncState, builder: (column) => column);
+}
+
+class $$SyncTombstonesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SyncTombstonesTable,
+          SyncTombstone,
+          $$SyncTombstonesTableFilterComposer,
+          $$SyncTombstonesTableOrderingComposer,
+          $$SyncTombstonesTableAnnotationComposer,
+          $$SyncTombstonesTableCreateCompanionBuilder,
+          $$SyncTombstonesTableUpdateCompanionBuilder,
+          (
+            SyncTombstone,
+            BaseReferences<_$AppDatabase, $SyncTombstonesTable, SyncTombstone>,
+          ),
+          SyncTombstone,
+          PrefetchHooks Function()
+        > {
+  $$SyncTombstonesTableTableManager(
+    _$AppDatabase db,
+    $SyncTombstonesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncTombstonesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncTombstonesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SyncTombstonesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> sourceTable = const Value.absent(),
+                Value<String> uid = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> syncState = const Value.absent(),
+              }) => SyncTombstonesCompanion(
+                id: id,
+                sourceTable: sourceTable,
+                uid: uid,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                syncState: syncState,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String sourceTable,
+                required String uid,
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> syncState = const Value.absent(),
+              }) => SyncTombstonesCompanion.insert(
+                id: id,
+                sourceTable: sourceTable,
+                uid: uid,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                syncState: syncState,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$SyncTombstonesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SyncTombstonesTable,
+      SyncTombstone,
+      $$SyncTombstonesTableFilterComposer,
+      $$SyncTombstonesTableOrderingComposer,
+      $$SyncTombstonesTableAnnotationComposer,
+      $$SyncTombstonesTableCreateCompanionBuilder,
+      $$SyncTombstonesTableUpdateCompanionBuilder,
+      (
+        SyncTombstone,
+        BaseReferences<_$AppDatabase, $SyncTombstonesTable, SyncTombstone>,
+      ),
+      SyncTombstone,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -16007,4 +19679,8 @@ class $AppDatabaseManager {
       $$AchievementsTableTableManager(_db, _db.achievements);
   $$UserProfileTableTableManager get userProfile =>
       $$UserProfileTableTableManager(_db, _db.userProfile);
+  $$SyncMetaTableTableManager get syncMeta =>
+      $$SyncMetaTableTableManager(_db, _db.syncMeta);
+  $$SyncTombstonesTableTableManager get syncTombstones =>
+      $$SyncTombstonesTableTableManager(_db, _db.syncTombstones);
 }

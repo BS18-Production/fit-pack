@@ -13,6 +13,19 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
+## 🔵 Senkron v2 — Aşama 0 ve 1 ✅ — 2026-09-18
+
+- **Yerel test ortamı:** Supabase CLI + Docker (colima). Yerel yığın ayakta,
+  12 mirror tablosu `supabase/migrations/`'dan kuruluyor.
+- **Aşama 0:** dört kritik hata için kırmızı testler yazıldı.
+- **Aşama 1 (şema v11):** milisaniyelik damga, cihaz sayacı, `server_rev`;
+  `sync_meta` + `sync_tombstones`; 36 tetikleyici (silme izi dahil, `capture`
+  bayraklı); temiz işaretleme sayaca bakıyor; çekme tetikleyicileri
+  düşürmüyor; açılışta onarım. **Aşama 0'ın dört testi yeşile döndü.**
+- **Yakalanan hata:** yeni kolonlar gönderilen veriye sızıyordu; sunucuda o
+  kolonlar olmadığı için her gönderim düşerdi (test eklendi).
+- analyze 0 · test **369/369**.
+
 ## 🧹 A Paketi — birikmiş işler kapatıldı — 2026-09-18
 
 Karar gerektirmeyen tüm açık maddeler tek pakette bitirildi:

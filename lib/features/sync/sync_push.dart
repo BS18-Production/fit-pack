@@ -170,9 +170,13 @@ class SyncPush {
       if (rows.isEmpty) return total;
 
       final payload = <Map<String, Object?>>[];
-      // uid → o satırı okuduğumuz andaki updated_at. Temiz işaretlerken
-      // karşılaştırılır: değişmişse kullanıcı arada satırı güncellemiştir,
-      // dokunmayız (yoksa o değişiklik sessizce kaybolur).
+      // uid → o satırı okuduğumuz andaki `local_seq` (cihaz sayacı). Temiz
+      // işaretlerken karşılaştırılır: değişmişse kullanıcı arada satırı
+      // güncellemiştir, dokunmayız (yoksa o değişiklik sessizce kaybolur).
+      //
+      // Eskiden `updated_at` karşılaştırılıyordu; saniye çözünürlüklü olduğu
+      // için gönderimle AYNI saniyedeki düzenleme fark edilmiyor ve
+      // kayboluyordu (docs/20 §1 hata #3, S-1).
       final stamps = <String, Object?>{};
 
       var skipped = 0;
@@ -186,7 +190,7 @@ class SyncPush {
           continue;
         }
         payload.add(json);
-        stamps[json['uid']! as String] = row.data['updated_at'];
+        stamps[json['uid']! as String] = row.data['local_seq'];
       }
       if (skipped > 0) {
         syncLog('$table: $skipped satır atlandı (kimlik/referans eksik) '
@@ -205,9 +209,9 @@ class SyncPush {
     }
   }
 
-  /// Yalnız gönderdiğimiz sürümü temiz işaretler. `updated_at` değiştiyse
-  /// satır gönderimden SONRA düzenlenmiştir → kuyrukta bırakılır (yoksa o
-  /// düzenleme sessizce kaybolurdu).
+  /// Yalnız gönderdiğimiz sürümü temiz işaretler. `local_seq` değiştiyse satır
+  /// gönderimden SONRA (ya da gönderim SÜRERKEN) düzenlenmiştir → kuyrukta
+  /// bırakılır, yoksa o düzenleme sessizce kaybolurdu.
   ///
   /// `user_id` de yerele yazılır: (a) satırın kime ait olduğu cihazda bilinir
   /// → hesap değişimi tespiti (docs/18 §5.1 Kural 3), (b) senkron edilmiş
@@ -218,7 +222,7 @@ class SyncPush {
       for (final e in stamps.entries) {
         await db.customStatement(
           'UPDATE $table SET sync_state = 0, user_id = ? '
-          'WHERE uid = ? AND sync_state = 1 AND updated_at IS ?',
+          'WHERE uid = ? AND sync_state = 1 AND local_seq IS ?',
           [userId, e.key, e.value],
         );
       }

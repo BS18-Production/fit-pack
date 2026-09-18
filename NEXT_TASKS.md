@@ -42,9 +42,21 @@ bağlı).
 - [x] **Sunucu SQL'leri `supabase/migrations/` altına alındı** — yerel yığın
       şemayı buradan kuruyor; `supabase db reset` / `supabase test db` (pgTAP)
       için gereken standart düzen.
-- [ ] **Sıradaki: Aşama 1 — yerel sağlamlık** (şema v11/v12: `changed_at_ms`,
-      `local_seq`, `capture` bayrağı, `beforeOpen` onarımı). Bu aşama bitince
-      yukarıdaki dört testin `skip` işareti kalkacak.
+- [x] **Aşama 1 — yerel sağlamlık ✅** (şema **v11**): milisaniyelik damga
+      (`changed_at_ms`), cihaz sayacı (`local_seq`), `server_rev`;
+      `sync_meta` (capture/next_seq) ve `sync_tombstones` tabloları; 36
+      tetikleyici (insert/update/**delete**), hepsi `capture` bayraklı;
+      temiz işaretleme artık sayaca bakıyor; çekme tetikleyicileri
+      düşürmüyor, yalnız inen satırlar yazılırken susturuyor; açılışta
+      onarım (eksik tetikleyici + kapalı kalmış bayrak).
+      **Aşama 0'ın dört testi yeşile döndü**; v10→v11 göç testi (7 test).
+      analyze 0 · test **368/368**.
+- [ ] **Sıradaki: Aşama 2 — açılış ve kapı** (docs/20 §11): `bootstrap`
+      sırası, nötr açılış ekranı, `accountError`, `switch_in_progress`,
+      gönderilmemiş veri uyarısı. Sunucuya dokunmaz.
+- **Şema sürümü kararı (2026-09-18):** v11'i **senkron v2** aldı (uygulaması
+      önce başladı). Haftalık değerlendirmenin hedef yönü alanı **v12** olacak
+      — docs/22 §9 soru 4 buna göre güncellendi.
 
 ## 🧹 A Paketi — karar gerektirmeyen birikmiş işler (2026-09-18)
 

@@ -11,6 +11,8 @@ import '../helpers/test_database.dart';
 void main() {
   // V2 tablo adları override edilmemiş — Drift varsayılan snake_case üretir.
   const expectedTables = {
+    'sync_meta',
+    'sync_tombstones',
     'exercises',
     'workout_sessions',
     'workout_sets',
@@ -26,8 +28,8 @@ void main() {
     'user_profile',
   };
 
-  group('Schema v10', () {
-    test('schemaVersion 10\'de (artırınca bu test bilinçli kırılır)',
+  group('Schema v11', () {
+    test('schemaVersion 11\'de (artırınca bu test bilinçli kırılır)',
         () async {
       // Bu assertion bir TRIPWIRE'dır: biri schemaVersion'ı artırınca
       // burası kırılır → onUpgrade adımı + yeni göç testi eklemeden
@@ -35,14 +37,19 @@ void main() {
       // v1→v2: Beslenme V2 · v2→v3: Onboarding · v3→v4: Su · v4→v5: Hareket
       // kütüphanesi · v5→v6: Rutinler + gelişmiş set · v6→v7: İçerik
       // zenginleştirme (hareket görsel/talimat + gıda grubu) · v7→v8: BMR/TDEE
-      // (user_profile +birthDate/+gender/+activityLevel).
+      // (user_profile +birthDate/+gender/+activityLevel) · v8→v9: senkron
+      // kolonları (uid/user_id/updated_at/sync_state) · v9→v10: giden kutusu
+      // tetikleyicileri · v10→v11: senkron v2 Aşama 1 — milisaniyelik damga
+      // (changed_at_ms), cihaz sayacı (local_seq), server_rev + sync_meta /
+      // sync_tombstones tabloları + capture bayraklı 36 tetikleyici
+      // (docs/20 §4.1).
       // Lossless göç testleri: migrations/migration_v*_to_v*_test.dart.
       final db = newTestDatabase();
       addTearDown(db.close);
-      expect(db.schemaVersion, 10);
+      expect(db.schemaVersion, 11);
     });
 
-    test('temiz kurulum (onCreate) beklenen 10 tabloyu yaratır', () async {
+    test('temiz kurulum (onCreate) beklenen tabloları yaratır', () async {
       final db = newTestDatabase();
       addTearDown(db.close);
 

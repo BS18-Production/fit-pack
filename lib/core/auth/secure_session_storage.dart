@@ -137,9 +137,9 @@ class FlutterSecureStore implements SecureStore {
   const FlutterSecureStore();
 
   static const _storage = FlutterSecureStorage(
-    // Android: paketin v11 varsayılanı zaten Keystore destekli AES/GCM
-    // şifreleme (API 23+; bizim minSdk 24 ✓) — ek ayar gerekmiyor.
-    aOptions: AndroidOptions(),
+    // Android: Keystore destekli EncryptedSharedPreferences (API 23+;
+    // minSdk 24 ✓). v9'da varsayılan KAPALI, açıkça istenmeli.
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
     // iOS: cihaz kilidi açıldıktan sonra erişilebilir, yedeklere GİTMEZ →
     // başka cihaza kopyalanan yedekten oturum çalınamaz.
     iOptions: IOSOptions(

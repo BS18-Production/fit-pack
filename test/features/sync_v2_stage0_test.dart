@@ -7,20 +7,18 @@ import 'package:fit_pack/features/sync/sync_pull.dart';
 import 'package:fit_pack/features/sync/sync_push.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// **Senkron v2 — Aşama 0: kırmızı testler** (docs/20 §11).
+/// **Senkron v2 — Aşama 0/1 testleri** (docs/20 §10.1, §11).
 ///
-/// Bu dosyadaki testler BUGÜNKÜ koda karşı yazıldı ve kırmızı oldukları
-/// görüldü; `skip` ile işaretli duruyorlar. Her biri docs/20'deki bir aşamayla
-/// yeşile dönecek — o aşama bittiğinde `skip` kaldırılır. Amaç: tasarımın
-/// vaadini koda karşı ölçülebilir hâlde saklamak (E-15 dersi: test adı neyi
-/// vaat ediyorsa onu ölçer).
+/// Dördü de önce BUGÜNKÜ koda karşı yazıldı ve kırmızı oldukları görüldü
+/// (2026-09-18); **Aşama 1 ile yeşile döndüler**. Artık regresyon bekçisi:
+/// biri kırmızıya dönerse o hata geri gelmiş demektir.
 ///
-/// | Test | Anlatılan hata | Çözecek aşama |
+/// | Test | Önlediği hata | Çözen mekanizma |
 /// |---|---|---|
-/// | S-1 | Gönderim sürerken yapılan düzenleme sessizce kayboluyor | 1 (`local_seq`) |
-/// | S-2 | Aynı saniyedeki iki düzenleme ayırt edilemiyor | 1 (`changed_at_ms`) |
-/// | S-4 | Çekme sürerken eklenen satır kuyruğa girmiyor | 1 (`capture` bayrağı) |
-/// | S-6 | Düşen tetikleyici kendiliğinden geri gelmiyor | 1 (`beforeOpen` onarımı) |
+/// | S-1 | Gönderim sürerken yapılan düzenleme sessizce kaybolurdu | `local_seq` ile temiz işaretleme |
+/// | S-2 | Aynı saniyedeki iki düzenleme ayırt edilemezdi | `local_seq` + `changed_at_ms` |
+/// | S-4 | Çekme sürerken eklenen satır kuyruğa girmezdi | `capture` bayrağı (tetikleyici düşürülmüyor) |
+/// | S-6 | Düşen tetikleyici geri gelmezdi, senkron sessizce ölürdü | açılışta onarım |
 void main() {
   late AppDatabase db;
   const user = '00000000-0000-4000-8000-000000000001';
@@ -64,29 +62,29 @@ void main() {
       expect(await pending('routines'), 1,
           reason: 'uçuştaki düzenleme kuyrukta kalmalı');
     },
-    skip: 'KIRMIZI — docs/20 Aşama 1 (local_seq) yeşile çevirecek',
   );
 
-  test(
-    'S-2 · aynı saniyedeki iki düzenleme ayırt edilir',
-    () async {
-      await addRoutine('Push');
-      final first = await db
-          .customSelect('SELECT updated_at FROM routines')
-          .getSingle();
+  test('S-2 · aynı saniyedeki iki düzenleme ayırt edilir', () async {
+    await addRoutine('Push');
+    final first = await db
+        .customSelect('SELECT updated_at, changed_at_ms, local_seq FROM routines')
+        .getSingle();
 
-      await db.customStatement("UPDATE routines SET name = 'Pull'");
-      final second = await db
-          .customSelect('SELECT updated_at FROM routines')
-          .getSingle();
+    await db.customStatement("UPDATE routines SET name = 'Pull'");
+    final second = await db
+        .customSelect('SELECT updated_at, changed_at_ms, local_seq FROM routines')
+        .getSingle();
 
-      expect(second.read<int>('updated_at'),
-          isNot(first.read<int>('updated_at')),
-          reason: 'iki ayrı düzenlemenin damgası aynı olmamalı '
-              '(saniye çözünürlüğü yetmiyor → changed_at_ms)');
-    },
-    skip: 'KIRMIZI — docs/20 Aşama 1 (changed_at_ms) yeşile çevirecek',
-  );
+    // Saniyelik damga aynı kalabilir — sorun buydu.
+    expect(second.read<int>('updated_at'), first.read<int>('updated_at'),
+        reason: 'test aynı saniye içinde koşmalı, yoksa hiçbir şey ölçmez');
+    // Ayırt eden: cihaz sayacı (ve milisaniyelik damga).
+    expect(second.read<int>('local_seq'),
+        greaterThan(first.read<int>('local_seq')),
+        reason: 'her düzenleme yeni bir sayaç değeri almalı');
+    expect(second.read<int>('changed_at_ms'),
+        greaterThanOrEqualTo(first.read<int>('changed_at_ms')));
+  });
 
   test(
     'S-4 · çekme SÜRERKEN eklenen satır kuyruğa girer',
@@ -112,7 +110,6 @@ void main() {
       expect(row.read<int>('sync_state'), 1, reason: 'kuyruğa girmeli');
       expect(row.read<String?>('uid'), isNotNull, reason: 'uid üretilmeli');
     },
-    skip: 'KIRMIZI — docs/20 Aşama 1 (capture bayrağı) yeşile çevirecek',
   );
 
   test(
@@ -142,7 +139,6 @@ void main() {
           .getSingle();
       expect(exists.read<int>('c'), 1, reason: 'tetikleyici onarılmalı');
     },
-    skip: 'KIRMIZI — docs/20 Aşama 1 (beforeOpen onarımı) yeşile çevirecek',
   );
 }
 

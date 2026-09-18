@@ -10,6 +10,7 @@ import 'tables/nutrition_tables.dart';
 import 'tables/body_tables.dart';
 import 'tables/achievement_tables.dart';
 import 'tables/sync_columns.dart';
+import 'tables/sync_tables.dart';
 import 'daos/workout_dao.dart';
 import 'daos/nutrition_dao.dart';
 import 'daos/body_dao.dart';
@@ -33,6 +34,8 @@ part 'app_database.g.dart';
     ProgressPhotos,
     Achievements,
     UserProfile,
+    SyncMeta,
+    SyncTombstones,
   ],
   daos: [
     WorkoutDao,
@@ -94,7 +97,7 @@ class AppDatabase extends _$AppDatabase {
   /// Katalog satırları (seed hareket/besin) hariç — onlar kullanılınca elle
   /// kuyruğa alınır. Tablo/kolon değişmez, yalnız tetikleyici eklenir.
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   /// v5→v6 gibi ARA göç adımları `m.createTable()` ile GÜNCEL tanımı kullanır —
   /// yani o adımda doğan tablo (routines, routine_exercises, water_intake)
@@ -110,6 +113,62 @@ class AppDatabase extends _$AppDatabase {
     if (!exists) await m.addColumn(table, column);
   }
 
+  /// Senkron v2 kolonlarını taşıyan 12 tablo — göçte kolon eklemek için
+  /// (tablo, changed_at_ms, local_seq, server_rev).
+  List<(TableInfo, GeneratedColumn, GeneratedColumn, GeneratedColumn)>
+  get _syncedTableInfos => [
+    (userProfile, userProfile.changedAtMs, userProfile.localSeq,
+        userProfile.serverRev),
+    (workoutSessions, workoutSessions.changedAtMs, workoutSessions.localSeq,
+        workoutSessions.serverRev),
+    (workoutSets, workoutSets.changedAtMs, workoutSets.localSeq,
+        workoutSets.serverRev),
+    (routines, routines.changedAtMs, routines.localSeq, routines.serverRev),
+    (routineExercises, routineExercises.changedAtMs, routineExercises.localSeq,
+        routineExercises.serverRev),
+    (foodLogs, foodLogs.changedAtMs, foodLogs.localSeq, foodLogs.serverRev),
+    (waterIntake, waterIntake.changedAtMs, waterIntake.localSeq,
+        waterIntake.serverRev),
+    (bodyMeasurements, bodyMeasurements.changedAtMs, bodyMeasurements.localSeq,
+        bodyMeasurements.serverRev),
+    (progressPhotos, progressPhotos.changedAtMs, progressPhotos.localSeq,
+        progressPhotos.serverRev),
+    (recipeItems, recipeItems.changedAtMs, recipeItems.localSeq,
+        recipeItems.serverRev),
+    (exercises, exercises.changedAtMs, exercises.localSeq,
+        exercises.serverRev),
+    (foods, foods.changedAtMs, foods.localSeq, foods.serverRev),
+  ];
+
+  /// **Her açılışta** senkron altyapısını onarır (docs/20 §4.1, S-6).
+  ///
+  /// Neden gerek var: göç yarıda kesilirse ya da çekme sırasında uygulama
+  /// ölürse tetikleyici eksik / `capture` kapalı kalır. O andan sonra hiçbir
+  /// değişiklik kuyruğa girmez — senkron **sessizce** ölür, kullanıcı
+  /// kaydettiğini sanır. Ucuz kontrol, pahalı hatayı önler.
+  Future<void> _repairSyncTriggers() async {
+    final migrator = Migrator(this);
+    await migrator.createTable(syncMeta);
+    await migrator.createTable(syncTombstones);
+    for (final sql in seedSyncMetaSql) {
+      await customStatement(sql);
+    }
+    // Çekme yarıda kaldıysa bayrak kapalı kalmış olabilir → aç.
+    await customStatement(setCaptureSql(true));
+
+    final rows = await customSelect(
+      "SELECT name FROM sqlite_master WHERE type = 'trigger'",
+    ).get();
+    final present = {for (final r in rows) r.read<String>('name')};
+    for (final table in syncedTableNames) {
+      final expected = syncTriggerNames(table);
+      if (present.containsAll(expected)) continue;
+      await customStatement(createInsertTriggerSql(table));
+      await customStatement(createUpdateTriggerSql(table));
+      await customStatement(createDeleteTriggerSql(table));
+    }
+  }
+
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(
@@ -120,10 +179,16 @@ class AppDatabase extends _$AppDatabase {
         // konulamıyor çünkü göç yolunda SQLite `ALTER TABLE ADD COLUMN` ile
         // UNIQUE kolon eklenemez — iki yol da aynı index'i kursun diye burada
         // da elle kuruluyor.
+        // Senkron v2 defteri: tetikleyiciler `capture` ve `next_seq`'i okur,
+        // yani tetikleyicilerden ÖNCE dolmalı.
+        for (final sql in seedSyncMetaSql) {
+          await m.database.customStatement(sql);
+        }
         for (final t in syncedTableNames) {
           await m.database.customStatement(createUidIndexSql(t));
           await m.database.customStatement(createInsertTriggerSql(t));
           await m.database.customStatement(createUpdateTriggerSql(t));
+          await m.database.customStatement(createDeleteTriggerSql(t));
         }
       },
 
@@ -292,10 +357,52 @@ class AppDatabase extends _$AppDatabase {
         // v9 → v10: giden kutusu tetikleyicileri (docs/18 §6). Tablo/kolon
         // değişmez → şema doğrulaması etkilenmez; yalnız tetikleyici eklenir.
         if (from < 10 && to >= 10) {
+          // DONMUŞ v10 SQL'i (bkz. createInsertTriggerSqlV10): güncel sürüm
+          // v11 kolonlarını ister, bu adımda onlar henüz yok.
           for (final name in syncedTableNames) {
+            await m.database.customStatement(createInsertTriggerSqlV10(name));
+            await m.database.customStatement(createUpdateTriggerSqlV10(name));
+          }
+        }
+        // v10 → v11: senkron v2 Aşama 1 (docs/20 §4.1). Yalnız EKLEME:
+        // üç kolon + iki defter tablosu + yenilenen tetikleyiciler.
+        // Göç sırasında `capture` KAPALI: backfill UPDATE'leri tüm satırları
+        // kuyruğa atmamalı (aksi halde ilk açılışta binlerce satır gönderilir).
+        if (from < 11 && to >= 11) {
+          await m.createTable(syncMeta);
+          await m.createTable(syncTombstones);
+          for (final sql in seedSyncMetaSql) {
+            await m.database.customStatement(sql);
+          }
+          await m.database.customStatement(setCaptureSql(false));
+          for (final table in _syncedTableInfos) {
+            await _addColumnIfMissing(m, table.$1, table.$2);
+            await _addColumnIfMissing(m, table.$1, table.$3);
+            await _addColumnIfMissing(m, table.$1, table.$4);
+          }
+          for (final name in syncedTableNames) {
+            await m.database.customStatement(backfillChangedAtMsSql(name));
+            await m.database.customStatement(backfillLocalSeqSql(name));
+            // Eski tetikleyiciler `capture`/`local_seq` bilmiyor → yenile.
+            await m.database.customStatement(dropInsertTriggerSql(name));
+            await m.database.customStatement(dropUpdateTriggerSql(name));
+            await m.database.customStatement(dropDeleteTriggerSql(name));
             await m.database.customStatement(createInsertTriggerSql(name));
             await m.database.customStatement(createUpdateTriggerSql(name));
+            await m.database.customStatement(createDeleteTriggerSql(name));
           }
+          // Sayaç, dağıtılan en büyük `local_seq`'in üstünden devam etsin.
+          // Sayaç, dağıtılan EN BÜYÜK `local_seq`'in bir üstünden devam eder.
+          // (Tek `UNION ALL` alt sorgusu yalnız ilk satırı döndürürdü → 0.)
+          final union = syncedTableNames
+              .map((t) => 'SELECT COALESCE(MAX(local_seq), 0) AS s FROM $t')
+              .join(' UNION ALL ');
+          await m.database.customStatement(
+            "UPDATE sync_meta SET value = "
+            "CAST((SELECT MAX(s) + 1 FROM ($union)) AS TEXT) "
+            "WHERE key = 'next_seq'",
+          );
+          await m.database.customStatement(setCaptureSql(true));
         }
       },
 
@@ -304,6 +411,11 @@ class AppDatabase extends _$AppDatabase {
       // bütünlük korunsun.
       beforeOpen: (details) async {
         await customStatement('PRAGMA foreign_keys = ON');
+        // Onarım yalnız GÜNCEL şemada anlamlı: v11 tetikleyicileri v10
+        // tablolarında olmayan kolonlara yazar. Göç testleri eski sürüm
+        // veritabanını da bu sınıfla açıyor (SchemaVerifier) — orada
+        // çalıştırmak şemayı bozardı.
+        if (details.versionNow >= 11) await _repairSyncTriggers();
       },
     );
   }

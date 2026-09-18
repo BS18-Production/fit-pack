@@ -192,6 +192,26 @@ void main() {
     skip: 'KIRMIZI — docs/20 Aşama 1 (changed_at_ms) ile yeşile dönecek',
   );
 
+  test('T-5c · yerel kolonlar sunucuya gönderilmez', () async {
+    // Senkron v2 ile üç yeni kolon geldi. `local_seq` cihaz sayacı,
+    // `server_rev` sunucudan gelir, `changed_at_ms` ise ancak sunucuda kolon
+    // açıldıktan SONRA (Aşama 3/4) gönderilecek. Bugün gönderilirlerse sunucu
+    // "böyle bir kolon yok" (42703) der ve HER gönderim düşer.
+    await addRoutine('Push');
+    await push.pushAll(userId: user);
+
+    final sent = remote.store['routines']!.values.single;
+    expect(sent.keys, isNot(contains('local_seq')));
+    expect(sent.keys, isNot(contains('server_rev')));
+    expect(sent.keys, isNot(contains('changed_at_ms')));
+    expect(sent.keys, isNot(contains('id')));
+    expect(sent.keys, isNot(contains('sync_state')));
+    // Gitmesi gerekenler yerinde:
+    expect(sent['uid'], isNotNull);
+    expect(sent['user_id'], user);
+    expect(sent['name'], 'Push');
+  });
+
   test('T-6 · senkron yerel satırı SİLMEZ, yalnız bayrağı çevirir', () async {
     await addRoutine('Push');
     await push.pushAll(userId: user);

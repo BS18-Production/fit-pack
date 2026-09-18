@@ -26,7 +26,7 @@ tablo eklenmez.
 
 **Gerçek veriye etkisi.** Ekran **yalnız okur**; hiçbir kaydı değiştirmez.
 Tek yazma: profildeki yeni **hedef yönü** alanı (kilo ver / koru / al) —
-kullanıcı seçtiğinde. Şema v10 → **v11** (iki nullable kolon), göç kayıpsız.
+kullanıcı seçtiğinde. Şema v11 → **v12** (iki nullable kolon), göç kayıpsız.
 **Geri dönüş:** kolonlar nullable, eski uygulama sürümü şemayla sorunsuz
 çalışır (CONVENTIONS §3.8); sunucuya da aynı iki kolon eklenir, eski istemci
 onları göndermez.
@@ -154,16 +154,15 @@ Profilde yeni alan: **kilo ver / koru / al**. Kullanımı:
 
 Yeni iki kolon (`user_profile`): `goal_direction` (text, nullable),
 `goal_direction_since` (datetime, nullable). CONVENTIONS §3 kontrol listesi
-aynı commit'te uygulanır: şema **v11**, göç adımı, `drift_dev schema dump`,
+aynı commit'te uygulanır: şema **v12**, göç adımı, `drift_dev schema dump`,
 kayıpsız göç testi, tripwire güncellemesi.
 
 **Sunucu:** `user_profile` senkron edilen tablo → aynı iki kolon Supabase'de
 de açılır (küçük `ALTER TABLE`, ücretli plan gerektirmez). Sıra: yedek → dalda
 dene → uygula → aynı gün uygulama sürümü (docs/20 §11 kuralı).
 
-**Sürüm çakışması:** docs/20 de v11'i kullanıyor. Hangisi önce çıkarsa v11'i
-alır, diğeri v12'ye kayar. Bu iş önce planlandığı için **v11 burası**,
-docs/20 v12'ye güncellenecek (§9 soru 4).
+**Sürüm çakışması — karar verildi (2026-09-18):** senkron v2 Aşama 1 önce
+uygulandı ve **v11'i o aldı**. Hedef yönü alanı bu yüzden **v12** olacak.
 
 ---
 
@@ -207,4 +206,4 @@ değişikliği içerdiği için uygulama sürümüyle **birlikte** yayınlanır.
 | 1 | **Hafta kapanışı ve bildirim saati** | Hafta başlangıcı Pazartesi (mevcut tercih) → kapanış **Pazar 20:00**. Hafta bitmeden bakmak isteyen ekranı her zaman açabilir. |
 | 2 | **Profildeki çelişki** | Hedef yönü alanı ilk kez doldurulurken tek soru: "Hedefin ne?" Cevap "kilo al" ise hedef kilo 80 kg değeri düzeltilir; "ver" ise kalori hedefi harcamanın altına çekilir. Otomatik değiştirme yok, onayla. |
 | 3 | **Odak cümlesinin tonu** | Yargısız ve tek cümle ("Bu hafta planındaki 4 antrenmandan 3'ünü tamamladın — hedef aynı ritmi sürdürmek"). Suçlayıcı dil ("kaçırdın") yok. |
-| 4 | **Şema sürümü** | Bu iş v11'i alır, docs/20 v12'ye kayar (bu iş önce başlıyor). |
+| 4 | **Şema sürümü** | ✅ Çözüldü: senkron v2 v11'i aldı (2026-09-18), bu iş **v12** olacak. Karar gerekmiyor. |

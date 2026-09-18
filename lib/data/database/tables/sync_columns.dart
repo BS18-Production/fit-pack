@@ -41,6 +41,20 @@ mixin SyncColumns on Table {
   /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
   IntColumn get syncState =>
       integer().nullable().withDefault(const Constant(0))();
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  IntColumn get changedAtMs => integer().nullable()();
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  IntColumn get localSeq => integer().nullable()();
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  IntColumn get serverRev => integer().nullable()();
 }
 
 /// Senkron kolonu taşıyan tabloların SQL adları (docs/18 §3.1–3.2).
@@ -97,7 +111,20 @@ const syncForeignKeys = <String, Map<String, String>>{
 
 /// Sunucuya GİTMEYEN kolonlar: `id` cihaz içi kimlik, `sync_state` giden
 /// kutusu bayrağı — ikisi de yerele ait (docs/18 §4).
-const localOnlyColumns = <String>{'id', 'sync_state'};
+///
+/// Senkron v2 kolonları da şimdilik burada:
+/// - `local_seq` **kalıcı olarak yerel** (cihaz sayacı, sunucuyu ilgilendirmez).
+/// - `server_rev` sunucudan GELİR, istemci göndermez.
+/// - `changed_at_ms` Aşama 4'te gönderilmeye başlanacak — **sunucuda kolon
+///   açıldıktan sonra** (Aşama 3). Şimdi gönderilse bugünkü sunucu
+///   "böyle bir kolon yok" (42703) der ve **her gönderim** başarısız olurdu.
+const localOnlyColumns = <String>{
+  'id',
+  'sync_state',
+  'local_seq',
+  'server_rev',
+  'changed_at_ms',
+};
 
 /// `uid` için unique index adı — tablo başına tek.
 String uidIndexName(String table) => 'idx_${table}_uid';
@@ -166,8 +193,11 @@ String _dirtyExpr(String table) => catalogTableNames.contains(table)
     ? 'CASE WHEN NEW.is_custom = 1 OR NEW.user_id IS NOT NULL THEN 1 ELSE 0 END'
     : '1';
 
-/// INSERT sonrası: `uid` yoksa üret, zaman damgala, (uygunsa) kuyruğa al.
-String createInsertTriggerSql(String table) => '''
+/// **v10 tetikleyicileri — TARİHTE DONMUŞ.** v9 → v10 göç adımı bunları kurar.
+/// Güncel (v11) SQL'i kullanmak yasak: o SQL `changed_at_ms` / `local_seq` /
+/// `sync_meta` ister, v10 şemasında bunlar yoktur ve göç yolundaki her yazma
+/// patlar (aynı ders v4 tablo oluşturmada da yaşandı).
+String createInsertTriggerSqlV10(String table) => '''
 CREATE TRIGGER IF NOT EXISTS ${table}_sync_ins AFTER INSERT ON $table
 BEGIN
   UPDATE $table
@@ -177,12 +207,7 @@ BEGIN
    WHERE id = NEW.id;
 END''';
 
-/// UPDATE sonrası: zaman damgala, (uygunsa) kuyruğa al.
-///
-/// **Döngü koruması:** `sync_state` DEĞİŞTİYSE bu yazma senkron katmanına
-/// aittir (temiz işaretleme ya da tembel kuyruğa alma) → tetikleyici çalışmaz.
-/// Çalışsaydı satır anında yeniden kirlenir ve senkron hiç bitmezdi.
-String createUpdateTriggerSql(String table) => '''
+String createUpdateTriggerSqlV10(String table) => '''
 CREATE TRIGGER IF NOT EXISTS ${table}_sync_upd AFTER UPDATE ON $table
 WHEN NEW.sync_state IS OLD.sync_state
 BEGIN
@@ -191,6 +216,111 @@ BEGIN
          updated_at = CAST(strftime('%s','now') AS INTEGER),
          sync_state = ${_dirtyExpr(table)}
    WHERE id = NEW.id;
+END''';
+
+// ─────────────────── Senkron v2 (şema v11) — docs/20 §4.1 ───────────────────
+
+/// Milisaniyelik "şimdi". `strftime('%s')` yalnız saniye verir; aynı saniyedeki
+/// iki düzenleme ayırt edilemediği için gönderim sırasındaki değişiklik
+/// kayboluyordu (docs/20 §1 hata #3).
+const _nowMsSql =
+    "CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)";
+
+/// Cihaz sayacı: her yazmada bir artan `local_seq` üretir.
+const _nextSeqSql =
+    "(SELECT CAST(COALESCE(value,'0') AS INTEGER) + 1 FROM sync_meta "
+    "WHERE key = 'next_seq')";
+
+const _bumpSeqSql = "UPDATE sync_meta SET value = "
+    "CAST(CAST(COALESCE(value,'0') AS INTEGER) + 1 AS TEXT) "
+    "WHERE key = 'next_seq'";
+
+/// Tetikleyiciler yazmaları kuyruğa alsın mı (K-4). Çekme sırasında 0 yapılır:
+/// eskiden tetikleyiciler DÜŞÜRÜLÜYORDU, o aralıkta kullanıcının yazdığı satır
+/// uid'siz ve kuyruksuz kalıyordu (docs/20 §1 hata #9 / S-4).
+const _captureOnSql =
+    "(SELECT COALESCE(value,'1') FROM sync_meta WHERE key = 'capture') = '1'";
+
+// `sync_meta` ve `sync_tombstones` tabloları drift tanımından kurulur
+// (`tables/sync_tables.dart` + `Migrator.createTable`). Elle CREATE TABLE
+// yazmak şema doğrulamasını bozuyordu: aynı tablo iki farklı DDL ile
+// tanımlanınca `migrateAndValidate` "şema uyuşmuyor" diyor.
+
+/// `sync_meta` varsayılanları — tekrar çalıştırmak güvenli.
+const seedSyncMetaSql = [
+  "INSERT OR IGNORE INTO sync_meta (key, value) VALUES ('capture', '1')",
+  "INSERT OR IGNORE INTO sync_meta (key, value) VALUES ('next_seq', '1')",
+];
+
+/// Çekme/göç sırasında tetikleyicileri susturur (1 = kuyruğa al, 0 = sus).
+String setCaptureSql(bool on) =>
+    "INSERT INTO sync_meta (key, value) VALUES ('capture', '${on ? 1 : 0}') "
+    "ON CONFLICT(key) DO UPDATE SET value = excluded.value";
+
+/// Göçte `changed_at_ms`'i eski saniyelik damgadan doldurur.
+String backfillChangedAtMsSql(String table) =>
+    'UPDATE $table SET changed_at_ms = updated_at * 1000 '
+    'WHERE changed_at_ms IS NULL AND updated_at IS NOT NULL';
+
+/// Göçte `local_seq`: kuyruktaki satırlar sırayla numaralanır ki ilk
+/// gönderimde "arada değişti mi?" karşılaştırması anlamlı olsun.
+String backfillLocalSeqSql(String table) =>
+    'UPDATE $table SET local_seq = id WHERE local_seq IS NULL';
+
+/// Bir tablonun senkron tetikleyici adları (onarım kontrolü için).
+List<String> syncTriggerNames(String table) => [
+  '${table}_sync_ins',
+  '${table}_sync_upd',
+  '${table}_sync_del',
+];
+
+/// INSERT sonrası: `uid` yoksa üret, zaman damgala, sayaç ver, (uygunsa)
+/// kuyruğa al. `capture = 0` iken hiçbir şey yapmaz (çekme yankılanmasın).
+String createInsertTriggerSql(String table) => '''
+CREATE TRIGGER IF NOT EXISTS ${table}_sync_ins AFTER INSERT ON $table
+WHEN $_captureOnSql
+BEGIN
+  UPDATE $table
+     SET uid           = COALESCE(NEW.uid, $_uuidV4Sql),
+         updated_at    = CAST(strftime('%s','now') AS INTEGER),
+         changed_at_ms = $_nowMsSql,
+         local_seq     = $_nextSeqSql,
+         sync_state    = ${_dirtyExpr(table)}
+   WHERE id = NEW.id;
+  $_bumpSeqSql;
+END''';
+
+/// DELETE sonrası: mezar taşı bırak. Yalnız sunucuya gitmiş olabilecek satırlar
+/// (kullanılmamış seed katalog satırı iz bırakmaz). Yabancı anahtar zinciriyle
+/// silinen satırlar da bu tetikleyiciyi çalıştırır → seans silinince setlerin
+/// mezar taşları da oluşur.
+String createDeleteTriggerSql(String table) => '''
+CREATE TRIGGER IF NOT EXISTS ${table}_sync_del AFTER DELETE ON $table
+WHEN $_captureOnSql AND OLD.uid IS NOT NULL
+     AND (OLD.server_rev IS NOT NULL OR OLD.user_id IS NOT NULL)
+BEGIN
+  INSERT INTO sync_tombstones (table_name, uid, changed_at_ms, local_seq, sync_state)
+  VALUES ('$table', OLD.uid, $_nowMsSql, $_nextSeqSql, 1);
+  $_bumpSeqSql;
+END''';
+
+/// UPDATE sonrası: zaman damgala, (uygunsa) kuyruğa al.
+///
+/// **Döngü koruması:** `sync_state` DEĞİŞTİYSE bu yazma senkron katmanına
+/// aittir (temiz işaretleme ya da tembel kuyruğa alma) → tetikleyici çalışmaz.
+/// Çalışsaydı satır anında yeniden kirlenir ve senkron hiç bitmezdi.
+String createUpdateTriggerSql(String table) => '''
+CREATE TRIGGER IF NOT EXISTS ${table}_sync_upd AFTER UPDATE ON $table
+WHEN NEW.sync_state IS OLD.sync_state AND $_captureOnSql
+BEGIN
+  UPDATE $table
+     SET uid           = COALESCE(NEW.uid, $_uuidV4Sql),
+         updated_at    = CAST(strftime('%s','now') AS INTEGER),
+         changed_at_ms = $_nowMsSql,
+         local_seq     = $_nextSeqSql,
+         sync_state    = ${_dirtyExpr(table)}
+   WHERE id = NEW.id;
+  $_bumpSeqSql;
 END''';
 
 /// Katalog satırını elle kuyruğa alır — kullanıcı onu bir sette/öğünde
@@ -211,6 +341,8 @@ String dropInsertTriggerSql(String table) =>
     'DROP TRIGGER IF EXISTS ${table}_sync_ins';
 String dropUpdateTriggerSql(String table) =>
     'DROP TRIGGER IF EXISTS ${table}_sync_upd';
+String dropDeleteTriggerSql(String table) =>
+    'DROP TRIGGER IF EXISTS ${table}_sync_del';
 
 /// Yerel integer yabancı anahtar kolonu → sunucudaki `*_uid` kolon adı.
 /// Gönderimde `_stripId` + `_uid` ile üretilen adla AYNI olmalı (docs/18 §4):

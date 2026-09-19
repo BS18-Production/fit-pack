@@ -128,7 +128,7 @@ class SyncPull {
       result += PullResult(error: e);
     }
 
-    for (final table in result.ok ? syncPushOrder : const <String>[]) {
+    for (final table in result.ok ? syncRemoteTables : const <String>[]) {
       try {
         result += await _pullTable(table, userId, full: full);
       } catch (e, st) {
@@ -275,7 +275,7 @@ class SyncPull {
               if (table is! String || uid is! String) continue;
               // Bilmediğimiz bir tablo adı geldiyse dokunma: ham adı SQL'e
               // koymak enjeksiyon kapısı olurdu.
-              if (!syncPushOrder.contains(table)) continue;
+              if (!syncRemoteTables.contains(table)) continue;
               applied += await _deleteLocal(table, uid);
             }
             if (lastRev > cursor) {

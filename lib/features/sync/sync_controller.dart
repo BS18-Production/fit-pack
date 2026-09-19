@@ -129,7 +129,7 @@ class SyncController {
 
   /// Kuyrukta bekleyen satır var mı?
   Future<bool> hasPending() async {
-    for (final table in syncPushOrder) {
+    for (final table in syncRemoteTables) {
       final r = await db
           .customSelect(
               'SELECT EXISTS(SELECT 1 FROM $table WHERE sync_state = 1) e')
@@ -142,7 +142,7 @@ class SyncController {
   /// Kuyrukta bekleyen toplam satır — arayüzde "N kayıt yüklenecek" için.
   Future<int> pendingCount() async {
     var total = 0;
-    for (final table in syncPushOrder) {
+    for (final table in syncRemoteTables) {
       final r = await db
           .customSelect('SELECT COUNT(*) c FROM $table WHERE sync_state = 1')
           .getSingle();
@@ -155,7 +155,7 @@ class SyncController {
   /// docs/20 §9). Hesap ekranında "N kayıt yüklenemedi" olarak görünür.
   Future<int> failedCount() async {
     var total = 0;
-    for (final table in syncPushOrder) {
+    for (final table in syncRemoteTables) {
       final r = await db
           .customSelect('SELECT COUNT(*) c FROM $table WHERE sync_state = 2')
           .getSingle();
@@ -171,7 +171,7 @@ class SyncController {
   /// yanlış sınıflanan satır sonsuza kadar yerelde kalırdı.
   /// `sync_state` değiştiği için yerel tetikleyici çalışmaz.
   Future<void> retryFailed() async {
-    for (final table in syncPushOrder) {
+    for (final table in syncRemoteTables) {
       await db.customStatement(
           'UPDATE $table SET sync_state = 1 WHERE sync_state = 2');
     }

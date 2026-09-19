@@ -172,8 +172,9 @@ class SyncPush {
     // sunucudaki set, orada olmayan bir harekete referans verir.
     await _queueReferencedCatalogRows();
 
-    // Bağımlılık sırası: referans verilen tablo önce gider.
-    for (final table in syncPushOrder) {
+    // Bağımlılık sırası: referans verilen tablo önce gider. Yalnız sunucuyla
+    // eşitlenen tablolar (fotoğraflar cihazda kalır — docs/19 K-2).
+    for (final table in syncRemoteTables) {
       try {
         final r = await _pushTable(table, userId);
         pushed += r.pushed;
@@ -416,7 +417,7 @@ class SyncPush {
   /// niyeti olduğu gibi aktarır.
   Future<int> _pushTombstones(String userId) async {
     var total = 0;
-    for (final table in syncPushOrder.reversed) {
+    for (final table in syncRemoteTables.reversed) {
       while (true) {
         final rows = await db
             .customSelect(

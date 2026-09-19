@@ -76,6 +76,12 @@ class AccountSwitchGuard {
 
   /// Gönderilmeyi bekleyen satır sayısı (giden kutusu + mezar taşları).
   /// Hesap değişiminde "kaç kayıt kaybolacak?" sorusunun cevabı.
+  ///
+  /// **İlerleme fotoğrafları BİLİNÇLİ olarak sayılır**, senkron göstergesi
+  /// onları atladığı halde (docs/19 K-2): sunucuya hiç gitmezler, yani hesap
+  /// değişimi temizliği onları **geri dönüşsüz** siler. Sayılmasalardı
+  /// kullanıcı "yüklenmemiş kayıt yok" görüp en hassas verisini sessizce
+  /// kaybederdi.
   static Future<int> pendingRowCount(AppDatabase db) async {
     var total = 0;
     for (final table in [...syncedTableNames, 'sync_tombstones']) {

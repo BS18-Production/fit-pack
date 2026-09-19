@@ -101,6 +101,25 @@ const syncPushOrder = <String>[
   'progress_photos',
 ];
 
+/// Yerelde yaşayan ama sunucuya **GİTMEYEN** tablolar (docs/19 §3 K-2).
+///
+/// `progress_photos`: satırın `image_path`'i yalnız bu cihazda anlamı olan bir
+/// dosya adı. Gönderilseydi öteki cihaz dosyası olmayan kırık bir kayıt
+/// çekerdi — ve kullanıcı "fotoğrafım yedeklendi" sanardı. Dilim 2 (Supabase
+/// Storage, açık onayla) gelince bu küme boşalır.
+///
+/// Neden `syncPushOrder`'dan çıkarılmıyor: o liste hesap değişiminde yerel
+/// veriyi silen listeyle aynı. Çıkarılsaydı A kullanıcısının VÜCUT
+/// FOTOĞRAFLARI B girişinde cihazda kalıp B'ye görünürdü.
+const syncRemoteExcluded = <String>{'progress_photos'};
+
+/// Sunucuyla eşitlenen tablolar, gönderim sırasıyla. Gönderim, çekme ve senkron
+/// göstergesi bunu kullanır; hesap değişimi temizliği [syncPushOrder]'ı.
+final syncRemoteTables = <String>[
+  for (final t in syncPushOrder)
+    if (!syncRemoteExcluded.contains(t)) t,
+];
+
 /// Yerel integer yabancı anahtar → hedef tablo. Sunucuda bu kolonlar `*_uid`
 /// olarak gider; çeviriyi senkron katmanı yapar (docs/18 §4).
 ///

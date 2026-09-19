@@ -151,6 +151,33 @@ class SyncController {
     return total;
   }
 
+  /// Kalıcı hata yüzünden kuyruktan ayrılmış satır sayısı (`sync_state = 2`,
+  /// docs/20 §9). Hesap ekranında "N kayıt yüklenemedi" olarak görünür.
+  Future<int> failedCount() async {
+    var total = 0;
+    for (final table in syncPushOrder) {
+      final r = await db
+          .customSelect('SELECT COUNT(*) c FROM $table WHERE sync_state = 2')
+          .getSingle();
+      total += r.read<int>('c');
+    }
+    return total;
+  }
+
+  /// Hatalı satırları yeniden kuyruğa alır ve hemen bir tur dener.
+  ///
+  /// "Kalıcı" sınıflandırması yanılabilir (geçici bir yetki sorunu, sonradan
+  /// düzeltilen bir sunucu politikası). Kullanıcıya bu kaçış yolu verilmezse
+  /// yanlış sınıflanan satır sonsuza kadar yerelde kalırdı.
+  /// `sync_state` değiştiği için yerel tetikleyici çalışmaz.
+  Future<void> retryFailed() async {
+    for (final table in syncPushOrder) {
+      await db.customStatement(
+          'UPDATE $table SET sync_state = 1 WHERE sync_state = 2');
+    }
+    await syncNow();
+  }
+
   void _scheduleRetry() {
     final delay = _backoff[_failures.clamp(0, _backoff.length - 1)];
     _failures++;

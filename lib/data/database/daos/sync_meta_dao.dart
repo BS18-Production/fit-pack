@@ -38,6 +38,15 @@ class SyncMetaDao extends DatabaseAccessor<AppDatabase> with _$SyncMetaDaoMixin 
   /// sunucu transaction'ını ancak her şeyi baştan okumak yakalar.
   static String fullPullKey(String userId) => 'full_pull_at:$userId';
 
+  /// Son başarılı gönderim / çekme zamanı (ms) — "Son yedekleme" satırı
+  /// (docs/20 §9, C-36).
+  static const keyLastPushOk = 'last_push_ok_at';
+  static const keyLastPullOk = 'last_pull_ok_at';
+
+  /// Sunucuya İLK ulaşılamadığı an (ms). Başarılı her temasta silinir;
+  /// doluysa ve 3 günden eskiyse kullanıcı uyarılır (docs/20 §9).
+  static const keyUnreachableSince = 'server_unreachable_since';
+
   Future<String?> read(String key) async {
     final row = await (select(syncMeta)..where((t) => t.key.equals(key)))
         .getSingleOrNull();

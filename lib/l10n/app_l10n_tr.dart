@@ -1938,4 +1938,29 @@ class AppL10nTr extends AppL10n {
   @override
   String get progInfoSettings =>
       'Artış miktarını Ayarlar → Kilo artışı\'ndan değiştirebilirsin.';
+
+  @override
+  String syncLastBackup(String when) {
+    return 'Son yedekleme: $when';
+  }
+
+  @override
+  String syncWhenToday(String time) {
+    return 'bugün $time';
+  }
+
+  @override
+  String syncWhenYesterday(String time) {
+    return 'dün $time';
+  }
+
+  @override
+  String syncLongOutage(int days) {
+    return '$days gündür yedeklenemedi. Veriler bu telefonda güvende.';
+  }
+
+  @override
+  String syncFailedRows(int count) {
+    return '$count kayıt yüklenemedi — tekrar denemek için dokun';
+  }
 }

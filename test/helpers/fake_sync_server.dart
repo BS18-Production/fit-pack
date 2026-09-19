@@ -37,6 +37,11 @@ class FakeSyncServer implements SyncRemote {
   /// true ise her çağrı patlar (ağ yok).
   bool fail = false;
 
+  /// [fail] açıkken fırlatılacak hata. Varsayılan tür bilinmeyen (geçici)
+  /// sayılır; hata sınıflandırma testleri `SocketException` gibi gerçek
+  /// türleri buradan verir.
+  Object failWith = Exception('ağ yok');
+
   /// Onay DÖNMEDEN patlar: sunucu satırı yazdı ama istemci onayı alamadı.
   bool failAfterWrite = false;
 
@@ -53,7 +58,7 @@ class FakeSyncServer implements SyncRemote {
     calls.add(table);
     _upsertCalls++;
     sent.putIfAbsent(table, () => []).addAll(rows.map(Map<String, Object?>.of));
-    if (fail) throw Exception('ağ yok');
+    if (fail) throw failWith;
 
     final interrupt = onUpsert;
     if (interrupt != null) {
@@ -97,7 +102,7 @@ class FakeSyncServer implements SyncRemote {
     int limit,
   ) async {
     calls.add('fetchSince:$table');
-    if (fail) throw Exception('ağ yok');
+    if (fail) throw failWith;
     final interrupt = onFetch;
     if (interrupt != null) {
       onFetch = null;
@@ -125,7 +130,7 @@ class FakeSyncServer implements SyncRemote {
     List<String> uids,
   ) async {
     calls.add('fetchByUids:$table');
-    if (fail) throw Exception('ağ yok');
+    if (fail) throw failWith;
     return (store[table]?.values ?? const <Map<String, Object?>>[])
         .where((r) => r['user_id'] == userId && uids.contains(r['uid']))
         .map(Map<String, Object?>.of)
@@ -143,7 +148,7 @@ class FakeSyncServer implements SyncRemote {
     List<String> uids,
   ) async {
     calls.add('deleteRows:$table');
-    if (fail) throw Exception('ağ yok');
+    if (fail) throw failWith;
     final t = store[table];
     final silinen = <String>[];
     for (final uid in uids) {

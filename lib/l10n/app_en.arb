@@ -1193,5 +1193,28 @@
       }
     }
   },
-  "progInfoSettings": "Change the increment in Settings → Weight increment."
+  "progInfoSettings": "Change the increment in Settings → Weight increment.",
+  "syncLastBackup": "Last backup: {when}",
+  "@syncLastBackup": {
+    "description": "Account screen: when data last reached the server.",
+    "placeholders": { "when": { "type": "String" } }
+  },
+  "syncWhenToday": "today {time}",
+  "@syncWhenToday": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "syncWhenYesterday": "yesterday {time}",
+  "@syncWhenYesterday": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "syncLongOutage": "Not backed up for {days} days. Your data is safe on this phone.",
+  "@syncLongOutage": {
+    "description": "Shown after 3+ days without reaching the server.",
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "syncFailedRows": "{count} record(s) couldn't upload — tap to retry",
+  "@syncFailedRows": {
+    "description": "Rows removed from the upload queue after a permanent server error.",
+    "placeholders": { "count": { "type": "int" } }
+  }
 }

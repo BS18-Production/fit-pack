@@ -3498,6 +3498,36 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Change the increment in Settings → Weight increment.'**
   String get progInfoSettings;
+
+  /// Account screen: when data last reached the server.
+  ///
+  /// In en, this message translates to:
+  /// **'Last backup: {when}'**
+  String syncLastBackup(String when);
+
+  /// No description provided for @syncWhenToday.
+  ///
+  /// In en, this message translates to:
+  /// **'today {time}'**
+  String syncWhenToday(String time);
+
+  /// No description provided for @syncWhenYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'yesterday {time}'**
+  String syncWhenYesterday(String time);
+
+  /// Shown after 3+ days without reaching the server.
+  ///
+  /// In en, this message translates to:
+  /// **'Not backed up for {days} days. Your data is safe on this phone.'**
+  String syncLongOutage(int days);
+
+  /// Rows removed from the upload queue after a permanent server error.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} record(s) couldn\'t upload — tap to retry'**
+  String syncFailedRows(int count);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

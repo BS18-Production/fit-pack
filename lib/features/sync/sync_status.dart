@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/providers.dart';
+import 'sync_health.dart';
 import 'sync_providers.dart';
 
 /// Senkron durumu göstergesinin (Aşama G, docs/18 §9) mantıksal durumu.
@@ -28,7 +29,38 @@ class SyncStatus {
   final int pending;
   final SyncState state;
 
-  const SyncStatus({required this.pending, required this.state});
+  /// Kalıcı hata yüzünden kuyruktan ayrılmış satır sayısı (docs/20 §9).
+  final int failed;
+
+  /// Sunucuyla son başarılı temas — "Son yedekleme: bugün 14:32".
+  final DateTime? lastOk;
+
+  /// Sunucuya ilk ulaşılamadığı an; ulaşılabiliyorsa `null`.
+  final DateTime? unreachableSince;
+
+  /// Karşılaştırma için "şimdi" — test edilebilirlik ve tutarlılık için
+  /// hesaplandığı anda sabitlenir.
+  final DateTime now;
+
+  SyncStatus({
+    required this.pending,
+    required this.state,
+    this.failed = 0,
+    this.lastOk,
+    this.unreachableSince,
+    DateTime? now,
+  }) : now = now ?? DateTime.now();
+
+  /// Kesinti uyarı eşiğini (3 gün) aştıysa kaç gündür sürdüğü; aşmadıysa
+  /// `null`. Daha kısa kesintiler için uyarı yok: telefon bir gün çevrimdışı
+  /// kaldı diye kullanıcıyı korkutmanın anlamı yok.
+  int? get longOutageDays {
+    final since = unreachableSince;
+    if (since == null) return null;
+    final gecen = now.difference(since);
+    if (gecen < SyncHealth.longOutage) return null;
+    return gecen.inDays;
+  }
 }
 
 /// Senkron durumunu canlı yayınlar (Aşama G). Hesap ekranı bunu izler.
@@ -44,11 +76,15 @@ class SyncStatus {
 final syncStatusProvider = StreamProvider.autoDispose<SyncStatus>((ref) {
   final db = ref.watch(databaseProvider);
   final controller = ref.watch(syncControllerProvider);
+  final health = SyncHealth(db);
   final out = StreamController<SyncStatus>();
 
   Future<void> recompute() async {
     if (out.isClosed) return;
     final pending = await controller.pendingCount();
+    final failed = await controller.failedCount();
+    final lastOk = await health.lastContactOk();
+    final unreachableSince = await health.unreachableSince();
     final last = controller.last.value;
     final SyncState state;
     if (controller.isRunning && pending > 0) {
@@ -60,7 +96,15 @@ final syncStatusProvider = StreamProvider.autoDispose<SyncStatus>((ref) {
     } else {
       state = SyncState.pending;
     }
-    if (!out.isClosed) out.add(SyncStatus(pending: pending, state: state));
+    if (!out.isClosed) {
+      out.add(SyncStatus(
+        pending: pending,
+        state: state,
+        failed: failed,
+        lastOk: lastOk,
+        unreachableSince: unreachableSince,
+      ));
+    }
   }
 
   recompute();

@@ -5,7 +5,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../sync/sync_providers.dart';
-import '../sync/sync_status.dart';
+import '../sync/sync_status_tile.dart';
 import 'auth_service.dart';
 
 /// Hesap paneli (docs/18-auth-and-sync.md) — Profil'den açılır.
@@ -180,7 +180,7 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
           ],
         ),
         AppSpacing.vGapLg,
-        const _SyncStatusTile(),
+        const SyncStatusTile(),
         AppSpacing.vGapxl_,
         // C-35: çıkış geri alınabilir, olağan bir işlem → nötr. Hesap silme
         // kalıcı → ayrı, kırmızı ve ne yaptığını söyleyen bir alt bölümde.
@@ -213,73 +213,3 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
 }
 
 enum _SignOutChoice { cancel, syncFirst, anyway }
-
-/// Senkron durumu satırı (docs/18 §9). "Korkutma yok, durum bilgisi var" —
-/// mesaj daima "kaydedildi" güvencesiyle. Sessiz ✓'ten dönen spinner'a,
-/// oradan "bağlantı gelince yüklenecek"e kadar dört durum.
-class _SyncStatusTile extends ConsumerWidget {
-  const _SyncStatusTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppL10n.of(context);
-    final c = context.colors;
-    final async = ref.watch(syncStatusProvider);
-    final status = async.valueOrNull;
-    // İlk kare / hata: sessiz kal (gösterge yanıp sönmesin).
-    if (status == null) return const SizedBox.shrink();
-
-    final (IconData icon, Color tint, String text, bool spin) = switch (
-        status.state) {
-      SyncState.synced => (
-          Icons.cloud_done_rounded,
-          context.semantic.success,
-          l.syncUpToDate,
-          false
-        ),
-      SyncState.syncing => (
-          Icons.cloud_sync_rounded,
-          c.primary,
-          l.syncSyncing,
-          true
-        ),
-      SyncState.pending => (
-          Icons.cloud_queue_rounded,
-          c.onSurfaceVariant,
-          l.syncPendingOffline(status.pending),
-          false
-        ),
-      SyncState.failed => (
-          Icons.cloud_off_rounded,
-          c.onSurfaceVariant,
-          l.syncPendingWaiting(status.pending),
-          false
-        ),
-    };
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: c.surfaceContainerHighest,
-        borderRadius: AppRadius.brMd,
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: AppIconSize.md,
-            height: AppIconSize.md,
-            child: spin
-                ? CircularProgressIndicator(strokeWidth: 2, color: tint)
-                : Icon(icon, color: tint, size: AppIconSize.md),
-          ),
-          AppSpacing.hGapMd,
-          Expanded(
-            child: Text(text,
-                style: context.texts.bodyMedium
-                    ?.copyWith(color: c.onSurfaceVariant)),
-          ),
-        ],
-      ),
-    );
-  }
-}

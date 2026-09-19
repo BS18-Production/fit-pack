@@ -178,6 +178,28 @@ bağlı).
       - Gerçek HTTP doğrulaması: RPC, işaret okuma, bilinmeyen tablo (400),
         dirilme reddi.
       - analyze 0 · test **410/410**.
+- [x] **Aşama 7 — durum ve operasyon ✅ (2026-09-19)** — istemci, sunucu
+      değişikliği yok.
+      - **Hata sınıflandırma** (`sync_errors.dart`): ulaşılamıyor / oturum
+        yok / kalıcı / onarılabilir / geçici. Yalnız emin olunan kodlar
+        (42501, 403, 23505, 409) kalıcı; tanınmayan hata geçici sayılır —
+        yanlış "kalıcı" satırı kuyruktan atar, yanlış "geçici" yalnız bir
+        deneme daha yapar.
+      - **Tek bozuk satır artık kuyruğu kilitlemiyor.** Eskiden kalıcı bir
+        hata tabloyu ve arkasındaki her tabloyu sonsuza kadar durduruyordu.
+        Şimdi toplu gönderim satır satır ayrıştırılıyor, bozuk satır
+        `sync_state = 2` oluyor (veri yerelde duruyor), geri kalan gidiyor.
+        Kullanıcı satırı düzenlerse kendiliğinden yeniden denenir.
+      - **Sağlık kaydı** (`sync_health.dart`): son başarılı gönderim/çekme ve
+        kesinti başlangıcı defterde; kayıt `pushAll`/`pullAll`'un sonunda.
+      - **Hesap ekranı**: "Son yedekleme: bugün 14:32", 3+ gün kesintide
+        "N gündür yedeklenemedi. Veriler bu telefonda güvende.", hatalı satır
+        varsa "N kayıt yüklenemedi — dokun" (tekrar dener). Satır ayrı
+        dosyaya çıktı: `sync_status_tile.dart`.
+      - 26 test · analyze 0 · test **436/436**.
+      - [ ] **Görsel doğrulama bekliyor:** Mac boşta/kilitliyken simülatör
+            penceresine erişilemedi. Metinler widget testiyle doğrulandı;
+            piksel görünümü simülatörde bakılacak.
 - [ ] **Sıradaki: 3 + 4 + 5'i üretime çıkar — TEK SÜRÜM** (docs/20 §11,
       2026-09-19 kararı: `main`'deki uygulama Aşama 5'i içerdiği için sunucu
       da 5'i istiyor).

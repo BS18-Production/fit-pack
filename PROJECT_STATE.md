@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-09-18
+> **Son güncelleme:** 2026-09-19
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -13,7 +13,7 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
-## 🔵 Senkron v2 — Aşama 0, 1, 2, 3, 4, 5 ✅ — 2026-09-18
+## 🔵 Senkron v2 — Aşama 0–5 ve 7 ✅ — 2026-09-19
 
 - **Sunucu test ortamı — karar değişti (Samet, 2026-09-18):** yerel Docker
   yığını (~9,7 GB disk) yerine **ikinci ücretsiz bulut projesi**:
@@ -72,7 +72,15 @@
   (docs/20 §10.6): silme izi tetikleyicisi yetki hatasıyla **her silmeyi**
   patlatıyordu, ve hesap silme yabancı anahtar ihlaliyle bozuluyordu.
   **Ders:** sunucu testleri superuser'la değil, istemcinin rolüyle de koşmalı.
-- analyze 0 · test **410/410**. Simülatörde gerçek veriyle doğrulandı.
+- **Aşama 7 (durum ve operasyon, 2026-09-19):** hata sınıflandırma; tek
+  bozuk satır artık kuyruğu kilitlemiyor (ayrıştırılıp `sync_state = 2`
+  oluyor, veri yerelde kalıyor); hesap ekranında "Son yedekleme", 3+ gün
+  kesinti uyarısı ve "N kayıt yüklenemedi — dokun, tekrar dene". Görsel
+  kontrol simülatörde bekliyor.
+- **Yayın hazırlığı (2026-09-19):** üretim yedeği alındı ve doğrulandı; prova
+  Aşama 3 migration'ında `updated_at`'i ezen bir hata buldu, düzeltildi.
+  **3+4+5 tek sürümde çıkacak; telefon bağlanmayı bekliyor.**
+- analyze 0 · test **436/436**. Simülatörde gerçek veriyle doğrulandı.
 - **Bekleyen:** 3 + 4 üretime **birlikte** çıkar; öncesinde yedek + cihazda
   duman testi (NEXT_TASKS "Sıradaki").
 

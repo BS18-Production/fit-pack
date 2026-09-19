@@ -4,6 +4,8 @@ import '../../data/database/app_database.dart';
 import '../../data/database/tables/sync_columns.dart';
 import 'sync_apply.dart';
 import 'sync_controller.dart' show syncLog;
+import 'sync_errors.dart';
+import 'sync_health.dart';
 
 /// Bir gönderim turunun sonucu — arayüz ve testler bunu okur.
 class PushResult {
@@ -21,6 +23,11 @@ class PushResult {
   /// Sunucuya iletilen **silme** sayısı (mezar taşı — docs/20 §5.3).
   final int deleted;
 
+  /// **Kalıcı hata** yüzünden kuyruktan ayrılan satır sayısı (`sync_state =
+  /// 2`). Bu satırlar yerelde durur ama bir daha kendiliğinden gönderilmez;
+  /// hesap ekranında "N kayıt yüklenemedi" olarak görünür (docs/20 §9).
+  final int permanent;
+
   /// İlk hata — hata ayıklama/görüntüleme için.
   final Object? error;
 
@@ -29,10 +36,12 @@ class PushResult {
     this.failed = 0,
     this.rejected = 0,
     this.deleted = 0,
+    this.permanent = 0,
     this.error,
   });
 
-  bool get hasWork => pushed > 0 || failed > 0 || rejected > 0 || deleted > 0;
+  bool get hasWork =>
+      pushed > 0 || failed > 0 || rejected > 0 || deleted > 0 || permanent > 0;
   bool get ok => failed == 0 && error == null;
 }
 
@@ -118,8 +127,17 @@ class SyncPush {
   /// Tek seferde gönderilen satır sayısı — büyük kuyruklarda istek şişmesin.
   final int batchSize;
 
-  SyncPush(this.db, this.remote, {SyncApply? apply, this.batchSize = 200})
-      : apply = apply ?? SyncApply(db);
+  /// Son başarılı gönderim / kesinti kaydı ("Son yedekleme" satırı).
+  final SyncHealth health;
+
+  SyncPush(
+    this.db,
+    this.remote, {
+    SyncApply? apply,
+    SyncHealth? health,
+    this.batchSize = 200,
+  })  : apply = apply ?? SyncApply(db),
+        health = health ?? SyncHealth(db);
 
   /// Bekleyen her şeyi gönderir. `userId` = Supabase `auth.uid()`.
   ///
@@ -128,6 +146,7 @@ class SyncPush {
     var pushed = 0;
     var failed = 0;
     var rejected = 0;
+    var permanent = 0;
     Object? firstError;
 
     // Ön geçiş 1: KİMLİKSİZ satırları onar. Tetikleyiciler (v10) her yeni
@@ -159,6 +178,7 @@ class SyncPush {
         final r = await _pushTable(table, userId);
         pushed += r.pushed;
         rejected += r.rejected;
+        permanent += r.permanent;
       } catch (e, st) {
         firstError ??= e;
         failed += await _pendingCount(table);
@@ -185,11 +205,19 @@ class SyncPush {
       }
     }
 
+    // Sağlık kaydı: kim çağırırsa çağırsın burada yazılır (docs/20 §9).
+    if (firstError == null) {
+      await health.recordPushOk();
+    } else {
+      await health.recordError(firstError);
+    }
+
     return PushResult(
       pushed: pushed,
       failed: failed,
       rejected: rejected,
       deleted: deleted,
+      permanent: permanent,
       error: firstError,
     );
   }
@@ -255,13 +283,14 @@ class SyncPush {
   Future<_TablePush> _pushTable(String table, String userId) async {
     var total = 0;
     var rejected = 0;
+    var permanent = 0;
     while (true) {
       final rows = await db
           .customSelect(
             'SELECT * FROM $table WHERE sync_state = 1 ORDER BY id LIMIT $batchSize',
           )
           .get();
-      if (rows.isEmpty) return _TablePush(total, rejected);
+      if (rows.isEmpty) return _TablePush(total, rejected, permanent);
 
       final payload = <Map<String, Object?>>[];
       // uid → o satırı okuduğumuz andaki `local_seq` (cihaz sayacı). Temiz
@@ -290,12 +319,27 @@ class SyncPush {
         syncLog('$table: $skipped satır atlandı (kimlik/referans eksik) '
             '→ kuyrukta bekliyor');
       }
-      if (payload.isEmpty) return _TablePush(total, rejected);
+      if (payload.isEmpty) return _TablePush(total, rejected, permanent);
 
       // ⚠️ Sunucu onayı burada. Hata fırlarsa aşağıya inilmez → temiz
       // işaretleme YAPILMAZ, satırlar kuyrukta kalır.
       syncLog('$table → ${payload.length} satır gönderiliyor');
-      final accepted = await remote.upsert(table, payload);
+      List<AcceptedRow> accepted;
+      final failedUids = <String>{};
+      try {
+        accepted = await remote.upsert(table, payload);
+      } catch (e) {
+        // Toplu gönderim KALICI bir hatayla düştüyse (yetki, tekillik) suçlu
+        // büyük olasılıkla tek bir satır. Satır satır dene: bozuk olanı
+        // kuyruktan ayır, geri kalanı gönder. Bu yapılmazsa tek bozuk satır
+        // arkasındaki bütün kuyruğu sonsuza kadar kilitler (docs/20 §9).
+        if (classifySyncError(e) != SyncErrorKind.permanent) rethrow;
+        syncLog('$table: kalıcı hata ($e) → satırlar tek tek deneniyor');
+        final ayrik = await _upsertIsolating(table, payload, stamps);
+        accepted = ayrik.accepted;
+        failedUids.addAll(ayrik.failed);
+        permanent += ayrik.failed.length;
+      }
 
       // KABUL EDİLENLER: temiz işaretle, sunucu sürümünü yaz.
       await _markClean(table, accepted, stamps, userId);
@@ -305,9 +349,12 @@ class SyncPush {
       // silinmiş. Sunucudaki hâlini indirip uygula → satır temizlenir ve bir
       // daha gönderilmez. Bu adım olmadan satır sonsuza kadar kuyrukta kalır
       // ve her turda boşuna gönderilir (docs/20 §5.1 adım 5).
+      // Kalıcı hatalı satırlar ret DEĞİLDİR: sunucuda sürümleri yok, onları
+      // sunucudakiyle "değiştirmek" yerel veriyi silmek olurdu.
       final acceptedUids = accepted.map((a) => a.uid).toSet();
       final rejectedUids = stamps.keys
-          .where((uid) => !acceptedUids.contains(uid))
+          .where((uid) =>
+              !acceptedUids.contains(uid) && !failedUids.contains(uid))
           .toList();
       if (rejectedUids.isNotEmpty) {
         syncLog('$table: ${rejectedUids.length} satır reddedildi '
@@ -317,11 +364,47 @@ class SyncPush {
 
       // Bu turda hiçbir satır ilerlemediyse dur: aksi halde aynı sayfayı
       // sonsuza kadar okuruz (çözülemeyen ret + dolu kuyruk).
-      if (accepted.isEmpty && rejectedUids.isEmpty) {
-        return _TablePush(total, rejected);
+      if (accepted.isEmpty && rejectedUids.isEmpty && failedUids.isEmpty) {
+        return _TablePush(total, rejected, permanent);
       }
-      if (rows.length < batchSize) return _TablePush(total, rejected);
+      if (rows.length < batchSize) {
+        return _TablePush(total, rejected, permanent);
+      }
     }
+  }
+
+  /// Satırları TEK TEK gönderir; kalıcı hata verenleri `sync_state = 2`
+  /// (hatalı) yapar ve kuyruktan ayırır.
+  ///
+  /// Geçici bir hata (ağ koptu) gelirse hemen fırlatır: o durumda hiçbir
+  /// satır "kalıcı" sayılmamalı, bütün grup kuyrukta kalıp sonra denenir.
+  Future<({List<AcceptedRow> accepted, List<String> failed})> _upsertIsolating(
+    String table,
+    List<Map<String, Object?>> payload,
+    Map<String, Object?> stamps,
+  ) async {
+    final accepted = <AcceptedRow>[];
+    final failed = <String>[];
+    for (final row in payload) {
+      final uid = row['uid']! as String;
+      try {
+        accepted.addAll(await remote.upsert(table, [row]));
+      } catch (e) {
+        if (classifySyncError(e) != SyncErrorKind.permanent) rethrow;
+        syncLog('$table/$uid kalıcı hata: $e → kuyruktan ayrıldı '
+            '(sync_state = 2)');
+        // `local_seq` koruması burada da geçerli: kullanıcı arada satırı
+        // düzenlediyse o yeni sürüm denenmeyi hak eder, hatalı işaretlenmez.
+        // sync_state değiştiği için yerel tetikleyici çalışmaz.
+        await db.customStatement(
+          'UPDATE $table SET sync_state = 2 '
+          'WHERE uid = ? AND sync_state = 1 AND local_seq IS ?',
+          [uid, stamps[uid]],
+        );
+        failed.add(uid);
+      }
+    }
+    return (accepted: accepted, failed: failed);
   }
 
   /// Mezar taşlarını (yerel silmeleri) sunucuya iletir — docs/20 §5.3.
@@ -517,9 +600,10 @@ class SyncPush {
   }
 }
 
-/// Tek tablonun gönderim sonucu — kabul edilen ve reddedilip çözülen sayısı.
+/// Tek tablonun gönderim sonucu.
 class _TablePush {
   final int pushed;
   final int rejected;
-  const _TablePush(this.pushed, this.rejected);
+  final int permanent;
+  const _TablePush(this.pushed, this.rejected, this.permanent);
 }

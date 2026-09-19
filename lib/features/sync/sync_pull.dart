@@ -5,6 +5,7 @@ import '../../data/database/daos/sync_meta_dao.dart';
 import '../../data/database/tables/sync_columns.dart';
 import 'sync_apply.dart';
 import 'sync_controller.dart' show syncLog;
+import 'sync_health.dart';
 import 'sync_push.dart';
 
 /// Bir çekme (pull) turunun sonucu — arayüz ve testler bunu okur.
@@ -78,14 +79,19 @@ class SyncPull {
   /// Haftada bir: bu veri boyutunda maliyeti birkaç yüz satır indirmek.
   final Duration fullPullInterval;
 
+  /// Son başarılı çekme / kesinti kaydı ("Son yedekleme" satırı).
+  final SyncHealth health;
+
   SyncPull(
     this.db,
     this.remote, {
     SyncApply? apply,
+    SyncHealth? health,
     this.pageSize = 500,
     this.cursorLag = 1000,
     this.fullPullInterval = const Duration(days: 7),
-  }) : apply = apply ?? SyncApply(db);
+  })  : apply = apply ?? SyncApply(db),
+        health = health ?? SyncHealth(db);
 
   SyncMetaDao get _meta => SyncMetaDao(db);
 
@@ -140,6 +146,13 @@ class SyncPull {
         SyncMetaDao.fullPullKey(userId),
         (DateTime.now().millisecondsSinceEpoch ~/ 1000).toString(),
       );
+    }
+
+    // Sağlık kaydı (docs/20 §9): kim çağırırsa çağırsın burada yazılır.
+    if (result.ok) {
+      await health.recordPullOk();
+    } else {
+      await health.recordError(result.error!);
     }
 
     syncLog('pull bitti — eklenen ${result.inserted}, '

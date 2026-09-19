@@ -1948,4 +1948,29 @@ class AppL10nEn extends AppL10n {
   @override
   String get progInfoSettings =>
       'Change the increment in Settings → Weight increment.';
+
+  @override
+  String syncLastBackup(String when) {
+    return 'Last backup: $when';
+  }
+
+  @override
+  String syncWhenToday(String time) {
+    return 'today $time';
+  }
+
+  @override
+  String syncWhenYesterday(String time) {
+    return 'yesterday $time';
+  }
+
+  @override
+  String syncLongOutage(int days) {
+    return 'Not backed up for $days days. Your data is safe on this phone.';
+  }
+
+  @override
+  String syncFailedRows(int count) {
+    return '$count record(s) couldn\'t upload — tap to retry';
+  }
 }

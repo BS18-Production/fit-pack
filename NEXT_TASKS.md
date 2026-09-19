@@ -178,7 +178,21 @@ bağlı).
       - Gerçek HTTP doğrulaması: RPC, işaret okuma, bilinmeyen tablo (400),
         dirilme reddi.
       - analyze 0 · test **410/410**.
-- [ ] **Sıradaki: 3 + 4'ü üretime çıkar** (aynı sürüm — docs/20 §11):
+- [ ] **Sıradaki: 3 + 4 + 5'i üretime çıkar — TEK SÜRÜM** (docs/20 §11,
+      2026-09-19 kararı: `main`'deki uygulama Aşama 5'i içerdiği için sunucu
+      da 5'i istiyor).
+      - [x] Üretim şeması test projesiyle birebir (139 kolon, parmak izi eşit).
+      - [x] **Yedek alındı ve doğrulandı:**
+            `~/dev/fit_pack_backups/2026-09-19_senkron_v2_oncesi/prod_data.json`
+            (repo dışında). 10 tablonun satır sayısı + kimlik parmak izi
+            sunucuyla birebir. Ücretsiz planda panel yedeği yok; bu tek yedek.
+      - [x] **Prova** (dolu tablolarla) Aşama 3'te `updated_at`'i ezen bir
+            hata buldu; düzeltildi ve yeniden prova edildi (docs/20 §11).
+      - [ ] **Telefon bağlı olmalı** — migration uygulandığı anda telefondaki
+            eski sürümün güncellemeleri sunucuda sessizce reddedilir.
+            Sıra: telefon bağlanır → migration (3 ve 5) → hemen telefona
+            kurulum → senkron günlüğü kontrolü → simülatöre kurulum.
+      Eski plan:
       1. Üretim projesinin panel yedeğini al.
       2. `supabase/migrations/20260918120000_sync_v2_stage3.sql`'i üretime uygula.
       3. **Aynı gün** uygulama sürümünü cihaza kur.
@@ -233,9 +247,9 @@ Samet: "A'daki tüm maddelerin hepsini yap." analyze 0 · test **357/357**
       `FutureProvider` kalmamış; atıf ekranı (C-6) zaten var ve Ayarlar'a bağlı.
 - [x] **Supabase CLI kuruldu** (2.117.0) + Docker istemcisi ve colima
       (yönetici şifresi gerektirmeyen yol) kuruldu.
-- [ ] **Docker ENGELLİ — disk:** `supabase start` yerel yığını ~6-8 GB imaj
-      indirir; diskte **8,6 GB** boş yer var. Samet yer açmadan başlatılmadı
-      (dolu disk riski). Senkron v2 Aşama 0 bunu bekliyor.
+- [x] ~~Docker ENGELLİ — disk~~ → **gereksiz kaldı (2026-09-18):** yerel
+      Docker yığını yerine ikinci bulut projesi `Fit Pack Dev` kullanılıyor
+      (docs/20 §10.4). Disk sorunu bu iş için ortadan kalktı.
 
 ## 🧰 Süreç — ChatGPT değerlendirmesi sonrası (2026-09-17)
 
@@ -663,8 +677,9 @@ deep link, senkron, veritabanı ve seed doğrulandı (docs/18 §15.6).
       Eski kayıt: **Oturum belirteçleri `shared_preferences`'ta düz metindi** (iOS ve Android,
       supabase_flutter varsayılanı). Keychain/Keystore'a taşımak yayın öncesi
       güvenlik maddesi.
-- [ ] **Berna'nın telefonundaki kopya 2026-08-01'de dolar** (ücretsiz Apple ID
-      imzası 7 gün). Telefonu bağlayıp yeniden kur: `xcrun devicectl device install
+- **Not — Berna'nın telefonundaki kopyanın süresi 2026-08-01'de doldu**
+      (ücretsiz Apple ID imzası 7 gün). Yeniden kullanılacaksa telefonu
+      bağlayıp kur: `xcrun devicectl device install
       app --device <UDID> build/ios/Release-iphoneos/Runner.app`. **Debug derlemesi
       ana ekrandan açılmaz**, release şart. Flutter `--release` derlemeyi yapıp
       "expected app not found" der — uygulama `Release-iphoneos/` altındadır,

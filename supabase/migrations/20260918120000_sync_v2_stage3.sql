@@ -130,6 +130,15 @@ declare
   ];
 begin
   foreach t in array tables loop
+    -- 4.0 ÖNCE TETİKLEYİCİYİ DÜŞÜR. Doldurma (4.2) bir UPDATE'tir; tablo
+    -- üzerinde `sync_guard` varsa her satırı "yeni yazma" sayar, `updated_at`'i
+    -- şimdiye çeker ve ikinci UPDATE'i (server_rev) "eski" diye atlar.
+    -- İlk çalıştırmada tetikleyici henüz yoktur, ama migration TEKRAR
+    -- çalıştırılırsa (ya da yarıda kalıp yeniden başlatılırsa) veri bozulurdu.
+    -- 2026-09-18 provasında dolu tablolarla ölçüldü: 8 satırın 8'inde
+    -- `updated_at` ezildi. Yerel v10→v11 göçündeki hatanın aynısı (Aşama 1).
+    execute format('drop trigger if exists sync_guard_trg on public.%I', t);
+
     -- 4.1 Kolonlar. Varsayılanları var → mevcut satırlar bozulmaz.
     execute format(
       'alter table public.%I add column if not exists changed_at_ms bigint not null default 0', t);
@@ -162,8 +171,7 @@ begin
       'create unique index if not exists %I on public.%I(user_id, uid)',
       t || '_user_uid_key', t);
 
-    -- 4.5 Tetikleyici.
-    execute format('drop trigger if exists sync_guard_trg on public.%I', t);
+    -- 4.5 Tetikleyici — doldurma BİTTİKTEN sonra (bkz. 4.0).
     execute format(
       'create trigger sync_guard_trg before insert or update on public.%I
          for each row execute function public.sync_guard()', t);

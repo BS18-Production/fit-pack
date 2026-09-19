@@ -737,6 +737,23 @@ Her aşama **tek başına commit edilebilir**, testleri yeşil ve uygulama
 (`Fit Pack Dev`, §10.4 — yerel Docker yerine ikinci bulut projesi). Her aşama sonunda cihazda
 duman testi (açılış + bir kayıt + senkron) ve PROJECT_STATE güncellemesi.
 
+**Yayın kararı (2026-09-19): 3 + 4 + 5 TEK sürümde çıkıyor.** Yukarıdaki
+gruplama (3+4, sonra 5) Aşama 5'in istemci kodu henüz yazılmamışken
+yapılmıştı. Artık `main`'deki uygulama Aşama 5'i de içeriyor: mezar taşlarını
+`sync_delete` ile gönderiyor ve `deleted_records`'u çekiyor. Sunucuya yalnız
+Aşama 3 uygulanırsa `sync_delete` bulunamaz ve **her gönderim turu hatayla
+biter** (yazmalar gider, ama tur "başarısız" sayılıp sonsuza kadar yeniden
+denenir). Aşama 5'in sunucu yarısı eski istemciye zararsız olduğu için
+birlikte çıkmasının ek riski yok.
+
+**Yayın provası (2026-09-19) bir hata buldu:** Aşama 3'ün doldurma adımı
+dolu tablolarda ve tetikleyici varken çalıştırılınca `updated_at`'i ezdi
+(8 satırın 8'inde). İlk çalıştırmada üretimde tetikleyici olmadığı için
+olmayacaktı, ama migration'ın "tekrar çalıştırılabilir" olduğu iddiası
+yanlıştı. Döngü artık tetikleyiciyi doldurmadan ÖNCE düşürüyor; prova
+tetikleyiciler varken tekrarlandı: 8/8 `updated_at` korundu, damga doğru,
+sürüm benzersiz. Boş tablolar üzerinde koşan testler bunu yakalayamazdı.
+
 **Sunucu değişikliklerinde sıra:** yedek al (`pg_dump` ya da panel yedeği) →
 `Fit Pack Dev`'de dene (§10.4) → ana projeye uygula → **aynı gün** uygulama sürümünü çıkar.
 Eski uygulama sürümü yeni şemayla çalışmaya devam etmeli: yeni kolonların

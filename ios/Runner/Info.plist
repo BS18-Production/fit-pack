@@ -11,7 +11,9 @@
 	     Cihaz diline göre metin: Runner/tr.lproj + en.lproj/InfoPlist.strings.
 	     Buradaki değer yalnız desteklenmeyen dillerdeki yedektir. -->
 	<key>NSCameraUsageDescription</key>
-	<string>Used to scan product barcodes and fill in nutrition facts automatically.</string>
+	<string>Used to scan product barcodes and to take progress photos. Photos stay on this device.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Used to pick progress photos from your library. Photos are copied into the app and stay on this device.</string>
 	<!-- Supabase dönüş adresi: Google girişi, e-posta doğrulama ve şifre
 	     sıfırlama bağlantıları uygulamaya bu şemayla döner (docs/18 §5.2).
 	     Android'deki manifest intent-filter'ın iOS karşılığı. -->

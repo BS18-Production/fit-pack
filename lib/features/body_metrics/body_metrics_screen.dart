@@ -3,8 +3,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/onboarding/first_run_hints.dart';
+import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/units/units.dart';
@@ -14,8 +16,10 @@ import '../../data/reactive.dart';
 import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
+import '../../shared/widgets/glass.dart';
 import '../activity/activity_calendar.dart';
 import '../home/providers/home_providers.dart';
+import '../progress_photos/progress_photos_providers.dart';
 
 /// **Reaktif** (H-05): ölçüm eklenince/silinince kendiliğinden tazelenir.
 final allMeasurementsProvider = StreamProvider<List<BodyMeasurement>>((ref) {
@@ -62,6 +66,9 @@ class BodyMetricsScreen extends ConsumerWidget {
         children: [
           // Aktivite takvimi — ölçüm olsun olmasın her zaman görünür.
           const ActivityCalendar(),
+          AppSpacing.vGapLg,
+          // İlerleme fotoğrafları (docs/19): kilo grafiğinin eksik yarısı.
+          const _PhotosEntryCard(),
           AppSpacing.vGapLg,
           ..._measurementSection(context, ref, measurementsAsync),
         ],
@@ -153,6 +160,41 @@ class BodyMetricsScreen extends ConsumerWidget {
 
   void _showAddMeasurementDialog(BuildContext context, WidgetRef ref) {
     showAddMeasurementSheet(context);
+  }
+}
+
+/// İlerleme fotoğraflarına giriş (docs/19). Sayıyı ve "yalnız bu cihazda"
+/// bilgisini taşır — kullanıcı fotoğrafların yedeklenmediğini baştan bilsin.
+class _PhotosEntryCard extends ConsumerWidget {
+  const _PhotosEntryCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
+    final n = ref.watch(progressPhotosProvider).valueOrNull?.length ?? 0;
+    return GlassCard(
+      onTap: () => context.push(AppRoutes.progressPhotos),
+      child: Row(
+        children: [
+          Icon(Icons.photo_library_rounded, color: context.colors.primary),
+          AppSpacing.hGapMd,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.ppTitle, style: context.texts.titleSmall),
+                Text(
+                  n == 0 ? l.ppEntryEmpty : l.ppEntrySub(n),
+                  style: context.texts.bodySmall
+                      ?.copyWith(color: context.colors.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded),
+        ],
+      ),
+    );
   }
 }
 

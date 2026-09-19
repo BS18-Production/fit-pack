@@ -13,6 +13,15 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
+## 📷 İlerleme Fotoğrafları ✅ (kodlandı) — 2026-09-19
+
+docs/19 dilim 1: fotoğraf çek/seç, tarih + açı, tarihe göre gruplu galeri,
+açı süzgeci, iki fotoğrafı yan yana karşılaştırma, silme. **Fotoğraflar
+cihazdan çıkmaz** — senkron v2 üzerinde bir muafiyet kümesiyle; hesap
+değişiminde satırlar ve dosyalar silinir, uyarı ekranı onları sayar (sessiz
+kayıp olmasın). Veritabanında yalnız dosya adı (iOS konteyner yolu değişse
+de kırılmaz). 21 test. **Cihazda görsel kontrol bekliyor.**
+
 ## 📊 Haftalık Değerlendirme ✅ (kodlandı) — 2026-09-19
 
 docs/22'nin dört aşaması kodlandı (beşincisi bilinçli değişti, docs/22 §8.1):
@@ -91,7 +100,7 @@ Dev`'de; üretime 3+4+5 ile birlikte gider. **Görsel kontrol bekliyor.**
 - **Yayın hazırlığı (2026-09-19):** üretim yedeği alındı ve doğrulandı; prova
   Aşama 3 migration'ında `updated_at`'i ezen bir hata buldu, düzeltildi.
   **3+4+5 tek sürümde çıkacak; telefon bağlanmayı bekliyor.**
-- analyze 0 · test **481/481** (haftalık değerlendirme dahil). Simülatörde gerçek veriyle doğrulandı.
+- analyze 0 · test **502/502** (haftalık değerlendirme + fotoğraflar dahil). Simülatörde gerçek veriyle doğrulandı.
 - **Bekleyen:** 3 + 4 üretime **birlikte** çıkar; öncesinde yedek + cihazda
   duman testi (NEXT_TASKS "Sıradaki").
 

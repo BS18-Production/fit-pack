@@ -3894,6 +3894,144 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'This week\'s summary and one focus for next week.'**
   String get notifWeeklyBody;
+
+  /// No description provided for @ppTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress photos'**
+  String get ppTitle;
+
+  /// No description provided for @ppEntrySub.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} photo(s) · on this device only'**
+  String ppEntrySub(int count);
+
+  /// No description provided for @ppEntryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'The mirror shows change before the scale does'**
+  String get ppEntryEmpty;
+
+  /// No description provided for @ppEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No photos yet'**
+  String get ppEmptyTitle;
+
+  /// No description provided for @ppEmptyMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular photos from the same angle and in the same light show change weeks before the scale.'**
+  String get ppEmptyMsg;
+
+  /// No description provided for @ppAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get ppAdd;
+
+  /// No description provided for @ppAngleFront.
+  ///
+  /// In en, this message translates to:
+  /// **'Front'**
+  String get ppAngleFront;
+
+  /// No description provided for @ppAngleSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Side'**
+  String get ppAngleSide;
+
+  /// No description provided for @ppAngleBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get ppAngleBack;
+
+  /// No description provided for @ppAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get ppAll;
+
+  /// No description provided for @ppCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get ppCamera;
+
+  /// No description provided for @ppGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from library'**
+  String get ppGallery;
+
+  /// No description provided for @ppAngle.
+  ///
+  /// In en, this message translates to:
+  /// **'Angle'**
+  String get ppAngle;
+
+  /// No description provided for @ppDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete photo?'**
+  String get ppDeleteTitle;
+
+  /// No description provided for @ppDeleteMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'This photo has no backup; it can\'t be restored once deleted.'**
+  String get ppDeleteMsg;
+
+  /// No description provided for @ppCompare.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare'**
+  String get ppCompare;
+
+  /// No description provided for @ppCompareHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select two photos to compare'**
+  String get ppCompareHint;
+
+  /// No description provided for @ppSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}/2 selected'**
+  String ppSelected(int count);
+
+  /// No description provided for @ppDaysApart.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} day(s) apart'**
+  String ppDaysApart(int days);
+
+  /// No description provided for @ppDeviceOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos are stored on this device only: not backed up, not saved to your gallery, and deleted if you switch accounts.'**
+  String get ppDeviceOnly;
+
+  /// No description provided for @ppLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load photos'**
+  String get ppLoadError;
+
+  /// No description provided for @ppSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the photo'**
+  String get ppSaveError;
+
+  /// No description provided for @ppMissingFile.
+  ///
+  /// In en, this message translates to:
+  /// **'File not found'**
+  String get ppMissingFile;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

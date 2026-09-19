@@ -54,6 +54,12 @@ class AppRoutes {
   /// Haftalık değerlendirme (docs/22 §4). Ana sayfa "Bu Hafta"dan ve haftalık
   /// bildirimden açılır.
   static const weeklyReview = '/insights/week';
+
+  /// İlerleme fotoğrafları (docs/19). Karşılaştırma iki fotoğraf kimliğini
+  /// sorgu parametresiyle alır.
+  static const progressPhotos = '/progress/photos';
+  static const photoComparePath = '/progress/photos/compare';
+  static String photoCompare(int a, int b) => '$photoComparePath?a=$a&b=$b';
   static const notifications = '/settings/notifications';
 
   // ── Parametreli rotalar: `*Path` = router tanımı, fonksiyon = çağrı ──

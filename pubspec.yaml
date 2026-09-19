@@ -56,6 +56,9 @@ dependencies:
   # Beslenme V2 — OpenFoodFacts (REST) + barkod tarama (docs/07-nutrition-v2.md)
   http: ^1.2.0
   mobile_scanner: ^7.0.0
+  # İlerleme fotoğrafları (docs/19): kamera ya da galeriden seçim. Görsel
+  # seçim anında küçültülür (maxWidth 1440, kalite 85 — docs/19 §5).
+  image_picker: ^1.1.2
   cached_network_image: ^3.4.1
   flutter_svg: ^2.3.0
   flutter_local_notifications: ^22.0.1

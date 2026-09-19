@@ -2198,4 +2198,81 @@ class AppL10nTr extends AppL10n {
   @override
   String get notifWeeklyBody =>
       'Haftanın özeti ve gelecek hafta için tek odak.';
+
+  @override
+  String get ppTitle => 'İlerleme fotoğrafları';
+
+  @override
+  String ppEntrySub(int count) {
+    return '$count fotoğraf · yalnız bu cihazda';
+  }
+
+  @override
+  String get ppEntryEmpty => 'Aynadaki değişim tartıdan önce görünür';
+
+  @override
+  String get ppEmptyTitle => 'Henüz fotoğraf yok';
+
+  @override
+  String get ppEmptyMsg =>
+      'Aynı açıdan, aynı ışıkta düzenli çekilen fotoğraflar değişimi tartıdan haftalar önce gösterir.';
+
+  @override
+  String get ppAdd => 'Fotoğraf ekle';
+
+  @override
+  String get ppAngleFront => 'Ön';
+
+  @override
+  String get ppAngleSide => 'Yan';
+
+  @override
+  String get ppAngleBack => 'Arka';
+
+  @override
+  String get ppAll => 'Tümü';
+
+  @override
+  String get ppCamera => 'Kamerayla çek';
+
+  @override
+  String get ppGallery => 'Galeriden seç';
+
+  @override
+  String get ppAngle => 'Açı';
+
+  @override
+  String get ppDeleteTitle => 'Fotoğraf silinsin mi?';
+
+  @override
+  String get ppDeleteMsg => 'Bu fotoğrafın yedeği yok; silinince geri gelmez.';
+
+  @override
+  String get ppCompare => 'Karşılaştır';
+
+  @override
+  String get ppCompareHint => 'Karşılaştırmak için iki fotoğraf seç';
+
+  @override
+  String ppSelected(int count) {
+    return '$count/2 seçildi';
+  }
+
+  @override
+  String ppDaysApart(int days) {
+    return '$days gün arayla';
+  }
+
+  @override
+  String get ppDeviceOnly =>
+      'Fotoğraflar yalnız bu cihazda saklanır: yedeklenmez, galeriye yazılmaz ve hesap değişiminde silinir.';
+
+  @override
+  String get ppLoadError => 'Fotoğraflar yüklenemedi';
+
+  @override
+  String get ppSaveError => 'Fotoğraf kaydedilemedi';
+
+  @override
+  String get ppMissingFile => 'Dosya bulunamadı';
 }

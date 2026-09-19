@@ -1,2 +1,4 @@
-/* Barkod tarayıcı izin metni — cihaz dili Türkçe olduğunda gösterilir. */
-"NSCameraUsageDescription" = "Ürün barkodunu okuyup besin değerlerini otomatik doldurmak için kamerayı kullanır.";
+/* Kamera: barkod tarayıcı + ilerleme fotoğrafı — cihaz dili Türkçe olduğunda. */
+"NSCameraUsageDescription" = "Ürün barkodunu okumak ve ilerleme fotoğrafı çekmek için kamerayı kullanır. Fotoğraflar bu cihazda kalır.";
+/* Galeri: ilerleme fotoğrafı seçimi (docs/19). */
+"NSPhotoLibraryUsageDescription" = "İlerleme fotoğrafını galeriden seçmek için kullanılır. Fotoğraf uygulamaya kopyalanır ve bu cihazda kalır.";

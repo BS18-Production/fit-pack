@@ -28,9 +28,29 @@ bağlı).
    `Fit Pack Dev` bulut projesi (docs/20 §10.4) — yerel Docker kurulmuyor.
    Mevcut yerel ve bulut kayıtlarının kimlikleri korunarak taşınması da
    sınanır (S-18 + katalog kimliği taşıması), yalnız yeni kurulum değil.
-4. **#4 İlerleme fotoğrafları** (docs/19 dilim 1, yalnız cihazda) + **#2
-   "geçmişten öğün kopyala"**.
+4. ✅ **#4 İlerleme fotoğrafları** (docs/19 dilim 1, yalnız cihazda) —
+   **kodlandı 2026-09-19**, cihazda görsel kontrol bekliyor. **#2 "geçmişten
+   öğün kopyala"** sırada.
 5. Diğerleri (docs/21 sırası): #8 → #5 → #7 → #2 tam → #10, #9, #13, #12.
+
+## 📷 İlerleme fotoğrafları — kodlandı (2026-09-19, docs/19 dilim 1)
+
+- [x] **Senkron muafiyeti** (`syncRemoteExcluded`): fotoğraflar gönderilmez,
+      çekilmez, göstergede "bekliyor" sayılmaz; hesap temizliği onları siler.
+      Hesap değişimi uyarısı onları **bilinçli olarak sayar** (sessizce
+      silinmesinler — docs/19 §8). 6 test.
+- [x] **`PhotoStorage`**: veritabanına yalnız dosya adı (K-1), kopya, güvenli ad
+      kontrolü (`../` reddedilir), yetim süpürme, toplu silme. 9 test.
+- [x] **Ekle / sil** satır ve dosya birlikte (K-3), doğru sırayla. Hesap
+      temizliği dosyaları da siler. 3 test.
+- [x] **Arayüz**: İlerleme sekmesinde giriş kartı → galeri (tarihe göre gruplu,
+      açı süzgeci, "yalnız bu cihazda" notu) → ekleme paneli (açı + tarih +
+      kamera/galeri, 1440 px / %85) → tam ekran görüntüleyici (yakınlaştır,
+      sil) → iki fotoğraf seçip karşılaştırma (eski solda). 3 widget testi.
+- [x] `image_picker` eklendi; iOS kamera metni genişletildi, galeri izni eklendi
+      (tr/en, "fotoğraflar bu cihazda kalır").
+- [ ] **Cihazda doğrulama bekliyor:** çek → galeride gör → karşılaştır → sil;
+      iOS izin diyalogları; Android'de kamera/galeri akışı.
 
 ## 📊 Haftalık değerlendirme — kodlandı (2026-09-19, docs/22)
 

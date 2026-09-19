@@ -1,6 +1,7 @@
 # 19 — İlerleme Fotoğrafları (Progress Photos)
 
-> **Durum:** Dilim 1 tasarım · 2026-08-02
+> **Durum:** ✅ **Dilim 1 kodlandı (2026-09-19)** — cihazda görsel kontrol bekliyor (§8)
+> Tasarım: 2026-08-02
 > **Şema:** değişiklik YOK — `ProgressPhotos` tablosu Nisan'dan beri şemada duruyor
 > **İlgili:** [18 — Hesap & Senkron](18-auth-and-sync.md) · [17 §2 #7](17-improvement-analysis.md)
 
@@ -143,10 +144,34 @@ Kurallar:
 
 ## 7. Bitti tanımı
 
-- [ ] `flutter analyze` 0
-- [ ] `PhotoStorage` birim testleri (ad üretimi, yol çözümü, silme, yetim süpürme)
-- [ ] Senkron muafiyeti testi: fotoğraf satırı kuyruğa girer ama gönderilmez
-- [ ] Hesap değişimi testi: satırlar **ve** dosyalar gider
-- [ ] Emülatörde: çek → galeride gör → karşılaştır → sil
-- [ ] iOS turu (UI ağırlıklı iş — hafıza kuralı gereği)
-- [ ] `PROJECT_STATE.md` / `NEXT_TASKS.md` güncel
+- [x] `flutter analyze` 0
+- [x] `PhotoStorage` birim testleri (ad üretimi, yol çözümü, silme, yetim süpürme) — 9 test
+- [x] Senkron muafiyeti testi: fotoğraf satırı gönderilmez, çekilmez, göstergede "bekliyor" sayılmaz
+- [x] Hesap değişimi testi: satırlar **ve** dosyalar gider
+- [ ] Emülatörde: çek → galeride gör → karşılaştır → sil — **bekliyor** (Mac ekranına erişilemedi)
+- [ ] iOS turu (UI ağırlıklı iş — hafıza kuralı gereği) — **bekliyor**
+- [x] `PROJECT_STATE.md` / `NEXT_TASKS.md` güncel
+
+## 8. Uygulama notları (2026-09-19)
+
+- **Senkron muafiyeti** senkron v2 üzerine kuruldu (`syncRemoteExcluded`,
+  `syncRemoteTables`): gönderim, çekme, mezar taşı gönderimi ve senkron
+  göstergesi fotoğrafları atlar; hesap temizliği atlamaz.
+- **Bilinçli sapma — hesap değişimi uyarısı fotoğrafları SAYAR.** K-2 "kuyruk
+  sayımı bu kümeyi atlar" diyordu; senkron göstergesi için doğru, ama hesap
+  değişimindeki "N kayıt henüz yüklenmedi" sayımı için yanlış olurdu:
+  fotoğraflar sunucuya hiç gitmediği için temizlik onları geri dönüşsüz
+  siler. Sayılmasalardı kullanıcı en hassas verisini sessizce kaybederdi.
+- **Silme sırası:** önce satır, sonra dosya. Arada uygulama kapanırsa dosya
+  yetim kalır ve galeri açılışındaki süpürme onu siler; ters sırada galeride
+  kırık bir kare kalırdı. **Ekleme:** önce dosya, sonra satır; satır
+  yazılamazsa kopya geri silinir.
+- **Yetim süpürme** "açılışta" yerine **galeri açılışında** çalışıyor: yerel
+  ve ucuz, uygulama başlangıcını yavaşlatmıyor; hesap temizliği klasörü
+  zaten tamamen siliyor.
+- **Güvenlik:** dosya adı `../` ya da `/` içeriyorsa yol çözülmez — bozuk bir
+  satır klasör dışındaki bir dosyaya dokunamaz.
+- **iOS izin metinleri:** kamera metni fotoğrafı da kapsayacak şekilde
+  genişletildi, galeri izni (`NSPhotoLibraryUsageDescription`) eklendi; ikisi
+  de tr/en ve "fotoğraflar bu cihazda kalır" diyor.
+- Giriş: İlerleme sekmesinde aktivite takviminin altında kart.

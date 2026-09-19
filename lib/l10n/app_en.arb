@@ -1337,5 +1337,37 @@
     "placeholders": { "day": { "type": "String" } }
   },
   "notifWeeklyTitle": "Your week is ready",
-  "notifWeeklyBody": "This week's summary and one focus for next week."
+  "notifWeeklyBody": "This week's summary and one focus for next week.",
+  "ppTitle": "Progress photos",
+  "ppEntrySub": "{count} photo(s) · on this device only",
+  "@ppEntrySub": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "ppEntryEmpty": "The mirror shows change before the scale does",
+  "ppEmptyTitle": "No photos yet",
+  "ppEmptyMsg": "Regular photos from the same angle and in the same light show change weeks before the scale.",
+  "ppAdd": "Add photo",
+  "ppAngleFront": "Front",
+  "ppAngleSide": "Side",
+  "ppAngleBack": "Back",
+  "ppAll": "All",
+  "ppCamera": "Take photo",
+  "ppGallery": "Choose from library",
+  "ppAngle": "Angle",
+  "ppDeleteTitle": "Delete photo?",
+  "ppDeleteMsg": "This photo has no backup; it can't be restored once deleted.",
+  "ppCompare": "Compare",
+  "ppCompareHint": "Select two photos to compare",
+  "ppSelected": "{count}/2 selected",
+  "@ppSelected": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "ppDaysApart": "{days} day(s) apart",
+  "@ppDaysApart": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "ppDeviceOnly": "Photos are stored on this device only: not backed up, not saved to your gallery, and deleted if you switch accounts.",
+  "ppLoadError": "Couldn't load photos",
+  "ppSaveError": "Couldn't save the photo",
+  "ppMissingFile": "File not found"
 }

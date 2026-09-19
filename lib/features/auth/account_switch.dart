@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/sync_meta_dao.dart';
 import '../../data/database/tables/sync_columns.dart';
+import '../../data/services/photo_storage.dart';
 import '../sync/sync_controller.dart' show syncLog;
 import '../workout/workout_draft.dart';
 
@@ -138,7 +139,10 @@ class AccountSwitchGuard {
   ///
   /// Silme sırası gönderim sırasının TERSİ: çocuk satır önce gider, yabancı
   /// anahtar kırılmaz.
-  static Future<void> wipeLocalUserData(AppDatabase db) async {
+  static Future<void> wipeLocalUserData(
+    AppDatabase db, {
+    PhotoStorage? photos,
+  }) async {
     // Temizlik mezar taşı ÜRETMEZ: bu kullanıcı silmesi değil, cihazın
     // önceki hesaptan arındırılması. İz bırakırsa o izler yeni kullanıcının
     // hesabıyla sunucuya gider ve **onun** kayıtlarını siler (docs/20 §7.3).
@@ -156,6 +160,17 @@ class AccountSwitchGuard {
     // Yarım kalmış seans taslağı da kullanıcı verisidir; prefs'te durduğu için
     // tablo silmesi ona dokunmaz.
     await WorkoutDraftService().clear();
+    // İlerleme fotoğraflarının DOSYALARI da gider (docs/19 §6 kural 4). Satır
+    // silmek yetmez: dosya diskte kalırsa bir sonraki hesabın galerisinde
+    // görünmese bile önceki kullanıcının vücut fotoğrafı cihazda yaşar.
+    try {
+      await (photos ?? PhotoStorage.appDocuments()).deleteAll();
+    } catch (e) {
+      // Dosya sistemi erişilemezse (test ortamı, nadir platform hatası)
+      // temizliğin geri kalanı durmasın; galeri açılışındaki süpürme yetim
+      // dosyaları yine yakalar.
+      syncLog('fotoğraf klasörü temizlenemedi: $e', error: e);
+    }
   }
 
   static Future<void> _wipeTables(AppDatabase db) async {

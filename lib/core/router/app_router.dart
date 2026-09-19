@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fit_pack/features/home/home_screen.dart';
 import 'package:fit_pack/features/insights/weekly_review_screen.dart';
+import 'package:fit_pack/features/progress_photos/photo_compare_screen.dart';
+import 'package:fit_pack/features/progress_photos/progress_photos_screen.dart';
 import 'package:fit_pack/features/workout/workout_list_screen.dart';
 import 'package:fit_pack/features/workout/workout_history_screen.dart';
 import 'package:fit_pack/features/workout/exercise_library_screen.dart';
@@ -167,6 +169,20 @@ GoRouter createAppRouter({required AuthGate gate}) => GoRouter(
       path: AppRoutes.weeklyReview,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => _glass(const WeeklyReviewScreen()),
+    ),
+    // İlerleme fotoğrafları (docs/19). Karşılaştırma iki kimliği sorgudan alır.
+    GoRoute(
+      path: AppRoutes.progressPhotos,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const ProgressPhotosScreen()),
+    ),
+    GoRoute(
+      path: AppRoutes.photoComparePath,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(PhotoCompareScreen(
+        a: int.tryParse(state.uri.queryParameters['a'] ?? '') ?? -1,
+        b: int.tryParse(state.uri.queryParameters['b'] ?? '') ?? -1,
+      )),
     ),
     // Antrenman V2 (docs/09-workout-v2.md) — rutinler + aktif seans.
     GoRoute(

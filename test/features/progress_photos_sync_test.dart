@@ -1,11 +1,16 @@
+import 'dart:io';
+
 import 'package:drift/native.dart';
 import 'package:fit_pack/data/database/app_database.dart';
 import 'package:fit_pack/data/database/tables/sync_columns.dart';
+import 'package:fit_pack/data/services/photo_storage.dart';
 import 'package:fit_pack/features/auth/account_switch.dart';
+import 'package:fit_pack/features/progress_photos/progress_photos_providers.dart';
 import 'package:fit_pack/features/sync/sync_controller.dart';
 import 'package:fit_pack/features/sync/sync_pull.dart';
 import 'package:fit_pack/features/sync/sync_push.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/fake_sync_server.dart';
@@ -88,14 +93,67 @@ void main() {
             'uyarılmalı');
   });
 
-  test('hesap temizliği fotoğraf satırlarını siler (gizlilik)', () async {
-    await fotografEkle();
-    await AccountSwitchGuard.wipeLocalUserData(db);
+  test('hesap temizliği fotoğraf satırlarını VE dosyalarını siler (gizlilik)',
+      () async {
+    final tmp = Directory.systemTemp.createTempSync('fitpack_wipe');
+    addTearDown(() => tmp.deleteSync(recursive: true));
+    final kok = Directory(p.join(tmp.path, 'progress_photos'));
+    final store = PhotoStorage(() async => kok);
+    final kaynak = File(p.join(tmp.path, 'k.jpg'))..writeAsStringSync('x');
+    final actions = ProgressPhotoActions(db.bodyDao, store);
+    await actions.add(kaynak, DateTime.now(), 'front');
+    expect(kok.listSync(), hasLength(1));
+
+    await AccountSwitchGuard.wipeLocalUserData(db, photos: store);
+
     final n = await db
         .customSelect('SELECT COUNT(*) c FROM progress_photos')
         .getSingle();
     expect(n.read<int>('c'), 0,
         reason: "A'nın vücut fotoğrafları B'ye görünmemeli");
+    expect(await kok.exists(), isFalse,
+        reason: 'satır gitse de dosya diskte kalırsa fotoğraf cihazda yaşar');
+  });
+
+  group('ekle / sil — satır ve dosya birlikte (K-3)', () {
+    late Directory tmp;
+    late PhotoStorage store;
+    late ProgressPhotoActions actions;
+
+    setUp(() {
+      tmp = Directory.systemTemp.createTempSync('fitpack_act');
+      store = PhotoStorage(() async => Directory(p.join(tmp.path, 'pp')));
+      actions = ProgressPhotoActions(db.bodyDao, store);
+    });
+    tearDown(() => tmp.deleteSync(recursive: true));
+
+    File kaynak() =>
+        File(p.join(tmp.path, 'src.jpg'))..writeAsStringSync('foto');
+
+    test('ekle: dosya kopyalanır, satıra yalnız ADI yazılır', () async {
+      await actions.add(kaynak(), DateTime(2026, 9, 19, 8), 'side');
+      final foto = (await db.bodyDao.getAllPhotos()).single;
+      expect(foto.imagePath.contains('/'), isFalse);
+      expect(await (await store.resolve(foto.imagePath)).exists(), isTrue);
+    });
+
+    test('sil: satır da dosya da gider', () async {
+      await actions.add(kaynak(), DateTime(2026, 9, 19, 8), 'front');
+      final foto = (await db.bodyDao.getAllPhotos()).single;
+      await actions.remove(foto);
+      expect(await db.bodyDao.getAllPhotos(), isEmpty);
+      expect(await (await store.resolve(foto.imagePath)).exists(), isFalse);
+    });
+
+    test('süpürme: satırı olmayan dosyayı siler, satırlıyı korur', () async {
+      await actions.add(kaynak(), DateTime(2026, 9, 19, 8), 'front');
+      final yetim = await store.save(kaynak(), DateTime(2026, 9, 1), 'back');
+
+      expect(await actions.sweep(), 1);
+      final kalan = (await db.bodyDao.getAllPhotos()).single;
+      expect(await (await store.resolve(kalan.imagePath)).exists(), isTrue);
+      expect(await (await store.resolve(yetim)).exists(), isFalse);
+    });
   });
 
   test('muaf küme ile uzak liste tutarlı', () {

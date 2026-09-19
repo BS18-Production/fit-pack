@@ -2206,4 +2206,82 @@ class AppL10nEn extends AppL10n {
   @override
   String get notifWeeklyBody =>
       'This week\'s summary and one focus for next week.';
+
+  @override
+  String get ppTitle => 'Progress photos';
+
+  @override
+  String ppEntrySub(int count) {
+    return '$count photo(s) · on this device only';
+  }
+
+  @override
+  String get ppEntryEmpty => 'The mirror shows change before the scale does';
+
+  @override
+  String get ppEmptyTitle => 'No photos yet';
+
+  @override
+  String get ppEmptyMsg =>
+      'Regular photos from the same angle and in the same light show change weeks before the scale.';
+
+  @override
+  String get ppAdd => 'Add photo';
+
+  @override
+  String get ppAngleFront => 'Front';
+
+  @override
+  String get ppAngleSide => 'Side';
+
+  @override
+  String get ppAngleBack => 'Back';
+
+  @override
+  String get ppAll => 'All';
+
+  @override
+  String get ppCamera => 'Take photo';
+
+  @override
+  String get ppGallery => 'Choose from library';
+
+  @override
+  String get ppAngle => 'Angle';
+
+  @override
+  String get ppDeleteTitle => 'Delete photo?';
+
+  @override
+  String get ppDeleteMsg =>
+      'This photo has no backup; it can\'t be restored once deleted.';
+
+  @override
+  String get ppCompare => 'Compare';
+
+  @override
+  String get ppCompareHint => 'Select two photos to compare';
+
+  @override
+  String ppSelected(int count) {
+    return '$count/2 selected';
+  }
+
+  @override
+  String ppDaysApart(int days) {
+    return '$days day(s) apart';
+  }
+
+  @override
+  String get ppDeviceOnly =>
+      'Photos are stored on this device only: not backed up, not saved to your gallery, and deleted if you switch accounts.';
+
+  @override
+  String get ppLoadError => 'Couldn\'t load photos';
+
+  @override
+  String get ppSaveError => 'Couldn\'t save the photo';
+
+  @override
+  String get ppMissingFile => 'File not found';
 }

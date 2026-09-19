@@ -1,2 +1,4 @@
-/* Barkod tarayıcı izin metni — cihaz dili İngilizce olduğunda gösterilir. */
-"NSCameraUsageDescription" = "Used to scan product barcodes and fill in nutrition facts automatically.";
+/* Camera: barcode scanner + progress photos — shown when the device language is English. */
+"NSCameraUsageDescription" = "Used to scan product barcodes and to take progress photos. Photos stay on this device.";
+/* Photo library: picking progress photos (docs/19). */
+"NSPhotoLibraryUsageDescription" = "Used to pick progress photos from your library. Photos are copied into the app and stay on this device.";

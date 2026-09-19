@@ -30,4 +30,11 @@ class UserProfile extends Table with SyncColumns {
   TextColumn get gender => text().nullable()(); // 'male' | 'female'
   // Aktiflik düzeyi (TDEE çarpanı): sedentary|light|moderate|active|veryActive.
   TextColumn get activityLevel => text().nullable()();
+  // v12 (docs/22 §3.4): kilo hedefinin YÖNÜ — 'lose' | 'maintain' | 'gain'.
+  // Nullable: seçilmemiş = yön bilinmiyor → haftalık değerlendirme kiloyu
+  // hedefe göre yorumlamaz.
+  TextColumn get goalDirection => text().nullable()();
+  // Yönün seçildiği an. "Geçmişe uygulanmaz" kuralının ölçüsü: bu tarihten
+  // önceki haftalar yön bilinmiyormuş gibi yorumlanır.
+  DateTimeColumn get goalDirectionSince => dateTime().nullable()();
 }

@@ -28,8 +28,8 @@ void main() {
     'user_profile',
   };
 
-  group('Schema v11', () {
-    test('schemaVersion 11\'de (artırınca bu test bilinçli kırılır)',
+  group('Schema v12', () {
+    test('schemaVersion 12\'de (artırınca bu test bilinçli kırılır)',
         () async {
       // Bu assertion bir TRIPWIRE'dır: biri schemaVersion'ı artırınca
       // burası kırılır → onUpgrade adımı + yeni göç testi eklemeden
@@ -42,11 +42,12 @@ void main() {
       // tetikleyicileri · v10→v11: senkron v2 Aşama 1 — milisaniyelik damga
       // (changed_at_ms), cihaz sayacı (local_seq), server_rev + sync_meta /
       // sync_tombstones tabloları + capture bayraklı 36 tetikleyici
-      // (docs/20 §4.1).
+      // (docs/20 §4.1) · v11→v12: haftalık değerlendirme — user_profile
+      // +goalDirection/+goalDirectionSince (docs/22 §6).
       // Lossless göç testleri: migrations/migration_v*_to_v*_test.dart.
       final db = newTestDatabase();
       addTearDown(db.close);
-      expect(db.schemaVersion, 11);
+      expect(db.schemaVersion, 12);
     });
 
     test('temiz kurulum (onCreate) beklenen tabloları yaratır', () async {

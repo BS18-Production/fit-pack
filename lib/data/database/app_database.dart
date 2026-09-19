@@ -99,7 +99,7 @@ class AppDatabase extends _$AppDatabase {
   /// Katalog satırları (seed hareket/besin) hariç — onlar kullanılınca elle
   /// kuyruğa alınır. Tablo/kolon değişmez, yalnız tetikleyici eklenir.
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   /// v5→v6 gibi ARA göç adımları `m.createTable()` ile GÜNCEL tanımı kullanır —
   /// yani o adımda doğan tablo (routines, routine_exercises, water_intake)
@@ -408,6 +408,14 @@ class AppDatabase extends _$AppDatabase {
             "WHERE key = 'next_seq'",
           );
           await m.database.customStatement(setCaptureSql(true));
+        }
+        // v11 → v12: haftalık değerlendirme — profilde hedef yönü (docs/22
+        // §3.4, §6). Yalnız iki NULLABLE kolon: veri doldurulmaz, tetikleyici
+        // değişmez (DDL tetikleyici çalıştırmaz, satırlar kuyruğa girmez).
+        if (from < 12 && to >= 12) {
+          await _addColumnIfMissing(m, userProfile, userProfile.goalDirection);
+          await _addColumnIfMissing(
+              m, userProfile, userProfile.goalDirectionSince);
         }
       },
 

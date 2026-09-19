@@ -10944,6 +10944,28 @@ class $UserProfileTable extends UserProfile
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _goalDirectionMeta = const VerificationMeta(
+    'goalDirection',
+  );
+  @override
+  late final GeneratedColumn<String> goalDirection = GeneratedColumn<String>(
+    'goal_direction',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _goalDirectionSinceMeta =
+      const VerificationMeta('goalDirectionSince');
+  @override
+  late final GeneratedColumn<DateTime> goalDirectionSince =
+      GeneratedColumn<DateTime>(
+        'goal_direction_since',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     uid,
@@ -10967,6 +10989,8 @@ class $UserProfileTable extends UserProfile
     birthDate,
     gender,
     activityLevel,
+    goalDirection,
+    goalDirectionSince,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -11126,6 +11150,24 @@ class $UserProfileTable extends UserProfile
         ),
       );
     }
+    if (data.containsKey('goal_direction')) {
+      context.handle(
+        _goalDirectionMeta,
+        goalDirection.isAcceptableOrUnknown(
+          data['goal_direction']!,
+          _goalDirectionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('goal_direction_since')) {
+      context.handle(
+        _goalDirectionSinceMeta,
+        goalDirectionSince.isAcceptableOrUnknown(
+          data['goal_direction_since']!,
+          _goalDirectionSinceMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -11219,6 +11261,14 @@ class $UserProfileTable extends UserProfile
         DriftSqlType.string,
         data['${effectivePrefix}activity_level'],
       ),
+      goalDirection: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}goal_direction'],
+      ),
+      goalDirectionSince: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}goal_direction_since'],
+      ),
     );
   }
 
@@ -11281,6 +11331,8 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
   final DateTime? birthDate;
   final String? gender;
   final String? activityLevel;
+  final String? goalDirection;
+  final DateTime? goalDirectionSince;
   const UserProfileData({
     this.uid,
     this.userId,
@@ -11303,6 +11355,8 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     this.birthDate,
     this.gender,
     this.activityLevel,
+    this.goalDirection,
+    this.goalDirectionSince,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -11354,6 +11408,12 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     if (!nullToAbsent || activityLevel != null) {
       map['activity_level'] = Variable<String>(activityLevel);
     }
+    if (!nullToAbsent || goalDirection != null) {
+      map['goal_direction'] = Variable<String>(goalDirection);
+    }
+    if (!nullToAbsent || goalDirectionSince != null) {
+      map['goal_direction_since'] = Variable<DateTime>(goalDirectionSince);
+    }
     return map;
   }
 
@@ -11404,6 +11464,12 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       activityLevel: activityLevel == null && nullToAbsent
           ? const Value.absent()
           : Value(activityLevel),
+      goalDirection: goalDirection == null && nullToAbsent
+          ? const Value.absent()
+          : Value(goalDirection),
+      goalDirectionSince: goalDirectionSince == null && nullToAbsent
+          ? const Value.absent()
+          : Value(goalDirectionSince),
     );
   }
 
@@ -11434,6 +11500,10 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       birthDate: serializer.fromJson<DateTime?>(json['birthDate']),
       gender: serializer.fromJson<String?>(json['gender']),
       activityLevel: serializer.fromJson<String?>(json['activityLevel']),
+      goalDirection: serializer.fromJson<String?>(json['goalDirection']),
+      goalDirectionSince: serializer.fromJson<DateTime?>(
+        json['goalDirectionSince'],
+      ),
     );
   }
   @override
@@ -11461,6 +11531,8 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       'birthDate': serializer.toJson<DateTime?>(birthDate),
       'gender': serializer.toJson<String?>(gender),
       'activityLevel': serializer.toJson<String?>(activityLevel),
+      'goalDirection': serializer.toJson<String?>(goalDirection),
+      'goalDirectionSince': serializer.toJson<DateTime?>(goalDirectionSince),
     };
   }
 
@@ -11486,6 +11558,8 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     Value<DateTime?> birthDate = const Value.absent(),
     Value<String?> gender = const Value.absent(),
     Value<String?> activityLevel = const Value.absent(),
+    Value<String?> goalDirection = const Value.absent(),
+    Value<DateTime?> goalDirectionSince = const Value.absent(),
   }) => UserProfileData(
     uid: uid.present ? uid.value : this.uid,
     userId: userId.present ? userId.value : this.userId,
@@ -11510,6 +11584,12 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     activityLevel: activityLevel.present
         ? activityLevel.value
         : this.activityLevel,
+    goalDirection: goalDirection.present
+        ? goalDirection.value
+        : this.goalDirection,
+    goalDirectionSince: goalDirectionSince.present
+        ? goalDirectionSince.value
+        : this.goalDirectionSince,
   );
   UserProfileData copyWithCompanion(UserProfileCompanion data) {
     return UserProfileData(
@@ -11550,6 +11630,12 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       activityLevel: data.activityLevel.present
           ? data.activityLevel.value
           : this.activityLevel,
+      goalDirection: data.goalDirection.present
+          ? data.goalDirection.value
+          : this.goalDirection,
+      goalDirectionSince: data.goalDirectionSince.present
+          ? data.goalDirectionSince.value
+          : this.goalDirectionSince,
     );
   }
 
@@ -11576,7 +11662,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           ..write('waterGoalMl: $waterGoalMl, ')
           ..write('birthDate: $birthDate, ')
           ..write('gender: $gender, ')
-          ..write('activityLevel: $activityLevel')
+          ..write('activityLevel: $activityLevel, ')
+          ..write('goalDirection: $goalDirection, ')
+          ..write('goalDirectionSince: $goalDirectionSince')
           ..write(')'))
         .toString();
   }
@@ -11604,6 +11692,8 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     birthDate,
     gender,
     activityLevel,
+    goalDirection,
+    goalDirectionSince,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -11629,7 +11719,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           other.waterGoalMl == this.waterGoalMl &&
           other.birthDate == this.birthDate &&
           other.gender == this.gender &&
-          other.activityLevel == this.activityLevel);
+          other.activityLevel == this.activityLevel &&
+          other.goalDirection == this.goalDirection &&
+          other.goalDirectionSince == this.goalDirectionSince);
 }
 
 class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
@@ -11654,6 +11746,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
   final Value<DateTime?> birthDate;
   final Value<String?> gender;
   final Value<String?> activityLevel;
+  final Value<String?> goalDirection;
+  final Value<DateTime?> goalDirectionSince;
   const UserProfileCompanion({
     this.uid = const Value.absent(),
     this.userId = const Value.absent(),
@@ -11676,6 +11770,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     this.birthDate = const Value.absent(),
     this.gender = const Value.absent(),
     this.activityLevel = const Value.absent(),
+    this.goalDirection = const Value.absent(),
+    this.goalDirectionSince = const Value.absent(),
   });
   UserProfileCompanion.insert({
     this.uid = const Value.absent(),
@@ -11699,6 +11795,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     this.birthDate = const Value.absent(),
     this.gender = const Value.absent(),
     this.activityLevel = const Value.absent(),
+    this.goalDirection = const Value.absent(),
+    this.goalDirectionSince = const Value.absent(),
   }) : startDate = Value(startDate);
   static Insertable<UserProfileData> custom({
     Expression<String>? uid,
@@ -11722,6 +11820,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     Expression<DateTime>? birthDate,
     Expression<String>? gender,
     Expression<String>? activityLevel,
+    Expression<String>? goalDirection,
+    Expression<DateTime>? goalDirectionSince,
   }) {
     return RawValuesInsertable({
       if (uid != null) 'uid': uid,
@@ -11745,6 +11845,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
       if (birthDate != null) 'birth_date': birthDate,
       if (gender != null) 'gender': gender,
       if (activityLevel != null) 'activity_level': activityLevel,
+      if (goalDirection != null) 'goal_direction': goalDirection,
+      if (goalDirectionSince != null)
+        'goal_direction_since': goalDirectionSince,
     });
   }
 
@@ -11770,6 +11873,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     Value<DateTime?>? birthDate,
     Value<String?>? gender,
     Value<String?>? activityLevel,
+    Value<String?>? goalDirection,
+    Value<DateTime?>? goalDirectionSince,
   }) {
     return UserProfileCompanion(
       uid: uid ?? this.uid,
@@ -11793,6 +11898,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
       birthDate: birthDate ?? this.birthDate,
       gender: gender ?? this.gender,
       activityLevel: activityLevel ?? this.activityLevel,
+      goalDirection: goalDirection ?? this.goalDirection,
+      goalDirectionSince: goalDirectionSince ?? this.goalDirectionSince,
     );
   }
 
@@ -11862,6 +11969,14 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     if (activityLevel.present) {
       map['activity_level'] = Variable<String>(activityLevel.value);
     }
+    if (goalDirection.present) {
+      map['goal_direction'] = Variable<String>(goalDirection.value);
+    }
+    if (goalDirectionSince.present) {
+      map['goal_direction_since'] = Variable<DateTime>(
+        goalDirectionSince.value,
+      );
+    }
     return map;
   }
 
@@ -11888,7 +12003,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
           ..write('waterGoalMl: $waterGoalMl, ')
           ..write('birthDate: $birthDate, ')
           ..write('gender: $gender, ')
-          ..write('activityLevel: $activityLevel')
+          ..write('activityLevel: $activityLevel, ')
+          ..write('goalDirection: $goalDirection, ')
+          ..write('goalDirectionSince: $goalDirectionSince')
           ..write(')'))
         .toString();
   }
@@ -18801,6 +18918,8 @@ typedef $$UserProfileTableCreateCompanionBuilder =
       Value<DateTime?> birthDate,
       Value<String?> gender,
       Value<String?> activityLevel,
+      Value<String?> goalDirection,
+      Value<DateTime?> goalDirectionSince,
     });
 typedef $$UserProfileTableUpdateCompanionBuilder =
     UserProfileCompanion Function({
@@ -18825,6 +18944,8 @@ typedef $$UserProfileTableUpdateCompanionBuilder =
       Value<DateTime?> birthDate,
       Value<String?> gender,
       Value<String?> activityLevel,
+      Value<String?> goalDirection,
+      Value<DateTime?> goalDirectionSince,
     });
 
 class $$UserProfileTableFilterComposer
@@ -18938,6 +19059,16 @@ class $$UserProfileTableFilterComposer
 
   ColumnFilters<String> get activityLevel => $composableBuilder(
     column: $table.activityLevel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get goalDirection => $composableBuilder(
+    column: $table.goalDirection,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get goalDirectionSince => $composableBuilder(
+    column: $table.goalDirectionSince,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -19055,6 +19186,16 @@ class $$UserProfileTableOrderingComposer
     column: $table.activityLevel,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get goalDirection => $composableBuilder(
+    column: $table.goalDirection,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get goalDirectionSince => $composableBuilder(
+    column: $table.goalDirectionSince,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UserProfileTableAnnotationComposer
@@ -19144,6 +19285,16 @@ class $$UserProfileTableAnnotationComposer
     column: $table.activityLevel,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get goalDirection => $composableBuilder(
+    column: $table.goalDirection,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get goalDirectionSince => $composableBuilder(
+    column: $table.goalDirectionSince,
+    builder: (column) => column,
+  );
 }
 
 class $$UserProfileTableTableManager
@@ -19198,6 +19349,8 @@ class $$UserProfileTableTableManager
                 Value<DateTime?> birthDate = const Value.absent(),
                 Value<String?> gender = const Value.absent(),
                 Value<String?> activityLevel = const Value.absent(),
+                Value<String?> goalDirection = const Value.absent(),
+                Value<DateTime?> goalDirectionSince = const Value.absent(),
               }) => UserProfileCompanion(
                 uid: uid,
                 userId: userId,
@@ -19220,6 +19373,8 @@ class $$UserProfileTableTableManager
                 birthDate: birthDate,
                 gender: gender,
                 activityLevel: activityLevel,
+                goalDirection: goalDirection,
+                goalDirectionSince: goalDirectionSince,
               ),
           createCompanionCallback:
               ({
@@ -19244,6 +19399,8 @@ class $$UserProfileTableTableManager
                 Value<DateTime?> birthDate = const Value.absent(),
                 Value<String?> gender = const Value.absent(),
                 Value<String?> activityLevel = const Value.absent(),
+                Value<String?> goalDirection = const Value.absent(),
+                Value<DateTime?> goalDirectionSince = const Value.absent(),
               }) => UserProfileCompanion.insert(
                 uid: uid,
                 userId: userId,
@@ -19266,6 +19423,8 @@ class $$UserProfileTableTableManager
                 birthDate: birthDate,
                 gender: gender,
                 activityLevel: activityLevel,
+                goalDirection: goalDirection,
+                goalDirectionSince: goalDirectionSince,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

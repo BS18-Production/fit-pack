@@ -51,6 +51,9 @@ class AppRoutes {
   static const accountError = '/account-error';
   static const accountConflict = '/account-conflict';
   static const attribution = '/settings/attribution';
+  /// Haftalık değerlendirme (docs/22 §4). Ana sayfa "Bu Hafta"dan ve haftalık
+  /// bildirimden açılır.
+  static const weeklyReview = '/insights/week';
   static const notifications = '/settings/notifications';
 
   // ── Parametreli rotalar: `*Path` = router tanımı, fonksiyon = çağrı ──

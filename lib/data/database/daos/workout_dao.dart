@@ -171,6 +171,13 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
   // === Exercises ===
   Future<List<Exercise>> getAllExercises() => select(exercises).get();
 
+  /// Verilen kimliklerdeki hareketler (tek sorgu).
+  Future<List<Exercise>> getExercisesByIds(Iterable<int> ids) {
+    final list = ids.toSet().toList();
+    if (list.isEmpty) return Future.value(const []);
+    return (select(exercises)..where((e) => e.id.isIn(list))).get();
+  }
+
   Future<List<Exercise>> getExercisesByCategory(String category) =>
       (select(exercises)..where((e) => e.category.equals(category))).get();
 
@@ -363,18 +370,25 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
   /// Ana Sayfa "en çok gelişen hareket" içgörüsü (dashboard): [start, end)
   /// aralığındaki ağırlıklı set noktaları + hareket adı. Isınma hariç; yalnız
   /// kg ve tekrarı DOLU olanlar (e1RM hesaplanabilsin). Tek sorgu (N+1 yok).
+  ///
+  /// [onlyComplete]: yalnız tamamlanmış (✓) setler. Haftalık değerlendirme
+  /// bunu ister — yarım bırakılmış taslak set "en iyi set" sayılmamalı.
+  /// Ana sayfa içgörüsü eski davranışla (hepsi) kalır.
   Future<List<ExerciseProgressPoint>> getWeightedSetPointsInRange(
-      DateTime start, DateTime end) async {
+      DateTime start, DateTime end,
+      {bool onlyComplete = false}) async {
+    var kosul = workoutSets.isWarmup.equals(false) &
+        workoutSets.weightKg.isNotNull() &
+        workoutSets.reps.isNotNull() &
+        workoutSessions.date.isBiggerOrEqualValue(start) &
+        workoutSessions.date.isSmallerThanValue(end);
+    if (onlyComplete) kosul = kosul & workoutSets.isComplete.equals(true);
     final q = select(workoutSets).join([
       innerJoin(
           workoutSessions, workoutSessions.id.equalsExp(workoutSets.sessionId)),
       innerJoin(exercises, exercises.id.equalsExp(workoutSets.exerciseId)),
     ])
-      ..where(workoutSets.isWarmup.equals(false) &
-          workoutSets.weightKg.isNotNull() &
-          workoutSets.reps.isNotNull() &
-          workoutSessions.date.isBiggerOrEqualValue(start) &
-          workoutSessions.date.isSmallerThanValue(end))
+      ..where(kosul)
       ..orderBy([OrderingTerm.asc(workoutSessions.date)]);
     final rows = await q.get();
     return rows.map((r) {

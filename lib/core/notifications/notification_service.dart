@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +17,11 @@ class NotificationService {
   static const idRest = 1;
   static const idWorkout = 2;
   static const idWater = 3;
+  static const idWeeklyReview = 4;
+
+  /// Dokununca açılacak ekranı söyleyen yük (payload). Uygulama kökü bunu
+  /// dinleyip ilgili rotaya gider.
+  static const payloadWeeklyReview = 'weekly_review';
 
   static const _chRest = AndroidNotificationDetails(
     'rest_timer',
@@ -41,6 +48,10 @@ class NotificationService {
 
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _inited = false;
+
+  /// Uygulama AÇIKKEN (ön ya da arka planda) dokunulan bildirimlerin yükü.
+  final _taps = StreamController<String>.broadcast();
+  Stream<String> get taps => _taps.stream;
 
   AndroidFlutterLocalNotificationsPlugin? get _android =>
       _plugin.resolvePlatformSpecificImplementation<
@@ -73,8 +84,21 @@ class NotificationService {
           requestSoundPermission: false,
         ),
       ),
+      onDidReceiveNotificationResponse: (r) {
+        final p = r.payload;
+        if (p != null && p.isNotEmpty) _taps.add(p);
+      },
     );
     _inited = true;
+  }
+
+  /// Uygulama KAPALIYKEN bir bildirime dokunularak açıldıysa o bildirimin
+  /// yükü; aksi halde `null`. Soğuk açılışta akış (`taps`) bunu kaçırır.
+  Future<String?> launchPayload() async {
+    await init();
+    final d = await _plugin.getNotificationAppLaunchDetails();
+    if (d == null || !d.didNotificationLaunchApp) return null;
+    return d.notificationResponse?.payload;
   }
 
   /// Bildirim izni: Android 13+ çalışma zamanı izni, iOS'ta
@@ -161,8 +185,59 @@ class NotificationService {
     );
   }
 
+  /// Her hafta aynı gün ve saatte tekrar eden bildirim (haftalık
+  /// değerlendirme — docs/22 §5). Dakiklik kritik değil → inexact.
+  ///
+  /// [weekday] `DateTime.weekday` uzayında (1 = Pazartesi … 7 = Pazar).
+  Future<void> scheduleWeekly({
+    required int id,
+    required int weekday,
+    required int hour,
+    required int minute,
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    await init();
+    final now = tz.TZDateTime.now(tz.local);
+    final next = nextWeeklyOccurrence(now, weekday, hour, minute);
+    await _plugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime(tz.local, next.year, next.month, next.day,
+          next.hour, next.minute),
+      notificationDetails: const NotificationDetails(
+        android: _chReminders,
+        iOS: _iosReminders,
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+      payload: payload,
+    );
+  }
+
   Future<void> cancel(int id) => _plugin.cancel(id: id);
 }
+
+/// [now]'dan SONRAKİ ilk [weekday] günü, [hour]:[minute] anı. Tam o an
+/// geçmişse bir sonraki haftaya atılır.
+///
+/// Gün eklemek için `Duration` değil takvim alanı kullanılır: yaz saati
+/// geçişinde 24 saat ≠ 1 gün, `add(Duration(days: n))` saati kaydırırdı.
+DateTime nextWeeklyOccurrence(
+    DateTime now, int weekday, int hour, int minute) {
+  final ileri = (weekday - now.weekday) % 7;
+  var d = DateTime(now.year, now.month, now.day + ileri, hour, minute);
+  if (!d.isAfter(now)) {
+    d = DateTime(d.year, d.month, d.day + 7, hour, minute);
+  }
+  return d;
+}
+
+/// Haftanın KAPANIŞ günü: başlangıçtan bir önceki gün. Pazartesi başlayan
+/// haftada Pazar (7), Pazar başlayan haftada Cumartesi (6).
+int weekClosingDay(int weekStart) => ((weekStart - 2) % 7) + 1;
 
 final notificationServiceProvider =
     Provider<NotificationService>((ref) => NotificationService());

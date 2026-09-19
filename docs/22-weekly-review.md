@@ -1,8 +1,11 @@
 # 22 — Haftalık Değerlendirme (docs/21 #1 + #6 çekirdeği)
 
-> **Durum:** Tasarım — Samet'in kararlarını bekliyor (§9). **Kod yazılmadı.**
-> **Tarih:** 2026-09-18 · **Yazan:** Claude
-> **Temel:** `main` · şema **v10** · docs/21 §2 #1 ve #6
+> **Durum:** ✅ **Kodlandı (2026-09-19)** — Aşama 1–4 tamam, 5 bilinçli
+> olarak değiştirildi (§8). §9'daki açık kararlar önerilen varsayılanlarla
+> uygulandı; Samet değiştirmek isterse hepsi tek yerde. Simülatörde görsel
+> kontrol ve üretime çıkış bekliyor.
+> **Tarih:** 2026-09-18 (tasarım) · 2026-09-19 (uygulama) · **Yazan:** Claude
+> **Temel:** `main` · şema **v12** · docs/21 §2 #1 ve #6
 > **İlgili:** [docs/21 — Özellik yol haritası](21-feature-roadmap.md) ·
 > [docs/20 — Senkron v2](20-sync-v2.md) · [CONVENTIONS §7b](../CONVENTIONS.md)
 
@@ -196,6 +199,22 @@ uygulandı ve **v11'i o aldı**. Hedef yönü alanı bu yüzden **v12** olacak.
 
 Toplam ≈ **3,5 gün**. Her aşama tek başına commit edilebilir; 2. aşama sunucu
 değişikliği içerdiği için uygulama sürümüyle **birlikte** yayınlanır.
+
+### 8.1 Uygulama notları (2026-09-19)
+
+| Aşama | Durum | Not |
+|---|---|---|
+| 1 Motor | ✅ | `lib/features/insights/weekly_review.dart`. Metin üretmez, yapılandırılmış veri döndürür. 26 test (W-1…W-9). İki adillik eklentisi: plan kuralı yalnız hafta **bitince** bakar; kayıt kuralının eşiği geçen güne göre ölçeklenir. |
+| 2 Şema v12 | ✅ | İki nullable kolon + sunucu migration'ı (`20260919100000_weekly_review_goal_direction.sql`, `Fit Pack Dev`'de). Göç testi dahil. CHECK kısıtı bilinçli yok. |
+| 3 Ekran | ✅ | `/insights/week`, ana sayfa "Bu Hafta" altında bağlantı. Boş bölüm gizlenmez; her kartta kaynak satırı. Hedef yönü seçimi kilo kartında. Birim tercihi (kg/lb) uygulanıyor. Kilo grafiği **yok** (Samet: "grafik az"). |
+| 4 Bildirim | ✅ | Hafta kapanış günü 20:00, varsayılan kapalı, Ayarlar → Bildirimler. Dokununca ekran açılır (soğuk açılışta kapı hazır olunca). **Metin sayı içermez** — tekrar eden bildirimin metni kurulduğu an sabitlenir, pazar akşamı eskimiş sayı gösterirdi. Hafta başlangıcı değişirse yeniden kurulur. 10 test. |
+| 5 Tek kaynak | ⚙️ değişti | Ana sayfa ve değerlendirme zaten **aynı fonksiyonları** (`aggregateWorkouts`, `startOfWeek`) kullanıyor; W-9 eşitliği kilitliyor. `dashboard_stats`'ı taşımak davranış değiştirmeden gürültü eklerdi → yapılmadı. |
+
+**§9 kararları varsayılanlarla uygulandı:** (1) kapanış Pazar 20:00 (hafta
+başlangıcı Pazar ise Cumartesi); (2) çelişki **otomatik düzeltilmez** —
+seçilen yön hedef kiloyla çelişiyorsa kilo kartında uyarı + "Profili aç";
+önerideki "onaylı düzeltme akışı" yerine daha basit ve geri dönüşsüz hiçbir
+şey yapmayan yol seçildi; (3) odak cümlesi yargısız, tek cümle.
 
 ---
 

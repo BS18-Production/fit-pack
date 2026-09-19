@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,7 +8,9 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_mode_provider.dart';
 import 'shared/widgets/glass.dart';
 import 'core/i18n/locale_provider.dart';
+import 'core/notifications/notification_service.dart';
 import 'core/router/app_router.dart';
+import 'core/router/app_routes.dart';
 import 'l10n/app_l10n.dart';
 import 'features/home/providers/home_providers.dart';
 import 'features/nutrition/nutrition_screen.dart' show selectedDateProvider;
@@ -27,6 +31,74 @@ class _FitPackAppState extends ConsumerState<FitPackApp> {
   // `main()` `bootstrap()`u çağırdığı için değerler burada hazırdır.
   late final GoRouter _router =
       createAppRouter(gate: ref.read(authGateProvider));
+
+  // ── Bildirime dokununca ilgili ekrana git (haftalık değerlendirme, docs/22
+  // §5). İki yol: uygulama AÇIKKEN dokunma (`taps` akışı) ve uygulama
+  // KAPALIYKEN bildirimle açılma (`launchPayload`).
+  StreamSubscription<String>? _notifTaps;
+
+  /// Soğuk açılışta kapı henüz karar vermemişken gelen hedef. Kapı hazır
+  /// olunca işlenir — önce gidilseydi yönlendirme (redirect) onu yutardı.
+  String? _pendingPayload;
+
+  /// `dispose`'ta `ref` kullanılamaz; dinleyiciyi kaldırmak için saklanır.
+  late final AuthGate _gate = ref.read(authGateProvider);
+
+  @override
+  void initState() {
+    super.initState();
+    final svc = ref.read(notificationServiceProvider);
+    _notifTaps = svc.taps.listen(_openFromNotification);
+    _gate.addListener(_flushPending);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final p = await svc.launchPayload();
+        if (p != null) {
+          _pendingPayload = p;
+          _flushPending();
+        }
+      } catch (_) {
+        // Bildirim eklentisi yok (test, desteklenmeyen platform) — sessiz geç.
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _notifTaps?.cancel();
+    _gate.removeListener(_flushPending);
+    super.dispose();
+  }
+
+  bool get _gateReady {
+    final g = _gate;
+    return g.signedIn &&
+        g.onboarded &&
+        !g.busy &&
+        !g.recovering &&
+        !g.accountError &&
+        g.pendingConflictRows == 0;
+  }
+
+  void _openFromNotification(String payload) {
+    if (!_gateReady) {
+      _pendingPayload = payload;
+      return;
+    }
+    if (payload == NotificationService.payloadWeeklyReview) {
+      _router.push(AppRoutes.weeklyReview);
+    }
+  }
+
+  void _flushPending() {
+    final p = _pendingPayload;
+    if (p == null || !_gateReady) return;
+    _pendingPayload = null;
+    // Soğuk açılışta yığın açılış ekranında: önce ana sayfaya otur ki
+    // geri tuşu açılış ekranına dönmesin.
+    _router.go(AppRoutes.home);
+    _openFromNotification(p);
+  }
 
   @override
   Widget build(BuildContext context) {

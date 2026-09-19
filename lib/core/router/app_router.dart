@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fit_pack/features/home/home_screen.dart';
+import 'package:fit_pack/features/insights/weekly_review_screen.dart';
 import 'package:fit_pack/features/workout/workout_list_screen.dart';
 import 'package:fit_pack/features/workout/workout_history_screen.dart';
 import 'package:fit_pack/features/workout/exercise_library_screen.dart';
@@ -161,6 +162,11 @@ GoRouter createAppRouter({required AuthGate gate}) => GoRouter(
       path: AppRoutes.workoutHistory,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => _glass(const WorkoutHistoryScreen()),
+    ),
+    GoRoute(
+      path: AppRoutes.weeklyReview,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const WeeklyReviewScreen()),
     ),
     // Antrenman V2 (docs/09-workout-v2.md) — rutinler + aktif seans.
     GoRoute(

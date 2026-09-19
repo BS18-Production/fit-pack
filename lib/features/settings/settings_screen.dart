@@ -6,12 +6,15 @@ import '../../core/constants/app_constants.dart';
 import '../../core/i18n/enum_labels.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/i18n/locale_provider.dart';
+import '../../core/notifications/notification_prefs.dart';
+import '../../core/notifications/notification_service.dart';
 import '../../core/prefs/training_prefs.dart';
 import '../../core/prefs/week_start_provider.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/units/units.dart';
 import '../../core/theme/theme_mode_provider.dart';
 import '../../l10n/app_l10n.dart';
+import '../insights/weekly_review_reminder.dart';
 import '../../shared/widgets/setting_tiles.dart';
 import '../../core/router/app_routes.dart';
 
@@ -116,7 +119,18 @@ class SettingsScreen extends ConsumerWidget {
       current: '${ref.read(weekStartProvider)}',
     );
     if (picked != null) {
-      await ref.read(weekStartProvider.notifier).setWeekStart(int.parse(picked));
+      final weekStart = int.parse(picked);
+      await ref.read(weekStartProvider.notifier).setWeekStart(weekStart);
+      // Haftalık değerlendirme bildirimi hafta KAPANIŞ gününe bağlı: başlangıç
+      // değişince kapanış da değişir, açıksa yeni güne yeniden kurulur.
+      if (ref.read(notificationPrefsProvider).weeklyReviewEnabled &&
+          context.mounted) {
+        await scheduleWeeklyReviewReminder(
+          service: ref.read(notificationServiceProvider),
+          l: AppL10n.of(context),
+          weekStart: weekStart,
+        );
+      }
     }
   }
 

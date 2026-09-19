@@ -1963,4 +1963,239 @@ class AppL10nTr extends AppL10n {
   String syncFailedRows(int count) {
     return '$count kayıt yüklenemedi — tekrar denemek için dokun';
   }
+
+  @override
+  String get wrTitle => 'Haftalık değerlendirme';
+
+  @override
+  String wrInProgress(int days) {
+    return 'Hafta sürüyor — $days günlük veriyle';
+  }
+
+  @override
+  String get wrPrevWeek => 'Önceki hafta';
+
+  @override
+  String get wrNextWeek => 'Sonraki hafta';
+
+  @override
+  String get wrSummaryTitle => 'Özet';
+
+  @override
+  String wrFactWorkouts(int count) {
+    return '$count antrenman';
+  }
+
+  @override
+  String wrFactFoodDays(int days) {
+    return '$days günde beslenme kaydı';
+  }
+
+  @override
+  String get wrFactNoFood => 'beslenme kaydı yok';
+
+  @override
+  String wrFactWeightDelta(String delta) {
+    return 'kilo $delta';
+  }
+
+  @override
+  String get wrFactNoPrevWeight => 'önceki hafta kilo ölçümü yok';
+
+  @override
+  String get wrFactNoWeight => 'kilo ölçümü yok';
+
+  @override
+  String get wrWorkoutTitle => 'Antrenman';
+
+  @override
+  String wrWorkoutPlanned(int done, int planned) {
+    return '$done/$planned planlı antrenman';
+  }
+
+  @override
+  String wrWorkoutDone(int count) {
+    return '$count antrenman';
+  }
+
+  @override
+  String wrWorkoutDetail(int sets, int minutes, String volume) {
+    return '$sets tamamlanmış set · $minutes dk · $volume hacim';
+  }
+
+  @override
+  String wrWorkoutPrev(int count) {
+    return 'Geçen hafta: $count antrenman';
+  }
+
+  @override
+  String get wrWorkoutNone => 'Bu hafta antrenman kaydı yok';
+
+  @override
+  String wrWorkoutSource(int count) {
+    return 'Kaynak: $count seans. Hacim ve seans sayısı ana sayfadakiyle aynı hesap.';
+  }
+
+  @override
+  String get wrProgressTitle => 'Hareket ilerlemesi';
+
+  @override
+  String wrProgressRow(String weight, int reps, String delta) {
+    return '$weight × $reps — tahmini 1TM +$delta';
+  }
+
+  @override
+  String get wrProgressNone =>
+      'Karşılaştırılacak önceki kayıt ya da ilerleme yok';
+
+  @override
+  String get wrProgressSource =>
+      'Kaynak: bu haftanın en iyi tamamlanmış seti, hareketin bir önceki kaydıyla karşılaştırılır (Epley 1TM). Hareketler ayrı ayrı; toplam puan yok.';
+
+  @override
+  String get wrNutritionTitle => 'Beslenme';
+
+  @override
+  String wrNutritionLogged(int days) {
+    return '$days gün kayıt';
+  }
+
+  @override
+  String wrNutritionAvg(int kcal, int protein) {
+    return 'Kayıtlı günlerin ortalaması: $kcal kcal · $protein g protein';
+  }
+
+  @override
+  String wrNutritionGoal(int kcal, int protein) {
+    return 'Hedef: $kcal kcal · $protein g protein';
+  }
+
+  @override
+  String get wrNutritionNone => 'Bu hafta beslenme kaydı yok';
+
+  @override
+  String get wrNutritionSource =>
+      'Kaynak: yalnız kayıt girilen günler. Kayıtsız gün 0 sayılmaz ve hedefe göre yorumlanmaz.';
+
+  @override
+  String get wrWeightTitle => 'Kilo';
+
+  @override
+  String wrWeightAvg(String weight, int count) {
+    return 'Hafta ortalaması: $weight ($count ölçüm)';
+  }
+
+  @override
+  String wrWeightDelta(String delta) {
+    return 'Geçen haftaya göre $delta';
+  }
+
+  @override
+  String get wrWeightSingle => 'Tek ölçüm — trend sayılmaz';
+
+  @override
+  String get wrWeightNoPrev =>
+      'Önceki hafta ölçümü yok — karşılaştırma yapılamadı';
+
+  @override
+  String get wrWeightNone => 'Bu hafta kilo ölçümü yok';
+
+  @override
+  String get wrMeaningOnTrack => 'Hedefinle aynı yönde';
+
+  @override
+  String get wrMeaningAgainst =>
+      'Hedefinin tersine — tek hafta tek başına sonuç değildir';
+
+  @override
+  String get wrMeaningFlat => 'Belirgin değişim yok';
+
+  @override
+  String get wrDirectionLabel => 'Kilo hedefin';
+
+  @override
+  String get wrDirLose => 'Ver';
+
+  @override
+  String get wrDirMaintain => 'Koru';
+
+  @override
+  String get wrDirGain => 'Al';
+
+  @override
+  String get wrDirectionUnset =>
+      'Yön seçersen kilo değişimi ona göre yorumlanır. Seçim geçmiş haftalara uygulanmaz.';
+
+  @override
+  String get wrGoalConflict =>
+      'Seçtiğin yön ile hedef kilon birbirini tutmuyor. Hedefin değiştirilmedi — Profil\'den kontrol edebilirsin.';
+
+  @override
+  String get wrGoalConflictAction => 'Profili aç';
+
+  @override
+  String get wrWeightSource =>
+      'Kaynak: haftalık ortalamalar. Yön yalnız seçildiği tarihten sonraki haftalara uygulanır.';
+
+  @override
+  String get wrMuscleTitle => 'Kas grubu dağılımı';
+
+  @override
+  String wrMuscleRow(int sets) {
+    return '$sets set';
+  }
+
+  @override
+  String get wrMuscleNone => 'Bu hafta tamamlanmış set yok';
+
+  @override
+  String get wrMuscleSource =>
+      'Kaynak: tamamlanmış, ısınma dışı setler; hareketin birincil kası. Yalnız sayım.';
+
+  @override
+  String get wrFocusTitle => 'Gelecek hafta';
+
+  @override
+  String wrFocusCompletePlan(int done, int planned) {
+    return 'Planındaki $planned antrenmandan $done tanesini tamamladın — hedef planı tamamlamak.';
+  }
+
+  @override
+  String wrFocusIncrease(String name) {
+    return '$name 3 haftadır aynı kiloda ve tekrar aralığının üstünde — kiloyu artırmayı deneyebilirsin.';
+  }
+
+  @override
+  String wrFocusLogging(int days) {
+    return '$days gün beslenme kaydı var — hedef her gün kısa bir kayıt.';
+  }
+
+  @override
+  String get wrFocusCalories =>
+      'Kilo 2 haftadır hedefinin tersine gidiyor — kalori hedefini gözden geçirebilirsin.';
+
+  @override
+  String get wrFocusKeep => 'Aynı ritmi sürdür.';
+
+  @override
+  String get wrFocusSource =>
+      'Kural: sıradaki ilk eşleşen öneri gösterilir. Öneridir; hedeflerin değişmez.';
+
+  @override
+  String get wrOpen => 'Haftalık değerlendirme';
+
+  @override
+  String get notifWeeklyReview => 'Haftalık değerlendirme';
+
+  @override
+  String notifWeeklyReviewSub(String day) {
+    return 'Hafta kapanışında: $day 20:00';
+  }
+
+  @override
+  String get notifWeeklyTitle => 'Haftan hazır';
+
+  @override
+  String get notifWeeklyBody =>
+      'Haftanın özeti ve gelecek hafta için tek odak.';
 }

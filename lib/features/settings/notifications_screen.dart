@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/i18n/formatting.dart';
 import '../../core/notifications/notification_prefs.dart';
 import '../../core/notifications/notification_service.dart';
+import '../../core/prefs/week_start_provider.dart';
+import '../insights/weekly_review_reminder.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/setting_tiles.dart';
@@ -80,6 +83,26 @@ class NotificationsScreen extends ConsumerWidget {
       );
     } else {
       await svc.cancel(NotificationService.idWater);
+    }
+  }
+
+  Future<void> _setWeekly(
+      BuildContext context, WidgetRef ref, bool enabled) async {
+    if (enabled && !await _ensurePermission(context, ref)) return;
+    final prefs = ref.read(notificationPrefsProvider);
+    await ref
+        .read(notificationPrefsProvider.notifier)
+        .update(prefs.copyWith(weeklyReviewEnabled: enabled));
+    if (!context.mounted) return;
+    final svc = ref.read(notificationServiceProvider);
+    if (enabled) {
+      await scheduleWeeklyReviewReminder(
+        service: svc,
+        l: AppL10n.of(context),
+        weekStart: ref.read(weekStartProvider),
+      );
+    } else {
+      await svc.cancel(NotificationService.idWeeklyReview);
     }
   }
 
@@ -193,6 +216,19 @@ class NotificationsScreen extends ConsumerWidget {
                   value: _fmt(prefs.waterHour, prefs.waterMinute),
                   onTap: () => _pickTime(context, ref, isWorkout: false),
                 ),
+            ],
+          ),
+          AppSpacing.vGapLg,
+          SettingsSection(
+            children: [
+              SwitchListTile(
+                secondary: const Icon(Icons.insights_rounded),
+                title: Text(l.notifWeeklyReview),
+                subtitle: Text(l.notifWeeklyReviewSub(context.weekdayName(
+                    weekClosingDay(ref.watch(weekStartProvider))))),
+                value: prefs.weeklyReviewEnabled,
+                onChanged: (v) => _setWeekly(context, ref, v),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.xxl),

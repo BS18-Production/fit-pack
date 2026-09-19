@@ -13,6 +13,17 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
+## 📊 Haftalık Değerlendirme ✅ (kodlandı) — 2026-09-19
+
+docs/22'nin dört aşaması kodlandı (beşincisi bilinçli değişti, docs/22 §8.1):
+kural tabanlı hesap motoru (metin üretmez, 26 test), şema **v12** ile profilde
+hedef yönü, `/insights/week` ekranı (boş bölüm gizlenmez, her kartta "nereden
+hesaplandı"), hafta kapanışı 20:00 bildirimi (dokununca ekran açılır).
+Samet'in kuralları motorda: kayıtlı günlerin ortalaması, kayıtsız gün
+yargılanmaz, hedef yönü geçmişe uygulanmaz, puan yok, tek ölçüm trend değil.
+Hedef çelişkisinde **otomatik değişiklik yok**. Sunucu kolonları `Fit Pack
+Dev`'de; üretime 3+4+5 ile birlikte gider. **Görsel kontrol bekliyor.**
+
 ## 🔵 Senkron v2 — Aşama 0–5 ve 7 ✅ — 2026-09-19
 
 - **Sunucu test ortamı — karar değişti (Samet, 2026-09-18):** yerel Docker
@@ -80,7 +91,7 @@
 - **Yayın hazırlığı (2026-09-19):** üretim yedeği alındı ve doğrulandı; prova
   Aşama 3 migration'ında `updated_at`'i ezen bir hata buldu, düzeltildi.
   **3+4+5 tek sürümde çıkacak; telefon bağlanmayı bekliyor.**
-- analyze 0 · test **436/436**. Simülatörde gerçek veriyle doğrulandı.
+- analyze 0 · test **481/481** (haftalık değerlendirme dahil). Simülatörde gerçek veriyle doğrulandı.
 - **Bekleyen:** 3 + 4 üretime **birlikte** çıkar; öncesinde yedek + cihazda
   duman testi (NEXT_TASKS "Sıradaki").
 

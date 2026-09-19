@@ -3528,6 +3528,372 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'{count} record(s) couldn\'t upload — tap to retry'**
   String syncFailedRows(int count);
+
+  /// No description provided for @wrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly review'**
+  String get wrTitle;
+
+  /// No description provided for @wrInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Week in progress — based on {days} day(s)'**
+  String wrInProgress(int days);
+
+  /// No description provided for @wrPrevWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous week'**
+  String get wrPrevWeek;
+
+  /// No description provided for @wrNextWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Next week'**
+  String get wrNextWeek;
+
+  /// No description provided for @wrSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get wrSummaryTitle;
+
+  /// No description provided for @wrFactWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} workout(s)'**
+  String wrFactWorkouts(int count);
+
+  /// No description provided for @wrFactFoodDays.
+  ///
+  /// In en, this message translates to:
+  /// **'food logged on {days} day(s)'**
+  String wrFactFoodDays(int days);
+
+  /// No description provided for @wrFactNoFood.
+  ///
+  /// In en, this message translates to:
+  /// **'no food logged'**
+  String get wrFactNoFood;
+
+  /// No description provided for @wrFactWeightDelta.
+  ///
+  /// In en, this message translates to:
+  /// **'weight {delta}'**
+  String wrFactWeightDelta(String delta);
+
+  /// No description provided for @wrFactNoPrevWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'no weigh-in last week to compare'**
+  String get wrFactNoPrevWeight;
+
+  /// No description provided for @wrFactNoWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'no weigh-in'**
+  String get wrFactNoWeight;
+
+  /// No description provided for @wrWorkoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get wrWorkoutTitle;
+
+  /// No description provided for @wrWorkoutPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/{planned} planned workouts'**
+  String wrWorkoutPlanned(int done, int planned);
+
+  /// No description provided for @wrWorkoutDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} workout(s)'**
+  String wrWorkoutDone(int count);
+
+  /// No description provided for @wrWorkoutDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{sets} completed sets · {minutes} min · {volume} volume'**
+  String wrWorkoutDetail(int sets, int minutes, String volume);
+
+  /// No description provided for @wrWorkoutPrev.
+  ///
+  /// In en, this message translates to:
+  /// **'Last week: {count} workout(s)'**
+  String wrWorkoutPrev(int count);
+
+  /// No description provided for @wrWorkoutNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No workouts logged this week'**
+  String get wrWorkoutNone;
+
+  /// No description provided for @wrWorkoutSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: {count} session(s). Volume and session count use the same calculation as Home.'**
+  String wrWorkoutSource(int count);
+
+  /// No description provided for @wrProgressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise progress'**
+  String get wrProgressTitle;
+
+  /// No description provided for @wrProgressRow.
+  ///
+  /// In en, this message translates to:
+  /// **'{weight} × {reps} — est. 1RM +{delta}'**
+  String wrProgressRow(String weight, int reps, String delta);
+
+  /// No description provided for @wrProgressNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No earlier record to compare, or no progress'**
+  String get wrProgressNone;
+
+  /// No description provided for @wrProgressSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: this week\'s best completed set vs. the exercise\'s previous record (Epley 1RM). Exercises are listed separately; no overall score.'**
+  String get wrProgressSource;
+
+  /// No description provided for @wrNutritionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition'**
+  String get wrNutritionTitle;
+
+  /// No description provided for @wrNutritionLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} day(s) logged'**
+  String wrNutritionLogged(int days);
+
+  /// No description provided for @wrNutritionAvg.
+  ///
+  /// In en, this message translates to:
+  /// **'Average of logged days: {kcal} kcal · {protein} g protein'**
+  String wrNutritionAvg(int kcal, int protein);
+
+  /// No description provided for @wrNutritionGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal: {kcal} kcal · {protein} g protein'**
+  String wrNutritionGoal(int kcal, int protein);
+
+  /// No description provided for @wrNutritionNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No food logged this week'**
+  String get wrNutritionNone;
+
+  /// No description provided for @wrNutritionSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: logged days only. Unlogged days don\'t count as 0 and aren\'t judged against your goal.'**
+  String get wrNutritionSource;
+
+  /// No description provided for @wrWeightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get wrWeightTitle;
+
+  /// No description provided for @wrWeightAvg.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly average: {weight} ({count} weigh-in(s))'**
+  String wrWeightAvg(String weight, int count);
+
+  /// No description provided for @wrWeightDelta.
+  ///
+  /// In en, this message translates to:
+  /// **'{delta} vs. last week'**
+  String wrWeightDelta(String delta);
+
+  /// No description provided for @wrWeightSingle.
+  ///
+  /// In en, this message translates to:
+  /// **'Single weigh-in — not a trend'**
+  String get wrWeightSingle;
+
+  /// No description provided for @wrWeightNoPrev.
+  ///
+  /// In en, this message translates to:
+  /// **'No weigh-in last week — can\'t compare'**
+  String get wrWeightNoPrev;
+
+  /// No description provided for @wrWeightNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No weigh-in this week'**
+  String get wrWeightNone;
+
+  /// No description provided for @wrMeaningOnTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'In line with your goal'**
+  String get wrMeaningOnTrack;
+
+  /// No description provided for @wrMeaningAgainst.
+  ///
+  /// In en, this message translates to:
+  /// **'Against your goal — one week alone isn\'t a verdict'**
+  String get wrMeaningAgainst;
+
+  /// No description provided for @wrMeaningFlat.
+  ///
+  /// In en, this message translates to:
+  /// **'No clear change'**
+  String get wrMeaningFlat;
+
+  /// No description provided for @wrDirectionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your weight goal'**
+  String get wrDirectionLabel;
+
+  /// No description provided for @wrDirLose.
+  ///
+  /// In en, this message translates to:
+  /// **'Lose'**
+  String get wrDirLose;
+
+  /// No description provided for @wrDirMaintain.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain'**
+  String get wrDirMaintain;
+
+  /// No description provided for @wrDirGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Gain'**
+  String get wrDirGain;
+
+  /// No description provided for @wrDirectionUnset.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a direction and weight changes are read against it. It won\'t be applied to past weeks.'**
+  String get wrDirectionUnset;
+
+  /// No description provided for @wrGoalConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'The direction you picked doesn\'t match your goal weight. Nothing was changed — you can check it in Profile.'**
+  String get wrGoalConflict;
+
+  /// No description provided for @wrGoalConflictAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open profile'**
+  String get wrGoalConflictAction;
+
+  /// No description provided for @wrWeightSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: weekly averages. The direction only applies to weeks after you picked it.'**
+  String get wrWeightSource;
+
+  /// No description provided for @wrMuscleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Muscle group split'**
+  String get wrMuscleTitle;
+
+  /// No description provided for @wrMuscleRow.
+  ///
+  /// In en, this message translates to:
+  /// **'{sets} sets'**
+  String wrMuscleRow(int sets);
+
+  /// No description provided for @wrMuscleNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No completed sets this week'**
+  String get wrMuscleNone;
+
+  /// No description provided for @wrMuscleSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: completed, non-warm-up sets; the exercise\'s primary muscle. Counts only.'**
+  String get wrMuscleSource;
+
+  /// No description provided for @wrFocusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Next week'**
+  String get wrFocusTitle;
+
+  /// No description provided for @wrFocusCompletePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'You completed {done} of {planned} planned workouts — the goal is to finish the plan.'**
+  String wrFocusCompletePlan(int done, int planned);
+
+  /// No description provided for @wrFocusIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} has been at the same weight for 3 weeks, above your rep range — try adding weight.'**
+  String wrFocusIncrease(String name);
+
+  /// No description provided for @wrFocusLogging.
+  ///
+  /// In en, this message translates to:
+  /// **'Food logged on {days} day(s) — aim for a short entry every day.'**
+  String wrFocusLogging(int days);
+
+  /// No description provided for @wrFocusCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight has moved against your goal for 2 weeks — consider reviewing your calorie goal.'**
+  String get wrFocusCalories;
+
+  /// No description provided for @wrFocusKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the same rhythm.'**
+  String get wrFocusKeep;
+
+  /// No description provided for @wrFocusSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Rule: the first matching suggestion is shown. It\'s a suggestion; your goals don\'t change.'**
+  String get wrFocusSource;
+
+  /// No description provided for @wrOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly review'**
+  String get wrOpen;
+
+  /// No description provided for @notifWeeklyReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly review'**
+  String get notifWeeklyReview;
+
+  /// No description provided for @notifWeeklyReviewSub.
+  ///
+  /// In en, this message translates to:
+  /// **'When your week closes: {day} 20:00'**
+  String notifWeeklyReviewSub(String day);
+
+  /// No description provided for @notifWeeklyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your week is ready'**
+  String get notifWeeklyTitle;
+
+  /// No description provided for @notifWeeklyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This week\'s summary and one focus for next week.'**
+  String get notifWeeklyBody;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -12,6 +12,9 @@ class NotificationPrefs {
   final int workoutHour, workoutMinute;
   final bool waterEnabled;
   final int waterHour, waterMinute;
+  // Haftalık değerlendirme (docs/22 §5): hafta kapanış günü 20:00. Diğer
+  // hatırlatıcılar gibi varsayılan KAPALI — izin istemeden bildirim yok.
+  final bool weeklyReviewEnabled;
 
   const NotificationPrefs({
     this.restEnabled = false,
@@ -22,6 +25,7 @@ class NotificationPrefs {
     this.waterEnabled = false,
     this.waterHour = 14,
     this.waterMinute = 0,
+    this.weeklyReviewEnabled = false,
   });
 
   NotificationPrefs copyWith({
@@ -33,6 +37,7 @@ class NotificationPrefs {
     bool? waterEnabled,
     int? waterHour,
     int? waterMinute,
+    bool? weeklyReviewEnabled,
   }) =>
       NotificationPrefs(
         restEnabled: restEnabled ?? this.restEnabled,
@@ -43,6 +48,7 @@ class NotificationPrefs {
         waterEnabled: waterEnabled ?? this.waterEnabled,
         waterHour: waterHour ?? this.waterHour,
         waterMinute: waterMinute ?? this.waterMinute,
+        weeklyReviewEnabled: weeklyReviewEnabled ?? this.weeklyReviewEnabled,
       );
 }
 
@@ -55,6 +61,7 @@ class NotificationPrefsNotifier extends Notifier<NotificationPrefs> {
   static const _kWater = 'notif_water';
   static const _kWaterH = 'notif_water_h';
   static const _kWaterM = 'notif_water_m';
+  static const _kWeekly = 'notif_weekly_review';
 
   @override
   NotificationPrefs build() {
@@ -73,6 +80,7 @@ class NotificationPrefsNotifier extends Notifier<NotificationPrefs> {
       waterEnabled: p.getBool(_kWater) ?? false,
       waterHour: p.getInt(_kWaterH) ?? 14,
       waterMinute: p.getInt(_kWaterM) ?? 0,
+      weeklyReviewEnabled: p.getBool(_kWeekly) ?? false,
     );
   }
 
@@ -87,6 +95,7 @@ class NotificationPrefsNotifier extends Notifier<NotificationPrefs> {
     await p.setBool(_kWater, next.waterEnabled);
     await p.setInt(_kWaterH, next.waterHour);
     await p.setInt(_kWaterM, next.waterMinute);
+    await p.setBool(_kWeekly, next.weeklyReviewEnabled);
   }
 }
 

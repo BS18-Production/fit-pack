@@ -9,7 +9,9 @@ iOS simülatörü; haftalık raporun güvenilirliği kayıtların güvenilirliğ
 bağlı).
 
 1. **Sağlamlık paketi** — ✅ kodlandı; yalnız Android girişi Samet'le birlikte bekliyor.
-2. **#1 Haftalık değerlendirme + hedef yönü + haftalık bildirim** (docs/21).
+2. ✅ **#1 Haftalık değerlendirme + hedef yönü + haftalık bildirim** (docs/21,
+   docs/22) — **kodlandı 2026-09-19**; görsel kontrol + üretime çıkış bekliyor
+   (ayrıntı aşağıda "Haftalık değerlendirme").
    Samet'in kuralları:
    - Beslenme ortalaması = **kayıt girilmiş günlerin** ortalaması; kaç gün
      kayıt olduğu yazılır. **Eksik kayıttan hedef başarısı/başarısızlığı
@@ -29,6 +31,32 @@ bağlı).
 4. **#4 İlerleme fotoğrafları** (docs/19 dilim 1, yalnız cihazda) + **#2
    "geçmişten öğün kopyala"**.
 5. Diğerleri (docs/21 sırası): #8 → #5 → #7 → #2 tam → #10, #9, #13, #12.
+
+## 📊 Haftalık değerlendirme — kodlandı (2026-09-19, docs/22)
+
+- [x] **Hesap motoru** (`lib/features/insights/weekly_review.dart`): saf Dart,
+      metin üretmez. Samet'in kuralları motorda: beslenme ortalaması kayıtlı
+      günlerin; kayıtsız gün yargılanmaz; hedef yönü geçmişe uygulanmaz; puan
+      yok, hareketler ayrı; tek ölçüm trend sayılmaz. 26 test.
+- [x] **Şema v12**: `user_profile` +`goal_direction` +`goal_direction_since`
+      (nullable). Göç testi + tripwire. Sunucu migration'ı
+      `20260919100000_weekly_review_goal_direction.sql` — `Fit Pack Dev`'de;
+      **üretime 3+4+5 ile birlikte gider** (kolon sunucuda yoksa v12 profil
+      gönderimi düşer ve bütün kuyruğu bekletir).
+- [x] **Ekran** `/insights/week`: ana sayfa "Bu Hafta" altından açılır; önceki
+      haftalara geri gidilebilir; boş bölüm gizlenmez; her kartta "nereden
+      hesaplandı"; kilo kartında hedef yönü seçimi (Ver / Koru / Al); yön
+      hedef kiloyla çelişirse **otomatik değişiklik yok**, uyarı + "Profili
+      aç". 6 widget testi.
+- [x] **Haftalık bildirim**: hafta kapanış günü 20:00, varsayılan kapalı,
+      Ayarlar → Bildirimler. Dokununca ekran açılır (uygulama kapalıyken de).
+      Metin sayı içermez (tekrar eden bildirimde sayı eskirdi). 10 test.
+- [ ] **Görsel kontrol bekliyor** — Mac ekranına erişilemedi. Simülatörde:
+      ekranın düzeni, boş hafta, gerçek veriyle bir hafta, hedef yönü seçimi,
+      bildirime dokununca açılış.
+- [ ] **Samet'e bırakılan (acil değil):** §9'daki üç karar önerilen
+      varsayılanlarla uygulandı (Pazar 20:00; çelişkide otomatik düzeltme
+      yok; yargısız tek cümle). Farklı isterse tek yerden değişir.
 
 ## 🔵 Senkron v2 — Aşama 0 ✅ ve yerel ortam (2026-09-18)
 
@@ -210,6 +238,11 @@ bağlı).
             sunucuyla birebir. Ücretsiz planda panel yedeği yok; bu tek yedek.
       - [x] **Prova** (dolu tablolarla) Aşama 3'te `updated_at`'i ezen bir
             hata buldu; düzeltildi ve yeniden prova edildi (docs/20 §11).
+      - [ ] **Yayına dahil:** `20260918120000_sync_v2_stage3.sql`,
+            `20260918140000_sync_v2_stage5.sql`,
+            `20260919100000_weekly_review_goal_direction.sql` (bu sırayla).
+            APK yeniden derlenmeli — 2026-09-19 sabahki derleme şema v12'den
+            ÖNCEydi.
       - [ ] **Telefon bağlı olmalı** — migration uygulandığı anda telefondaki
             eski sürümün güncellemeleri sunucuda sessizce reddedilir.
             Sıra: telefon bağlanır → migration (3 ve 5) → hemen telefona

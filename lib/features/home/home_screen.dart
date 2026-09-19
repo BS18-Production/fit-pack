@@ -552,6 +552,15 @@ class _WeekDashboard extends ConsumerWidget {
               ),
             ],
           ),
+        // Haftalık değerlendirme (docs/22): aynı sayıların yorumlanmış hâli.
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: () => context.push(AppRoutes.weeklyReview),
+            icon: const Icon(Icons.insights_rounded, size: AppIconSize.sm),
+            label: Text(l.wrOpen),
+          ),
+        ),
       ],
     );
   }

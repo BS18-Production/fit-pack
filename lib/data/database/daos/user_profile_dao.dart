@@ -30,6 +30,24 @@ class UserProfileDao extends DatabaseAccessor<AppDatabase> with _$UserProfileDao
   Stream<UserProfileData?> watchProfile() =>
       (select(userProfile)..limit(1)).watchSingleOrNull();
 
+  /// Kilo hedefinin yönünü yazar (docs/22 §3.4): 'lose' | 'maintain' |
+  /// 'gain', ya da `null` (seçimi kaldır).
+  ///
+  /// `goalDirectionSince` YALNIZ yön gerçekten değiştiğinde güncellenir.
+  /// Aynı yönü tekrar seçmek tarihi bugüne çekseydi, geçen haftaların yorumu
+  /// sessizce "bilinmiyor"a dönerdi (geçmişe uygulama yasağının ölçüsü bu
+  /// tarih). Hedef kilo/kalori DEĞİŞMEZ — kullanıcı onayı olmadan hedef
+  /// değişmez (Samet kuralı).
+  Future<void> setGoalDirection(String? direction, {DateTime? now}) async {
+    await ensureProfile();
+    final profile = await getProfile();
+    if (profile!.goalDirection == direction) return;
+    await updateProfile(profile.copyWith(
+      goalDirection: Value(direction),
+      goalDirectionSince: Value(direction == null ? null : (now ?? DateTime.now())),
+    ));
+  }
+
   /// P-10 Onboarding tamamlandığında çağrılır: hedefleri yazar + onboarded=1.
   /// Tek profil satırını günceller (yoksa oluşturur). Boy/hedef kilo opsiyonel.
   Future<void> completeOnboarding({

@@ -1216,5 +1216,126 @@
   "@syncFailedRows": {
     "description": "Rows removed from the upload queue after a permanent server error.",
     "placeholders": { "count": { "type": "int" } }
-  }
+  },
+  "wrTitle": "Weekly review",
+  "wrInProgress": "Week in progress — based on {days} day(s)",
+  "@wrInProgress": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "wrPrevWeek": "Previous week",
+  "wrNextWeek": "Next week",
+  "wrSummaryTitle": "Summary",
+  "wrFactWorkouts": "{count} workout(s)",
+  "@wrFactWorkouts": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "wrFactFoodDays": "food logged on {days} day(s)",
+  "@wrFactFoodDays": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "wrFactNoFood": "no food logged",
+  "wrFactWeightDelta": "weight {delta}",
+  "@wrFactWeightDelta": {
+    "placeholders": { "delta": { "type": "String" } }
+  },
+  "wrFactNoPrevWeight": "no weigh-in last week to compare",
+  "wrFactNoWeight": "no weigh-in",
+  "wrWorkoutTitle": "Training",
+  "wrWorkoutPlanned": "{done}/{planned} planned workouts",
+  "@wrWorkoutPlanned": {
+    "placeholders": { "done": { "type": "int" }, "planned": { "type": "int" } }
+  },
+  "wrWorkoutDone": "{count} workout(s)",
+  "@wrWorkoutDone": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "wrWorkoutDetail": "{sets} completed sets · {minutes} min · {volume} volume",
+  "@wrWorkoutDetail": {
+    "placeholders": { "sets": { "type": "int" }, "minutes": { "type": "int" }, "volume": { "type": "String" } }
+  },
+  "wrWorkoutPrev": "Last week: {count} workout(s)",
+  "@wrWorkoutPrev": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "wrWorkoutNone": "No workouts logged this week",
+  "wrWorkoutSource": "Source: {count} session(s). Volume and session count use the same calculation as Home.",
+  "@wrWorkoutSource": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "wrProgressTitle": "Exercise progress",
+  "wrProgressRow": "{weight} × {reps} — est. 1RM +{delta}",
+  "@wrProgressRow": {
+    "placeholders": { "weight": { "type": "String" }, "reps": { "type": "int" }, "delta": { "type": "String" } }
+  },
+  "wrProgressNone": "No earlier record to compare, or no progress",
+  "wrProgressSource": "Source: this week's best completed set vs. the exercise's previous record (Epley 1RM). Exercises are listed separately; no overall score.",
+  "wrNutritionTitle": "Nutrition",
+  "wrNutritionLogged": "{days} day(s) logged",
+  "@wrNutritionLogged": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "wrNutritionAvg": "Average of logged days: {kcal} kcal · {protein} g protein",
+  "@wrNutritionAvg": {
+    "placeholders": { "kcal": { "type": "int" }, "protein": { "type": "int" } }
+  },
+  "wrNutritionGoal": "Goal: {kcal} kcal · {protein} g protein",
+  "@wrNutritionGoal": {
+    "placeholders": { "kcal": { "type": "int" }, "protein": { "type": "int" } }
+  },
+  "wrNutritionNone": "No food logged this week",
+  "wrNutritionSource": "Source: logged days only. Unlogged days don't count as 0 and aren't judged against your goal.",
+  "wrWeightTitle": "Weight",
+  "wrWeightAvg": "Weekly average: {weight} ({count} weigh-in(s))",
+  "@wrWeightAvg": {
+    "placeholders": { "weight": { "type": "String" }, "count": { "type": "int" } }
+  },
+  "wrWeightDelta": "{delta} vs. last week",
+  "@wrWeightDelta": {
+    "placeholders": { "delta": { "type": "String" } }
+  },
+  "wrWeightSingle": "Single weigh-in — not a trend",
+  "wrWeightNoPrev": "No weigh-in last week — can't compare",
+  "wrWeightNone": "No weigh-in this week",
+  "wrMeaningOnTrack": "In line with your goal",
+  "wrMeaningAgainst": "Against your goal — one week alone isn't a verdict",
+  "wrMeaningFlat": "No clear change",
+  "wrDirectionLabel": "Your weight goal",
+  "wrDirLose": "Lose",
+  "wrDirMaintain": "Maintain",
+  "wrDirGain": "Gain",
+  "wrDirectionUnset": "Pick a direction and weight changes are read against it. It won't be applied to past weeks.",
+  "wrGoalConflict": "The direction you picked doesn't match your goal weight. Nothing was changed — you can check it in Profile.",
+  "wrGoalConflictAction": "Open profile",
+  "wrWeightSource": "Source: weekly averages. The direction only applies to weeks after you picked it.",
+  "wrMuscleTitle": "Muscle group split",
+  "wrMuscleRow": "{sets} sets",
+  "@wrMuscleRow": {
+    "placeholders": { "sets": { "type": "int" } }
+  },
+  "wrMuscleNone": "No completed sets this week",
+  "wrMuscleSource": "Source: completed, non-warm-up sets; the exercise's primary muscle. Counts only.",
+  "wrFocusTitle": "Next week",
+  "wrFocusCompletePlan": "You completed {done} of {planned} planned workouts — the goal is to finish the plan.",
+  "@wrFocusCompletePlan": {
+    "placeholders": { "done": { "type": "int" }, "planned": { "type": "int" } }
+  },
+  "wrFocusIncrease": "{name} has been at the same weight for 3 weeks, above your rep range — try adding weight.",
+  "@wrFocusIncrease": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "wrFocusLogging": "Food logged on {days} day(s) — aim for a short entry every day.",
+  "@wrFocusLogging": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "wrFocusCalories": "Weight has moved against your goal for 2 weeks — consider reviewing your calorie goal.",
+  "wrFocusKeep": "Keep the same rhythm.",
+  "wrFocusSource": "Rule: the first matching suggestion is shown. It's a suggestion; your goals don't change.",
+  "wrOpen": "Weekly review",
+  "notifWeeklyReview": "Weekly review",
+  "notifWeeklyReviewSub": "When your week closes: {day} 20:00",
+  "@notifWeeklyReviewSub": {
+    "placeholders": { "day": { "type": "String" } }
+  },
+  "notifWeeklyTitle": "Your week is ready",
+  "notifWeeklyBody": "This week's summary and one focus for next week."
 }

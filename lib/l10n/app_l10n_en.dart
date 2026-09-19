@@ -1973,4 +1973,237 @@ class AppL10nEn extends AppL10n {
   String syncFailedRows(int count) {
     return '$count record(s) couldn\'t upload — tap to retry';
   }
+
+  @override
+  String get wrTitle => 'Weekly review';
+
+  @override
+  String wrInProgress(int days) {
+    return 'Week in progress — based on $days day(s)';
+  }
+
+  @override
+  String get wrPrevWeek => 'Previous week';
+
+  @override
+  String get wrNextWeek => 'Next week';
+
+  @override
+  String get wrSummaryTitle => 'Summary';
+
+  @override
+  String wrFactWorkouts(int count) {
+    return '$count workout(s)';
+  }
+
+  @override
+  String wrFactFoodDays(int days) {
+    return 'food logged on $days day(s)';
+  }
+
+  @override
+  String get wrFactNoFood => 'no food logged';
+
+  @override
+  String wrFactWeightDelta(String delta) {
+    return 'weight $delta';
+  }
+
+  @override
+  String get wrFactNoPrevWeight => 'no weigh-in last week to compare';
+
+  @override
+  String get wrFactNoWeight => 'no weigh-in';
+
+  @override
+  String get wrWorkoutTitle => 'Training';
+
+  @override
+  String wrWorkoutPlanned(int done, int planned) {
+    return '$done/$planned planned workouts';
+  }
+
+  @override
+  String wrWorkoutDone(int count) {
+    return '$count workout(s)';
+  }
+
+  @override
+  String wrWorkoutDetail(int sets, int minutes, String volume) {
+    return '$sets completed sets · $minutes min · $volume volume';
+  }
+
+  @override
+  String wrWorkoutPrev(int count) {
+    return 'Last week: $count workout(s)';
+  }
+
+  @override
+  String get wrWorkoutNone => 'No workouts logged this week';
+
+  @override
+  String wrWorkoutSource(int count) {
+    return 'Source: $count session(s). Volume and session count use the same calculation as Home.';
+  }
+
+  @override
+  String get wrProgressTitle => 'Exercise progress';
+
+  @override
+  String wrProgressRow(String weight, int reps, String delta) {
+    return '$weight × $reps — est. 1RM +$delta';
+  }
+
+  @override
+  String get wrProgressNone => 'No earlier record to compare, or no progress';
+
+  @override
+  String get wrProgressSource =>
+      'Source: this week\'s best completed set vs. the exercise\'s previous record (Epley 1RM). Exercises are listed separately; no overall score.';
+
+  @override
+  String get wrNutritionTitle => 'Nutrition';
+
+  @override
+  String wrNutritionLogged(int days) {
+    return '$days day(s) logged';
+  }
+
+  @override
+  String wrNutritionAvg(int kcal, int protein) {
+    return 'Average of logged days: $kcal kcal · $protein g protein';
+  }
+
+  @override
+  String wrNutritionGoal(int kcal, int protein) {
+    return 'Goal: $kcal kcal · $protein g protein';
+  }
+
+  @override
+  String get wrNutritionNone => 'No food logged this week';
+
+  @override
+  String get wrNutritionSource =>
+      'Source: logged days only. Unlogged days don\'t count as 0 and aren\'t judged against your goal.';
+
+  @override
+  String get wrWeightTitle => 'Weight';
+
+  @override
+  String wrWeightAvg(String weight, int count) {
+    return 'Weekly average: $weight ($count weigh-in(s))';
+  }
+
+  @override
+  String wrWeightDelta(String delta) {
+    return '$delta vs. last week';
+  }
+
+  @override
+  String get wrWeightSingle => 'Single weigh-in — not a trend';
+
+  @override
+  String get wrWeightNoPrev => 'No weigh-in last week — can\'t compare';
+
+  @override
+  String get wrWeightNone => 'No weigh-in this week';
+
+  @override
+  String get wrMeaningOnTrack => 'In line with your goal';
+
+  @override
+  String get wrMeaningAgainst =>
+      'Against your goal — one week alone isn\'t a verdict';
+
+  @override
+  String get wrMeaningFlat => 'No clear change';
+
+  @override
+  String get wrDirectionLabel => 'Your weight goal';
+
+  @override
+  String get wrDirLose => 'Lose';
+
+  @override
+  String get wrDirMaintain => 'Maintain';
+
+  @override
+  String get wrDirGain => 'Gain';
+
+  @override
+  String get wrDirectionUnset =>
+      'Pick a direction and weight changes are read against it. It won\'t be applied to past weeks.';
+
+  @override
+  String get wrGoalConflict =>
+      'The direction you picked doesn\'t match your goal weight. Nothing was changed — you can check it in Profile.';
+
+  @override
+  String get wrGoalConflictAction => 'Open profile';
+
+  @override
+  String get wrWeightSource =>
+      'Source: weekly averages. The direction only applies to weeks after you picked it.';
+
+  @override
+  String get wrMuscleTitle => 'Muscle group split';
+
+  @override
+  String wrMuscleRow(int sets) {
+    return '$sets sets';
+  }
+
+  @override
+  String get wrMuscleNone => 'No completed sets this week';
+
+  @override
+  String get wrMuscleSource =>
+      'Source: completed, non-warm-up sets; the exercise\'s primary muscle. Counts only.';
+
+  @override
+  String get wrFocusTitle => 'Next week';
+
+  @override
+  String wrFocusCompletePlan(int done, int planned) {
+    return 'You completed $done of $planned planned workouts — the goal is to finish the plan.';
+  }
+
+  @override
+  String wrFocusIncrease(String name) {
+    return '$name has been at the same weight for 3 weeks, above your rep range — try adding weight.';
+  }
+
+  @override
+  String wrFocusLogging(int days) {
+    return 'Food logged on $days day(s) — aim for a short entry every day.';
+  }
+
+  @override
+  String get wrFocusCalories =>
+      'Weight has moved against your goal for 2 weeks — consider reviewing your calorie goal.';
+
+  @override
+  String get wrFocusKeep => 'Keep the same rhythm.';
+
+  @override
+  String get wrFocusSource =>
+      'Rule: the first matching suggestion is shown. It\'s a suggestion; your goals don\'t change.';
+
+  @override
+  String get wrOpen => 'Weekly review';
+
+  @override
+  String get notifWeeklyReview => 'Weekly review';
+
+  @override
+  String notifWeeklyReviewSub(String day) {
+    return 'When your week closes: $day 20:00';
+  }
+
+  @override
+  String get notifWeeklyTitle => 'Your week is ready';
+
+  @override
+  String get notifWeeklyBody =>
+      'This week\'s summary and one focus for next week.';
 }

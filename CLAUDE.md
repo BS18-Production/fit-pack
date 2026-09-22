@@ -14,7 +14,7 @@ Flutter · Drift (SQLite, lokal) · Riverpod · GoRouter · fl_chart · Supabase
 
 - **Yol:** `/Users/sametorhan/dev/fit_pack`
 - **GitHub:** `anox2077/fit-pack` (private)
-- **Package:** `com.sametorhan.fit_pack` · minSdk 24 · şema v8
+- **Package:** `com.sametorhan.fit_pack` · minSdk 24 · şema v13
 - **Test cihazı:** SM A075F (Android, ID `R96YB00XJPB`)
 
 ## Oturum Başında Oku (bu sırayla)

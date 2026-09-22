@@ -12,7 +12,7 @@
 > kodlandı)
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
-> **Sahibi:** Samet Orhan
+> **Şema:** v13 · **Sahibi:** Samet Orhan (kişisel proje)
 
 ## 🚀 Üretim Supabase göçü ✅ uygulandı ve doğrulandı — 2026-09-22
 
@@ -38,6 +38,37 @@ bulut satırları telefonun çektiğiyle birebir örtüşüyor (114).
 
 **Kalan:** `backup_20260922` şeması düşülebilir. Açık güvenlik uyarıları
 (hepsi WARN, göçle açılan delik değil) NEXT_TASKS'ta listelendi.
+
+## 🛡️ Ticari Ürüne Hazırlık ✅ (kodlandı) — 2026-09-22 · docs/23
+
+Uygulama abonelikle satılacak. Senkron v2 **tek kullanıcı + otomatik saatli
+telefon** varsayımıyla tasarlanmıştı (docs/20 §5.2, açıkça yazılı); ticari
+üründe bu varsayım düşüyor. docs/23 yazıldı, 4 karar onaylandı, ikisi kodlandı.
+
+**Çekme tetikleyicileri (docs/20 §6.5).** Tasarımda dört tetikleyici vardı,
+yalnız ikisi kodlanmıştı → buluttaki değişiklik telefona ancak soğuk açılışta
+iniyordu. Eklendi: öne gelmede gönderim + (son çekmeden 5 dk geçtiyse) çekme,
+hesap ekranında "Şimdi eşitle". `SyncRefresh` çekme ve okuma tazelemesini tek
+yerde topluyor.
+
+**Saat farkı düzeltmesi (şema v13).** Sunucu ileri sapmayı kırpıyordu, geri
+sapmayı kırpmıyordu: saati geride olan telefonun gerçek düzenlemesi "eski"
+sayılıp reddediliyor ve yerel kopya sunucununkiyle değiştiriliyordu — sessiz
+düzenleme kaybı. Artık tetikleyiciler `changed_at_ms`'e `clock_offset_ms`
+ekliyor; fark gönderim cevabındaki `updated_at`'ten **ek tur atmadan**
+öğreniliyor (30 sn eşik, 1 günü aşan fark reddediliyor). Sunucu göçü
+gerekmedi. Ayrıca **ret artık sessiz değil**: hesap ekranında "N kaydın
+buluttaki daha yeni sürümü alındı", dokununca kapanıyor.
+
+**Asgari sürüm kapısı.** `app_min_version` tablosu Dev + üretimde,
+`min_build = 1` ile **atıl**. Kapı yalnız sunucu açıkça "çok eskisin" dediğinde
+kapanır; ağ yok / tablo yok / build okunamıyorsa **açılmaz** (docs/18 Kural 1).
+İlk sürümde bulunması şart — sonradan eklenirse ondan önceki sürümdeki
+kullanıcılar zaten güncellemeye zorlanamaz.
+
+**49 yeni test** (10 tetikleyici + 24 saat/ret + 15 sürüm kapısı); toplam
+**574 yeşil**. **Cihazda görsel kontrol bekliyor.** Ertelenenler: arka plan
+senkronu, ağ dinleyicisi, sunucu telemetrisi, abonelik katmanı (docs/23 §6).
 
 ## 🍽️ Geçmişten Öğün Kopyala ✅ (kodlandı) — 2026-09-22
 

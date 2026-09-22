@@ -38,6 +38,11 @@ class SyncStatus {
   /// Sunucuya ilk ulaşılamadığı an; ulaşılabiliyorsa `null`.
   final DateTime? unreachableSince;
 
+  /// Yerel düzenlemesi sunucudaki daha yeni sürümle değiştirilen satır sayısı
+  /// (docs/23 §2.3). Hata değil, ama kullanıcı açısından "yazdığım kayboldu"
+  /// demek — sessiz kalmamalı.
+  final int replaced;
+
   /// Karşılaştırma için "şimdi" — test edilebilirlik ve tutarlılık için
   /// hesaplandığı anda sabitlenir.
   final DateTime now;
@@ -46,6 +51,7 @@ class SyncStatus {
     required this.pending,
     required this.state,
     this.failed = 0,
+    this.replaced = 0,
     this.lastOk,
     this.unreachableSince,
     DateTime? now,
@@ -85,6 +91,7 @@ final syncStatusProvider = StreamProvider.autoDispose<SyncStatus>((ref) {
     final failed = await controller.failedCount();
     final lastOk = await health.lastContactOk();
     final unreachableSince = await health.unreachableSince();
+    final replaced = await health.replacedCount();
     final last = controller.last.value;
     final SyncState state;
     if (controller.isRunning && pending > 0) {
@@ -101,6 +108,7 @@ final syncStatusProvider = StreamProvider.autoDispose<SyncStatus>((ref) {
         pending: pending,
         state: state,
         failed: failed,
+        replaced: replaced,
         lastOk: lastOk,
         unreachableSince: unreachableSince,
       ));

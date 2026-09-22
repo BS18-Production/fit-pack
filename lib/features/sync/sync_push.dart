@@ -220,6 +220,10 @@ class SyncPush {
       }
     }
 
+    // Ret sessiz kalmamalı (docs/23 §2.3): yerel düzenlemesi sunucudakiyle
+    // değiştirilen satırlar sayılır, hesap ekranında görünür.
+    await health.recordReplaced(rejected);
+
     // Sağlık kaydı: kim çağırırsa çağırsın burada yazılır (docs/20 §9).
     if (firstError == null) {
       await health.recordPushOk();

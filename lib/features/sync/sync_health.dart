@@ -48,6 +48,27 @@ class SyncHealth {
     return kind;
   }
 
+  /// Reddedilip sunucudakiyle değiştirilen satırları sayar (docs/23 §2.3).
+  /// Turda ret yoksa sayaca dokunulmaz — geçmiş kayıt silinmez.
+  Future<void> recordReplaced(int count) async {
+    if (count <= 0) return;
+    final mevcut = await replacedCount();
+    await _meta.write(SyncMetaDao.keyReplacedCount, '${mevcut + count}');
+    await _meta.write(
+        SyncMetaDao.keyReplacedAt, '${now().millisecondsSinceEpoch}');
+  }
+
+  Future<int> replacedCount() async =>
+      int.tryParse(await _meta.read(SyncMetaDao.keyReplacedCount) ?? '') ?? 0;
+
+  Future<DateTime?> replacedAt() => _readTime(SyncMetaDao.keyReplacedAt);
+
+  /// Kullanıcı bildirimi gördü → sayaç sıfırlanır.
+  Future<void> clearReplaced() async {
+    await _meta.remove(SyncMetaDao.keyReplacedCount);
+    await _meta.remove(SyncMetaDao.keyReplacedAt);
+  }
+
   Future<DateTime?> lastPushOk() => _readTime(SyncMetaDao.keyLastPushOk);
   Future<DateTime?> lastPullOk() => _readTime(SyncMetaDao.keyLastPullOk);
   Future<DateTime?> unreachableSince() =>

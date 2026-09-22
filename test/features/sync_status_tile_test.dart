@@ -3,6 +3,7 @@ import 'package:fit_pack/core/theme/app_colors.dart';
 import 'package:fit_pack/data/database/app_database.dart';
 import 'package:fit_pack/data/providers.dart';
 import 'package:fit_pack/features/sync/sync_controller.dart';
+import 'package:fit_pack/features/sync/sync_health.dart';
 import 'package:fit_pack/features/sync/sync_providers.dart';
 import 'package:fit_pack/features/sync/sync_push.dart';
 import 'package:fit_pack/features/sync/sync_status.dart';
@@ -134,6 +135,33 @@ void main() {
     await tester.tap(uyari);
     await tester.pump();
     expect(controller.retryCalls, 1);
+  });
+
+  testWidgets('değiştirilen satır görünür ve dokununca kapanır (§2.3)',
+      (tester) async {
+    await SyncHealth(db).recordReplaced(2);
+
+    await goster(
+      tester,
+      SyncStatus(pending: 0, state: SyncState.synced, replaced: 2, now: simdi),
+    );
+    final bildirim =
+        find.text('2 kaydın buluttaki daha yeni sürümü alındı');
+    expect(bildirim, findsOneWidget,
+        reason: 'ret sessiz kalmamalı — kullanıcı "yazdığım kayboldu" diyor');
+
+    await tester.tap(bildirim);
+    await tester.pump();
+    expect(await SyncHealth(db).replacedCount(), 0,
+        reason: 'kullanıcı gördü → sayaç sıfırlanmalı');
+  });
+
+  testWidgets('değiştirilen satır yoksa bildirim çıkmaz', (tester) async {
+    await goster(
+      tester,
+      SyncStatus(pending: 0, state: SyncState.synced, now: simdi),
+    );
+    expect(find.textContaining('daha yeni sürümü'), findsNothing);
   });
 }
 

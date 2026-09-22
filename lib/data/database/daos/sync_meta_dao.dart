@@ -47,6 +47,15 @@ class SyncMetaDao extends DatabaseAccessor<AppDatabase> with _$SyncMetaDaoMixin 
   /// doluysa ve 3 günden eskiyse kullanıcı uyarılır (docs/20 §9).
   static const keyUnreachableSince = 'server_unreachable_since';
 
+  /// Yerel düzenlemesi sunucudaki daha yeni sürümle DEĞİŞTİRİLEN satır sayısı
+  /// (kümülatif) ve son olma zamanı — docs/23 §2.3.
+  ///
+  /// Neden kalıcı: ret bir hata değil, ama kullanıcı açısından "yazdığım
+  /// kayboldu" demek. Yalnız son turun sonucunda tutulsaydı gösterge bir
+  /// sonraki turda sıfırlanır ve kullanıcı olanı hiç göremezdi.
+  static const keyReplacedCount = 'replaced_count';
+  static const keyReplacedAt = 'replaced_at';
+
   /// Cihaz saati ile sunucu saati arasındaki fark (ms, işaretli) — docs/23 §2.
   ///
   /// Tetikleyiciler `changed_at_ms`'i damgalarken bunu EKLER, o yüzden

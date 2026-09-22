@@ -2016,6 +2016,11 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String syncReplacedRows(int count) {
+    return '$count records were replaced by a newer version from the cloud';
+  }
+
+  @override
   String syncFailedRows(int count) {
     return '$count record(s) couldn\'t upload — tap to retry';
   }

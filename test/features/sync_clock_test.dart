@@ -2,6 +2,7 @@ import 'package:drift/native.dart';
 import 'package:fit_pack/data/database/app_database.dart';
 import 'package:fit_pack/data/database/daos/sync_meta_dao.dart';
 import 'package:fit_pack/features/sync/sync_clock.dart';
+import 'package:fit_pack/features/sync/sync_health.dart';
 import 'package:fit_pack/features/sync/sync_push.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -155,6 +156,65 @@ void main() {
 
       expect(await offset(), 0,
           reason: 'damga yoksa öğrenecek bir şey yok; davranış eskisi gibi');
+    });
+  });
+
+  group('ret sessiz kalmaz (docs/23 §2.3)', () {
+    test('sayaç turlar boyunca birikir', () async {
+      final health = SyncHealth(db);
+      await health.recordReplaced(2);
+      await health.recordReplaced(3);
+      expect(await health.replacedCount(), 5,
+          reason: 'tek turun sonucu tutulsaydı kullanıcı olanı hiç görmezdi');
+      expect(await health.replacedAt(), isNotNull);
+    });
+
+    test('retsiz tur sayaca dokunmaz', () async {
+      final health = SyncHealth(db);
+      await health.recordReplaced(2);
+      await health.recordReplaced(0);
+      expect(await health.replacedCount(), 2);
+    });
+
+    test('kullanıcı görünce sıfırlanır', () async {
+      final health = SyncHealth(db);
+      await health.recordReplaced(4);
+      await health.clearReplaced();
+      expect(await health.replacedCount(), 0);
+      expect(await health.replacedAt(), isNull);
+    });
+
+    test('gerçek ret sayaca yansır', () async {
+      // Yerel satır yaz → uid ve damgası tetikleyiciden gelsin.
+      await db.customStatement(
+          "INSERT INTO routines (name, created_at) VALUES ('G', 1700000000)");
+      final row = await db
+          .customSelect('SELECT uid, changed_at_ms FROM routines')
+          .getSingle();
+      final uid = row.read<String>('uid');
+
+      // Sunucuda AYNI kimlikte daha yeni bir sürüm olsun → gönderim reddedilir.
+      remote.store['routines'] = {
+        uid: {
+          'uid': uid,
+          'user_id': user,
+          'name': 'Sunucudaki',
+          'created_at': 1700000000,
+          'updated_at': 1700000000,
+          // NOT NULL kolonlar: eksik bırakılırsa sunucu satırı yerele
+          // uygulanamaz ve tur hatayla biter (ret sayısı da kaybolur).
+          'order_index': 0,
+          'is_archived': 0,
+          'changed_at_ms': row.read<int>('changed_at_ms') + 3600000,
+          'server_rev': 99,
+        },
+      };
+
+      final result = await SyncPush(db, remote).pushAll(userId: user);
+
+      expect(result.rejected, 1);
+      expect(await SyncHealth(db).replacedCount(), 1,
+          reason: 'sunucudakiyle değiştirilen satır kullanıcıya sayılmalı');
     });
   });
 }

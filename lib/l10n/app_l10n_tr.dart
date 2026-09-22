@@ -2004,6 +2004,11 @@ class AppL10nTr extends AppL10n {
   }
 
   @override
+  String syncReplacedRows(int count) {
+    return '$count kaydın buluttaki daha yeni sürümü alındı';
+  }
+
+  @override
   String syncFailedRows(int count) {
     return '$count kayıt yüklenemedi — tekrar denemek için dokun';
   }

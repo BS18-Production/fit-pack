@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
+import 'sync_health.dart';
 import 'sync_providers.dart';
 import 'sync_status.dart';
 
@@ -112,6 +114,17 @@ class SyncStatusTile extends ConsumerWidget {
             icon: Icons.error_outline_rounded,
             text: l.syncFailedRows(status.failed),
             onTap: () => ref.read(syncControllerProvider).retryFailed(),
+          ),
+        ],
+        // Ret sessiz kalmamalı (docs/23 §2.3). Hata değil — bu yüzden
+        // "yüklenemedi" satırından AYRI ve farklı simgeyle. Dokunmak
+        // bildirimi kapatır: kullanıcı gördü, sayaç sıfırlanır.
+        if (status.replaced > 0) ...[
+          AppSpacing.vGapSm,
+          _SyncNotice(
+            icon: Icons.cloud_download_outlined,
+            text: l.syncReplacedRows(status.replaced),
+            onTap: () => SyncHealth(ref.read(databaseProvider)).clearReplaced(),
           ),
         ],
       ],

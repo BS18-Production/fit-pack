@@ -3595,6 +3595,12 @@ abstract class AppL10n {
   /// **'Not backed up for {days} days. Your data is safe on this phone.'**
   String syncLongOutage(int days);
 
+  /// No description provided for @syncReplacedRows.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} records were replaced by a newer version from the cloud'**
+  String syncReplacedRows(int count);
+
   /// Rows removed from the upload queue after a permanent server error.
   ///
   /// In en, this message translates to:

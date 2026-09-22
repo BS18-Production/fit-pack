@@ -588,6 +588,12 @@
   "syncWhenToday": "bugün {time}",
   "syncWhenYesterday": "dün {time}",
   "syncLongOutage": "{days} gündür yedeklenemedi. Veriler bu telefonda güvende.",
+  "syncReplacedRows": "{count} kaydın buluttaki daha yeni sürümü alındı",
+  "@syncReplacedRows": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "syncFailedRows": "{count} kayıt yüklenemedi — tekrar denemek için dokun",
   "wrTitle": "Haftalık değerlendirme",
   "wrInProgress": "Hafta sürüyor — {days} günlük veriyle",

@@ -1250,6 +1250,12 @@
     "description": "Shown after 3+ days without reaching the server.",
     "placeholders": { "days": { "type": "int" } }
   },
+  "syncReplacedRows": "{count} records were replaced by a newer version from the cloud",
+  "@syncReplacedRows": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "syncFailedRows": "{count} record(s) couldn't upload — tap to retry",
   "@syncFailedRows": {
     "description": "Rows removed from the upload queue after a permanent server error.",

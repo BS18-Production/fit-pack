@@ -2,6 +2,8 @@
 
 > 22 Eylül 2026 · **Karar taslağı, uygulama talimatı değil.** Kaynak: mevcut Flutter ekranları, ortak bileşenler, yönlendirme ve Samet'in paylaştığı üç referans görseli. Çalışan simülatör bulunamadığından bu inceleme kod ve referans görselleri üzerindendir; görsel son karar gerçek cihazda verilmeli. Bu belge yeni özellik vaat etmez ve mevcut veriye olmayan anlamlar yüklemez.
 
+**Figma görsel önerisi:** [Dashboard + aktif antrenman + beslenme](https://www.figma.com/design/GhsY9rNkdUfikEqwENezfS/Fit-Pack-UI-Kesfi?node-id=7-5). Üç ekran tek dosyada, incelenebilir vektör çalışma olarak hazırlandı. Bu tasarım adayıdır; etkileşimli prototip veya Flutter bileşen tarifleri henüz değildir.
+
 ## 1. Referanstan alınacak fikir
 
 - Güçlü üst bölüm, seçili gün ve tek baskın eylem; ardından daha küçük, kolay taranan bilgi grupları.

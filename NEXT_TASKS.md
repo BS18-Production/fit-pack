@@ -52,6 +52,29 @@ değil**, ama not düşüldü:
 - Ayrıca auth tarafında "sızmış parola koruması kapalı" uyarısı var —
   panelden açılabilir, göçle ilgisi yok.
 
+## 🔵 Ticari ürüne hazırlık — docs/23 (2026-09-22, karar bekliyor)
+
+Uygulama abonelikle satılacak. Senkron v2 **tek kullanıcı + otomatik saatli
+telefon** varsayımıyla tasarlanmıştı (docs/20 §5.2, açıkça yazılı); bu varsayım
+ticari üründe düşüyor.
+
+- [x] **Çekme tetikleyicileri kodlandı (docs/20 §6.5)** — öne gelmede gönderim
+      + (son çekmeden 5 dk geçtiyse) çekme, hesap ekranında "Şimdi eşitle".
+      `SyncRefresh` çekme + okuma tazelemesini tek yerde topluyor. 10 test,
+      toplam 535 yeşil. **Cihazda görsel kontrol bekliyor.**
+- [ ] **[docs/23](docs/23-sync-for-production.md) okunacak, 4 karar verilecek:**
+      (1) saat sapması düzeltmesi, (2) asgari sürüm kapısının sertliği,
+      (3) abonelik bitince bulut verisi (Yomi ile), (4) ilk sürümde çoklu cihaz
+      vaadi var mı — bu Aşama 6'nın sırasını belirliyor.
+- [ ] Kararlar çıkınca kodlama: saat düzeltmesi + sürüm kapısı (~1,5 gün).
+
+**Neden acil:** saat sapması bugün **sessiz** veri kaybı yapıyor — saati geride
+olan cihazın düzenlemesi sunucuda reddediliyor ve yerel kopya sunucununkiyle
+değiştiriliyor; kullanıcı "düzenlemem geri alındı" görüyor, ekranda hiçbir
+açıklama yok. Asgari sürüm kapısı ise **ilk sürümde bulunmak zorunda**:
+sonradan eklenirse ondan önceki sürümdeki kullanıcılar güncellemeye
+zorlanamaz.
+
 ## 🧭 Güncel sıra — Samet onayı (2026-09-17 akşam)
 
 ChatGPT değerlendirmesi sonrası sıra değişti: taslak kaybı haftalık

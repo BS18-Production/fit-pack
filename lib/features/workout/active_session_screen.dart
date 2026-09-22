@@ -630,8 +630,21 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _restTimer?.cancel();
     _restDeadline = DateTime.now().add(Duration(seconds: seconds));
     _tickRest();
-    _restTimer =
-        Timer.periodic(const Duration(seconds: 1), (_) => _tickRest());
+    _scheduleRestTick();
+  }
+
+  /// Bir sonraki tıkı **hedeften yeniden hesaplayarak** kurar; `Timer.periodic`
+  /// kullanılmaz çünkü kaymayı biriktirir (bkz. [restTickDelayMs]).
+  void _scheduleRestTick() {
+    _restTimer?.cancel();
+    final deadline = _restDeadline;
+    if (deadline == null) return;
+    final leftMs = deadline.difference(DateTime.now()).inMilliseconds;
+    if (leftMs <= 0) return;
+    _restTimer = Timer(Duration(milliseconds: restTickDelayMs(leftMs)), () {
+      _tickRest();
+      _scheduleRestTick();
+    });
   }
 
   void _tickRest() {
@@ -657,6 +670,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (_restDeadline == null) return;
     _restDeadline = _restDeadline!.add(Duration(seconds: delta));
     _tickRest();
+    // Hedef değişti → sıradaki tık yeni hedefe göre yeniden kurulmalı.
+    _scheduleRestTick();
   }
 
   void _skipRest() {

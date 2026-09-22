@@ -34,6 +34,29 @@ RestCue restCueFor({
   return left <= restCountdownFrom ? RestCue.tick : RestCue.none;
 }
 
+/// Bir sonraki mola tıkının ne kadar sonra atılacağı (ms) — [leftMs] kalan
+/// süre.
+///
+/// **Neden sabit 1000 değil.** `Timer.periodic` bir sonraki tıkı callback
+/// BİTTİKTEN sonra kuruyor; `setState` + ses çalma süresi kadar gecikme her
+/// turda **birikiyor**. Kalan süre `ceil` ile saniyeye yuvarlandığı için
+/// birikim 1 sn'yi geçtiğinde bir saniye tamamen **atlanıyor**: sayı 3'ten
+/// 1'e düşüyor, o saniyenin sesi hiç çıkmıyor ve kalan sesler geri sayımın
+/// gerçek anlarına oturmuyor. Birikim sonda en büyük olduğu için bozulma
+/// son saniyelerde duyuluyordu.
+///
+/// Bunun yerine gecikme her seferinde **hedeften yeniden** hesaplanır: tık
+/// geç kalsa bile bir sonraki tık tam saniye sınırına oturur, kayma birikmez.
+///
+/// Örnek: 3450 ms kaldıysa 450 ms sonra tıkla (kalan tam 3000 olur); sonra
+/// 1000'er ms. Tık 40 ms geç düşerse kalan 1960 olur → sonraki gecikme 960 ms
+/// → yine tam sınıra oturur.
+int restTickDelayMs(int leftMs) {
+  if (leftMs <= 0) return 0;
+  final kalan = leftMs % 1000;
+  return kalan == 0 ? 1000 : kalan;
+}
+
 /// Uygulama geneli ses + titreşim geri bildirimi (G-1). Ekranlar
 /// `HapticFeedback`'i doğrudan çağırmak yerine buradan geçer — ileride seans
 /// bitişi, su hedefi gibi anlar aynı tercihleri ve aynı sesleri kullanır.

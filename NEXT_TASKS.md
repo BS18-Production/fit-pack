@@ -77,10 +77,21 @@ ticari üründe düşüyor.
       durdurmuyor). İstemci açılışta ve öne gelmede kontrol ediyor; ağ yoksa /
       tablo yoksa / build okunamazsa kapı **açılmıyor** (docs/18 Kural 1).
       Zorunlu güncelleme ekranı hesap kapılarının önünde. 15 test.
-- [ ] **Cihazda görsel kontrol bekliyor:** (a) telefonun saatini elle geri al →
-      düzenleme yap → kaydın reddedilmediğini doğrula; (b) panelden
-      `min_build`'i 2 yap → uygulamayı öne getir → güncelleme ekranı çıkmalı;
-      sonra 1'e geri çevir.
+- [x] **Sürüm kapısı cihazda doğrulandı (SM A075F, 2026-09-22 23:52–23:57):**
+      `min_build` 2 → güncelleme ekranı hem **öne gelmede** hem **soğuk
+      açılışta** çıktı, sunucudan gelen Türkçe mesajla; geri tuşu kapıyı
+      atlatmadı (uygulamadan çıkıyor, yeniden açılışta kapı yine kapalı).
+      Güncelleme `adb install -r` ile kuruldu, **yerel veri korundu**
+      (4 antrenman / 12.373 kg hacim yerinde). `min_build` 1'e geri çevrildi.
+      **Bu tur bir hata buldu** — aşağıdaki kilitlenme; düzeltildi (`3b3f2e2`).
+- [ ] **Saat düzeltmesi cihazda doğrulanmadı:** cihazın saati adb ile
+      değiştirilemiyor (`date` root istiyor, SM A075F'de root yok). Ayarlar'dan
+      elle geri alıp bir kayıt düzenlemek gerekiyor — `adb logcat | grep
+      fitpack.sync` → "saat farkı güncellendi" satırı ve **ret olmaması**
+      beklenir. Mekanizma 18 birim + göç testiyle kapalı, uçtan uca teyit yok.
+- [ ] **Kapı açılışının cihazda teyidi yarıda kaldı** (USB bağlantısı düştü):
+      `min_build` 1'e indirilip "Tekrar dene" → ana sayfaya dönüş. Düzeltme
+      testte yeşil, cihazda görülmedi.
 - [ ] Abonelik katmanı ayrı iş — satın alma geldiğinde (docs/23 §4 kararı hazır).
 
 **Neden acil:** saat sapması bugün **sessiz** veri kaybı yapıyor — saati geride

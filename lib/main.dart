@@ -11,6 +11,7 @@ import 'core/onboarding/first_run_hints.dart';
 import 'data/providers.dart';
 import 'data/seed/seed_manager.dart';
 import 'features/auth/auth_gate.dart';
+import 'features/update/update_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,6 +63,12 @@ void main() async {
   // ekranı çizsin.
   final gate = container.read(authGateProvider);
   await gate.bootstrap();
+
+  // Asgari sürüm kapısı (docs/23 §3.2). `runApp` ÖNCESİ: desteklenmeyen bir
+  // build ilk kareden itibaren durdurulsun, arada uygulamanın içi görünmesin.
+  // Ağ yoksa kapı AÇILMAZ (docs/18 Kural 1) — kontrol sessizce geçilir,
+  // açılış gecikmesin diye hata beklenmez.
+  await container.read(updateGateProvider).refresh();
 
   // İlk-kullanım ipuçları (docs/15 §B): mevcut kullanıcıya güncelleme sonrası
   // coach mark gösterme — yalnız yeni onboarding'den geçenler görür.

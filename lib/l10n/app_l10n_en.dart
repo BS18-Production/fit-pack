@@ -1248,6 +1248,16 @@ class AppL10nEn extends AppL10n {
   String get cloudHaveAccount => 'Already have an account? Sign in';
 
   @override
+  String get updateRequiredTitle => 'Update required';
+
+  @override
+  String get updateRequiredBody =>
+      'This version is no longer supported. Your data is safe on this device and will sync once you update.';
+
+  @override
+  String get updateRequiredAction => 'Update';
+
+  @override
   String get cloudSignOut => 'Sign Out';
 
   @override

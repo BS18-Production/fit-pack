@@ -2311,6 +2311,24 @@ abstract class AppL10n {
   /// **'Already have an account? Sign in'**
   String get cloudHaveAccount;
 
+  /// No description provided for @updateRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update required'**
+  String get updateRequiredTitle;
+
+  /// No description provided for @updateRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This version is no longer supported. Your data is safe on this device and will sync once you update.'**
+  String get updateRequiredBody;
+
+  /// No description provided for @updateRequiredAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get updateRequiredAction;
+
   /// No description provided for @cloudSignOut.
   ///
   /// In en, this message translates to:

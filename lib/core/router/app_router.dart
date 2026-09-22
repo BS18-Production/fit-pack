@@ -27,6 +27,8 @@ import 'package:fit_pack/features/settings/attribution_screen.dart';
 import 'package:fit_pack/features/settings/notifications_screen.dart';
 import 'package:fit_pack/features/settings/settings_screen.dart';
 import 'package:fit_pack/features/onboarding/onboarding_screen.dart';
+import 'package:fit_pack/features/update/app_version_gate.dart';
+import 'package:fit_pack/features/update/update_required_screen.dart';
 import 'package:fit_pack/shared/widgets/app_shell.dart';
 import 'package:fit_pack/shared/widgets/glass.dart';
 import 'app_routes.dart';
@@ -45,12 +47,17 @@ Widget _glass(Widget child) => GlassBackground(child: child);
 /// Router'ı kurar. Zorunlu hesap (docs/18 §5.1) sonrası başlangıç konumu sabit
 /// `/welcome`; nereye gidileceğine `redirect` karar verir (oturum + onboarded).
 /// `refreshListenable` sayesinde giriş/çıkış anında kapı devreye girer.
-GoRouter createAppRouter({required AuthGate gate}) => GoRouter(
+GoRouter createAppRouter({
+  required AuthGate gate,
+  required UpdateGate updateGate,
+}) => GoRouter(
   navigatorKey: _rootNavigatorKey,
   // Nötr ekranla başla; nereye gidileceğine `gateRedirect` karar verir
   // (docs/20 §7.1 madde 3-4).
   initialLocation: AppRoutes.splash,
-  refreshListenable: gate,
+  // İki kapı da yönlendirmeyi tetikleyebilmeli: oturum değişimi (AuthGate) ve
+  // sürüm kapısı (docs/23 §3.2).
+  refreshListenable: Listenable.merge([gate, updateGate]),
   redirect: (context, state) => gateRedirect(
     location: state.matchedLocation,
     signedIn: gate.signedIn,
@@ -59,6 +66,7 @@ GoRouter createAppRouter({required AuthGate gate}) => GoRouter(
     recovering: gate.recovering,
     accountError: gate.accountError,
     pendingConflict: gate.pendingConflictRows > 0,
+    updateRequired: updateGate.blocked,
   ),
   // OAuth (Google) dönüşü — docs/18 §5.2. Supabase, `fitpack://login-callback`
   // deep link'ini KENDİ dinleyicisiyle işler (kod → oturum takası; logta
@@ -106,6 +114,12 @@ GoRouter createAppRouter({required AuthGate gate}) => GoRouter(
       path: AppRoutes.accountConflict,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => _glass(const AccountConflictScreen()),
+    ),
+    // Kapının üçüncü "dur" ekranı (docs/23 §3.2).
+    GoRoute(
+      path: AppRoutes.updateRequired,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const UpdateRequiredScreen()),
     ),
     GoRoute(
       path: AppRoutes.onboarding,

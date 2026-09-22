@@ -1,7 +1,9 @@
 # 23 — Senkronun ticari ürüne hazırlanması
 
-> **Durum:** ✅ **Kararlar onaylandı (Samet, 2026-09-22)** — §2 ve §3
-> kodlanıyor; §4 (abonelik) karar olarak alındı, kodlaması ayrı işte.
+> **Durum:** ✅ **§2 ve §3 kodlandı (2026-09-22).** Saat düzeltmesi (şema v13)
+> ve asgari sürüm kapısı (`app_min_version`, Dev + üretimde, atıl) hazır;
+> cihazda görsel kontrol bekliyor. §4 (abonelik) karar olarak alındı,
+> kodlaması satın alma katmanı geldiğinde.
 > **Tarih:** 2026-09-22 · **Yazan:** Claude
 > **Temel:** `main` · şema v12 · senkron v2 Aşama 0–5 ve 7 üretimde
 > **İlgili:** [docs/20 — Senkron v2](20-sync-v2.md) ·

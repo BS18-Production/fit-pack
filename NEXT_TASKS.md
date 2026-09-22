@@ -66,8 +66,22 @@ ticari üründe düşüyor.
       (Samet, 2026-09-22):** saat farkı düzeltmesi · zorunlu güncelleme kapısı ·
       abonelik bitince salt okunur veri · çoklu cihaz ilk sürümde vaat
       **edilmiyor** (Aşama 6 launch sonrasına).
-- [ ] **Kodlama:** saat farkı düzeltmesi (docs/23 §2) + asgari sürüm kapısı
-      (§3). Abonelik katmanı ayrı iş — satın alma geldiğinde.
+- [x] **Saat farkı düzeltmesi kodlandı (docs/23 §2)** — şema **v13**:
+      tetikleyiciler `changed_at_ms`'e `clock_offset_ms` ekliyor; fark gönderim
+      cevabındaki `updated_at`'ten ek tur atmadan öğreniliyor (30 sn eşik,
+      1 günü aşan fark reddediliyor). Ret artık sessiz değil: hesap ekranında
+      "N kaydın buluttaki daha yeni sürümü alındı", dokununca kapanıyor.
+      Sunucu göçü gerekmedi. 24 test.
+- [x] **Asgari sürüm kapısı kodlandı (docs/23 §3)** — `app_min_version`
+      tablosu **Dev + üretimde**, `min_build = 1` ile **atıl** (kimseyi
+      durdurmuyor). İstemci açılışta ve öne gelmede kontrol ediyor; ağ yoksa /
+      tablo yoksa / build okunamazsa kapı **açılmıyor** (docs/18 Kural 1).
+      Zorunlu güncelleme ekranı hesap kapılarının önünde. 15 test.
+- [ ] **Cihazda görsel kontrol bekliyor:** (a) telefonun saatini elle geri al →
+      düzenleme yap → kaydın reddedilmediğini doğrula; (b) panelden
+      `min_build`'i 2 yap → uygulamayı öne getir → güncelleme ekranı çıkmalı;
+      sonra 1'e geri çevir.
+- [ ] Abonelik katmanı ayrı iş — satın alma geldiğinde (docs/23 §4 kararı hazır).
 
 **Neden acil:** saat sapması bugün **sessiz** veri kaybı yapıyor — saati geride
 olan cihazın düzenlemesi sunucuda reddediliyor ve yerel kopya sunucununkiyle

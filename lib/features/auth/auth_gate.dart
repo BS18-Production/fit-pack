@@ -328,7 +328,18 @@ String? gateRedirect({
   bool recovering = false,
   bool accountError = false,
   bool pendingConflict = false,
+  bool updateRequired = false,
 }) {
+  // docs/23 §3.2: sunucu bu build'i artık desteklemiyor. HER ŞEYİN ÖNÜNDE,
+  // çünkü eski istemcinin yazmaları sunucuda sessizce reddedilir — kullanıcıyı
+  // içeri alıp veri kaybettirmektense açıkça durdurmak daha dürüst. Oturum
+  // şartı YOK: kapı giriş ekranında da geçerli.
+  if (updateRequired) {
+    return location == AppRoutes.updateRequired
+        ? null
+        : AppRoutes.updateRequired;
+  }
+
   // Hesap değişimi sürerken karar verme — veri temizlenirken ekran değişmesin.
   if (busy) return null;
 

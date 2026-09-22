@@ -2,7 +2,15 @@
 
 > 22 Eylül 2026 · **Karar taslağı, uygulama talimatı değil.** Kaynak: mevcut Flutter ekranları, ortak bileşenler, yönlendirme ve Samet'in paylaştığı üç referans görseli. Çalışan simülatör bulunamadığından bu inceleme kod ve referans görselleri üzerindendir; görsel son karar gerçek cihazda verilmeli. Bu belge yeni özellik vaat etmez ve mevcut veriye olmayan anlamlar yüklemez.
 
-**Figma görsel önerisi:** [Dashboard + aktif antrenman + beslenme](https://www.figma.com/design/GhsY9rNkdUfikEqwENezfS/Fit-Pack-UI-Kesfi?node-id=7-5). Üç ekran tek dosyada, incelenebilir vektör çalışma olarak hazırlandı. Bu tasarım adayıdır; etkileşimli prototip veya Flutter bileşen tarifleri henüz değildir.
+**Figma görsel önerisi:** [Güncel ana ekran + ritim + takvim](https://www.figma.com/design/GhsY9rNkdUfikEqwENezfS/Fit-Pack-UI-Kesfi?node-id=11-422). Aynı dosyada [önceki ana ekran + aktif antrenman + beslenme](https://www.figma.com/design/GhsY9rNkdUfikEqwENezfS/Fit-Pack-UI-Kesfi?node-id=7-5) çalışması da var. Bunlar görsel tasarım adaylarıdır; etkileşimli prototip veya birebir Flutter bileşen tarifi değildir.
+
+### Son ürün kararı — 22 Eylül 2026
+
+Samet, ana ekranda mevcut **“N haftadır ritimdesin”**, **haftalık antrenman hedefi** ve **son 30 günün antrenman sayısı / kg hacmi / tahmini kcal** özetinin kalmasını istiyor. Bu karar, aşağıdaki ilk taslakta geçen “yalnız iki sayı göster” ve “30 gün metriklerini ana ekrandan çıkar” önerilerinin önüne geçer. Bilgiler ayrı, eşit ağırlıklı kartlar yerine tek kompakt ritim bölümünde gösterilebilir; dönem ve birimler açık yazılır. Örnek Figma rakamları gerçek kullanıcı verisi değildir.
+
+**Seri kuralı:** Mevcut `weeklyStreakProvider` ve `streak_calc.dart` haftalık antrenman hedefini sayıyor. Günlük uygulama açma veya her gün antrenman serisi gibi sunulmaz; dinlenme günü seriyi bozmaz. Devam eden haftada hedef henüz tamamlanmadı diye kazanılmış seri sıfırlanmaz. İlk hafta/boş veri, hedef tamamlandı ve kaçırılmış önceki hafta durumları ayrı metinlerle ele alınır.
+
+**Takvim akışı:** Ana ekranda seçili hafta ve günler görünür; sol/sağ oklarla haftalar gezilir. Hafta başlığı ay görünümünü açar; ay görünümünde aylar arasında gezinilir ve bir güne dokununca o günün kayıt özeti açılır. Geçmiş hafta seçiliyken “Bugüne dön” görünür. Geçmiş günü incelemek, ana ekrandaki **bugünkü** antrenman eylemini sessizce geçmişe taşımaz. Gelecekte kayıt olmayan gün, başarısızlık olarak işaretlenmez.
 
 ## 1. Referanstan alınacak fikir
 

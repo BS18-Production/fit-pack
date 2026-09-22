@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../home/providers/home_providers.dart';
+import '../update/update_providers.dart';
 import '../workout/routine_providers.dart';
 import 'sync_controller.dart';
 import 'sync_health.dart';
@@ -140,6 +141,10 @@ final syncRefreshProvider = Provider<SyncRefresh>((ref) {
 final syncForegroundProvider = Provider<void>((ref) {
   final listener = AppLifecycleListener(
     onResume: () {
+      // Sürüm kapısı önce (docs/23 §3.2): kullanıcı mağazadan güncelleyip
+      // döndüyse kapı açılsın; sunucu bu arada kapıyı yükselttiyse kapansın.
+      unawaited(ref.read(updateGateProvider).refresh());
+
       final userId = ref.read(syncControllerProvider).currentUserId();
       if (userId == null) return; // Oturum yok → kuyruk bekler.
       unawaited(ref.read(syncControllerProvider).syncNow());

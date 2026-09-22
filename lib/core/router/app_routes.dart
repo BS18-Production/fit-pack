@@ -50,6 +50,9 @@ class AppRoutes {
   static const splash = '/splash';
   static const accountError = '/account-error';
   static const accountConflict = '/account-conflict';
+
+  /// Zorunlu güncelleme (docs/23 §3.2) — kapının üçüncü "dur" ekranı.
+  static const updateRequired = '/update-required';
   static const attribution = '/settings/attribution';
   /// Haftalık değerlendirme (docs/22 §4). Ana sayfa "Bu Hafta"dan ve haftalık
   /// bildirimden açılır.

@@ -1240,6 +1240,16 @@ class AppL10nTr extends AppL10n {
   String get cloudHaveAccount => 'Zaten hesabın var mı? Giriş yap';
 
   @override
+  String get updateRequiredTitle => 'Güncelleme gerekli';
+
+  @override
+  String get updateRequiredBody =>
+      'Bu sürüm artık desteklenmiyor. Verilerin bu telefonda güvende; güncelledikten sonra eşitlenecek.';
+
+  @override
+  String get updateRequiredAction => 'Güncelle';
+
+  @override
   String get cloudSignOut => 'Çıkış Yap';
 
   @override

@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
+import '../../shared/widgets/gate_scaffold.dart';
 import 'auth_gate.dart';
 
 /// Kapının iki "dur" ekranı (docs/20 §7.4, §7.5). İkisi de kullanıcıyı
@@ -36,7 +36,7 @@ class _AccountErrorScreenState extends ConsumerState<AccountErrorScreen> {
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
     final gate = ref.read(authGateProvider);
-    return _GateScaffold(
+    return GateScaffold(
       icon: Icons.shield_outlined,
       title: l.accountErrorTitle,
       message: l.accountErrorBody,
@@ -108,7 +108,7 @@ class _AccountConflictScreenState extends ConsumerState<AccountConflictScreen> {
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
     final gate = ref.read(authGateProvider);
-    return _GateScaffold(
+    return GateScaffold(
       icon: Icons.cloud_upload_outlined,
       title: l.accountConflictTitle,
       message: l.accountConflictBody(gate.pendingConflictRows),
@@ -128,45 +128,4 @@ class _AccountConflictScreenState extends ConsumerState<AccountConflictScreen> {
       ],
     );
   }
-}
-
-class _GateScaffold extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String message;
-  final List<Widget> actions;
-  const _GateScaffold({
-    required this.icon,
-    required this.title,
-    required this.message,
-    required this.actions,
-  });
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    body: SafeArea(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xxl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: AppIconSize.xxl, color: context.colors.primary),
-              AppSpacing.vGapLg,
-              Text(title,
-                  textAlign: TextAlign.center,
-                  style: context.texts.headlineSmall),
-              AppSpacing.vGapMd,
-              Text(message,
-                  textAlign: TextAlign.center,
-                  style: context.texts.bodyMedium
-                      ?.copyWith(color: context.colors.onSurfaceVariant)),
-              AppSpacing.vGapXl,
-              ...actions,
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
 }

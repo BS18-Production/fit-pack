@@ -17,6 +17,7 @@ import 'features/nutrition/nutrition_screen.dart' show selectedDateProvider;
 import 'features/workout/routine_providers.dart';
 import 'features/sync/sync_providers.dart';
 import 'features/sync/sync_refresh.dart';
+import 'features/update/update_providers.dart';
 import 'features/auth/auth_gate.dart';
 
 class FitPackApp extends ConsumerStatefulWidget {
@@ -31,7 +32,10 @@ class _FitPackAppState extends ConsumerState<FitPackApp> {
   // (oturum + onboarding) durumunu router'ın kendisi `redirect`te okur;
   // `main()` `bootstrap()`u çağırdığı için değerler burada hazırdır.
   late final GoRouter _router =
-      createAppRouter(gate: ref.read(authGateProvider));
+      createAppRouter(
+        gate: ref.read(authGateProvider),
+        updateGate: ref.read(updateGateProvider),
+      );
 
   // ── Bildirime dokununca ilgili ekrana git (haftalık değerlendirme, docs/22
   // §5). İki yol: uygulama AÇIKKEN dokunma (`taps` akışı) ve uygulama

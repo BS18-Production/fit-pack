@@ -50,6 +50,8 @@ dependencies:
 
   # Utils
   csv: ^6.0.0
+  # Kurulu sürümün build numarası — asgari sürüm kapısı (docs/23 §3).
+  package_info_plus: ^8.1.2
   # Dış link + mailto (Ayarlar → Hakkında, docs/16 §6)
   url_launcher: ^6.3.0
 

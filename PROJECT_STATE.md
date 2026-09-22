@@ -14,7 +14,7 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
-## 🚀 Üretim Supabase göçü ✅ uygulandı — 2026-09-22
+## 🚀 Üretim Supabase göçü ✅ uygulandı ve doğrulandı — 2026-09-22
 
 Telefondaki release derlemesi senkron v2 Aşama 4 istemcisiydi, sunucu hâlâ
 v1'di → gönderim `PGRST204` ile reddediliyordu ve ~62 satır telefonda
@@ -30,10 +30,14 @@ tekrarlamadı), 39 satırın 39'u benzersiz `server_rev` aldı. 12 `sync_guard_t
 + 12 `sync_mark_deleted_trg`, 12 + 12 dizin, `deleted_records` (RLS açık,
 yalnız SELECT+INSERT), `sync_delete` yetkisi verildi.
 
-**Kalan:** telefonda kuyruğun boşaldığının doğrulanması —
-`adb logcat | grep fitpack.sync` → "gönderilen N, kalan 0"
-(NEXT_TASKS "Sıradaki iş"). Açık güvenlik uyarıları (hepsi WARN, göçle açılan
-delik değil) NEXT_TASKS'ta listelendi.
+**Telefonda doğrulandı (22:34–22:40):** kuyruk buluta boşaldı — sunucu
+39 → 125 satır, göç sonrası 88 satır yazıldı. Sonraki açılışta çekme 114 satır
+indirdi (**eklenen 0** — hepsi telefonun kendi satırları), gönderim turu
+"kuyruk boş" dedi, logda `PGRST`/ret/kalıcı hata yok. Samet'in hesabındaki
+bulut satırları telefonun çektiğiyle birebir örtüşüyor (114).
+
+**Kalan:** `backup_20260922` şeması düşülebilir. Açık güvenlik uyarıları
+(hepsi WARN, göçle açılan delik değil) NEXT_TASKS'ta listelendi.
 
 ## 🍽️ Geçmişten Öğün Kopyala ✅ (kodlandı) — 2026-09-22
 
@@ -144,8 +148,9 @@ Hedef çelişkisinde **otomatik değişiklik yok**. Sunucu kolonları
   değerlendirme kolonları üretime uygulandı, göç sonrası kontroller temiz
   (yukarıda "Üretim Supabase göçü"). Telefonda kuyruğun boşalması bekleniyor.
 - analyze 0 · test **502/502** (haftalık değerlendirme + fotoğraflar dahil). Simülatörde gerçek veriyle doğrulandı.
-- **Bekleyen:** telefonda (SM A075F) duman testi — kuyruk boşalıyor mu
-  (NEXT_TASKS "Sıradaki iş"). Aşama 6 hâlâ yazılmadı.
+- **Cihaz duman testi ✅ (2026-09-22, SM A075F):** göç sonrası ilk açılışta
+  kuyruk buluta boşaldı, ikinci açılışta çekme kendi satırlarını indirdi ve
+  gönderilecek bir şey kalmadı. **Aşama 6 hâlâ yazılmadı.**
 
 ## 🧹 A Paketi — birikmiş işler kapatıldı — 2026-09-18
 

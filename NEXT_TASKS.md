@@ -1,10 +1,10 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
-## 🟡 SIRADAKİ İŞ — telefonda senkron doğrulaması (2026-09-22)
+## ✅ BİTTİ — üretim göçü + telefonda senkron doğrulaması (2026-09-22)
 
-**Üretim Supabase göçü ✅ uygulandı (2026-09-22).** Sunucu artık senkron v2
-Aşama 3 + 5 ve haftalık değerlendirme kolonlarını taşıyor; telefondaki
-(SM A075F) release derlemesiyle aynı sürümde. Kalan iş **yalnız doğrulama**.
+**Üretim Supabase göçü uygulandı ve telefonda doğrulandı.** Sunucu artık
+senkron v2 Aşama 3 + 5 ve haftalık değerlendirme kolonlarını taşıyor;
+telefondaki (SM A075F) release derlemesiyle aynı sürümde. **Kuyruk boşaldı.**
 
 - [x] Göç öncesi geri dönüş noktası: `backup_20260922` şeması — 12 tablonun
       göç öncesi tam kopyası (39 satır), API'ye kapalı (`authenticated`/`anon`
@@ -20,13 +20,21 @@ Aşama 3 + 5 ve haftalık değerlendirme kolonlarını taşıyor; telefondaki
       `sync_mark_deleted_trg`, 12 `_user_rev_idx` + 12 `_user_uid_key`,
       `deleted_records` (RLS açık, yalnız SELECT+INSERT), `sync_delete`
       yetkisi `authenticated`'ta, `sync_rev_seq` kullanım yetkisi verildi.
-- [ ] **Telefonda doğrula (Samet):** uygulamayı aç → `adb logcat | grep
-      fitpack.sync` → "gönderilen N, kalan 0". Beklenen: kuyruktaki ~62 satır
-      buluta gider, hesap ekranında "Son yedekleme: bugün …" görünür.
-      Doğrulanana kadar telefonda **çıkış yapma / hesap değiştirme /
-      uygulamayı kaldırma** (yerel veri hâlâ tek kopya).
-- [ ] Kuyruk boşaldıktan sonra bulutta satır sayısını karşılaştır ve
-      `backup_20260922` şemasını düş.
+- [x] **Telefonda doğrulandı (2026-09-22 22:34–22:40):** kuyruk buluta
+      boşaldı. Sunucu 39 → 125 satır; göç sonrası **88 satır** yazıldı
+      (`server_rev` 40…129). Sonraki açılışta çekme 114 satır indirdi
+      (**eklenen 0**, güncellenen 114 — hepsi telefonun kendi satırları) ve
+      gönderim turu "atlandı: kuyruk boş" dedi. Logda tek bir `PGRST`,
+      reddedilen satır ya da kalıcı hata yok.
+      Samet'in hesabındaki (`ceef15db`) bulut satırları telefonun çektiğiyle
+      birebir: profil 1 · hareket 22 · besin 2 · rutin 2 · rutin-hareket 16 ·
+      seans 6 · set 61 · öğün 2 · ölçüm 2 = **114**.
+      *Not: push'un kendi log satırları yakalanamadı — logcat tamponu o turdan
+      (22:34) hemen sonra temizlendi. Kanıt sunucu tarafında: son yazma damgası
+      19:34:03 UTC.*
+- [ ] **`backup_20260922` şeması düşülebilir** — doğrulama bitti, geri dönüş
+      noktasına artık gerek yok: `drop schema backup_20260922 cascade;`
+      (Samet onayı bekliyor; yer kaplamasının dışında zararı yok.)
 
 ### Göç sonrası açık uyarılar (acil değil, Samet'e bilgi)
 

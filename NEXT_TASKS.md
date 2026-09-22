@@ -107,10 +107,22 @@ ticari üründe düşüyor.
       sağlayıcılar uyanmıyordu. Tablo adından `db.allTables` ile `TableInfo`
       bulunup geçiliyor. Test kırmızı-yeşil doğrulandı.
 
+      **Cihazda doğrulandı (2026-09-23 00:27):** sunucuya geçici sentetik bir
+      seans eklendi → telefonda "Bu hafta 2/1 antrenman" oldu → sunucudan
+      silindi → hesap ekranından **"Şimdi eşitle"** → ana sayfa **yeniden
+      başlatılmadan** "1/1"e döndü. Sentetik kayıttan iz kalmadı.
+
       **Not:** `SyncApply._insert` / `_update` hâlâ `customStatement`
       kullanıyor, yani çekilen ekleme/güncellemeler de akış bildirimi
       yapmıyor — orayı `SyncRefresh.onChanged`'deki elle invalidate listesi
       kapatıyor (tasarım böyle, H-05 ertelenmiş). Silme o listeden kaçıyordu.
+- [x] **"Şimdi eşitle" ve ret bildirimi cihazda görüldü (00:27):** hesap
+      ekranında düğme çalışıyor (gönder → çek), ve §2.3 bildirimi gerçek
+      veriyle çıktı: **"1 kaydın buluttaki daha yeni sürümü alındı"** —
+      saat karışıklığı sırasında gerçekten bir ret yaşanmış.
+- [ ] **Küçük kalıntı:** hesap ekranında "Son yedekleme: bugün 22:04" yazıyor;
+      bu damga saat bozukken yazıldı. Bir sonraki gerçek gönderimde
+      kendiliğinden düzelir (kuyruk boş olduğu için henüz gönderim olmadı).
 
 ## 🐛 Açık dayanıklılık boşluğu — çekmede tek bozuk işaret turu kilitliyor
 

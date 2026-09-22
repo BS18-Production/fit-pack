@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="1020" viewBox="0 0 920 1020">
+  <defs>
+    <style>
+      text { font-family: Arial, sans-serif; fill: #F0F1F5; }
+      .small { font-size: 13px; fill: #A7ABB8; }
+      .label { font-size: 12px; letter-spacing: 1.2px; font-weight: 700; fill: #B8BBC6; }
+      .title { font-size: 26px; font-weight: 750; letter-spacing: -.6px; }
+      .strong { font-size: 18px; font-weight: 700; }
+      .metric { font-size: 25px; font-weight: 750; }
+      .accent { fill: #A5A7FF; }
+    </style>
+  </defs>
+  <rect width="920" height="1020" fill="#24262D"/>
+  <text x="42" y="54" font-size="24" font-weight="700">Fit Pack · dashboard yapısı</text>
+  <text x="42" y="79" font-size="14" fill="#ADB1BC">Renk ve son görsel dil kararı değil · örnek sayılar yalnız yerleşim için</text>
+
+  <!-- Training day -->
+  <text x="56" y="123" class="label">A · ANTRENMAN GÜNÜ</text>
+  <rect x="45" y="145" width="390" height="830" rx="38" fill="#101218" stroke="#3E424E" stroke-width="2"/>
+  <text x="70" y="194" class="small">22 Eylül, Salı</text>
+  <text x="70" y="228" class="title">Bugün</text>
+  <circle cx="396" cy="207" r="19" fill="#292D39"/>
+  <text x="388" y="213" font-size="17">S</text>
+  <rect x="66" y="252" width="348" height="154" rx="24" fill="#2C2C5F"/>
+  <text x="86" y="279" class="label" fill="#C7C8FF">BUGÜNKÜ ANTRENMAN</text>
+  <text x="86" y="312" class="strong">Üst Vücut A</text>
+  <text x="86" y="336" class="small" fill="#D1D2EB">6 hareket · Planlı rutin</text>
+  <rect x="86" y="354" width="142" height="37" rx="18.5" fill="#D7D8FF"/>
+  <text x="107" y="378" font-size="14" font-weight="700" fill="#24244B">Antrenmana başla</text>
+  <text x="386" y="380" font-size="21" fill="#D7D8FF">›</text>
+
+  <text x="68" y="451" class="strong">Bugünkü kayıt</text>
+  <rect x="66" y="468" width="348" height="150" rx="22" fill="#1D202A" stroke="#323642"/>
+  <text x="84" y="494" class="small">Beslenme</text>
+  <text x="84" y="530" class="metric">1.540 <tspan font-size="14" fill="#ADB1BC">kcal kaydedildi</tspan></text>
+  <text x="84" y="554" class="small">Hedef 2.200 · Protein 96 / 180 g</text>
+  <rect x="84" y="570" width="312" height="6" rx="3" fill="#3A3F4B"/>
+  <rect x="84" y="570" width="217" height="6" rx="3" fill="#A5A7FF"/>
+  <text x="84" y="600" font-size="14" class="accent" font-weight="700">Beslenmeye git  ›</text>
+
+  <text x="68" y="663" class="strong">Bu hafta</text>
+  <text x="355" y="663" font-size="13" class="accent">İncele ›</text>
+  <rect x="66" y="680" width="168" height="105" rx="19" fill="#1D202A" stroke="#323642"/>
+  <text x="84" y="718" class="metric">2 / 3</text>
+  <text x="84" y="746" class="small">antrenman</text>
+  <rect x="246" y="680" width="168" height="105" rx="19" fill="#1D202A" stroke="#323642"/>
+  <text x="264" y="718" class="metric">4 gün</text>
+  <text x="264" y="746" class="small">beslenme kaydı</text>
+  <rect x="66" y="801" width="348" height="62" rx="19" fill="#1D202A" stroke="#323642"/>
+  <text x="84" y="827" class="small">Su · 1,25 / 2,5 L</text>
+  <text x="84" y="850" font-size="13" class="accent">+250 ml ekle</text>
+  <rect x="66" y="882" width="348" height="70" rx="25" fill="#191C24"/>
+  <text x="83" y="919" font-size="13" class="accent" font-weight="700">Ana Sayfa</text>
+  <text x="170" y="919" class="small">Antrenman</text>
+  <text x="268" y="919" class="small">Beslenme</text>
+  <text x="351" y="919" class="small">İlerleme</text>
+
+  <!-- Active draft state -->
+  <text x="496" y="123" class="label">B · DEVAM EDEN SEANS</text>
+  <rect x="485" y="145" width="390" height="830" rx="38" fill="#101218" stroke="#3E424E" stroke-width="2"/>
+  <text x="510" y="194" class="small">22 Eylül, Salı</text>
+  <text x="510" y="228" class="title">Bugün</text>
+  <circle cx="836" cy="207" r="19" fill="#292D39"/>
+  <text x="828" y="213" font-size="17">S</text>
+  <rect x="506" y="252" width="348" height="154" rx="24" fill="#313047" stroke="#9596D7"/>
+  <text x="526" y="279" class="label" fill="#C7C8FF">SEANS DEVAM EDİYOR</text>
+  <text x="526" y="312" class="strong">Üst Vücut A</text>
+  <text x="526" y="336" class="small" fill="#D1D2EB">8 / 18 set tamamlandı · Taslak kaydedildi</text>
+  <rect x="526" y="354" width="130" height="37" rx="18.5" fill="#D7D8FF"/>
+  <text x="546" y="378" font-size="14" font-weight="700" fill="#24244B">Seansa dön</text>
+  <text x="826" y="380" font-size="21" fill="#D7D8FF">›</text>
+  <text x="508" y="451" class="strong">Bugünkü kayıt</text>
+  <rect x="506" y="468" width="348" height="150" rx="22" fill="#1D202A" stroke="#323642"/>
+  <text x="524" y="494" class="small">Beslenme</text>
+  <text x="524" y="530" class="metric">1.540 <tspan font-size="14" fill="#ADB1BC">kcal kaydedildi</tspan></text>
+  <text x="524" y="554" class="small">Hedef 2.200 · Protein 96 / 180 g</text>
+  <rect x="524" y="570" width="312" height="6" rx="3" fill="#3A3F4B"/>
+  <rect x="524" y="570" width="217" height="6" rx="3" fill="#A5A7FF"/>
+  <text x="524" y="600" font-size="14" class="accent" font-weight="700">Beslenmeye git  ›</text>
+  <text x="508" y="663" class="strong">Bu hafta</text>
+  <text x="795" y="663" font-size="13" class="accent">İncele ›</text>
+  <rect x="506" y="680" width="168" height="105" rx="19" fill="#1D202A" stroke="#323642"/>
+  <text x="524" y="718" class="metric">2 / 3</text>
+  <text x="524" y="746" class="small">antrenman</text>
+  <rect x="686" y="680" width="168" height="105" rx="19" fill="#1D202A" stroke="#323642"/>
+  <text x="704" y="718" class="metric">4 gün</text>
+  <text x="704" y="746" class="small">beslenme kaydı</text>
+  <rect x="506" y="801" width="348" height="62" rx="19" fill="#1D202A" stroke="#323642"/>
+  <text x="524" y="827" class="small">Su · 1,25 / 2,5 L</text>
+  <text x="524" y="850" font-size="13" class="accent">+250 ml ekle</text>
+  <rect x="506" y="882" width="348" height="70" rx="25" fill="#191C24"/>
+  <text x="523" y="919" font-size="13" class="accent" font-weight="700">Ana Sayfa</text>
+  <text x="610" y="919" class="small">Antrenman</text>
+  <text x="708" y="919" class="small">Beslenme</text>
+  <text x="791" y="919" class="small">İlerleme</text>
+</svg>

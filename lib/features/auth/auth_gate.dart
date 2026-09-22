@@ -7,10 +7,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/router/app_routes.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
-import '../home/providers/home_providers.dart';
 import '../sync/sync_controller.dart' show syncLog;
-import '../sync/sync_providers.dart';
-import '../workout/routine_providers.dart';
+import '../sync/sync_refresh.dart';
 import 'account_switch.dart';
 
 /// Zorunlu giriş kapısının durumu (docs/18 §5.1).
@@ -267,22 +265,9 @@ class AuthGate extends ChangeNotifier {
 final authGateProvider = Provider<AuthGate>((ref) {
   final gate = AuthGate(
     ref.watch(databaseProvider),
-    pull: (userId) async {
-      final result = await ref.read(syncPullProvider).pullAll(userId: userId);
-      // Pull yereli değiştirdiyse okuma önbelleklerini tazele. Uygulama henüz
-      // tam reaktif değil (H-05 ertelendi) → inen veri ekrana yansısın diye
-      // çekirdek provider'lar elle invalidate edilir.
-      if (result.changed > 0) {
-        ref.invalidate(userProfileProvider);
-        ref.invalidate(latestWeightProvider);
-        ref.invalidate(weightTrendProvider);
-        ref.invalidate(weeklyStreakProvider);
-        ref.invalidate(weekWorkoutStatsProvider);
-        ref.invalidate(todayNutritionProvider);
-        ref.invalidate(todayWaterProvider);
-        ref.invalidate(todayRoutineProvider);
-      }
-    },
+    // Çekme + okuma önbelleklerinin tazelenmesi `SyncRefresh`'te tek yerde
+    // (docs/20 §6.5) — aynı işi öne gelme ve "Şimdi eşitle" de yapıyor.
+    pull: (userId) => ref.read(syncRefreshProvider).pullNow(userId),
   );
   ref.onDispose(gate.dispose);
   return gate;

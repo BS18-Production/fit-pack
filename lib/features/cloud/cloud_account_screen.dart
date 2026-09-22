@@ -5,6 +5,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../sync/sync_providers.dart';
+import '../sync/sync_refresh.dart';
 import '../sync/sync_status_tile.dart';
 import 'auth_service.dart';
 
@@ -17,8 +18,13 @@ import 'auth_service.dart';
 ///
 /// **Elle bulut yedekleme KALDIRILDI (2026-07-21, docs/18 §1).** Veriler
 /// hesaba otomatik senkron edilir (outbox deseni, docs/18 §6) — kullanıcının
-/// "yedekle"/"geri yükle" düğmelerine basmasına gerek yok. Senkron durumu
-/// göstergesi Aşama G'de bu ekrana eklenecek.
+/// "yedekle"/"geri yükle" düğmelerine basmasına gerek yok.
+///
+/// **"Şimdi eşitle" bunun geri gelmesi DEĞİLDİR** (docs/20 §6.5). Kaldırılan
+/// şey, kullanıcının basmadığı sürece verinin gitmediği bir yedekleme
+/// akışıydı. Bu düğme senkronun ön koşulu değil, **kaçış kapısı**: durum
+/// göstergesi "N kayıt bekliyor" derken kullanıcının bekleyecek bir zamanlayıcı
+/// yerine basabileceği bir yer olsun diye var.
 class CloudAccountScreen extends ConsumerWidget {
   const CloudAccountScreen({super.key});
 
@@ -104,6 +110,32 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
     await ref.read(authServiceProvider).signOut();
   }
 
+  /// "Şimdi eşitle" (docs/20 §6.5) — önce gönder, sonra çek, sonucu söyle.
+  ///
+  /// Sonuç mesajı **her zaman** kullanıcının verisinin güvende olduğunu
+  /// söyler: eşitlenememek bir veri kaybı değil, gecikmedir (docs/20 §9).
+  Future<void> _syncNow() async {
+    final l = AppL10n.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final userId = ref.read(syncControllerProvider).currentUserId();
+    if (userId == null) return; // Oturum düşmüş → kapı zaten devreye girer.
+
+    setState(() => _busy = true);
+    final result = await ref.read(syncRefreshProvider).syncNow(userId);
+    if (!mounted) return;
+    setState(() => _busy = false);
+
+    final String mesaj;
+    if (result.ok) {
+      mesaj = l.cloudSyncDone;
+    } else if (result.pending > 0) {
+      mesaj = l.cloudSyncPending(result.pending);
+    } else {
+      mesaj = l.cloudSyncFailed;
+    }
+    messenger.showSnackBar(SnackBar(content: Text(mesaj)));
+  }
+
   /// Hesabı kalıcı sil (docs/16 §4) — çift onay.
   /// Sunucudaki veriler `on delete cascade` ile hesapla birlikte silinir
   /// (docs/18 §7). Cihazdaki yerel veri etkilenmez.
@@ -181,6 +213,12 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
         ),
         AppSpacing.vGapLg,
         const SyncStatusTile(),
+        AppSpacing.vGapMd,
+        OutlinedButton.icon(
+          onPressed: _busy ? null : _syncNow,
+          icon: const Icon(Icons.sync_rounded),
+          label: Text(l.cloudSyncNow),
+        ),
         AppSpacing.vGapxl_,
         // C-35: çıkış geri alınabilir, olağan bir işlem → nötr. Hesap silme
         // kalıcı → ayrı, kırmızı ve ne yaptığını söyleyen bir alt bölümde.

@@ -1243,6 +1243,20 @@ class AppL10nTr extends AppL10n {
   String get cloudSignOut => 'Çıkış Yap';
 
   @override
+  String get cloudSyncNow => 'Şimdi eşitle';
+
+  @override
+  String get cloudSyncDone => 'Eşitlendi';
+
+  @override
+  String cloudSyncPending(int count) {
+    return '$count kayıt hâlâ bekliyor — bağlantını kontrol et';
+  }
+
+  @override
+  String get cloudSyncFailed => 'Eşitlenemedi — verilerin bu telefonda güvende';
+
+  @override
   String get cloudDeleteAccount => 'Hesabı Sil';
 
   @override

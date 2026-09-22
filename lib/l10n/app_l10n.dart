@@ -2317,6 +2317,30 @@ abstract class AppL10n {
   /// **'Sign Out'**
   String get cloudSignOut;
 
+  /// No description provided for @cloudSyncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get cloudSyncNow;
+
+  /// No description provided for @cloudSyncDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Synced'**
+  String get cloudSyncDone;
+
+  /// No description provided for @cloudSyncPending.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} records are still waiting — check your connection'**
+  String cloudSyncPending(int count);
+
+  /// No description provided for @cloudSyncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t sync — your data is safe on this device'**
+  String get cloudSyncFailed;
+
   /// No description provided for @cloudDeleteAccount.
   ///
   /// In en, this message translates to:

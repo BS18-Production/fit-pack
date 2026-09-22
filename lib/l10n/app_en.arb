@@ -684,6 +684,15 @@
   "cloudNoAccount": "No account? Sign up",
   "cloudHaveAccount": "Already have an account? Sign in",
   "cloudSignOut": "Sign Out",
+  "cloudSyncNow": "Sync now",
+  "cloudSyncDone": "Synced",
+  "cloudSyncPending": "{count} records are still waiting — check your connection",
+  "@cloudSyncPending": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "cloudSyncFailed": "Couldn't sync — your data is safe on this device",
   "cloudDeleteAccount": "Delete Account",
   "cloudDeleteHint": "Permanently deletes your account and the data stored in the cloud.",
   "cloudDeleteTitle": "Delete account",

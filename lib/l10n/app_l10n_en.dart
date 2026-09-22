@@ -1251,6 +1251,21 @@ class AppL10nEn extends AppL10n {
   String get cloudSignOut => 'Sign Out';
 
   @override
+  String get cloudSyncNow => 'Sync now';
+
+  @override
+  String get cloudSyncDone => 'Synced';
+
+  @override
+  String cloudSyncPending(int count) {
+    return '$count records are still waiting — check your connection';
+  }
+
+  @override
+  String get cloudSyncFailed =>
+      'Couldn\'t sync — your data is safe on this device';
+
+  @override
   String get cloudDeleteAccount => 'Delete Account';
 
   @override

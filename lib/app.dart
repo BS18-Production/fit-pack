@@ -16,6 +16,7 @@ import 'features/home/providers/home_providers.dart';
 import 'features/nutrition/nutrition_screen.dart' show selectedDateProvider;
 import 'features/workout/routine_providers.dart';
 import 'features/sync/sync_providers.dart';
+import 'features/sync/sync_refresh.dart';
 import 'features/auth/auth_gate.dart';
 
 class FitPackApp extends ConsumerStatefulWidget {
@@ -106,6 +107,8 @@ class _FitPackAppState extends ConsumerState<FitPackApp> {
     // çıkışta durur (docs/18 §6). Burada `watch` edilmesi provider'ı canlı
     // tutar — ekran değişimlerinden etkilenmez.
     ref.watch(syncLifecycleProvider);
+    // Uygulama öne geldiğinde gönder + (bayatsa) çek — docs/20 §6.5.
+    ref.watch(syncForegroundProvider);
     // Kullanıcı tema tercihi (Sistem/Açık/Koyu) — Ayarlar'dan değişir.
     final themeMode = ref.watch(themeModeProvider);
     // Dil tercihi (docs/14). null = cihazı takip et; supportedLocales'te

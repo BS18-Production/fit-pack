@@ -370,6 +370,15 @@
   "cloudNoAccount": "Hesabın yok mu? Kayıt ol",
   "cloudHaveAccount": "Zaten hesabın var mı? Giriş yap",
   "cloudSignOut": "Çıkış Yap",
+  "cloudSyncNow": "Şimdi eşitle",
+  "cloudSyncDone": "Eşitlendi",
+  "cloudSyncPending": "{count} kayıt hâlâ bekliyor — bağlantını kontrol et",
+  "@cloudSyncPending": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "cloudSyncFailed": "Eşitlenemedi — verilerin bu telefonda güvende",
   "cloudDeleteAccount": "Hesabı Sil",
   "cloudDeleteHint": "Hesabın ve bulutta saklanan verilerin kalıcı olarak silinir.",
   "cloudDeleteTitle": "Hesabı sil",

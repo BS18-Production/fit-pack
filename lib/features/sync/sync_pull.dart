@@ -268,8 +268,18 @@ class SyncPull {
       syncLog('$syncDeletedTable ← ${page.length} silme işareti '
           '(imleç $cursor → $lastRev)');
 
+      // ÇOCUK ÖNCE uygula. Sunucu zincirleme silmede EBEVEYNİ önce damgalar
+      // (seans server_rev 136, seti 137); yerelde aynı sırayla silmek
+      // `workout_sets.session_id` kısıtını patlatır ve — hepsi tek
+      // transaction olduğu için — BÜTÜN çekmeyi düşürür. Cihazda ölçüldü
+      // (2026-09-23): "FOREIGN KEY constraint failed (787)", pull 0 satırla
+      // bitti ve her turda yeniden düştü. Gönderim tarafı bu kuralı zaten
+      // uyguluyordu (docs/20 §5.3 adım 1), çekme tarafı uygulamıyordu.
+      final sirali = [...page]
+        ..sort((a, b) => _silmeSirasi(b) - _silmeSirasi(a));
+
       await apply.withCaptureOff(() => db.transaction(() async {
-            for (final mark in page) {
+            for (final mark in sirali) {
               final table = mark['table_name'];
               final uid = mark['uid'];
               if (table is! String || uid is! String) continue;
@@ -290,6 +300,13 @@ class SyncPull {
 
     // Silinen satırlar `updated` sayılır: kullanıcı açısından "veri değişti".
     return PullResult(updated: applied);
+  }
+
+  /// Mezar taşının tablo sırası; bilinmeyen tablo en sona (-1).
+  /// Büyükten küçüğe sıralanınca **çocuk önce** gelir.
+  static int _silmeSirasi(Map<String, Object?> mark) {
+    final t = mark['table_name'];
+    return t is String ? syncRemoteTables.indexOf(t) : -1;
   }
 
   /// Yerel satırı siler ve bekleyen mezar taşını temizler.

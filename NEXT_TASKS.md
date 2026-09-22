@@ -89,9 +89,40 @@ ticari üründe düşüyor.
       elle geri alıp bir kayıt düzenlemek gerekiyor — `adb logcat | grep
       fitpack.sync` → "saat farkı güncellendi" satırı ve **ret olmaması**
       beklenir. Mekanizma 18 birim + göç testiyle kapalı, uçtan uca teyit yok.
-- [ ] **Kapı açılışının cihazda teyidi yarıda kaldı** (USB bağlantısı düştü):
-      `min_build` 1'e indirilip "Tekrar dene" → ana sayfaya dönüş. Düzeltme
-      testte yeşil, cihazda görülmedi.
+- [x] **Kapı açılışı cihazda doğrulandı (2026-09-23 00:20):** `min_build` 1'e
+      indirildi → "Tekrar dene" → ana sayfaya döndü. Kilitlenme düzeltmesi
+      (`3b3f2e2`) gerçek cihazda çalışıyor.
+- [x] **Zincirleme silme çekmede kırıktı — düzeltildi (`sync_pull`).** Cihazda
+      bulundu: sunucuda seans silinip seti `cascade` ile gidince mezar taşları
+      **ebeveyn önce** uygulanıyor, `workout_sets.session_id` kısıtı patlıyor
+      ve **bütün çekme** düşüyordu (`FOREIGN KEY constraint failed (787)`,
+      her turda). Artık çocuk önce uygulanıyor. Kırmızı-yeşil doğrulandı.
+
+## 🐛 Açık hata — silme sonrası ekran tazelenmiyor (2026-09-23)
+
+Mezar taşı indiğinde satır yerelde **siliniyor** ama ana sayfadaki sayaçlar
+eski kalıyor; uygulama yeniden açılınca düzeliyor. Cihazda ölçüldü: silmeden
+sonra "5 antrenman / 12.593 kg", yeniden açılışta "4 antrenman / 12.373 kg".
+
+**Teşhis:** `sync_pull.dart` → `_deleteLocal`, `db.customUpdate(...)`'i
+**`updates:` parametresi olmadan** çağırıyor. Drift hangi tablonun
+değiştiğini bilemiyor, `tableUpdates()` tetiklenmiyor, `watchTables` ile
+beslenen ekran sağlayıcıları (`weeklyStreakProvider` vb.) uyanmıyor.
+`SyncRefresh.onChanged`'deki elle invalidate listesi de bu sağlayıcıları
+kurtarmıyor (StreamProvider'lar akışa bağlı).
+
+**Öneri:** tablo adından `db.allTables` üzerinden `TableInfo` bulup
+`updates: {info}` geçmek. Veri kaybı yok, yalnız görüntü bayat kalıyor.
+Düzeltilmeden önce hipotez bir testle doğrulanmalı (akış tetikleniyor mu).
+
+## 🐛 Açık dayanıklılık boşluğu — çekmede tek bozuk işaret turu kilitliyor
+
+Yukarıdaki FK hatası bütün çekmeyi düşürdü ve **her turda yeniden** düştü:
+bir sayfadaki mezar taşları tek transaction'da uygulanıyor, biri patlayınca
+imleç ilerlemiyor. Aşama 7 bu sorunu **gönderim** tarafında çözmüştü (bozuk
+satır ayrılır, kuyruk durmaz); çekme tarafında karşılığı yok. Ayrıca
+ebeveyn ile çocuğu farklı sayfalara düşen büyük silmelerde sıralama
+düzeltmesi de yetmez.
 - [ ] Abonelik katmanı ayrı iş — satın alma geldiğinde (docs/23 §4 kararı hazır).
 
 **Neden acil:** saat sapması bugün **sessiz** veri kaybı yapıyor — saati geride

@@ -48,6 +48,47 @@ void main() {
     return r.read<String>('uid');
   }
 
+  // ─── 0. Zincirleme silme: çekmede ÇOCUK ÖNCE uygulanmalı (cihazda bulundu) ───
+
+  test('ebeveyn+çocuk birlikte silinince çekme FK hatası vermez', () async {
+    // Gerçek senaryo (SM A075F, 2026-09-23): sunucuda seans silindi, seti
+    // `on delete cascade` ile gitti. Sunucu EBEVEYNİ önce damgalar (seans
+    // server_rev 136, set 137). Yerelde aynı sırayla silinirse
+    // `workout_sets.session_id` kısıtı patlar ve — hepsi tek transaction
+    // olduğu için — BÜTÜN çekme düşer, her turda yeniden.
+    await db.customStatement(
+        "INSERT INTO exercises (name, primary_muscle, muscle_groups, category, "
+        "equipment) VALUES ('Bench', 'chest', '[\"chest\"]', 'compound', "
+        "'barbell')");
+    await db.customStatement(
+        "INSERT INTO workout_sessions (date, phase, workout_type) "
+        "VALUES (1700000000, 0, 'Push day')");
+    await db.customStatement(
+        "INSERT INTO workout_sets (session_id, exercise_id, set_number) "
+        "VALUES (1, 1, 1)");
+    await push.pushAll(userId: user);
+
+    final seansUid = (await db
+            .customSelect('SELECT uid FROM workout_sessions')
+            .getSingle())
+        .read<String>('uid');
+    final setUid =
+        (await db.customSelect('SELECT uid FROM workout_sets').getSingle())
+            .read<String>('uid');
+
+    // Sunucu sırası: önce ebeveyn, sonra çocuk (zincirleme silmenin sırası).
+    await remote.deleteRows('workout_sessions', user, [seansUid]);
+    await remote.deleteRows('workout_sets', user, [setUid]);
+
+    final result = await SyncPull(db, remote).pullAll(userId: user);
+
+    expect(result.ok, isTrue,
+        reason: 'tek bir zincirleme silme bütün çekmeyi düşürmemeli: '
+            '${result.error}');
+    expect(await count('workout_sets'), 0);
+    expect(await count('workout_sessions'), 0);
+  });
+
   // ─────────────────── 1. Yerel silme sunucuya gidiyor ───────────────────
 
   test('silinen satır sunucudan da kalkar', () async {

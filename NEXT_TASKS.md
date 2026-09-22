@@ -1,26 +1,48 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
-## 🔴 SIRADAKİ İŞ — üretim Supabase göçü (2026-09-22, Samet onayı bekliyor)
+## 🟡 SIRADAKİ İŞ — telefonda senkron doğrulaması (2026-09-22)
 
-**Telefona (SM A075F) release APK kuruldu; senkron kırık.** Bu derleme senkron
-v2 Aşama 4 istemcisi: gönderimde `changed_at_ms` yolluyor, cevaptan
-`server_rev` okuyor. Üretim projesinde (`jkviihbyogktwboreydn`) o kolonlar ve
-`deleted_records` tablosu yok → gönderim `PGRST204` ile reddediliyor,
-**telefonda 62 satır kuyrukta, bulut yedeği yok.** Veri kaybı yok (kuyruk
-diskte), ama telefon kaybolursa o kayıtlar gider.
+**Üretim Supabase göçü ✅ uygulandı (2026-09-22).** Sunucu artık senkron v2
+Aşama 3 + 5 ve haftalık değerlendirme kolonlarını taşıyor; telefondaki
+(SM A075F) release derlemesiyle aynı sürümde. Kalan iş **yalnız doğrulama**.
 
-Sebep plandaydı: Aşama 3 sunucu göçü "Aşama 4 istemcisiyle aynı sürümde
-çıkar" diye bekletiliyordu (docs/20). Kurulum o çıkıştı, sunucu yarısı eksik.
+- [x] Göç öncesi geri dönüş noktası: `backup_20260922` şeması — 12 tablonun
+      göç öncesi tam kopyası (39 satır), API'ye kapalı (`authenticated`/`anon`
+      yetkisi yok). **Doğrulama bitince düşülecek:**
+      `drop schema backup_20260922 cascade;`
+- [x] Üç göç sırayla uygulandı ve doğrulandı:
+      `sync_v2_stage3` → `sync_v2_stage5` → `weekly_review_goal_direction`
+      (`supabase_migrations` sürümleri: 20260922192144 / …192213 / …192221).
+- [x] Göç sonrası kontrol: kaybolan satır 0, beklenmeyen satır 0,
+      **`updated_at` sapması 0** (2026-09-19 provasında yakalanan doldurma
+      hatası üretimde tekrarlamadı), 39 satırın 39'u benzersiz `server_rev`
+      aldı, doldurulmamış satır yok. 12 `sync_guard_trg` + 12
+      `sync_mark_deleted_trg`, 12 `_user_rev_idx` + 12 `_user_uid_key`,
+      `deleted_records` (RLS açık, yalnız SELECT+INSERT), `sync_delete`
+      yetkisi `authenticated`'ta, `sync_rev_seq` kullanım yetkisi verildi.
+- [ ] **Telefonda doğrula (Samet):** uygulamayı aç → `adb logcat | grep
+      fitpack.sync` → "gönderilen N, kalan 0". Beklenen: kuyruktaki ~62 satır
+      buluta gider, hesap ekranında "Son yedekleme: bugün …" görünür.
+      Doğrulanana kadar telefonda **çıkış yapma / hesap değiştirme /
+      uygulamayı kaldırma** (yerel veri hâlâ tek kopya).
+- [ ] Kuyruk boşaldıktan sonra bulutta satır sayısını karşılaştır ve
+      `backup_20260922` şemasını düş.
 
-- [ ] Üç göçü sırayla üretime uygula (hepsi `Fit Pack Dev`'de doğrulandı,
-      idempotent, Aşama 3 için 29/29 pgTAP yeşil):
-      `supabase/migrations/20260918120000_sync_v2_stage3.sql` →
-      `20260918140000_sync_v2_stage5.sql` →
-      `20260919100000_weekly_review_goal_direction.sql`
-- [ ] Telefonda doğrula: `adb logcat | grep fitpack.sync` → "gönderilen N,
-      kalan 0".
-- [ ] Göç bitene kadar Samet: **çıkış yapmasın / hesap değiştirmesin**,
-      uygulamayı kaldırmasın, verisini temizlemesin — yerel veri tek kopya.
+### Göç sonrası açık uyarılar (acil değil, Samet'e bilgi)
+
+Supabase güvenlik denetçisi üç WARN veriyor; **hiçbiri göçün açtığı bir delik
+değil**, ama not düşüldü:
+
+- `sync_guard` ve `sync_delete` için `search_path` ayarlı değil. İkisi de
+  SECURITY INVOKER ve içlerindeki her ad şema nitelikli (`public.…`,
+  `auth.uid()`), yani pratikte gölgelenemezler. İstenirse migration'a
+  `set search_path = ''` eklenir (`sync_mark_deleted`'te zaten var).
+- `sync_mark_deleted` PostgREST üzerinden `rpc/sync_mark_deleted` olarak
+  görünüyor. Tetikleyici fonksiyonu olduğu için doğrudan çağrı hata verir;
+  yine de `revoke execute … from anon, authenticated` temiz olur.
+- `rls_auto_enable` (ilk şemadan kalma, bu göçle ilgisiz) aynı uyarıyı alıyor.
+- Ayrıca auth tarafında "sızmış parola koruması kapalı" uyarısı var —
+  panelden açılabilir, göçle ilgisi yok.
 
 ## 🧭 Güncel sıra — Samet onayı (2026-09-17 akşam)
 

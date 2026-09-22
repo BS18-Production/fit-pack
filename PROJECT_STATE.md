@@ -14,6 +14,27 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
 
+## 🚀 Üretim Supabase göçü ✅ uygulandı — 2026-09-22
+
+Telefondaki release derlemesi senkron v2 Aşama 4 istemcisiydi, sunucu hâlâ
+v1'di → gönderim `PGRST204` ile reddediliyordu ve ~62 satır telefonda
+kuyrukta bekliyordu. Üç göç sırayla üretime (`jkviihbyogktwboreydn`) uygulandı:
+`sync_v2_stage3` → `sync_v2_stage5` → `weekly_review_goal_direction`.
+
+Göç öncesi geri dönüş noktası: **`backup_20260922` şeması** — 12 tablonun
+tam kopyası (39 satır), API'ye kapalı. Doğrulama bitince düşülecek.
+
+Göç sonrası ölçüm: kaybolan satır 0, beklenmeyen satır 0, **`updated_at`
+sapması 0** (2026-09-19 provasında yakalanan doldurma hatası üretimde
+tekrarlamadı), 39 satırın 39'u benzersiz `server_rev` aldı. 12 `sync_guard_trg`
++ 12 `sync_mark_deleted_trg`, 12 + 12 dizin, `deleted_records` (RLS açık,
+yalnız SELECT+INSERT), `sync_delete` yetkisi verildi.
+
+**Kalan:** telefonda kuyruğun boşaldığının doğrulanması —
+`adb logcat | grep fitpack.sync` → "gönderilen N, kalan 0"
+(NEXT_TASKS "Sıradaki iş"). Açık güvenlik uyarıları (hepsi WARN, göçle açılan
+delik değil) NEXT_TASKS'ta listelendi.
+
 ## 🍽️ Geçmişten Öğün Kopyala ✅ (kodlandı) — 2026-09-22
 
 docs/21 #2'nin küçük sürümü (yeni tablo YOK): öğün kartında **⋯ → "Başka
@@ -49,8 +70,9 @@ hedef yönü, `/insights/week` ekranı (boş bölüm gizlenmez, her kartta "nere
 hesaplandı"), hafta kapanışı 20:00 bildirimi (dokununca ekran açılır).
 Samet'in kuralları motorda: kayıtlı günlerin ortalaması, kayıtsız gün
 yargılanmaz, hedef yönü geçmişe uygulanmaz, puan yok, tek ölçüm trend değil.
-Hedef çelişkisinde **otomatik değişiklik yok**. Sunucu kolonları `Fit Pack
-Dev`'de; üretime 3+4+5 ile birlikte gider. **Görsel kontrol bekliyor.**
+Hedef çelişkisinde **otomatik değişiklik yok**. Sunucu kolonları
+**2026-09-22'de üretime uygulandı** (3+4+5 ile birlikte).
+**Görsel kontrol bekliyor.**
 
 ## 🔵 Senkron v2 — Aşama 0–5 ve 7 ✅ — 2026-09-19
 
@@ -80,9 +102,9 @@ Dev`'de; üretime 3+4+5 ile birlikte gider. **Görsel kontrol bekliyor.**
   gelen damga sunucudakinden yeni değilse yazma atlanır ve satır `RETURNING`
   sonucunda görünmez — istemci reddi buradan anlar. Silinmiş kimlik hiçbir
   yazmayla geri gelmez. `Fit Pack Dev`'de **29/29 pgTAP testi yeşil**,
-  migration idempotent. **Üretime uygulanmadı** — Aşama 4 ile aynı sürümde
-  çıkar (ölçüldü: `changed_at_ms` göndermeyen eski istemcinin güncellemesi
-  sessizce reddediliyor).
+  migration idempotent. **Üretime 2026-09-22'de uygulandı** — Aşama 4 ve 5
+  ile aynı sürümde (ölçüldü: `changed_at_ms` göndermeyen eski istemcinin
+  güncellemesi sessizce reddediliyor).
 - **Yeni risk belgelendi (docs/20 §12.1):** `server_rev` transaction başında
   atanıp commit'te görünür olduğundan çekme imleci bir satırı kalıcı
   atlayabilir. Aşama 4 imleç payı + düzenli tam uzlaştırma ile kapatacak.
@@ -118,10 +140,12 @@ Dev`'de; üretime 3+4+5 ile birlikte gider. **Görsel kontrol bekliyor.**
   kontrol simülatörde bekliyor.
 - **Yayın hazırlığı (2026-09-19):** üretim yedeği alındı ve doğrulandı; prova
   Aşama 3 migration'ında `updated_at`'i ezen bir hata buldu, düzeltildi.
-  **3+4+5 tek sürümde çıkacak; telefon bağlanmayı bekliyor.**
+- **Üretime çıkış ✅ (2026-09-22):** 3+5 sunucu göçleri + haftalık
+  değerlendirme kolonları üretime uygulandı, göç sonrası kontroller temiz
+  (yukarıda "Üretim Supabase göçü"). Telefonda kuyruğun boşalması bekleniyor.
 - analyze 0 · test **502/502** (haftalık değerlendirme + fotoğraflar dahil). Simülatörde gerçek veriyle doğrulandı.
-- **Bekleyen:** 3 + 4 üretime **birlikte** çıkar; öncesinde yedek + cihazda
-  duman testi (NEXT_TASKS "Sıradaki").
+- **Bekleyen:** telefonda (SM A075F) duman testi — kuyruk boşalıyor mu
+  (NEXT_TASKS "Sıradaki iş"). Aşama 6 hâlâ yazılmadı.
 
 ## 🧹 A Paketi — birikmiş işler kapatıldı — 2026-09-18
 

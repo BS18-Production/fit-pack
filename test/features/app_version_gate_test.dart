@@ -173,6 +173,31 @@ void main() {
       );
     });
 
+    test('kapı AÇILINCA kullanıcı ekranda kilitli kalmaz', () {
+      // Cihazda yakalandı (2026-09-22): sunucu min_build'i indirdi, "Tekrar
+      // dene" durumu güncelledi, ama yönlendirme kullanıcıyı almadı ve ekran
+      // güncelleme sayfasında kaldı.
+      expect(
+        gateRedirect(
+          location: AppRoutes.updateRequired,
+          signedIn: true,
+          onboarded: true,
+          updateRequired: false,
+        ),
+        AppRoutes.home,
+      );
+    });
+
+    test('aynı kilit hesap dur ekranlarında da yok', () {
+      for (final loc in [AppRoutes.accountError, AppRoutes.accountConflict]) {
+        expect(
+          gateRedirect(location: loc, signedIn: true, onboarded: true),
+          AppRoutes.home,
+          reason: '$loc bayrağı kapandığında kullanıcı orada kalmamalı',
+        );
+      }
+    });
+
     test('kapı açıkken olağan yönlendirme bozulmaz', () {
       expect(
         gateRedirect(

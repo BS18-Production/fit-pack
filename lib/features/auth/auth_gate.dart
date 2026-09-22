@@ -375,12 +375,18 @@ String? gateRedirect({
   if (!onboarded) {
     return location == AppRoutes.onboarding ? null : AppRoutes.onboarding;
   }
-  // Girişi tamamlamış kullanıcı kapıya/onboarding'e geri dönemez. Kurtarma
-  // ekranı da buraya dahil: bayrak kapalıyken orada işi yok.
+  // Girişi tamamlamış kullanıcı kapıya/onboarding'e geri dönemez. **Bütün
+  // "dur" ekranları buraya dahil:** bayrağı kapanan bir dur ekranı listede
+  // yoksa kullanıcı orada KİLİTLİ kalır — yönlendirme onu almaz, ekranın da
+  // kendi çıkışı yoktur. Cihazda ölçüldü (2026-09-22): sürüm kapısı indikten
+  // sonra "Tekrar dene" durumu güncelliyor ama ekran değişmiyordu.
   if (atGate ||
       location == AppRoutes.splash ||
       location == AppRoutes.onboarding ||
-      location == AppRoutes.resetPassword) {
+      location == AppRoutes.resetPassword ||
+      location == AppRoutes.updateRequired ||
+      location == AppRoutes.accountError ||
+      location == AppRoutes.accountConflict) {
     return AppRoutes.home;
   }
   return null;

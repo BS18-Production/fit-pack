@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/tables/sync_columns.dart';
 import 'sync_apply.dart';
+import 'sync_clock.dart';
 import 'sync_controller.dart' show syncLog;
 import 'sync_errors.dart';
 import 'sync_health.dart';
@@ -53,7 +54,15 @@ class AcceptedRow {
   /// imleci ve "bu satırın sunucudaki hali hangisi" sorusu buna bakar.
   final int serverRev;
 
-  const AcceptedRow(this.uid, this.serverRev);
+  /// Sunucunun satıra bastığı `updated_at` (ms). **Sunucu saatinin ölçüsü**:
+  /// istemci cihaz saatiyle arasındaki farkı bundan öğrenir (docs/23 §2.2),
+  /// böylece ayrı bir "saat kaç" turu atılmaz.
+  ///
+  /// Eski sunucu (ya da projeksiyonu dönmeyen bir uç) için `null` — fark
+  /// öğrenilmez, damgalama bugünkü gibi cihaz saatinden yapılır.
+  final int? updatedAtMs;
+
+  const AcceptedRow(this.uid, this.serverRev, {this.updatedAtMs});
 }
 
 /// Sunucuya yazma yüzeyi. Gerçek uygulaması Supabase'i çağırır; testler bunu
@@ -135,9 +144,14 @@ class SyncPush {
     this.remote, {
     SyncApply? apply,
     SyncHealth? health,
+    SyncClock? clock,
     this.batchSize = 200,
   })  : apply = apply ?? SyncApply(db),
-        health = health ?? SyncHealth(db);
+        health = health ?? SyncHealth(db),
+        clock = clock ?? SyncClock(db);
+
+  /// Sunucu saati farkını öğrenen katman (docs/23 §2).
+  final SyncClock clock;
 
   /// Bekleyen her şeyi gönderir. `userId` = Supabase `auth.uid()`.
   ///
@@ -327,6 +341,8 @@ class SyncPush {
       syncLog('$table → ${payload.length} satır gönderiliyor');
       List<AcceptedRow> accepted;
       final failedUids = <String>{};
+      // Fark hesabı için isteğin ÇIKIŞ anı (docs/23 §2.2).
+      final sentAtMs = DateTime.now().millisecondsSinceEpoch;
       try {
         accepted = await remote.upsert(table, payload);
       } catch (e) {
@@ -341,6 +357,9 @@ class SyncPush {
         failedUids.addAll(ayrik.failed);
         permanent += ayrik.failed.length;
       }
+
+      // Sunucu saatini kabul edilen satırlardan öğren — ek tur yok.
+      await _learnClock(accepted, sentAtMs);
 
       // KABUL EDİLENLER: temiz işaretle, sunucu sürümünü yaz.
       await _markClean(table, accepted, stamps, userId);
@@ -503,6 +522,21 @@ class SyncPush {
   /// `user_id` de yerele yazılır: (a) satırın kime ait olduğu cihazda bilinir
   /// → hesap değişimi tespiti (docs/18 §5.1 Kural 3), (b) senkron edilmiş
   /// katalog satırı bundan sonra düzenlendiğinde tekrar kuyruğa girer.
+  /// Kabul edilen satırlardan sunucu saatini öğrenir (docs/23 §2.2).
+  ///
+  /// Turda birden çok satır dönerse **en büyük** damga kullanılır: hepsi aynı
+  /// transaction'da yazıldığı için damgaları birkaç ms farkla aynıdır, en
+  /// büyüğü sunucunun "şimdi"sine en yakın olanıdır.
+  Future<void> _learnClock(List<AcceptedRow> accepted, int sentAtMs) async {
+    var serverMs = 0;
+    for (final row in accepted) {
+      final v = row.updatedAtMs;
+      if (v != null && v > serverMs) serverMs = v;
+    }
+    if (serverMs == 0) return; // sunucu damgayı dönmedi → öğrenecek bir şey yok
+    await clock.learn(serverMs: serverMs, sentAtMs: sentAtMs);
+  }
+
   Future<void> _markClean(
     String table,
     List<AcceptedRow> accepted,

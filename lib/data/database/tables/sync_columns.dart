@@ -243,11 +243,26 @@ END''';
 
 // ─────────────────── Senkron v2 (şema v11) — docs/20 §4.1 ───────────────────
 
-/// Milisaniyelik "şimdi". `strftime('%s')` yalnız saniye verir; aynı saniyedeki
-/// iki düzenleme ayırt edilemediği için gönderim sırasındaki değişiklik
-/// kayboluyordu (docs/20 §1 hata #3).
+/// Milisaniyelik "şimdi", **sunucu saatiyle düzeltilmiş** (docs/23 §2).
+///
+/// `strftime('%s')` yalnız saniye verir; aynı saniyedeki iki düzenleme ayırt
+/// edilemediği için gönderim sırasındaki değişiklik kayboluyordu (docs/20 §1
+/// hata #3).
+///
+/// **Düzeltme terimi neden şart (docs/23 §2.1):** bu damga sunucudaki çakışma
+/// kuralının tek girdisi. Sunucu ileri sapmayı kırpıyor ama GERİ sapmayı
+/// kırpmıyor — saati geride olan bir telefonun gerçek düzenlemesi
+/// sunucudakinden küçük damga taşır, `sync_guard` onu "eski" sayıp atlar ve
+/// istemci ret çözümünde kendi satırını sunucununkiyle değiştirir. Kullanıcı
+/// "düzenlemem geri alındı" görür, ekranda hiçbir açıklama olmaz.
+///
+/// Fark `clock_offset_ms`'te tutulur ve gönderim cevabından öğrenilir
+/// (`SyncClock`). Anahtar yoksa ya da değeri sayıya çevrilemiyorsa 0 kullanılır
+/// → düzeltme öğrenilene kadar davranış eskisiyle birebir aynı.
 const _nowMsSql =
-    "CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)";
+    "CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER) + "
+    "COALESCE((SELECT CAST(value AS INTEGER) FROM sync_meta "
+    "WHERE key = 'clock_offset_ms'), 0)";
 
 /// Cihaz sayacı: her yazmada bir artan `local_seq` üretir.
 const _nextSeqSql =
@@ -273,6 +288,8 @@ const _captureOnSql =
 const seedSyncMetaSql = [
   "INSERT OR IGNORE INTO sync_meta (key, value) VALUES ('capture', '1')",
   "INSERT OR IGNORE INTO sync_meta (key, value) VALUES ('next_seq', '1')",
+  // Sunucu saati farkı (docs/23 §2). 0 = düzeltme yok; ilk gönderim öğretir.
+  "INSERT OR IGNORE INTO sync_meta (key, value) VALUES ('clock_offset_ms', '0')",
 ];
 
 /// Çekme/göç sırasında tetikleyicileri susturur (1 = kuyruğa al, 0 = sus).

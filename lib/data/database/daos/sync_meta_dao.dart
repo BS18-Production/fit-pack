@@ -47,6 +47,13 @@ class SyncMetaDao extends DatabaseAccessor<AppDatabase> with _$SyncMetaDaoMixin 
   /// doluysa ve 3 günden eskiyse kullanıcı uyarılır (docs/20 §9).
   static const keyUnreachableSince = 'server_unreachable_since';
 
+  /// Cihaz saati ile sunucu saati arasındaki fark (ms, işaretli) — docs/23 §2.
+  ///
+  /// Tetikleyiciler `changed_at_ms`'i damgalarken bunu EKLER, o yüzden
+  /// `shared_preferences`'ta değil burada: SQLite tetikleyicisi Dart
+  /// değişkeni göremez.
+  static const keyClockOffsetMs = 'clock_offset_ms';
+
   Future<String?> read(String key) async {
     final row = await (select(syncMeta)..where((t) => t.key.equals(key)))
         .getSingleOrNull();

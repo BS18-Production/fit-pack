@@ -99,7 +99,7 @@ class AppDatabase extends _$AppDatabase {
   /// Katalog satırları (seed hareket/besin) hariç — onlar kullanılınca elle
   /// kuyruğa alınır. Tablo/kolon değişmez, yalnız tetikleyici eklenir.
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   /// v5→v6 gibi ARA göç adımları `m.createTable()` ile GÜNCEL tanımı kullanır —
   /// yani o adımda doğan tablo (routines, routine_exercises, water_intake)
@@ -416,6 +416,29 @@ class AppDatabase extends _$AppDatabase {
           await _addColumnIfMissing(m, userProfile, userProfile.goalDirection);
           await _addColumnIfMissing(
               m, userProfile, userProfile.goalDirectionSince);
+        }
+        // v12 → v13: sunucu saati düzeltmesi (docs/23 §2).
+        //
+        // Tabloya DOKUNULMAZ — değişen yalnız tetikleyicilerin gövdesi:
+        // `changed_at_ms` artık `clock_offset_ms` terimini ekliyor. Tetikleyici
+        // gövdesi yerinde güncellenemez, düşürülüp yeniden kurulur.
+        //
+        // `capture` KAPATILMIYOR: v11'in aksine burada hiçbir satır
+        // güncellenmiyor, yani tetikleyicilerin yanlışlıkla satır kuyruğa
+        // alması mümkün değil. Kapatıp açmak, arada bir yazma olursa onu
+        // sessizce kuyruk dışı bırakırdı.
+        if (from < 13 && to >= 13) {
+          for (final sql in seedSyncMetaSql) {
+            await m.database.customStatement(sql); // clock_offset_ms = 0
+          }
+          for (final name in syncedTableNames) {
+            await m.database.customStatement(dropInsertTriggerSql(name));
+            await m.database.customStatement(dropUpdateTriggerSql(name));
+            await m.database.customStatement(dropDeleteTriggerSql(name));
+            await m.database.customStatement(createInsertTriggerSql(name));
+            await m.database.customStatement(createUpdateTriggerSql(name));
+            await m.database.customStatement(createDeleteTriggerSql(name));
+          }
         }
       },
 

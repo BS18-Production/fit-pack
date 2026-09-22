@@ -34,6 +34,11 @@ class FakeSyncServer implements SyncRemote {
   /// Tablolar arası ortak sürüm sayacı (`sync_rev_seq` karşılığı).
   int _rev = 0;
 
+  /// **Sunucunun saati** (epoch ms). Gerçek sunucu kabul ettiği satıra
+  /// `updated_at = now()` yazar ve istemci saat farkını bundan öğrenir
+  /// (docs/23 §2.2). `null` = damgayı dönmeyen eski sunucu.
+  int? serverNowMs;
+
   /// true ise her çağrı patlar (ağ yok).
   bool fail = false;
 
@@ -76,8 +81,9 @@ class FakeSyncServer implements SyncRemote {
       }
       final stored = Map<String, Object?>.of(r);
       stored['server_rev'] = ++_rev;
+      if (serverNowMs != null) stored['updated_at'] = serverNowMs;
       t[uid] = stored;
-      accepted.add(AcceptedRow(uid, _rev));
+      accepted.add(AcceptedRow(uid, _rev, updatedAtMs: serverNowMs));
     }
 
     if (failAfterWrite) throw Exception('onay alınamadı');

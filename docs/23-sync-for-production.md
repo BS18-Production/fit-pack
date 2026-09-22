@@ -1,6 +1,7 @@
 # 23 — Senkronun ticari ürüne hazırlanması
 
-> **Durum:** 📝 **Taslak — Samet'in kararı bekleniyor.** Kod yazılmadı.
+> **Durum:** ✅ **Kararlar onaylandı (Samet, 2026-09-22)** — §2 ve §3
+> kodlanıyor; §4 (abonelik) karar olarak alındı, kodlaması ayrı işte.
 > **Tarih:** 2026-09-22 · **Yazan:** Claude
 > **Temel:** `main` · şema v12 · senkron v2 Aşama 0–5 ve 7 üretimde
 > **İlgili:** [docs/20 — Senkron v2](20-sync-v2.md) ·
@@ -34,9 +35,10 @@ tablosu (`app_min_version`) ve yeni bir ekran; kullanıcı verisine dokunmaz.
 (3) karar verilene kadar **kod yazılmaz** — ama şema sabitlenmeden
 cevaplanmalı, çünkü "salt okunur" bir abonelik durumu alanı gerektirir.
 
-**Samet'ten gereken kararlar.** §5'te 4 madde: (1) saat düzeltmesi yaklaşımı,
-(2) asgari sürüm kapısının sertliği, (3) abonelik bitince veri davranışı,
-(4) ilk sürümde çoklu cihaz vaat ediliyor mu (Aşama 6'nın sırasını belirler).
+**Kararlar (Samet, 2026-09-22).** Dördü de önerilen şekilde onaylandı: saat
+farkı düzeltmesi, zorunlu güncelleme kapısı, abonelik bitince salt okunur veri.
+Çoklu cihaz ilk sürümde **vaat edilmiyor** → Aşama 6 launch sonrasına kalıyor
+(varsayım olarak kaydedildi; vaat değişirse sıra da değişir).
 
 **Nasıl doğrulanacak.** Saat düzeltmesi: saati elle 2 saat geri alınmış bir
 cihazda yapılan düzenleme sunucuda **kabul** edilmeli (bugün sessizce
@@ -197,12 +199,12 @@ mesajı. **Bu dokümanda kodlanmıyor** — karar çıkınca ayrı bir doküman.
 
 ## 5. Kararlar ve açık sorular
 
-| # | Konu | Durum | Öneri |
+| # | Konu | Durum | Karar |
 |---|---|---|---|
-| 1 | Saat düzeltmesi yaklaşımı | ⏳ **Karar bekliyor** | §2.2 — gönderim cevabından sunucu farkı, 30 sn eşik. *Alternatif:* hiçbir şey yapmama (ticari üründe önerilmez), HLC (şimdilik fazla) |
-| 2 | Asgari sürüm kapısının sertliği | ⏳ **Karar bekliyor** | §3.2 — zorunlu güncelleme (uygulama kullanılamaz). *Alternatif:* kapatılabilir uyarı şeridi — daha nazik ama bozuk istemciyi sahada bırakır |
-| 3 | Abonelik bitince bulut verisi | ⏳ **Karar bekliyor** (Yomi ile) | §4 — salt okunur |
-| 4 | İlk sürümde çoklu cihaz vaadi | ⏳ **Karar bekliyor** | Vaat ediliyorsa Aşama 6 (katalog kimliği + su olay kaydı) launch öncesine alınır; edilmiyorsa sonraya kalır |
+| 1 | Saat düzeltmesi yaklaşımı | ✅ **Karar (Samet, 2026-09-22)** | §2.2 — gönderim cevabından sunucu farkı, 30 sn eşik. *Elenenler:* hiçbir şey yapmama, HLC (şimdilik fazla) |
+| 2 | Asgari sürüm kapısının sertliği | ✅ **Karar (Samet, 2026-09-22)** | §3.2 — zorunlu güncelleme. *Elenen:* kapatılabilir uyarı şeridi — nazik ama bozuk istemciyi sahada bırakır |
+| 3 | Abonelik bitince bulut verisi | ✅ **Karar (Samet, 2026-09-22)** | §4 — salt okunur. Kodlaması ayrı iş; satın alma katmanı geldiğinde |
+| 4 | İlk sürümde çoklu cihaz vaadi | ✅ **Varsayım (2026-09-22)** | Vaat **edilmiyor** → Aşama 6 (katalog kimliği + su olay kaydı) launch sonrasına kalıyor. Vaat değişirse sıra da değişir |
 
 ---
 

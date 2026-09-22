@@ -62,11 +62,12 @@ ticari üründe düşüyor.
       + (son çekmeden 5 dk geçtiyse) çekme, hesap ekranında "Şimdi eşitle".
       `SyncRefresh` çekme + okuma tazelemesini tek yerde topluyor. 10 test,
       toplam 535 yeşil. **Cihazda görsel kontrol bekliyor.**
-- [ ] **[docs/23](docs/23-sync-for-production.md) okunacak, 4 karar verilecek:**
-      (1) saat sapması düzeltmesi, (2) asgari sürüm kapısının sertliği,
-      (3) abonelik bitince bulut verisi (Yomi ile), (4) ilk sürümde çoklu cihaz
-      vaadi var mı — bu Aşama 6'nın sırasını belirliyor.
-- [ ] Kararlar çıkınca kodlama: saat düzeltmesi + sürüm kapısı (~1,5 gün).
+- [x] **[docs/23](docs/23-sync-for-production.md) — 4 karar onaylandı
+      (Samet, 2026-09-22):** saat farkı düzeltmesi · zorunlu güncelleme kapısı ·
+      abonelik bitince salt okunur veri · çoklu cihaz ilk sürümde vaat
+      **edilmiyor** (Aşama 6 launch sonrasına).
+- [ ] **Kodlama:** saat farkı düzeltmesi (docs/23 §2) + asgari sürüm kapısı
+      (§3). Abonelik katmanı ayrı iş — satın alma geldiğinde.
 
 **Neden acil:** saat sapması bugün **sessiz** veri kaybı yapıyor — saati geride
 olan cihazın düzenlemesi sunucuda reddediliyor ve yerel kopya sunucununkiyle

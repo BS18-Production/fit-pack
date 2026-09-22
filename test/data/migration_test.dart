@@ -43,11 +43,13 @@ void main() {
       // (changed_at_ms), cihaz sayacı (local_seq), server_rev + sync_meta /
       // sync_tombstones tabloları + capture bayraklı 36 tetikleyici
       // (docs/20 §4.1) · v11→v12: haftalık değerlendirme — user_profile
-      // +goalDirection/+goalDirectionSince (docs/22 §6).
+      // +goalDirection/+goalDirectionSince (docs/22 §6) · v12→v13: sunucu
+      // saati düzeltmesi — tetikleyiciler changed_at_ms'e clock_offset_ms
+      // terimini ekliyor, tabloya dokunulmuyor (docs/23 §2).
       // Lossless göç testleri: migrations/migration_v*_to_v*_test.dart.
       final db = newTestDatabase();
       addTearDown(db.close);
-      expect(db.schemaVersion, 12);
+      expect(db.schemaVersion, 13);
     });
 
     test('temiz kurulum (onCreate) beklenen tabloları yaratır', () async {

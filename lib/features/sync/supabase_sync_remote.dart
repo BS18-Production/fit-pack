@@ -34,14 +34,20 @@ class SupabaseSyncRemote implements SyncRemote {
   Future<List<AcceptedRow>> upsert(
       String table, List<Map<String, Object?>> rows) async {
     if (rows.isEmpty) return const [];
+    // `updated_at` da isteniyor: sunucunun saatini bundan öğreniyoruz
+    // (docs/23 §2.2) — ayrı bir "saat kaç" turu atmamak için.
     final accepted = await client
         .from(table)
         .upsert(rows, onConflict: 'user_id,uid')
-        .select('uid, server_rev');
+        .select('uid, server_rev, updated_at');
     return [
       for (final r in accepted)
         if (r['uid'] is String)
-          AcceptedRow(r['uid'] as String, _asInt(r['server_rev'])),
+          AcceptedRow(
+            r['uid'] as String,
+            _asInt(r['server_rev']),
+            updatedAtMs: _asEpochMs(r['updated_at']),
+          ),
     ];
   }
 
@@ -102,5 +108,13 @@ class SupabaseSyncRemote implements SyncRemote {
     if (v is int) return v;
     if (v is num) return v.toInt();
     return int.tryParse('$v') ?? 0;
+  }
+
+  /// Sunucunun `timestamptz` değerini epoch ms'e çevirir. Çözülemezse `null`
+  /// → saat farkı öğrenilmez, damgalama cihaz saatiyle sürer (docs/23 §2.2).
+  static int? _asEpochMs(Object? v) {
+    if (v is DateTime) return v.millisecondsSinceEpoch;
+    if (v is String) return DateTime.tryParse(v)?.millisecondsSinceEpoch;
+    return null;
   }
 }

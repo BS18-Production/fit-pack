@@ -89,6 +89,33 @@ void main() {
     expect(await count('workout_sessions'), 0);
   });
 
+  test('inen silme yerel akışları uyandırır (ekran tazelensin)', () async {
+    // Cihazda bulundu (2026-09-23): mezar taşı indi, satır yerelde SİLİNDİ,
+    // ama ana sayfa sayaçları eski kaldı ("5 antrenman" → yeniden açılışta
+    // "4 antrenman"). Sebep: silme Drift'e hangi tablonun değiştiğini
+    // söylemiyordu, `tableUpdates()` tetiklenmiyordu ve `watchTables` ile
+    // beslenen ekran sağlayıcıları uyanmıyordu.
+    await addRoutine('Bacak');
+    await push.pushAll(userId: user);
+    final uid = await uidOf('Bacak');
+
+    final yayinlar = <int>[];
+    final sub =
+        db.select(db.routines).watch().listen((r) => yayinlar.add(r.length));
+    await pumpEventQueue();
+    expect(yayinlar, [1], reason: 'ilk yayım mevcut satırı vermeli');
+
+    await remote.deleteRows('routines', user, [uid]);
+    await SyncPull(db, remote).pullAll(userId: user);
+    await pumpEventQueue();
+    await sub.cancel();
+
+    expect(await count('routines'), 0, reason: 'satır gerçekten silinmeli');
+    expect(yayinlar.last, 0,
+        reason: 'silme akışa yansımazsa ekran bayat kalır — kullanıcı '
+            'uygulamayı kapatıp açana kadar silinmiş kaydı görür');
+  });
+
   // ─────────────────── 1. Yerel silme sunucuya gidiyor ───────────────────
 
   test('silinen satır sunucudan da kalkar', () async {

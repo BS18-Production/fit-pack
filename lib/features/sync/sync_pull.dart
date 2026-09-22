@@ -302,6 +302,16 @@ class SyncPull {
     return PullResult(updated: applied);
   }
 
+  /// Tablo ADINDAN Drift tanımını bulur. Mezar taşı yalnız `table_name`
+  /// taşıdığı için gereklidir; bilinmeyen ad `null` döner (silme yine çalışır,
+  /// yalnız akış bildirimi yapılmaz).
+  TableInfo<Table, dynamic>? _tableInfo(String name) {
+    for (final t in db.allTables) {
+      if (t.actualTableName == name) return t;
+    }
+    return null;
+  }
+
   /// Mezar taşının tablo sırası; bilinmeyen tablo en sona (-1).
   /// Büyükten küçüğe sıralanınca **çocuk önce** gelir.
   static int _silmeSirasi(Map<String, Object?> mark) {
@@ -315,9 +325,17 @@ class SyncPull {
   /// isteğimiz gereksiz. Bırakılsaydı her turda boşuna `sync_delete`
   /// çağrılırdı.
   Future<int> _deleteLocal(String table, String uid) async {
+    // `updates` ŞART: Drift'e hangi tablonun değiştiği söylenmezse
+    // `tableUpdates()` tetiklenmez, `watchTables` ile beslenen ekran
+    // sağlayıcıları uyanmaz ve kullanıcı silinmiş kaydı uygulamayı kapatıp
+    // açana kadar görmeye devam eder. Cihazda ölçüldü (2026-09-23): satır
+    // silindi ama ana sayfa "5 antrenman" demeye devam etti, yeniden
+    // açılışta "4 antrenman" oldu.
+    final info = _tableInfo(table);
     final silinen = await db.customUpdate(
       'DELETE FROM $table WHERE uid = ?',
       variables: [Variable(uid)],
+      updates: info == null ? null : {info},
       updateKind: UpdateKind.delete,
     );
     await db.customStatement(

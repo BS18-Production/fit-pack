@@ -98,22 +98,19 @@ ticari üründe düşüyor.
       ve **bütün çekme** düşüyordu (`FOREIGN KEY constraint failed (787)`,
       her turda). Artık çocuk önce uygulanıyor. Kırmızı-yeşil doğrulandı.
 
-## 🐛 Açık hata — silme sonrası ekran tazelenmiyor (2026-09-23)
+- [x] **Silme sonrası ekran tazelenmiyordu — düzeltildi (2026-09-23).**
+      Mezar taşı indiğinde satır siliniyordu ama ana sayfa sayaçları eski
+      kalıyordu (cihazda: "5 antrenman" → yeniden açılışta "4 antrenman").
+      Sebep: `_deleteLocal`, `customUpdate`'i **`updates:` olmadan**
+      çağırıyordu; Drift hangi tablonun değiştiğini bilemeyince
+      `tableUpdates()` tetiklenmiyor, `watchTables` ile beslenen
+      sağlayıcılar uyanmıyordu. Tablo adından `db.allTables` ile `TableInfo`
+      bulunup geçiliyor. Test kırmızı-yeşil doğrulandı.
 
-Mezar taşı indiğinde satır yerelde **siliniyor** ama ana sayfadaki sayaçlar
-eski kalıyor; uygulama yeniden açılınca düzeliyor. Cihazda ölçüldü: silmeden
-sonra "5 antrenman / 12.593 kg", yeniden açılışta "4 antrenman / 12.373 kg".
-
-**Teşhis:** `sync_pull.dart` → `_deleteLocal`, `db.customUpdate(...)`'i
-**`updates:` parametresi olmadan** çağırıyor. Drift hangi tablonun
-değiştiğini bilemiyor, `tableUpdates()` tetiklenmiyor, `watchTables` ile
-beslenen ekran sağlayıcıları (`weeklyStreakProvider` vb.) uyanmıyor.
-`SyncRefresh.onChanged`'deki elle invalidate listesi de bu sağlayıcıları
-kurtarmıyor (StreamProvider'lar akışa bağlı).
-
-**Öneri:** tablo adından `db.allTables` üzerinden `TableInfo` bulup
-`updates: {info}` geçmek. Veri kaybı yok, yalnız görüntü bayat kalıyor.
-Düzeltilmeden önce hipotez bir testle doğrulanmalı (akış tetikleniyor mu).
+      **Not:** `SyncApply._insert` / `_update` hâlâ `customStatement`
+      kullanıyor, yani çekilen ekleme/güncellemeler de akış bildirimi
+      yapmıyor — orayı `SyncRefresh.onChanged`'deki elle invalidate listesi
+      kapatıyor (tasarım böyle, H-05 ertelenmiş). Silme o listeden kaçıyordu.
 
 ## 🐛 Açık dayanıklılık boşluğu — çekmede tek bozuk işaret turu kilitliyor
 

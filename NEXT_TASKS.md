@@ -1,5 +1,27 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## 🔴 SIRADAKİ İŞ — üretim Supabase göçü (2026-09-22, Samet onayı bekliyor)
+
+**Telefona (SM A075F) release APK kuruldu; senkron kırık.** Bu derleme senkron
+v2 Aşama 4 istemcisi: gönderimde `changed_at_ms` yolluyor, cevaptan
+`server_rev` okuyor. Üretim projesinde (`jkviihbyogktwboreydn`) o kolonlar ve
+`deleted_records` tablosu yok → gönderim `PGRST204` ile reddediliyor,
+**telefonda 62 satır kuyrukta, bulut yedeği yok.** Veri kaybı yok (kuyruk
+diskte), ama telefon kaybolursa o kayıtlar gider.
+
+Sebep plandaydı: Aşama 3 sunucu göçü "Aşama 4 istemcisiyle aynı sürümde
+çıkar" diye bekletiliyordu (docs/20). Kurulum o çıkıştı, sunucu yarısı eksik.
+
+- [ ] Üç göçü sırayla üretime uygula (hepsi `Fit Pack Dev`'de doğrulandı,
+      idempotent, Aşama 3 için 29/29 pgTAP yeşil):
+      `supabase/migrations/20260918120000_sync_v2_stage3.sql` →
+      `20260918140000_sync_v2_stage5.sql` →
+      `20260919100000_weekly_review_goal_direction.sql`
+- [ ] Telefonda doğrula: `adb logcat | grep fitpack.sync` → "gönderilen N,
+      kalan 0".
+- [ ] Göç bitene kadar Samet: **çıkış yapmasın / hesap değiştirmesin**,
+      uygulamayı kaldırmasın, verisini temizlemesin — yerel veri tek kopya.
+
 ## 🧭 Güncel sıra — Samet onayı (2026-09-17 akşam)
 
 ChatGPT değerlendirmesi sonrası sıra değişti: taslak kaybı haftalık

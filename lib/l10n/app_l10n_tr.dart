@@ -271,6 +271,36 @@ class AppL10nTr extends AppL10n {
   String get nutritionCopyFailed => 'Kopyalanamadı, tekrar dene';
 
   @override
+  String get nutritionMealMenu => 'Öğün seçenekleri';
+
+  @override
+  String get nutritionCopyFromDay => 'Başka günden kopyala';
+
+  @override
+  String nutritionCopyMealTitle(String meal) {
+    return '$meal kopyala';
+  }
+
+  @override
+  String get nutritionCopyPickDay => 'Hangi günden kopyalanacak?';
+
+  @override
+  String nutritionCopyNoHistory(int days) {
+    return 'Son $days günde bu öğünde kayıt yok';
+  }
+
+  @override
+  String get nutritionCopyEditHint => 'Miktarları değiştir, istemediğini çıkar';
+
+  @override
+  String nutritionCopyAddCount(int count) {
+    return 'Ekle ($count)';
+  }
+
+  @override
+  String get nutritionCopyRemove => 'Listeden çıkar';
+
+  @override
   String get nutritionPrevDay => 'Önceki gün';
 
   @override

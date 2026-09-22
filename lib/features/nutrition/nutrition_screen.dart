@@ -18,6 +18,8 @@ import '../../shared/widgets/progress_indicators.dart';
 import '../home/providers/home_providers.dart';
 import 'barcode_flow.dart';
 import 'macro_goals.dart';
+import 'meal_copy_sheet.dart';
+import 'meal_types.dart';
 
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
@@ -198,8 +200,7 @@ class NutritionScreen extends ConsumerWidget {
                             : l.nutritionCopyPrevDay),
                       ),
                     ),
-                  ...['breakfast', 'lunch', 'dinner', 'snack']
-                    .map((mealType) => Padding(
+                  ...mealTypes.map((mealType) => Padding(
                           padding:
                               const EdgeInsets.only(bottom: AppSpacing.md),
                           child: _MealSection(
@@ -209,6 +210,14 @@ class NutritionScreen extends ConsumerWidget {
                                 .toList(),
                             onAddFood: () => _showAddFoodSheet(context, ref,
                                 mealType: mealType),
+                            onCopyFromDay: () => showMealCopySheet(
+                              context,
+                              mealType: mealType,
+                              // Gün başına normalize: panel hedef günü
+                              // listeden düşürmek için karşılaştırıyor.
+                              targetDay:
+                                  DateTime(date.year, date.month, date.day),
+                            ),
                             onDelete: (item) => _delete(context, ref, item),
                           ),
                         )),
@@ -417,32 +426,18 @@ class _SummaryHero extends StatelessWidget {
 }
 
 
-String _mealName(AppL10n l, String type) => switch (type) {
-      'breakfast' => l.mealBreakfast,
-      'lunch' => l.mealLunch,
-      'dinner' => l.mealDinner,
-      'snack' => l.mealSnack,
-      _ => type,
-    };
-
-IconData _mealIcon(String type) => switch (type) {
-      'breakfast' => Icons.bakery_dining_rounded,
-      'lunch' => Icons.lunch_dining_rounded,
-      'dinner' => Icons.dinner_dining_rounded,
-      'snack' => Icons.cookie_rounded,
-      _ => Icons.restaurant_rounded,
-    };
-
 class _MealSection extends StatelessWidget {
   final String mealType;
   final List<FoodLogWithFood> items;
   final VoidCallback onAddFood;
+  final VoidCallback onCopyFromDay;
   final void Function(FoodLogWithFood) onDelete;
 
   const _MealSection({
     required this.mealType,
     required this.items,
     required this.onAddFood,
+    required this.onCopyFromDay,
     required this.onDelete,
   });
 
@@ -467,12 +462,12 @@ class _MealSection extends StatelessWidget {
                         context.colors.secondary.withValues(alpha: 0.14),
                     borderRadius: AppRadius.brSm,
                   ),
-                  child: Icon(_mealIcon(mealType),
+                  child: Icon(mealIcon(mealType),
                       size: AppIconSize.sm,
                       color: context.colors.secondary),
                 ),
                 AppSpacing.hGapMd,
-                Text(_mealName(l, mealType),
+                Text(mealName(l, mealType),
                     style: context.texts.titleSmall),
                 const Spacer(),
                 if (totalKcal > 0)
@@ -480,10 +475,28 @@ class _MealSection extends StatelessWidget {
                       style: context.texts.labelMedium?.copyWith(
                           color: context.colors.onSurfaceVariant)),
                 IconButton(
-                  tooltip: l.nutritionAddTo(_mealName(l, mealType)),
+                  tooltip: l.nutritionAddTo(mealName(l, mealType)),
                   icon: const Icon(Icons.add_rounded),
                   onPressed: onAddFood,
                   visualDensity: VisualDensity.compact,
+                ),
+                // Öğün düzeyinde kopyalama (docs/21 #2): gün boş olmasa da
+                // çalışır — mevcut öğüne EKLER.
+                PopupMenuButton<String>(
+                  tooltip: l.nutritionMealMenu,
+                  icon: const Icon(Icons.more_horiz_rounded),
+                  onSelected: (_) => onCopyFromDay(),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'copy',
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.copy_all_rounded,
+                            size: AppIconSize.sm),
+                        title: Text(l.nutritionCopyFromDay),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

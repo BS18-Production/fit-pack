@@ -273,6 +273,37 @@ class AppL10nEn extends AppL10n {
   String get nutritionCopyFailed => 'Couldn\'t copy — try again';
 
   @override
+  String get nutritionMealMenu => 'Meal options';
+
+  @override
+  String get nutritionCopyFromDay => 'Copy from another day';
+
+  @override
+  String nutritionCopyMealTitle(String meal) {
+    return 'Copy $meal';
+  }
+
+  @override
+  String get nutritionCopyPickDay => 'Pick the day to copy from';
+
+  @override
+  String nutritionCopyNoHistory(int days) {
+    return 'No entries for this meal in the last $days days';
+  }
+
+  @override
+  String get nutritionCopyEditHint =>
+      'Adjust the amounts, drop what you don\'t want';
+
+  @override
+  String nutritionCopyAddCount(int count) {
+    return 'Add ($count)';
+  }
+
+  @override
+  String get nutritionCopyRemove => 'Remove from list';
+
+  @override
   String get nutritionPrevDay => 'Previous day';
 
   @override

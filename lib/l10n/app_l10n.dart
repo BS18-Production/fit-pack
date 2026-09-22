@@ -547,6 +547,54 @@ abstract class AppL10n {
   /// **'Couldn\'t copy — try again'**
   String get nutritionCopyFailed;
 
+  /// No description provided for @nutritionMealMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal options'**
+  String get nutritionMealMenu;
+
+  /// No description provided for @nutritionCopyFromDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy from another day'**
+  String get nutritionCopyFromDay;
+
+  /// No description provided for @nutritionCopyMealTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy {meal}'**
+  String nutritionCopyMealTitle(String meal);
+
+  /// No description provided for @nutritionCopyPickDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the day to copy from'**
+  String get nutritionCopyPickDay;
+
+  /// No description provided for @nutritionCopyNoHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries for this meal in the last {days} days'**
+  String nutritionCopyNoHistory(int days);
+
+  /// No description provided for @nutritionCopyEditHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust the amounts, drop what you don\'t want'**
+  String get nutritionCopyEditHint;
+
+  /// No description provided for @nutritionCopyAddCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Add ({count})'**
+  String nutritionCopyAddCount(int count);
+
+  /// No description provided for @nutritionCopyRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from list'**
+  String get nutritionCopyRemove;
+
   /// No description provided for @nutritionPrevDay.
   ///
   /// In en, this message translates to:

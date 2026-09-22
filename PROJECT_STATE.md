@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-09-19
+> **Son güncelleme:** 2026-09-22
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -8,10 +8,29 @@
 > Ayrıntı: [CODE_REVIEW.md § Dış İnceleme](CODE_REVIEW.md). docs/20 —
 > Senkron v2 tasarımı yazıldı ve onaylandı. **Sıra (Samet, 2026-09-17
 > akşam):** sağlamlık paketi → haftalık değerlendirme + hedef yönü →
-> senkron v2 → ilerleme fotoğrafları + geçmişten öğün kopyala
+> senkron v2 → ilerleme fotoğrafları + geçmişten öğün kopyala (ikisi de
+> kodlandı)
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Sahibi:** Samet Orhan
+
+## 🍽️ Geçmişten Öğün Kopyala ✅ (kodlandı) — 2026-09-22
+
+docs/21 #2'nin küçük sürümü (yeni tablo YOK): öğün kartında **⋯ → "Başka
+günden kopyala"** → son 14 günde aynı öğünde kayıt olan günler → seçilen
+günün besinleri **düzenlenebilir listede** (gram değiştir, satır çıkar, canlı
+kalori) → "Ekle" tek transaction'la **mevcut öğüne ekler**. "Dünü
+kopyala"dan farkı: o, boş bir günün tamamını doldurur; bu, dolu öğüne de
+ekler ve miktarlar eklemeden önce değiştirilebilir.
+
+Makrolar kaydın hazır değerinden taşınmaz, **düzenlenen gramdan yeniden**
+hesaplanır. Silinmiş besin ya da 0 gram satırı sessizce atlanır, kopyalamanın
+tamamı düşmez. Öğün anahtarları (`breakfast`/`lunch`/…) artık `meal_types.dart`
+içinde tek yerde. **23 test** (15 DAO + 8 panel; toplam 525 test yeşil).
+**iOS simülatöründe görsel olarak doğrulandı** (menü → gün listesi →
+düzenlenebilir liste → alt bilgi çubuğu); simülatörde Samet'in gerçek hesabı
+açık olduğu için **"Ekle" dokunuşu yapılmadı** — gerçek veriyle ekleme ve
+Android kontrolü Samet'te.
 
 ## 📷 İlerleme Fotoğrafları ✅ (kodlandı) — 2026-09-19
 

@@ -29,9 +29,53 @@ bağlı).
    Mevcut yerel ve bulut kayıtlarının kimlikleri korunarak taşınması da
    sınanır (S-18 + katalog kimliği taşıması), yalnız yeni kurulum değil.
 4. ✅ **#4 İlerleme fotoğrafları** (docs/19 dilim 1, yalnız cihazda) —
-   **kodlandı 2026-09-19**, cihazda görsel kontrol bekliyor. **#2 "geçmişten
-   öğün kopyala"** sırada.
+   **kodlandı 2026-09-19**, cihazda görsel kontrol bekliyor.
+   ✅ **#2 "geçmişten öğün kopyala" küçük sürümü** — **kodlandı 2026-09-22**
+   (ayrıntı aşağıda "Geçmişten öğün kopyala").
 5. Diğerleri (docs/21 sırası): #8 → #5 → #7 → #2 tam → #10, #9, #13, #12.
+
+## 🍽️ Geçmişten öğün kopyala — kodlandı (2026-09-22, docs/21 #2 küçük sürüm)
+
+Problem: her sabah aynı kahvaltıyı besin besin girmek. "Dünü kopyala" yalnız
+**boş bir günün tamamını** dolduruyordu; dolu bir güne ya da tek öğüne
+dokunamıyordu.
+
+Beklenen davranış: öğün kartında **⋯ → "Başka günden kopyala"** → son 14
+günde aynı öğünde kayıt olan günler (yeniden eskiye, besin adları + kalori)
+→ gün seçilince **düzenlenebilir liste** (gram değiştir, satır çıkar, canlı
+toplam) → "Ekle" tek transaction'la **mevcut öğüne ekler** (üzerine yazmaz).
+
+- [x] **DAO** (`nutrition_dao.dart`): `getMealDays` — pencere bugünden geriye
+      tam 14 takvim günü, `[start, end)` yarı-açık (CONVENTIONS §3), hedef gün
+      listeden düşer, gün aritmetiği `Duration` ile değil takvimle.
+      `addFoodsToMeal` — tek transaction, makrolar **düzenlenen gramdan
+      yeniden** hesaplanır, silinmiş besin/0 gram satırı atlanır.
+- [x] **Panel** (`meal_copy_sheet.dart`): iki adım (gün seç → miktarları
+      düzenle), `ConsumerStatefulWidget` (M-06), satırlar `ValueKey` ile
+      anahtarlı (H-02), gram alanları `initialValue` kullanır (controller yok
+      → dispose edilecek kaynak yok). Sonuç SnackBar'ı **çağıran ekranın**
+      messenger'ıyla gösterilir.
+- [x] **Ortak yardımcılar** (`meal_types.dart`): `mealTypes` / `mealName` /
+      `mealIcon` — öğün anahtarları artık tek yerde (§5), `nutrition_screen`
+      ve panel aynı kaynağı kullanıyor.
+- [x] **l10n:** 8 yeni anahtar (tr + en).
+- [x] **23 test:** 15 DAO (`test/data/meal_copy_test.dart`) + 8 panel/giriş
+      noktası (`test/features/meal_copy_sheet_test.dart`). `flutter analyze`
+      0 uyarı, `flutter test` 525 test yeşil.
+- [x] **iOS simülatöründe görsel doğrulama (2026-09-22):** ⋯ menüsü →
+      "Copy from another day" → gün listesi (gün adı + besin adları + kalori)
+      → düzenlenebilir liste (gram kutusu, ✕, canlı toplam) → alt bilgi
+      çubuğu (toplam · Geri · Ekle) doğru çiziliyor, alt güvenli alan payı
+      var. **Ekleme dokunuşu yapılmadı** — simülatörde Samet'in gerçek hesabı
+      açık, yazılan her şey Supabase'e giderdi; doğrulama okuma tarafıyla
+      sınırlı tutuldu (`food_logs` sonrasında değişmedi, kuyruk temiz).
+      Geçmiş kayıt 2 ay eski olduğu için pencere doğrulama süresince geçici
+      olarak 90 güne alındı, sonra 14'e geri çevrildi.
+- [ ] **Kalan doğrulama (Samet):** gerçek veriyle "Ekle" dokunuşu ve gram
+      klavyesi; Android'de (SM A075F) ⋯ menüsü ve panel yüksekliği.
+
+**Tam sürüm (adlandırılmış şablon, `meal_templates` tabloları) hâlâ senkron
+v2 Aşama 5'i bekliyor** — docs/21 #2 "tam sürüm".
 
 ## 📷 İlerleme fotoğrafları — kodlandı (2026-09-19, docs/19 dilim 1)
 

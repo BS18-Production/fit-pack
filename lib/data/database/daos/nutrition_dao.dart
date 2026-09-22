@@ -204,6 +204,96 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
     return result;
   }
 
+  /// Son [days] günde **aynı öğünde** kayıt bulunan günler, yeniden eskiye
+  /// (docs/21 #2 küçük sürüm). [exclude] günü listelenmez — kullanıcı zaten
+  /// o güne kopyalıyor.
+  ///
+  /// Pencere BUGÜNden geriye bakar, hedef günden değil: geçmiş bir günü
+  /// sonradan dolduran kullanıcı da son yediklerini görebilsin. Tam [days]
+  /// takvim günü, bugün dahil: `[bugün-days+1, yarın)` — yarı-açık aralık
+  /// (CONVENTIONS §3).
+  ///
+  /// Gün aritmetiği takvimle yapılır, `Duration(days:)` ile değil: yaz saati
+  /// uygulayan bir bölgede 23/25 saatlik gün pencereyi bir gün kaydırırdı.
+  Future<List<MealDay>> getMealDays(
+    String mealType, {
+    required DateTime exclude,
+    int days = 14,
+    DateTime? today,
+  }) async {
+    final bugun = today ?? DateTime.now();
+    final end = DateTime(bugun.year, bugun.month, bugun.day + 1);
+    final start = DateTime(bugun.year, bugun.month, bugun.day - days + 1);
+    final haricGun = DateTime(exclude.year, exclude.month, exclude.day);
+
+    final rows = await (select(foodLogs).join([
+      innerJoin(foods, foods.id.equalsExp(foodLogs.foodId)),
+    ])
+          ..where(foodLogs.mealType.equals(mealType) &
+              foodLogs.date.isBiggerOrEqualValue(start) &
+              foodLogs.date.isSmallerThanValue(end))
+          ..orderBy([OrderingTerm.asc(foodLogs.id)]))
+        .get();
+
+    final byDay = <DateTime, List<FoodLogWithFood>>{};
+    for (final r in rows) {
+      final log = r.readTable(foodLogs);
+      final gun = DateTime(log.date.year, log.date.month, log.date.day);
+      if (gun == haricGun) continue;
+      byDay
+          .putIfAbsent(gun, () => [])
+          .add(FoodLogWithFood(log: log, food: r.readTable(foods)));
+    }
+    final gunler = byDay.keys.toList()..sort((a, b) => b.compareTo(a));
+    return [for (final g in gunler) MealDay(day: g, items: byDay[g]!)];
+  }
+
+  /// Seçilen besinleri [day] gününün [mealType] öğününe **tek transaction**
+  /// ile ekler; eklenen satır sayısını döner.
+  ///
+  /// Makrolar gramdan YENİDEN hesaplanır — kullanıcı kopyalarken miktarı
+  /// değiştirebiliyor; eski kaydın hazır makrosunu taşımak yanlış değer
+  /// yazardı.
+  ///
+  /// Üzerine yazmaz, EKLER: "dünü kopyala"dan farkı bu. O, boş bir günü
+  /// dolduruyor; bu, mevcut öğüne ekleme yapıyor.
+  Future<int> addFoodsToMeal(
+    DateTime day,
+    String mealType,
+    List<MealCopyItem> items,
+  ) =>
+      transaction(() async {
+        if (items.isEmpty) return 0;
+        final gun = DateTime(day.year, day.month, day.day);
+        final ids = items.map((i) => i.foodId).toSet().toList();
+        final besinler = {
+          for (final f
+              in await (select(foods)..where((f) => f.id.isIn(ids))).get())
+            f.id: f,
+        };
+        final eklenecek = <FoodLogsCompanion>[];
+        for (final i in items) {
+          final f = besinler[i.foodId];
+          // Besin arada silinmişse o satırı atla — kopyalamanın tamamı
+          // başarısız olmasın.
+          if (f == null || i.grams <= 0) continue;
+          final oran = i.grams / 100;
+          eklenecek.add(FoodLogsCompanion(
+            date: Value(gun),
+            mealType: Value(mealType),
+            foodId: Value(f.id),
+            grams: Value(i.grams),
+            computedKcal: Value(f.kcalPer100g * oran),
+            computedProtein: Value(f.proteinPer100g * oran),
+            computedCarb: Value(f.carbPer100g * oran),
+            computedFat: Value(f.fatPer100g * oran),
+          ));
+        }
+        if (eklenecek.isEmpty) return 0;
+        await batch((b) => b.insertAll(foodLogs, eklenecek));
+        return eklenecek.length;
+      });
+
   /// [from] gününün tüm kayıtlarını [to] gününe kopyalar ("dünü kopyala").
   /// Kopyalanan kayıt sayısını döner; 0 → kaynak gün boş **ya da** hedef gün
   /// zaten dolu.
@@ -264,6 +354,24 @@ class FoodLogWithFood {
   final FoodLog log;
   final Food food;
   FoodLogWithFood({required this.log, required this.food});
+}
+
+/// Bir günün belirli öğünü — "başka günden kopyala" listesinin satırı.
+class MealDay {
+  final DateTime day;
+  final List<FoodLogWithFood> items;
+  const MealDay({required this.day, required this.items});
+
+  double get totalKcal =>
+      items.fold(0, (sum, i) => sum + i.log.computedKcal);
+}
+
+/// Kopyalanacak tek besin: hangi besin, kaç gram (kullanıcı değiştirmiş
+/// olabilir).
+class MealCopyItem {
+  final int foodId;
+  final double grams;
+  const MealCopyItem({required this.foodId, required this.grams});
 }
 
 class DailyNutrition {

@@ -20,13 +20,22 @@ class WeeklyStreak {
   /// Haftalık hedef gün (planlanmış rutin günü sayısı; plan yoksa 1).
   final int weeklyGoal;
 
+  /// Bu haftadan ÖNCE en az bir antrenman var mı. Seri 0 iken "hiç
+  /// başlamadı" ile "önceki hafta kaçtı" durumlarını ayırır (docs/24 §2).
+  final bool hasEarlierSessions;
+
   const WeeklyStreak({
     required this.weeks,
     required this.thisWeekDone,
     required this.weeklyGoal,
+    this.hasEarlierSessions = false,
   });
 
   bool get thisWeekComplete => thisWeekDone >= weeklyGoal;
+
+  /// Hedefe kalan antrenman günü (tamamlandıysa 0).
+  int get remaining =>
+      thisWeekDone >= weeklyGoal ? 0 : weeklyGoal - thisWeekDone;
 }
 
 /// Gün anahtarı: yerel günü UTC gün-epoch'una indirger. DST/saat oynamalarına
@@ -64,5 +73,9 @@ WeeklyStreak computeWeeklyStreak({
   }
 
   return WeeklyStreak(
-      weeks: weeks, thisWeekDone: thisWeekDone, weeklyGoal: goal);
+    weeks: weeks,
+    thisWeekDone: thisWeekDone,
+    weeklyGoal: goal,
+    hasEarlierSessions: daysPerWeek.keys.any((w) => w < thisWeek),
+  );
 }

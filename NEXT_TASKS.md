@@ -149,6 +149,24 @@ açıklama yok. Asgari sürüm kapısı ise **ilk sürümde bulunmak zorunda**:
 sonradan eklenirse ondan önceki sürümdeki kullanıcılar güncellemeye
 zorlanamaz.
 
+## 🏠 Ana Sayfa yenilemesi — haftalık ritim + takvim ✅ kodlandı (2026-09-23, docs/24)
+
+Figma "UI keşfi 03 / Ritim + Takvim" referans alınarak (birebir kopya değil).
+Sıra: başlık → haftalık şerit → bugünün eylemi → ritim → günün kaydı.
+
+- [x] Haftalık şerit: oklarla haftalar, başlık → ay görünümü (`/calendar`),
+      gün → kayıt paneli. Geçmiş haftada "Bugüne dön". Gelecek gün dokunulmaz.
+- [x] Eylem kartı yalnız bugüne bakar; öncelik: **Seansa dön** → planlı
+      rutin → dinlenme → plan yok.
+- [x] Ritim kartı: seri (haftalık hedef, değişmedi) + bu haftanın çubuğu +
+      son 30 gün (antrenman / kg hacim / tahmini kcal). 5 durum metni
+      ("Yeni seri başlıyor" dahil).
+- [x] Dört kutulu "Bu Hafta" ızgarası kalktı (Haftalık Değerlendirme'de var).
+- [x] 8 widget + 13 birim testi; 604 yeşil. iOS simülatöründe açık/koyu
+      tema, geçmiş hafta, gün paneli, ay görünümü görüldü (docs/24 §5).
+- [ ] **Android telefonda görsel kontrol** — cihaz bağlı değildi.
+- [ ] Figma'dan bilinçli farklar docs/24 §4'te (10 madde) — Samet'in onayı.
+
 ## 🔊 Mola geri sayım sesi — yenilendi ✅ (2026-09-23)
 
 Ses beğenilmemişti; ayrıca son saniyelerde duyulan bir zamanlama bozulması

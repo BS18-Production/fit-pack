@@ -14,6 +14,14 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v13 · **Sahibi:** Samet Orhan (kişisel proje)
 
+## 🏠 Ana Sayfa yenilemesi ✅ (kodlandı) — 2026-09-23 · docs/24
+
+Haftalık şerit (hafta gezinme + gün paneli) + ay görünümü (`/calendar`) +
+ritim kartı (seri, bu hafta, son 30 gün) + "Seansa dön" eylemi. Veri modeli
+değişmedi; mevcut sağlayıcılar kullanılıyor. iOS simülatöründe doğrulandı,
+Android telefonda görsel kontrol bekliyor. Yan bulgu: çekmeyle inen satırlar
+ekranı uyandırmıyordu — ayrı commit'te düzeltildi (`1e36dd9`).
+
 ## 🚀 Üretim Supabase göçü ✅ uygulandı ve doğrulandı — 2026-09-22
 
 Telefondaki release derlemesi senkron v2 Aşama 4 istemcisiydi, sunucu hâlâ

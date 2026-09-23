@@ -133,5 +133,24 @@ void main() {
       expect(s.weeks, 5);
       expect(s.thisWeekDone, 1);
     });
+      test('önceki kayıt bayrağı: kaçan hafta ile hiç başlamamayı ayırır', () {
+      // 2 hafta önce tam hafta, geçen hafta boş → seri 0 ama geçmiş var.
+      final kacan = computeWeeklyStreak(
+          sessionDates: [DateTime(2026, 6, 22), DateTime(2026, 6, 25)],
+          weeklyGoal: 2,
+          now: now,
+          weekStart: DateTime.monday);
+      expect(kacan.weeks, 0);
+      expect(kacan.hasEarlierSessions, isTrue);
+
+      // Yalnız bu hafta kayıt var → önceki yok.
+      final ilk = computeWeeklyStreak(
+          sessionDates: [DateTime(2026, 7, 6)],
+          weeklyGoal: 2,
+          now: now,
+          weekStart: DateTime.monday);
+      expect(ilk.hasEarlierSessions, isFalse);
+      expect(ilk.remaining, 1);
+    });
   });
 }

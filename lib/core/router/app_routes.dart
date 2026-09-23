@@ -65,6 +65,13 @@ class AppRoutes {
   static String photoCompare(int a, int b) => '$photoComparePath?a=$a&b=$b';
   static const notifications = '/settings/notifications';
 
+  /// Takvim — ay görünümü (docs/24). Ana sayfa haftalık şeridinin
+  /// başlığından açılır; seçili gün `date=yyyy-MM-dd` ile gelir.
+  static const calendar = '/calendar';
+  static String calendarAt(DateTime d) =>
+      '$calendar?date=${d.year.toString().padLeft(4, '0')}-'
+      '${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
   // ── Parametreli rotalar: `*Path` = router tanımı, fonksiyon = çağrı ──
   static const routineEditPath = '/workout/routine/:id/edit';
   static String routineEdit(int id) => '/workout/routine/$id/edit';

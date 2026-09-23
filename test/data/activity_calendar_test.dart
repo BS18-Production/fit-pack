@@ -113,6 +113,7 @@ void main() {
       expect(d19.workoutName, 'Push Day');
       expect(d19.volumeKg, 480); // 60×8
       expect(d19.setCount, 1);
+      expect(d19.sessionCount, 1);
       // veri olmayan günler haritada yok
       expect(map.containsKey(20), isFalse);
     });

@@ -44,43 +44,6 @@ void main() {
     });
   });
 
-  group('volumeDeltaPct', () {
-    test('önceki 0 ise null; normal yüzde', () {
-      expect(volumeDeltaPct(100, 0), isNull);
-      expect(volumeDeltaPct(120, 100), 20);
-      expect(volumeDeltaPct(80, 100), -20);
-    });
-  });
-
-  group('weeklyProteinAdherencePct', () {
-    FoodLog log(DateTime d, double protein) => FoodLog(
-          syncState: 0,
-          id: d.millisecondsSinceEpoch,
-          date: d,
-          mealType: 'lunch',
-          foodId: 1,
-          grams: 100,
-          computedKcal: 0,
-          computedProtein: protein,
-          computedCarb: 0,
-          computedFat: 0,
-        );
-    test('kayıtlı günlerin ortalaması; kayıt yoksa null', () {
-      expect(weeklyProteinAdherencePct([], 150), isNull);
-      // Gün1: 150/150=100%, Gün2: 75/150=50% → ort %75.
-      final logs = [
-        log(DateTime(2026, 7, 1), 100),
-        log(DateTime(2026, 7, 1), 50),
-        log(DateTime(2026, 7, 2), 75),
-      ];
-      expect(weeklyProteinAdherencePct(logs, 150), 75);
-    });
-    test('hedef 0 → null', () {
-      expect(weeklyProteinAdherencePct([log(DateTime(2026, 7, 1), 100)], 0),
-          isNull);
-    });
-  });
-
   group('topProgressExercise', () {
     ExerciseProgressPoint p(int exId, String name, DateTime d, double kg, int reps) =>
         ExerciseProgressPoint(

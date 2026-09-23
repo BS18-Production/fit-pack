@@ -17,6 +17,7 @@ class DayActivity {
   final int waterMl;
   final bool hasWorkout;
   final String? workoutName; // o günün ilk seansının adı
+  final int sessionCount; // o günkü seans sayısı (hacim/set hepsinin toplamı)
   final int volumeKg; // o günkü toplam hacim (Σ kg×tekrar)
   final int setCount;
 
@@ -28,6 +29,7 @@ class DayActivity {
     this.waterMl = 0,
     this.hasWorkout = false,
     this.workoutName,
+    this.sessionCount = 0,
     this.volumeKg = 0,
     this.setCount = 0,
   });
@@ -84,6 +86,7 @@ Map<int, DayActivity> buildMonthActivity({
       // V2'de seans adı workoutType'ta tutulur (rutin adının snapshot'ı).
       workoutName:
           daySessions.isEmpty ? null : daySessions.first.workoutType,
+      sessionCount: daySessions.length,
       volumeKg: volume,
       setCount: setCount,
     );

@@ -33,13 +33,6 @@ WorkoutAggregate aggregateWorkouts({
   return (sessions: sessions.length, volumeKg: volume, kcalBurned: kcal.round());
 }
 
-/// Hacim değişimi yüzdesi (bu dönem vs önceki dönem). Önceki 0/eksi ise null
-/// (yüzde değişimi tanımsız → UI rozet göstermez).
-int? volumeDeltaPct(int current, int previous) {
-  if (previous <= 0) return null;
-  return (((current - previous) / previous) * 100).round();
-}
-
 /// "En çok gelişen hareket" içgörüsü.
 typedef TopProgress = ({String name, double deltaE1rm});
 
@@ -71,20 +64,4 @@ TopProgress? topProgressExercise(List<ExerciseProgressPoint> points) {
     }
   }
   return best;
-}
-
-/// Haftalık protein hedefi uyumu (%): kayıt GİRİLEN günlerde (günlük protein /
-/// hedef) oranlarının ortalaması. Kayıtlı gün yoksa ya da hedef ≤0 ise null.
-int? weeklyProteinAdherencePct(List<FoodLog> logs, int proteinGoal) {
-  if (proteinGoal <= 0) return null;
-  final byDay = <DateTime, double>{};
-  for (final l in logs) {
-    final day = DateTime(l.date.year, l.date.month, l.date.day);
-    byDay[day] = (byDay[day] ?? 0) + l.computedProtein;
-  }
-  if (byDay.isEmpty) return null;
-  final avg =
-      byDay.values.map((p) => p / proteinGoal).reduce((a, b) => a + b) /
-          byDay.length;
-  return (avg * 100).round();
 }

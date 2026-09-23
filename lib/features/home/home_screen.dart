@@ -13,16 +13,21 @@ import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/progress_indicators.dart';
+import '../calendar/week_strip.dart';
 import '../workout/routine_providers.dart';
+import '../workout/workout_draft.dart';
 import '../nutrition/macro_goals.dart';
 import 'providers/dashboard_providers.dart';
 import 'providers/home_providers.dart';
+import 'rhythm_state.dart';
 import 'streak_calc.dart';
 
-/// Ana Sayfa — dashboard reskin (2026-07-04). Momentum hero (seri + son 30 gün),
-/// durum-duyarlı antrenman CTA, "Bu Hafta" metrik grid, kompakt beslenme,
-/// en çok gelişen hareket içgörüsü, Su + Kilo mini kartları. Tüm sayılar
-/// gerçek veriden gelir (sahte veri yok — kaynak yoksa öğe gizlenir).
+/// Ana Sayfa (docs/24). Sıra: başlık → haftalık şerit → bugünün eylemi →
+/// ritim (seri + bu hafta + son 30 gün) → günün kaydı → içgörü, su + kilo.
+/// Tüm sayılar gerçek veriden gelir (sahte veri yok — kaynak yoksa öğe gizlenir).
+///
+/// Şeritteki gezinme bugünün eylemine DOKUNMAZ: eylem kartı yalnız bugüne
+/// bakan sağlayıcıları izler, şeridin seçili haftasını bilmez.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -40,24 +45,30 @@ class HomeScreen extends ConsumerWidget {
           ref.invalidate(weeklyStreakProvider);
           ref.invalidate(todayWaterProvider);
           ref.invalidate(todayRoutineProvider);
+          ref.invalidate(activeDraftProvider);
           ref.invalidate(last30WorkoutStatsProvider);
-          ref.invalidate(weekDashboardProvider);
           ref.invalidate(topProgressProvider);
         },
         child: ListView(
-          padding: EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.sm,
-              AppSpacing.xl, context.bottomScrollInset),
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.sm,
+            AppSpacing.xl,
+            context.bottomScrollInset,
+          ),
           children: const [
             _Header(),
-            SizedBox(height: 26),
-            _MomentumHero(),
-            SizedBox(height: 26),
+            AppSpacing.vGapLg,
+            WeekStrip(),
+            AppSpacing.vGapxl_,
             _PrimaryActionCard(),
-            SizedBox(height: 26),
-            _WeekDashboard(),
-            SizedBox(height: 26),
+            AppSpacing.vGapxl_,
+            _RhythmCard(),
+            AppSpacing.vGapxl_,
+            _DayLogHeader(),
+            AppSpacing.vGapMd,
             _CompactNutrition(),
-            SizedBox(height: 26),
+            AppSpacing.vGapxl_,
             _InsightCard(),
             _CompactHealthRow(),
           ],
@@ -75,34 +86,44 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
-    final today = context.dateFmt('EEEE, d MMMM').format(DateTime.now());
-    final dateLabel = today[0].toUpperCase() + today.substring(1);
+    final c = context.colors;
+    final kicker = context
+        .dateFmt('EEEE · d MMMM')
+        .format(DateTime.now())
+        .toUpperCase();
     return SafeArea(
       bottom: false,
       child: Padding(
         padding: const EdgeInsets.only(top: AppSpacing.md),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l.homeToday,
-                      style: context.texts.labelSmall?.copyWith(
-                        color: context.colors.primary,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.6,
-                      )),
-                  const SizedBox(height: 5),
-                  Text(dateLabel, style: context.texts.headlineMedium),
+                  Text(
+                    kicker,
+                    style: context.texts.labelSmall?.copyWith(
+                      color: c.onSurfaceVariant,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(l.homeTitleToday, style: context.texts.displaySmall),
                 ],
               ),
             ),
+            // Profil: baş harf değil ikon — profilde ad alanı yok (docs/24 §4).
             IconButton(
+              style: IconButton.styleFrom(
+                backgroundColor: c.surfaceContainerHighest,
+                foregroundColor: c.onSurface,
+                minimumSize: const Size.square(AppA11y.minTapTarget),
+              ),
               tooltip: l.homeProfileTooltip,
               icon: const Icon(Icons.person_outline_rounded),
-              color: context.colors.onSurfaceVariant,
               onPressed: () => context.push(AppRoutes.profile),
             ),
           ],
@@ -112,157 +133,23 @@ class _Header extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────── Momentum hero
-
-/// Seri + son 30 günün özeti (antrenman / hacim / kcal). Seri verisi
-/// [weeklyStreakProvider] (haftalık hedef bazlı — dinlenme günü seriyi
-/// kırmaz), özet [last30WorkoutStatsProvider].
-class _MomentumHero extends ConsumerWidget {
-  const _MomentumHero();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppL10n.of(context);
-    final streak = ref.watch(weeklyStreakProvider).valueOrNull ??
-        const WeeklyStreak(weeks: 0, thisWeekDone: 0, weeklyGoal: 1);
-    final month = ref.watch(last30WorkoutStatsProvider).valueOrNull;
-    final units = ref.watch(unitsProvider);
-    final c = context.colors;
-    final fmt = context.numFmt;
-
-    // Üç durum: seri var (hafta sayısı + bu haftanın ilerlemesi) · seri yok
-    // ama bu hafta başlandı (ilk haftayı tamamla) · hiç yok (başlat).
-    final hasWeeks = streak.weeks > 0;
-    final started = streak.thisWeekDone > 0;
-    final kicker = (hasWeeks || started)
-        ? l.homeStreakWeekProgress(streak.thisWeekDone, streak.weeklyGoal)
-        : l.homeStreakKickerZero;
-    final title = hasWeeks
-        ? l.homeStreakTitle(streak.weeks)
-        : (started ? l.homeStreakTitleFirstWeek : l.homeStreakTitleZero);
-    // Emoji yerine temalı ikon (docs/08 + emoji denetimi): sistem emojisi
-    // premium glass dile yabancı ve platforma göre değişken görünüyor.
-    final titleIcon = hasWeeks
-        ? Icon(Icons.local_fire_department_rounded,
-            size: 30, color: context.semantic.warning)
-        : Icon(Icons.bolt_rounded, size: 30, color: c.primary);
-
-    return _Card(
-      child: Stack(
-        children: [
-          // Köşe ışıması — kenarı şeffafa eriyen yumuşak bloom (keskin disk
-          // değil). Kart onu kırpsa da belirgin dairesel kenar oluşmaz.
-          Positioned(
-            right: -70,
-            top: -70,
-            child: IgnorePointer(
-              child: Container(
-                width: 184,
-                height: 184,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    stops: const [0.0, 0.5, 1.0],
-                    colors: [
-                      c.primary.withValues(alpha: 0.20),
-                      c.primary.withValues(alpha: 0.06),
-                      c.primary.withValues(alpha: 0.0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(kicker,
-                  style: context.texts.bodySmall
-                      ?.copyWith(color: c.onSurfaceVariant)),
-              const SizedBox(height: 3),
-              Text.rich(
-                TextSpan(children: [
-                  TextSpan(text: title),
-                  WidgetSpan(
-                    alignment: PlaceholderAlignment.middle,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 6),
-                      child: titleIcon,
-                    ),
-                  ),
-                ]),
-                style: context.texts.displaySmall?.copyWith(height: 1.05),
-              ),
-              AppSpacing.vGapLg,
-              Row(
-                children: [
-                  _MomentumStat(
-                      value: '${month?.sessions ?? 0}',
-                      label: l.homeStatWorkouts),
-                  AppSpacing.hGapSm,
-                  _MomentumStat(
-                      value: fmt.format(
-                          units.weightFromKg(month?.volumeKg ?? 0).round()),
-                      label: l.homeStatVolume(units.weightUnit)),
-                  AppSpacing.hGapSm,
-                  _MomentumStat(
-                      value: fmt.format(month?.kcalBurned ?? 0),
-                      label: l.homeStatKcal),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MomentumStat extends StatelessWidget {
-  final String value;
-  final String label;
-  const _MomentumStat({required this.value, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.colors;
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md - 2),
-        decoration: BoxDecoration(
-          color: c.surfaceContainerHighest,
-          borderRadius: AppRadius.brMd,
-          border: Border.all(color: c.outlineVariant),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: context.texts.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w800)),
-            const SizedBox(height: 2),
-            Text(label,
-                style: context.texts.labelSmall
-                    ?.copyWith(color: c.onSurfaceVariant)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 // ──────────────────────────────────────────────── Birincil aksiyon (durum)
 
-/// Bugünkü rutine göre: planlı rutin varsa gradient CTA, yoksa dinlenme/başlat.
+/// Bugünün eylemi — öncelik sırası (docs/24 §2): devam eden seans →
+/// planlı rutin → dinlenme günü → plan yok. Yalnız BUGÜNE bakar.
 class _PrimaryActionCard extends ConsumerWidget {
   const _PrimaryActionCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ref.watch(todayRoutineProvider).when(
-          loading: () => Skeleton.card(height: 84),
+    // Devam eden seans varken "yeni antrenman başlat" yarışmaz (docs/23 §3.2).
+    final draft = ref.watch(activeDraftProvider).valueOrNull;
+    if (draft != null) return _ResumeCard(draft: draft);
+
+    return ref
+        .watch(todayRoutineProvider)
+        .when(
+          loading: () => Skeleton.card(height: 150),
           error: (_, _) => const _StartWorkoutCard(),
           data: (tr) {
             if (tr.today != null) return _TrainingDayCard(routine: tr.today!);
@@ -273,15 +160,28 @@ class _PrimaryActionCard extends ConsumerWidget {
   }
 }
 
-class _TrainingDayCard extends ConsumerWidget {
-  final Routine routine;
-  const _TrainingDayCard({required this.routine});
+/// Mor gradyanlı eylem kartı: üst etiket, başlık, alt satır, beyaz düğme.
+/// Antrenman günü ve devam eden seans aynı kalıbı kullanır.
+class _GradientActionCard extends StatelessWidget {
+  final String kicker;
+  final String title;
+  final String subtitle;
+  final String action;
+  final IconData actionIcon;
+  final VoidCallback onTap;
+
+  const _GradientActionCard({
+    required this.kicker,
+    required this.title,
+    required this.subtitle,
+    required this.action,
+    required this.actionIcon,
+    required this.onTap,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppL10n.of(context);
-    final exCount =
-        ref.watch(routineExercisesProvider(routine.id)).valueOrNull?.length;
+  Widget build(BuildContext context) {
+    const on = AppColors.onGradient;
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: AppRadius.brXl,
@@ -302,47 +202,139 @@ class _TrainingDayCard extends ConsumerWidget {
         color: Colors.transparent,
         borderRadius: AppRadius.brXl,
         child: InkWell(
-          onTap: () => context.push(AppRoutes.routinePreview(routine.id)),
+          onTap: onTap,
           borderRadius: AppRadius.brXl,
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xl, vertical: AppSpacing.lg + 3),
-            child: Row(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(l.homeTodayRoutine(routine.name),
-                          style: context.texts.titleLarge
-                              ?.copyWith(color: AppColors.onGradient)),
-                      const SizedBox(height: 4),
-                      Text(
-                          exCount != null
-                              ? l.homeStartWithCount(exCount)
-                              : l.homeStart,
-                          style: context.texts.bodySmall?.copyWith(
-                              color: AppColors.onGradient
-                                  .withValues(alpha: 0.82))),
-                    ],
+                Text(
+                  kicker,
+                  style: context.texts.labelSmall?.copyWith(
+                    color: on.withValues(alpha: 0.82),
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.4,
                   ),
                 ),
-                AppSpacing.hGapMd,
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: AppColors.onGradient.withValues(alpha: 0.20),
-                    borderRadius: AppRadius.brMd,
+                const SizedBox(height: 6),
+                Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.texts.headlineSmall?.copyWith(
+                    color: on,
+                    fontWeight: FontWeight.w800,
                   ),
-                  child: const Icon(Icons.arrow_forward_rounded,
-                      color: AppColors.onGradient),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.texts.bodySmall?.copyWith(
+                    color: on.withValues(alpha: 0.82),
+                  ),
+                ),
+                AppSpacing.vGapLg,
+                Row(
+                  children: [
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.sm,
+                        ),
+                        decoration: const BoxDecoration(
+                          color: on,
+                          borderRadius: AppRadius.brPill,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              actionIcon,
+                              size: AppIconSize.sm,
+                              color: AppColors.indigoDeep,
+                            ),
+                            AppSpacing.hGapXs,
+                            Flexible(
+                              child: Text(
+                                action,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.texts.labelLarge?.copyWith(
+                                  color: AppColors.indigoDeep,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    AppSpacing.hGapMd,
+                    Icon(
+                      Icons.arrow_outward_rounded,
+                      color: on.withValues(alpha: 0.9),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ResumeCard extends ConsumerWidget {
+  final WorkoutDraft draft;
+  const _ResumeCard({required this.draft});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
+    final setCount = draft.exercises.fold<int>(
+      0,
+      (n, e) => n + e.sets.where((s) => s.done).length,
+    );
+    final mins = DateTime.now().difference(draft.startedAt).inMinutes;
+    final sub =
+        l.workoutResumeSub(draft.exercises.length, setCount) +
+        (mins > 0 && mins < 600 ? ' · $mins ${l.unitMinShort}' : '');
+    return _GradientActionCard(
+      kicker: l.homeInProgress,
+      title: draft.title,
+      subtitle: sub,
+      action: l.homeResumeAction,
+      actionIcon: Icons.play_arrow_rounded,
+      onTap: () => context
+          .push(AppRoutes.workoutActiveResume)
+          .then((_) => ref.invalidate(activeDraftProvider)),
+    );
+  }
+}
+
+class _TrainingDayCard extends ConsumerWidget {
+  final Routine routine;
+  const _TrainingDayCard({required this.routine});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
+    final exCount = ref
+        .watch(routineExercisesProvider(routine.id))
+        .valueOrNull
+        ?.length;
+    return _GradientActionCard(
+      kicker: l.homeTodayPlan,
+      title: routine.name,
+      subtitle: exCount != null ? l.homePlanSubtitle(exCount) : '',
+      action: l.homeStart,
+      actionIcon: Icons.play_arrow_rounded,
+      onTap: () => context.push(AppRoutes.routinePreview(routine.id)),
     );
   }
 }
@@ -467,182 +459,197 @@ class _RestDayCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────── Bu Hafta grid
+// ─────────────────────────────────────────────────────────── Ritim kartı
 
-class _WeekDashboard extends ConsumerWidget {
-  const _WeekDashboard();
+/// Seri + bu haftanın ilerlemesi + son 30 günün özeti (docs/24 §2).
+/// Seri [weeklyStreakProvider]'dan: haftalık hedef bazlı — dinlenme günü ya da
+/// uygulamayı açmamak seriyi kırmaz; devam eden hafta seriyi sıfırlamaz.
+class _RhythmCard extends ConsumerWidget {
+  const _RhythmCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
-    final async = ref.watch(weekDashboardProvider);
-    final data = async.valueOrNull;
+    final c = context.colors;
+    final streak =
+        ref.watch(weeklyStreakProvider).valueOrNull ??
+        const WeeklyStreak(weeks: 0, thisWeekDone: 0, weeklyGoal: 1);
+    final month = ref.watch(last30WorkoutStatsProvider).valueOrNull;
     final units = ref.watch(unitsProvider);
     final fmt = context.numFmt;
 
-    final goalText = data == null
-        ? ''
-        : (data.scheduledDays != null
-            ? l.homeWeekGoalDone(data.workouts, data.scheduledDays!)
-            : l.homeWeekGoalCount(data.workouts));
+    final state = rhythmStateOf(streak);
+    final done = streak.thisWeekDone, goal = streak.weeklyGoal;
+    final title = switch (state) {
+      RhythmState.empty => l.homeRhythmTitleEmpty,
+      RhythmState.firstWeek => l.homeRhythmTitleFirst,
+      RhythmState.restart => l.homeRhythmTitleRestart,
+      RhythmState.ongoing ||
+      RhythmState.weekDone => l.homeRhythmTitle(streak.weeks),
+    };
+    final subtitle = switch (state) {
+      RhythmState.empty => l.homeRhythmEmptySub(goal),
+      RhythmState.restart => l.homeRhythmRestartSub(done, goal),
+      RhythmState.weekDone => l.homeRhythmDone(done, goal),
+      RhythmState.firstWeek ||
+      RhythmState.ongoing => l.homeRhythmLeft(done, goal, streak.remaining),
+    };
+    final barColor = streak.thisWeekComplete
+        ? context.semantic.success
+        : c.primary;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(l.homeThisWeek, style: context.texts.headlineSmall),
-            if (goalText.isNotEmpty)
-              Flexible(
-                child: Text(goalText,
-                    textAlign: TextAlign.end,
-                    style: context.texts.bodySmall
-                        ?.copyWith(color: context.colors.onSurfaceVariant)),
-              ),
-          ],
-        ),
-        AppSpacing.vGapMd,
-        if (async.isLoading && data == null)
-          Skeleton.card(height: 260)
-        else
-          GridView.count(
-            // Padding AÇIKÇA sıfır (C-7): verilmezse iç ızgara MediaQuery'nin
-            // güvenli alanını (çentik + buzlu çubuk) kendine ekliyor → başlıkla
-            // kartlar ve kartlarla Beslenme arasında büyük boşluk oluşuyordu.
-            padding: EdgeInsets.zero,
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: AppSpacing.md,
-            crossAxisSpacing: AppSpacing.md,
-            childAspectRatio: 1.35,
-            children: [
-              _MetricCard(
-                icon: Icons.fitness_center_rounded,
-                value:
-                    '${fmt.format(units.weightFromKg(data?.volumeKg ?? 0).round())} ${units.weightUnit}',
-                caption: l.homeMetricVolume,
-                change: data?.volumeDeltaPct == null
-                    ? null
-                    : '${data!.volumeDeltaPct! >= 0 ? '+' : ''}${data.volumeDeltaPct}%',
-                changePositive: (data?.volumeDeltaPct ?? 0) >= 0,
-              ),
-              _MetricCard(
-                icon: Icons.local_fire_department_rounded,
-                tint: context.semantic.warning,
-                value: fmt.format(data?.kcalBurned ?? 0),
-                caption: l.homeMetricKcal,
-              ),
-              _MetricCard(
-                icon: Icons.event_available_rounded,
-                tint: context.semantic.info,
-                value: data?.scheduledDays != null
-                    ? '${data?.workouts ?? 0}/${data!.scheduledDays}'
-                    : '${data?.workouts ?? 0}',
-                caption: l.homeMetricWorkouts,
-              ),
-              _MetricCard(
-                icon: Icons.egg_alt_outlined,
-                tint: context.semantic.macroProtein,
-                value: data?.proteinAvgPct != null
-                    ? '%${data!.proteinAvgPct}'
-                    : '—',
-                caption: l.homeMetricProtein,
-              ),
-            ],
+    return _Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l.homeRhythmKicker,
+            style: context.texts.labelSmall?.copyWith(
+              color: c.primary,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.4,
+            ),
           ),
-        // Haftalık değerlendirme (docs/22): aynı sayıların yorumlanmış hâli.
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton.icon(
-            onPressed: () => context.push(AppRoutes.weeklyReview),
-            icon: const Icon(Icons.insights_rounded, size: AppIconSize.sm),
-            label: Text(l.wrOpen),
+          const SizedBox(height: 6),
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(text: title),
+                // Emoji yerine temalı ikon (CONVENTIONS §5b).
+                if (streak.weeks > 0)
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 6),
+                      child: Icon(
+                        Icons.local_fire_department_rounded,
+                        size: 24,
+                        color: context.semantic.warning,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            style: context.texts.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: context.texts.bodySmall?.copyWith(color: c.onSurfaceVariant),
+          ),
+          AppSpacing.vGapMd,
+          ClipRRect(
+            borderRadius: AppRadius.brPill,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: (done / goal).clamp(0.0, 1.0)),
+              duration: AppDuration.normal,
+              curve: Curves.easeOutCubic,
+              builder: (_, v, _) => LinearProgressIndicator(
+                value: v,
+                minHeight: 6,
+                backgroundColor: c.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation<Color>(barColor),
+              ),
+            ),
+          ),
+          AppSpacing.vGapLg,
+          Text(
+            l.homeLast30,
+            style: context.texts.labelSmall?.copyWith(
+              color: c.onSurfaceVariant,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+            ),
+          ),
+          AppSpacing.vGapSm,
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                _RhythmStat(
+                  value: fmt.format(month?.sessions ?? 0),
+                  label: l.homeStatWorkouts,
+                ),
+                VerticalDivider(color: c.outlineVariant, width: AppSpacing.xl),
+                _RhythmStat(
+                  value: fmt.format(
+                    units.weightFromKg(month?.volumeKg ?? 0).round(),
+                  ),
+                  label: l.homeStatVolume(units.weightUnit),
+                ),
+                VerticalDivider(color: c.outlineVariant, width: AppSpacing.xl),
+                _RhythmStat(
+                  value: fmt.format(month?.kcalBurned ?? 0),
+                  label: l.homeStatKcalEstimated,
+                ),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => context.push(AppRoutes.weeklyReview),
+              icon: const Icon(Icons.insights_rounded, size: AppIconSize.sm),
+              label: Text(l.wrOpen),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _MetricCard extends StatelessWidget {
-  final IconData icon;
-  final Color? tint;
+class _RhythmStat extends StatelessWidget {
   final String value;
-  final String caption;
-  final String? change;
-  final bool changePositive;
-
-  const _MetricCard({
-    required this.icon,
-    required this.value,
-    required this.caption,
-    this.tint,
-    this.change,
-    this.changePositive = true,
-  });
+  final String label;
+  const _RhythmStat({required this.value, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
-    final accent = tint ?? c.primary;
-    return _Card(
+    return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.16),
-                  borderRadius: AppRadius.brMd,
-                ),
-                child: Icon(icon, color: accent, size: 20),
-              ),
-              if (change != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.sm, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: (changePositive
-                            ? context.semantic.success
-                            : c.onSurfaceVariant)
-                        .withValues(alpha: 0.16),
-                    borderRadius: AppRadius.brPill,
-                  ),
-                  child: Text(change!,
-                      style: context.texts.labelMedium?.copyWith(
-                        color: changePositive
-                            ? context.semantic.success
-                            : c.onSurfaceVariant,
-                        fontWeight: FontWeight.w700,
-                      )),
-                ),
-            ],
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: context.texts.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.texts.headlineSmall
-                      ?.copyWith(letterSpacing: -0.5)),
-              const SizedBox(height: 2),
-              Text(caption,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.texts.bodySmall
-                      ?.copyWith(color: c.onSurfaceVariant)),
-            ],
+          const SizedBox(height: 2),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: context.texts.bodySmall?.copyWith(
+              color: context.colors.onSurfaceVariant,
+            ),
           ),
         ],
       ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────── Günün kaydı başlığı
+
+class _DayLogHeader extends StatelessWidget {
+  const _DayLogHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    return Row(
+      children: [
+        Expanded(child: Text(l.homeDayLog, style: context.texts.titleLarge)),
+        TextButton(
+          onPressed: () => context.go(AppRoutes.nutrition),
+          child: Text('${l.navNutrition} ›'),
+        ),
+      ],
     );
   }
 }
@@ -674,17 +681,6 @@ class _CompactNutrition extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(l.homeNutritionTitle, style: context.texts.titleLarge),
-                  Text(l.commonEdit,
-                      style: context.texts.labelMedium?.copyWith(
-                          color: context.colors.primary,
-                          fontWeight: FontWeight.w700)),
-                ],
-              ),
-              AppSpacing.vGapLg,
               Row(
                 children: [
                   CalorieRing(

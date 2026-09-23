@@ -295,42 +295,6 @@ abstract class AppL10n {
   /// **'Progress'**
   String get navProgress;
 
-  /// No description provided for @homeToday.
-  ///
-  /// In en, this message translates to:
-  /// **'TODAY'**
-  String get homeToday;
-
-  /// No description provided for @homeStreakKickerZero.
-  ///
-  /// In en, this message translates to:
-  /// **'New week, new rhythm'**
-  String get homeStreakKickerZero;
-
-  /// No description provided for @homeStreakTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1-week\nstreak} other{{count}-week\nstreak}}'**
-  String homeStreakTitle(int count);
-
-  /// No description provided for @homeStreakTitleZero.
-  ///
-  /// In en, this message translates to:
-  /// **'Start your streak'**
-  String get homeStreakTitleZero;
-
-  /// No description provided for @homeStreakTitleFirstWeek.
-  ///
-  /// In en, this message translates to:
-  /// **'Finish your\nfirst week'**
-  String get homeStreakTitleFirstWeek;
-
-  /// No description provided for @homeStreakWeekProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'This week: {done}/{goal} workouts'**
-  String homeStreakWeekProgress(int done, int goal);
-
   /// No description provided for @homeStatWorkouts.
   ///
   /// In en, this message translates to:
@@ -342,24 +306,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'{unit} volume'**
   String homeStatVolume(String unit);
-
-  /// No description provided for @homeStatKcal.
-  ///
-  /// In en, this message translates to:
-  /// **'kcal'**
-  String get homeStatKcal;
-
-  /// No description provided for @homeTodayRoutine.
-  ///
-  /// In en, this message translates to:
-  /// **'Today: {name}'**
-  String homeTodayRoutine(String name);
-
-  /// No description provided for @homeStartWithCount.
-  ///
-  /// In en, this message translates to:
-  /// **'Start workout · {count} exercises'**
-  String homeStartWithCount(int count);
 
   /// No description provided for @homeStart.
   ///
@@ -396,54 +342,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Work out anyway'**
   String get homeWorkoutAnyway;
-
-  /// No description provided for @homeThisWeek.
-  ///
-  /// In en, this message translates to:
-  /// **'This Week'**
-  String get homeThisWeek;
-
-  /// No description provided for @homeWeekGoalDone.
-  ///
-  /// In en, this message translates to:
-  /// **'{done}/{total} workouts done'**
-  String homeWeekGoalDone(int done, int total);
-
-  /// No description provided for @homeWeekGoalCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 workout} other{{count} workouts}}'**
-  String homeWeekGoalCount(int count);
-
-  /// No description provided for @homeMetricVolume.
-  ///
-  /// In en, this message translates to:
-  /// **'volume lifted'**
-  String get homeMetricVolume;
-
-  /// No description provided for @homeMetricKcal.
-  ///
-  /// In en, this message translates to:
-  /// **'kcal burned'**
-  String get homeMetricKcal;
-
-  /// No description provided for @homeMetricWorkouts.
-  ///
-  /// In en, this message translates to:
-  /// **'workouts done'**
-  String get homeMetricWorkouts;
-
-  /// No description provided for @homeMetricProtein.
-  ///
-  /// In en, this message translates to:
-  /// **'avg protein goal'**
-  String get homeMetricProtein;
-
-  /// No description provided for @homeNutritionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Today\'s Nutrition'**
-  String get homeNutritionTitle;
 
   /// No description provided for @nutritionKcalLeft.
   ///
@@ -4128,6 +4026,198 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'File not found'**
   String get ppMissingFile;
+
+  /// No description provided for @homeTitleToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get homeTitleToday;
+
+  /// No description provided for @homeUpNext.
+  ///
+  /// In en, this message translates to:
+  /// **'UP NEXT'**
+  String get homeUpNext;
+
+  /// No description provided for @homeTodayPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY\'S PLAN'**
+  String get homeTodayPlan;
+
+  /// No description provided for @homePlanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 exercise} other{{count} exercises}} · Planned routine'**
+  String homePlanSubtitle(int count);
+
+  /// No description provided for @homeInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'IN PROGRESS'**
+  String get homeInProgress;
+
+  /// No description provided for @homeResumeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume session'**
+  String get homeResumeAction;
+
+  /// No description provided for @homeRhythmKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR RHYTHM'**
+  String get homeRhythmKicker;
+
+  /// No description provided for @homeRhythmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1-week streak} other{{count}-week streak}}'**
+  String homeRhythmTitle(int count);
+
+  /// No description provided for @homeRhythmTitleEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your rhythm'**
+  String get homeRhythmTitleEmpty;
+
+  /// No description provided for @homeRhythmTitleFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your first week'**
+  String get homeRhythmTitleFirst;
+
+  /// No description provided for @homeRhythmTitleRestart.
+  ///
+  /// In en, this message translates to:
+  /// **'A new streak starts'**
+  String get homeRhythmTitleRestart;
+
+  /// No description provided for @homeRhythmLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'This week {done}/{goal} workouts · {left} to go'**
+  String homeRhythmLeft(int done, int goal, int left);
+
+  /// No description provided for @homeRhythmDone.
+  ///
+  /// In en, this message translates to:
+  /// **'This week\'s goal is done ({done}/{goal})'**
+  String homeRhythmDone(int done, int goal);
+
+  /// No description provided for @homeRhythmEmptySub.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly goal: {goal} workouts · rest days don\'t break it'**
+  String homeRhythmEmptySub(int goal);
+
+  /// No description provided for @homeRhythmRestartSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Last week\'s goal was missed · this week {done}/{goal}'**
+  String homeRhythmRestartSub(int done, int goal);
+
+  /// No description provided for @homeLast30.
+  ///
+  /// In en, this message translates to:
+  /// **'LAST 30 DAYS'**
+  String get homeLast30;
+
+  /// No description provided for @homeStatKcalEstimated.
+  ///
+  /// In en, this message translates to:
+  /// **'est. kcal'**
+  String get homeStatKcalEstimated;
+
+  /// No description provided for @homeDayLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s log'**
+  String get homeDayLog;
+
+  /// No description provided for @calTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'CALENDAR'**
+  String get calTitle;
+
+  /// No description provided for @calBackToToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to today'**
+  String get calBackToToday;
+
+  /// No description provided for @calPrevWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous week'**
+  String get calPrevWeek;
+
+  /// No description provided for @calNextWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Next week'**
+  String get calNextWeek;
+
+  /// No description provided for @calPrevMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous month'**
+  String get calPrevMonth;
+
+  /// No description provided for @calNextMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get calNextMonth;
+
+  /// No description provided for @calOpenMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Open month view'**
+  String get calOpenMonth;
+
+  /// No description provided for @calLegendRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Has entries'**
+  String get calLegendRecord;
+
+  /// No description provided for @calSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected: {date}'**
+  String calSelected(String date);
+
+  /// No description provided for @calDayRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries for this day'**
+  String get calDayRecords;
+
+  /// No description provided for @calOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get calOpen;
+
+  /// No description provided for @calWorkoutLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{sets, plural, one{1 set} other{{sets} sets}} · {volume} volume'**
+  String calWorkoutLine(int sets, String volume);
+
+  /// No description provided for @calNutritionLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal · {protein} g protein'**
+  String calNutritionLine(int kcal, int protein);
+
+  /// No description provided for @calWaterLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{liters} L water'**
+  String calWaterLine(String liters);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

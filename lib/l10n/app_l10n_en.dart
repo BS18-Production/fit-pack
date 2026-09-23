@@ -117,52 +117,11 @@ class AppL10nEn extends AppL10n {
   String get navProgress => 'Progress';
 
   @override
-  String get homeToday => 'TODAY';
-
-  @override
-  String get homeStreakKickerZero => 'New week, new rhythm';
-
-  @override
-  String homeStreakTitle(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count-week\nstreak',
-      one: '1-week\nstreak',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get homeStreakTitleZero => 'Start your streak';
-
-  @override
-  String get homeStreakTitleFirstWeek => 'Finish your\nfirst week';
-
-  @override
-  String homeStreakWeekProgress(int done, int goal) {
-    return 'This week: $done/$goal workouts';
-  }
-
-  @override
   String get homeStatWorkouts => 'workouts';
 
   @override
   String homeStatVolume(String unit) {
     return '$unit volume';
-  }
-
-  @override
-  String get homeStatKcal => 'kcal';
-
-  @override
-  String homeTodayRoutine(String name) {
-    return 'Today: $name';
-  }
-
-  @override
-  String homeStartWithCount(int count) {
-    return 'Start workout · $count exercises';
   }
 
   @override
@@ -184,40 +143,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get homeWorkoutAnyway => 'Work out anyway';
-
-  @override
-  String get homeThisWeek => 'This Week';
-
-  @override
-  String homeWeekGoalDone(int done, int total) {
-    return '$done/$total workouts done';
-  }
-
-  @override
-  String homeWeekGoalCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count workouts',
-      one: '1 workout',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get homeMetricVolume => 'volume lifted';
-
-  @override
-  String get homeMetricKcal => 'kcal burned';
-
-  @override
-  String get homeMetricWorkouts => 'workouts done';
-
-  @override
-  String get homeMetricProtein => 'avg protein goal';
-
-  @override
-  String get homeNutritionTitle => 'Today\'s Nutrition';
 
   @override
   String get nutritionKcalLeft => 'kcal left';
@@ -2345,4 +2270,138 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get ppMissingFile => 'File not found';
+
+  @override
+  String get homeTitleToday => 'Today';
+
+  @override
+  String get homeUpNext => 'UP NEXT';
+
+  @override
+  String get homeTodayPlan => 'TODAY\'S PLAN';
+
+  @override
+  String homePlanSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count exercises',
+      one: '1 exercise',
+    );
+    return '$_temp0 · Planned routine';
+  }
+
+  @override
+  String get homeInProgress => 'IN PROGRESS';
+
+  @override
+  String get homeResumeAction => 'Resume session';
+
+  @override
+  String get homeRhythmKicker => 'YOUR RHYTHM';
+
+  @override
+  String homeRhythmTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count-week streak',
+      one: '1-week streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeRhythmTitleEmpty => 'Start your rhythm';
+
+  @override
+  String get homeRhythmTitleFirst => 'Complete your first week';
+
+  @override
+  String get homeRhythmTitleRestart => 'A new streak starts';
+
+  @override
+  String homeRhythmLeft(int done, int goal, int left) {
+    return 'This week $done/$goal workouts · $left to go';
+  }
+
+  @override
+  String homeRhythmDone(int done, int goal) {
+    return 'This week\'s goal is done ($done/$goal)';
+  }
+
+  @override
+  String homeRhythmEmptySub(int goal) {
+    return 'Weekly goal: $goal workouts · rest days don\'t break it';
+  }
+
+  @override
+  String homeRhythmRestartSub(int done, int goal) {
+    return 'Last week\'s goal was missed · this week $done/$goal';
+  }
+
+  @override
+  String get homeLast30 => 'LAST 30 DAYS';
+
+  @override
+  String get homeStatKcalEstimated => 'est. kcal';
+
+  @override
+  String get homeDayLog => 'Today\'s log';
+
+  @override
+  String get calTitle => 'CALENDAR';
+
+  @override
+  String get calBackToToday => 'Back to today';
+
+  @override
+  String get calPrevWeek => 'Previous week';
+
+  @override
+  String get calNextWeek => 'Next week';
+
+  @override
+  String get calPrevMonth => 'Previous month';
+
+  @override
+  String get calNextMonth => 'Next month';
+
+  @override
+  String get calOpenMonth => 'Open month view';
+
+  @override
+  String get calLegendRecord => 'Has entries';
+
+  @override
+  String calSelected(String date) {
+    return 'Selected: $date';
+  }
+
+  @override
+  String get calDayRecords => 'Entries for this day';
+
+  @override
+  String get calOpen => 'Open';
+
+  @override
+  String calWorkoutLine(int sets, String volume) {
+    String _temp0 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets sets',
+      one: '1 set',
+    );
+    return '$_temp0 · $volume volume';
+  }
+
+  @override
+  String calNutritionLine(int kcal, int protein) {
+    return '$kcal kcal · $protein g protein';
+  }
+
+  @override
+  String calWaterLine(String liters) {
+    return '$liters L water';
+  }
 }

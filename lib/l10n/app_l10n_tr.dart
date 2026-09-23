@@ -117,51 +117,11 @@ class AppL10nTr extends AppL10n {
   String get navProgress => 'İlerleme';
 
   @override
-  String get homeToday => 'BUGÜN';
-
-  @override
-  String get homeStreakKickerZero => 'Yeni hafta, yeni ritim';
-
-  @override
-  String homeStreakTitle(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count haftadır\nritimdesin',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get homeStreakTitleZero => 'Serini başlat';
-
-  @override
-  String get homeStreakTitleFirstWeek => 'İlk haftanı\ntamamla';
-
-  @override
-  String homeStreakWeekProgress(int done, int goal) {
-    return 'Bu hafta $done/$goal antrenman';
-  }
-
-  @override
   String get homeStatWorkouts => 'antrenman';
 
   @override
   String homeStatVolume(String unit) {
     return '$unit hacim';
-  }
-
-  @override
-  String get homeStatKcal => 'kcal';
-
-  @override
-  String homeTodayRoutine(String name) {
-    return 'Bugün: $name';
-  }
-
-  @override
-  String homeStartWithCount(int count) {
-    return 'Antrenmanı başlat · $count hareket';
   }
 
   @override
@@ -183,39 +143,6 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get homeWorkoutAnyway => 'Yine de antrenman yap';
-
-  @override
-  String get homeThisWeek => 'Bu Hafta';
-
-  @override
-  String homeWeekGoalDone(int done, int total) {
-    return '$done/$total antrenman tamam';
-  }
-
-  @override
-  String homeWeekGoalCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count antrenman',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get homeMetricVolume => 'kaldırılan hacim';
-
-  @override
-  String get homeMetricKcal => 'kcal yakıldı';
-
-  @override
-  String get homeMetricWorkouts => 'antrenman tamamlandı';
-
-  @override
-  String get homeMetricProtein => 'protein hedefi ort.';
-
-  @override
-  String get homeNutritionTitle => 'Bugünkü Beslenme';
 
   @override
   String get nutritionKcalLeft => 'kcal kaldı';
@@ -2334,4 +2261,135 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get ppMissingFile => 'Dosya bulunamadı';
+
+  @override
+  String get homeTitleToday => 'Bugün';
+
+  @override
+  String get homeUpNext => 'SIRADAKİ ANTRENMAN';
+
+  @override
+  String get homeTodayPlan => 'BUGÜNÜN PLANI';
+
+  @override
+  String homePlanSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hareket',
+    );
+    return '$_temp0 · Planlı rutin';
+  }
+
+  @override
+  String get homeInProgress => 'DEVAM EDEN SEANS';
+
+  @override
+  String get homeResumeAction => 'Seansa dön';
+
+  @override
+  String get homeRhythmKicker => 'RİTMİN';
+
+  @override
+  String homeRhythmTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count haftadır ritimdesin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeRhythmTitleEmpty => 'Ritmini başlat';
+
+  @override
+  String get homeRhythmTitleFirst => 'İlk haftanı tamamla';
+
+  @override
+  String get homeRhythmTitleRestart => 'Yeni seri başlıyor';
+
+  @override
+  String homeRhythmLeft(int done, int goal, int left) {
+    return 'Bu hafta $done/$goal antrenman · hedefe $left kaldı';
+  }
+
+  @override
+  String homeRhythmDone(int done, int goal) {
+    return 'Bu haftanın hedefi tamam ($done/$goal)';
+  }
+
+  @override
+  String homeRhythmEmptySub(int goal) {
+    return 'Haftalık hedef: $goal antrenman · dinlenme günleri seriyi bozmaz';
+  }
+
+  @override
+  String homeRhythmRestartSub(int done, int goal) {
+    return 'Geçen haftanın hedefi tamamlanmadı · bu hafta $done/$goal';
+  }
+
+  @override
+  String get homeLast30 => 'SON 30 GÜN';
+
+  @override
+  String get homeStatKcalEstimated => 'tahmini kcal';
+
+  @override
+  String get homeDayLog => 'Günün kaydı';
+
+  @override
+  String get calTitle => 'TAKVİM';
+
+  @override
+  String get calBackToToday => 'Bugüne dön';
+
+  @override
+  String get calPrevWeek => 'Önceki hafta';
+
+  @override
+  String get calNextWeek => 'Sonraki hafta';
+
+  @override
+  String get calPrevMonth => 'Önceki ay';
+
+  @override
+  String get calNextMonth => 'Sonraki ay';
+
+  @override
+  String get calOpenMonth => 'Ay görünümünü aç';
+
+  @override
+  String get calLegendRecord => 'Kayıt var';
+
+  @override
+  String calSelected(String date) {
+    return 'Seçili: $date';
+  }
+
+  @override
+  String get calDayRecords => 'Bu güne ait kayıtlar';
+
+  @override
+  String get calOpen => 'Aç';
+
+  @override
+  String calWorkoutLine(int sets, String volume) {
+    String _temp0 = intl.Intl.pluralLogic(
+      sets,
+      locale: localeName,
+      other: '$sets set',
+    );
+    return '$_temp0 · $volume hacim';
+  }
+
+  @override
+  String calNutritionLine(int kcal, int protein) {
+    return '$kcal kcal · $protein g protein';
+  }
+
+  @override
+  String calWaterLine(String liters) {
+    return '$liters L su';
+  }
 }

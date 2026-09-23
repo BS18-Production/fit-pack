@@ -59,52 +59,12 @@
   "navWorkout": "Workout",
   "navNutrition": "Nutrition",
   "navProgress": "Progress",
-  "homeToday": "TODAY",
-  "homeStreakKickerZero": "New week, new rhythm",
-  "homeStreakTitle": "{count, plural, =1{1-week\nstreak} other{{count}-week\nstreak}}",
-  "@homeStreakTitle": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "homeStreakTitleZero": "Start your streak",
-  "homeStreakTitleFirstWeek": "Finish your\nfirst week",
-  "homeStreakWeekProgress": "This week: {done}/{goal} workouts",
-  "@homeStreakWeekProgress": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "goal": {
-        "type": "int"
-      }
-    }
-  },
   "homeStatWorkouts": "workouts",
   "homeStatVolume": "{unit} volume",
   "@homeStatVolume": {
     "placeholders": {
       "unit": {
         "type": "String"
-      }
-    }
-  },
-  "homeStatKcal": "kcal",
-  "homeTodayRoutine": "Today: {name}",
-  "@homeTodayRoutine": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "homeStartWithCount": "Start workout · {count} exercises",
-  "@homeStartWithCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
       }
     }
   },
@@ -121,31 +81,6 @@
     }
   },
   "homeWorkoutAnyway": "Work out anyway",
-  "homeThisWeek": "This Week",
-  "homeWeekGoalDone": "{done}/{total} workouts done",
-  "@homeWeekGoalDone": {
-    "placeholders": {
-      "done": {
-        "type": "int"
-      },
-      "total": {
-        "type": "int"
-      }
-    }
-  },
-  "homeWeekGoalCount": "{count, plural, =1{1 workout} other{{count} workouts}}",
-  "@homeWeekGoalCount": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "homeMetricVolume": "volume lifted",
-  "homeMetricKcal": "kcal burned",
-  "homeMetricWorkouts": "workouts done",
-  "homeMetricProtein": "avg protein goal",
-  "homeNutritionTitle": "Today's Nutrition",
   "nutritionKcalLeft": "kcal left",
   "nutritionKcalOver": "kcal over",
   "commonToday": "Today",
@@ -1416,5 +1351,67 @@
   "ppDeviceOnly": "Photos are stored on this device only: not backed up, not saved to your gallery, and deleted if you switch accounts.",
   "ppLoadError": "Couldn't load photos",
   "ppSaveError": "Couldn't save the photo",
-  "ppMissingFile": "File not found"
+  "ppMissingFile": "File not found",
+  "homeTitleToday": "Today",
+  "homeUpNext": "UP NEXT",
+  "homeTodayPlan": "TODAY'S PLAN",
+  "homePlanSubtitle": "{count, plural, one{1 exercise} other{{count} exercises}} · Planned routine",
+  "@homePlanSubtitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "homeInProgress": "IN PROGRESS",
+  "homeResumeAction": "Resume session",
+  "homeRhythmKicker": "YOUR RHYTHM",
+  "homeRhythmTitle": "{count, plural, one{1-week streak} other{{count}-week streak}}",
+  "@homeRhythmTitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "homeRhythmTitleEmpty": "Start your rhythm",
+  "homeRhythmTitleFirst": "Complete your first week",
+  "homeRhythmTitleRestart": "A new streak starts",
+  "homeRhythmLeft": "This week {done}/{goal} workouts · {left} to go",
+  "@homeRhythmLeft": {
+    "placeholders": { "done": { "type": "int" }, "goal": { "type": "int" }, "left": { "type": "int" } }
+  },
+  "homeRhythmDone": "This week's goal is done ({done}/{goal})",
+  "@homeRhythmDone": {
+    "placeholders": { "done": { "type": "int" }, "goal": { "type": "int" } }
+  },
+  "homeRhythmEmptySub": "Weekly goal: {goal} workouts · rest days don't break it",
+  "@homeRhythmEmptySub": {
+    "placeholders": { "goal": { "type": "int" } }
+  },
+  "homeRhythmRestartSub": "Last week's goal was missed · this week {done}/{goal}",
+  "@homeRhythmRestartSub": {
+    "placeholders": { "done": { "type": "int" }, "goal": { "type": "int" } }
+  },
+  "homeLast30": "LAST 30 DAYS",
+  "homeStatKcalEstimated": "est. kcal",
+  "homeDayLog": "Today's log",
+  "calTitle": "CALENDAR",
+  "calBackToToday": "Back to today",
+  "calPrevWeek": "Previous week",
+  "calNextWeek": "Next week",
+  "calPrevMonth": "Previous month",
+  "calNextMonth": "Next month",
+  "calOpenMonth": "Open month view",
+  "calLegendRecord": "Has entries",
+  "calSelected": "Selected: {date}",
+  "@calSelected": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "calDayRecords": "Entries for this day",
+  "calOpen": "Open",
+  "calWorkoutLine": "{sets, plural, one{1 set} other{{sets} sets}} · {volume} volume",
+  "@calWorkoutLine": {
+    "placeholders": { "sets": { "type": "int" }, "volume": { "type": "String" } }
+  },
+  "calNutritionLine": "{kcal} kcal · {protein} g protein",
+  "@calNutritionLine": {
+    "placeholders": { "kcal": { "type": "int" }, "protein": { "type": "int" } }
+  },
+  "calWaterLine": "{liters} L water",
+  "@calWaterLine": {
+    "placeholders": { "liters": { "type": "String" } }
+  }
 }

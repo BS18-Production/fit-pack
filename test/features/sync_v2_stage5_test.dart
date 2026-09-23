@@ -89,6 +89,98 @@ void main() {
     expect(await count('workout_sessions'), 0);
   });
 
+  // ─── 0b. Çekmede tek bozuk kayıt turu kilitlememeli (dayanıklılık) ───
+
+  Future<void> seansVeSet() async {
+    await db.customStatement(
+        "INSERT INTO exercises (name, primary_muscle, muscle_groups, category, "
+        "equipment) VALUES ('Bench', 'chest', '[\"chest\"]', 'compound', "
+        "'barbell')");
+    await db.customStatement(
+        "INSERT INTO workout_sessions (date, phase, workout_type) "
+        "VALUES (1700000000, 0, 'Push day')");
+    await db.customStatement(
+        "INSERT INTO workout_sets (session_id, exercise_id, set_number) "
+        "VALUES (1, 1, 1)");
+  }
+
+  Future<String> tekUid(String table) async =>
+      (await db.customSelect('SELECT uid FROM $table LIMIT 1').getSingle())
+          .read<String>('uid');
+
+  test('ebeveyn ve çocuk işareti FARKLI sayfalarda olsa da ikisi de silinir',
+      () async {
+    // Sayfa içi sıralama (çocuk önce) tek sayfada yeter; büyük bir silmede
+    // ebeveyn 1. sayfaya, çocuk 2. sayfaya düşebilir. Ebeveyn o an
+    // silinemez (çocuğu hâlâ yerelde) — erteleyip sonda yeniden denenmeli.
+    await seansVeSet();
+    await push.pushAll(userId: user);
+    final seansUid = await tekUid('workout_sessions');
+    final setUid = await tekUid('workout_sets');
+
+    await remote.deleteRows('workout_sessions', user, [seansUid]);
+    await remote.deleteRows('workout_sets', user, [setUid]);
+
+    final result = await SyncPull(db, remote, pageSize: 1).pullAll(userId: user);
+
+    expect(result.ok, isTrue, reason: '${result.error}');
+    expect(await count('workout_sets'), 0);
+    expect(await count('workout_sessions'), 0,
+        reason: 'ertelenen ebeveyn silmesi sonda yeniden denenmeli');
+  });
+
+  test('silinemeyen tek işaret diğer silmeleri ve sonraki turları durdurmaz',
+      () async {
+    // Sunucuda seans silindi; bu telefonda o seansa henüz gönderilmemiş bir
+    // set eklenmiş (sunucunun haberi yok, işareti de yok). Seans yerelde
+    // silinemez. Eskiden bu tek işaret bütün sayfayı geri alıyor, imleç
+    // ilerlemiyor ve HER turda aynı yerde düşüyordu.
+    await seansVeSet();
+    await addRoutine('Bacak');
+    await push.pushAll(userId: user);
+    final seansUid = await tekUid('workout_sessions');
+    final rutinUid = await uidOf('Bacak');
+
+    await remote.deleteRows('workout_sessions', user, [seansUid]);
+    await remote.deleteRows('routines', user, [rutinUid]);
+    // Yerelde, sunucunun bilmediği yeni bir set (ayrı uid, kuyrukta).
+    await db.customStatement(
+        "INSERT INTO workout_sets (session_id, exercise_id, set_number) "
+        "VALUES (1, 1, 2)");
+    // Sunucudan gelen seti yerelden kaldır ki geriye yalnız yeni set kalsın.
+    await db.customStatement('DELETE FROM workout_sets WHERE set_number = 1');
+
+    final pull = SyncPull(db, remote);
+    final ilk = await pull.pullAll(userId: user);
+
+    expect(ilk.ok, isTrue, reason: 'tek işaret bütün çekmeyi düşürmemeli');
+    expect(await count('routines'), 0, reason: 'diğer işaret uygulanmalı');
+    expect(await count('workout_sessions'), 1,
+        reason: 'çocuğu yerelde olan seans silinemez — atlanır');
+
+    final ikinci = await pull.pullAll(userId: user);
+    expect(ikinci.ok, isTrue, reason: 'sonraki tur da takılmamalı');
+  });
+
+  test('uygulanamayan tek satır tablonun geri kalanını durdurmaz', () async {
+    await addRoutine('Bir');
+    await addRoutine('İki');
+    await push.pushAll(userId: user);
+    final bozukUid = await uidOf('Bir');
+    // Sunucuda bozuk veri: yerelde NOT NULL olan ad boş gelmiş.
+    remote.store['routines']![bozukUid]!['name'] = null;
+
+    final bos = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(bos.close);
+    await bos.customSelect('SELECT 1').get();
+    final result = await SyncPull(bos, remote).pullAll(userId: user);
+
+    expect(result.ok, isTrue, reason: '${result.error}');
+    final r = await bos.customSelect('SELECT name FROM routines').get();
+    expect(r.map((e) => e.read<String>('name')), ['İki'],
+        reason: 'sağlam satır inmeli, bozuk olan atlanmalı');
+  });
+
   test('inen silme yerel akışları uyandırır (ekran tazelensin)', () async {
     // Cihazda bulundu (2026-09-23): mezar taşı indi, satır yerelde SİLİNDİ,
     // ama ana sayfa sayaçları eski kaldı ("5 antrenman" → yeniden açılışta

@@ -208,12 +208,19 @@ class SyncPull {
       // ── UYGULAMA AŞAMASI — kısa transaction, tetikleyiciler susturulmuş ──
       await apply.withCaptureOff(() => db.transaction(() async {
             for (final server in page) {
-              switch (await apply.applyServerRow(table, server, types: types)) {
+              // Satır başına ayrı kayıt noktası: tek bozuk satır (ör. yerelde
+              // NOT NULL olan alanı boş gelen) sayfanın geri kalanını geri
+              // aldırmasın. Atlanan satır haftalık tam uzlaştırmada yeniden
+              // denenir (docs/20 §12.1).
+              final sonuc = await _isolated(
+                  () => apply.applyServerRow(table, server, types: types),
+                  '$table/${server['uid']}');
+              switch (sonuc) {
                 case ApplyOutcome.inserted:
                   inserted++;
                 case ApplyOutcome.updated:
                   updated++;
-                case ApplyOutcome.skipped:
+                case ApplyOutcome.skipped || null:
                   skipped++;
               }
             }
@@ -254,6 +261,9 @@ class SyncPull {
     var cursor =
         full ? 0 : (int.tryParse(await _meta.read(cursorKey) ?? '') ?? 0);
     var applied = 0;
+    // O an uygulanamayan işaretler (çoğunlukla: ebeveyn işareti geldi, çocuğu
+    // başka sayfada ve henüz yerelde). Sayfalar bitince yeniden denenir.
+    final ertelenen = <(String, String)>[];
 
     while (true) {
       final page =
@@ -286,7 +296,13 @@ class SyncPull {
               // Bilmediğimiz bir tablo adı geldiyse dokunma: ham adı SQL'e
               // koymak enjeksiyon kapısı olurdu.
               if (!syncRemoteTables.contains(table)) continue;
-              applied += await _deleteLocal(table, uid);
+              final n = await _isolated(() => _deleteLocal(table, uid),
+                  '$table/$uid silme', quiet: true);
+              if (n == null) {
+                ertelenen.add((table, uid));
+              } else {
+                applied += n;
+              }
             }
             if (lastRev > cursor) {
               await _meta.write(cursorKey, _laggedCursor(lastRev).toString());
@@ -298,8 +314,48 @@ class SyncPull {
       if (page.length < pageSize) break;
     }
 
+    // İKİNCİ DENEME — bütün sayfalar uygulandıktan sonra. Farklı sayfalara
+    // düşen ebeveyn–çocuk çiftinde çocuk artık silinmiştir. Yine olmayan
+    // işaret atlanır: imleç zaten ilerledi, kilit yok; haftalık tam
+    // uzlaştırma bütün işaretleri baştan okuyup yeniden dener.
+    var atlanan = 0;
+    if (ertelenen.isNotEmpty) {
+      await apply.withCaptureOff(() => db.transaction(() async {
+            for (final (table, uid) in ertelenen.reversed) {
+              final n = await _isolated(
+                  () => _deleteLocal(table, uid), '$table/$uid silme');
+              if (n == null) {
+                atlanan++;
+              } else {
+                applied += n;
+              }
+            }
+          }));
+    }
+
     // Silinen satırlar `updated` sayılır: kullanıcı açısından "veri değişti".
-    return PullResult(updated: applied);
+    return PullResult(updated: applied, skipped: atlanan);
+  }
+
+  /// [body]'yi iç içe transaction'da (SQLite kayıt noktası — SAVEPOINT)
+  /// çalıştırır. Hata verirse YALNIZ o adım geri alınır ve `null` döner;
+  /// dıştaki sayfa transaction'ı ve imleç yazımı sürer.
+  ///
+  /// Neden: aksi halde tek bozuk kayıt bütün sayfayı geri aldırır, imleç
+  /// ilerlemez ve her turda aynı yerde düşülür — gönderimdeki "bozuk satırı
+  /// ayır, kuyruk durmasın" kuralının (Aşama 7) çekme karşılığı.
+  /// Cihazda yaşandı (2026-09-23, FK 787).
+  Future<T?> _isolated<T>(
+    Future<T> Function() body,
+    String what, {
+    bool quiet = false,
+  }) async {
+    try {
+      return await db.transaction(body);
+    } catch (e) {
+      if (!quiet) syncLog('$what uygulanamadı, atlandı: $e', error: e);
+      return null;
+    }
   }
 
   /// Tablo ADINDAN Drift tanımını bulur. Mezar taşı yalnız `table_name`

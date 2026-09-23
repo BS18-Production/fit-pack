@@ -405,6 +405,16 @@ UYGULAMA AŞAMASI (sayfa başına kısa transaction)
   **imleç yine ilerler**; atlanan satırın `uid`'si `sync_meta`'daki "bekleyen
   referans" listesine yazılır ve sonraki turda yalnız o satırlar yeniden
   istenir. İmleç durdurulsaydı tek bozuk satır bütün tabloyu kilitlerdi.
+- **Tek bozuk kayıt sayfayı geri aldırmaz (2026-09-23, cihazda yaşandı).**
+  Her satır ve her silme işareti sayfa transaction'ı içinde **kendi kayıt
+  noktasında** (SAVEPOINT) uygulanır; hata verirse yalnız o adım geri alınır,
+  sayfanın geri kalanı ve imleç yazımı sürer. Uygulanamayan silme işareti
+  (tipik olarak: ebeveynin işareti geldi, çocuğun işareti başka sayfada)
+  ertelenir ve bütün sayfalar bittikten sonra **bir kez daha** denenir. Yine
+  olmayan kayıt `skipped` sayılır ve günlüğe yazılır; imleç ilerlemiştir, yani
+  kilit yoktur. Haftalık tam uzlaştırma (§12.1) her şeyi baştan okuduğu için
+  atlanan kaydı yeniden dener. Gönderimdeki "bozuk satırı ayır, kuyruk
+  durmasın" kuralının (Aşama 7) çekme karşılığıdır.
 
 ### 6.2 Satır uygulama kuralı
 

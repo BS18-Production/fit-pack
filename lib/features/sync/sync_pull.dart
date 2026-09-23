@@ -245,6 +245,16 @@ class SyncPull {
       if (page.length < pageSize) break; // son sayfa
     }
 
+    // Drift'e hangi tablonun değiştiğini söyle (docs/20 §6.3). Satırlar ham
+    // SQL ile yazıldığı için bu olmadan `watchTables` ile beslenen ekran
+    // sağlayıcıları uyanmaz; `SyncRefresh`'teki elle tazeleme listesi yalnız
+    // bir kısmını kapsıyordu (simülatörde görüldü, 2026-09-23: ana sayfanın
+    // bir kartı inen seansı gösterdi, diğeri göstermedi).
+    final info = _tableInfo(table);
+    if (inserted + updated > 0 && info != null) {
+      db.notifyUpdates({TableUpdate.onTable(info, kind: UpdateKind.update)});
+    }
+
     return PullResult(inserted: inserted, updated: updated, skipped: skipped);
   }
 

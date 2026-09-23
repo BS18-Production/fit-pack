@@ -213,4 +213,30 @@ void main() {
     expect(result.changed, 0);
     await b.close();
   });
+  test('inen ekleme yerel akışları uyandırır (ekran tazelensin)', () async {
+    // Simülatörde görüldü (2026-09-23): eşitlemeyle inen seans ana sayfanın
+    // bir bölümünde görünüyor, diğerinde görünmüyordu. Sebep: satırlar ham
+    // SQL ile yazılıyor, Drift hangi tablonun değiştiğini bilmiyor ve
+    // `watchTables` ile beslenen sağlayıcılar uyanmıyordu (docs/20 §6.3).
+    final a = await freshDb();
+    await a.into(a.routines).insert(
+        RoutinesCompanion.insert(name: 'Bacak', createdAt: DateTime.now()));
+    await SyncPush(a, remote).pushAll(userId: user);
+    await a.close();
+
+    final b = await freshDb();
+    final yayinlar = <int>[];
+    final sub =
+        b.select(b.routines).watch().listen((r) => yayinlar.add(r.length));
+    await pumpEventQueue();
+    expect(yayinlar, [0]);
+
+    await SyncPull(b, remote).pullAll(userId: user);
+    await pumpEventQueue();
+    await sub.cancel();
+
+    expect(yayinlar.last, 1,
+        reason: 'inen satır akışa yansımazsa ekran bayat kalır');
+    await b.close();
+  });
 }

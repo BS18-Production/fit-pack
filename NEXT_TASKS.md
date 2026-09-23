@@ -141,6 +141,23 @@ açıklama yok. Asgari sürüm kapısı ise **ilk sürümde bulunmak zorunda**:
 sonradan eklenirse ondan önceki sürümdeki kullanıcılar güncellemeye
 zorlanamaz.
 
+## 🔊 Mola geri sayım sesi — yenilendi (2026-09-23)
+
+Ses beğenilmemişti; ayrıca son saniyelerde duyulan bir zamanlama bozulması
+vardı. İkisi de kapatıldı (`9fde96b`).
+
+- [x] **Yeni sesler:** tık 880 Hz saf sinüs 100 ms, bitiş C5-E5-G5 arpej
+      600 ms. Tamamen sentetik (telif yok); üretici betik
+      `tools/make_rest_sounds.py`. Samet 5 aday dinleyip seçti
+      (`--demo DIR` ile adaylar yeniden üretilebilir).
+- [x] **Kayma düzeltildi:** `Timer.periodic` gecikmeyi biriktiriyordu ve
+      `ceil` yüzünden **bir saniye tamamen atlanıyordu**. Gecikme artık her
+      tıkta hedeften yeniden hesaplanıyor (`restTickDelayMs`). 5 test.
+- [ ] **Cihazda dinleme bekliyor:** telefon kurulum sırasında bağlantıdan
+      düştü. `adb install -r build/app/outputs/flutter-apk/app-release.apk`
+      → bir set kaydet → molanın son 3 saniyesini dinle. Beklenen: üç tık
+      tam 1 sn aralıkla, sonra arpej.
+
 ## 🧭 Güncel sıra — Samet onayı (2026-09-17 akşam)
 
 ChatGPT değerlendirmesi sonrası sıra değişti: taslak kaybı haftalık

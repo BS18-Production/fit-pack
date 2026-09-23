@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-09-22
+> **Son güncelleme:** 2026-09-23
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -36,8 +36,10 @@ indirdi (**eklenen 0** — hepsi telefonun kendi satırları), gönderim turu
 "kuyruk boş" dedi, logda `PGRST`/ret/kalıcı hata yok. Samet'in hesabındaki
 bulut satırları telefonun çektiğiyle birebir örtüşüyor (114).
 
-**Kalan:** `backup_20260922` şeması düşülebilir. Açık güvenlik uyarıları
-(hepsi WARN, göçle açılan delik değil) NEXT_TASKS'ta listelendi.
+**2026-09-23:** `backup_20260922` şeması düşüldü. Güvenlik uyarıları
+`security_hardening` göçüyle (Dev → üretim) kapatıldı; yalnız panelden
+açılan "sızmış parola koruması" kaldı. Çekme tarafına dayanıklılık eklendi:
+tek bozuk kayıt artık turu kilitlemiyor (docs/20 §6.1, `b840657`).
 
 ## 🛡️ Ticari Ürüne Hazırlık ✅ (kodlandı) — 2026-09-22 · docs/23
 

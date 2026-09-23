@@ -32,25 +32,25 @@ telefondaki (SM A075F) release derlemesiyle aynı sürümde. **Kuyruk boşaldı.
       *Not: push'un kendi log satırları yakalanamadı — logcat tamponu o turdan
       (22:34) hemen sonra temizlendi. Kanıt sunucu tarafında: son yazma damgası
       19:34:03 UTC.*
-- [ ] **`backup_20260922` şeması düşülebilir** — doğrulama bitti, geri dönüş
-      noktasına artık gerek yok: `drop schema backup_20260922 cascade;`
-      (Samet onayı bekliyor; yer kaplamasının dışında zararı yok.)
+- [x] **`backup_20260922` şeması düşüldü (2026-09-23).** Önce şema dışından
+      ona bağlanan nesne olmadığı doğrulandı (görünüm/FK yok).
 
-### Göç sonrası açık uyarılar (acil değil, Samet'e bilgi)
+### Göç sonrası güvenlik uyarıları — kapatıldı ✅ (2026-09-23)
 
-Supabase güvenlik denetçisi üç WARN veriyor; **hiçbiri göçün açtığı bir delik
-değil**, ama not düşüldü:
+Göç `20260923190000_security_hardening` — önce **Dev**'de, sonra **üretimde**:
+`sync_guard` + `sync_delete` için `search_path = ''` (gövdelerde her ad zaten
+şema nitelikli); `sync_mark_deleted` ve `rls_auto_enable` üzerinde
+`anon`/`authenticated` EXECUTE yetkisi geri alındı (tetikleyici ateşlenirken
+EXECUTE denetlenmez, yalnız `/rest/v1/rpc/…` kapısı kapandı).
 
-- `sync_guard` ve `sync_delete` için `search_path` ayarlı değil. İkisi de
-  SECURITY INVOKER ve içlerindeki her ad şema nitelikli (`public.…`,
-  `auth.uid()`), yani pratikte gölgelenemezler. İstenirse migration'a
-  `set search_path = ''` eklenir (`sync_mark_deleted`'te zaten var).
-- `sync_mark_deleted` PostgREST üzerinden `rpc/sync_mark_deleted` olarak
-  görünüyor. Tetikleyici fonksiyonu olduğu için doğrudan çağrı hata verir;
-  yine de `revoke execute … from anon, authenticated` temiz olur.
-- `rls_auto_enable` (ilk şemadan kalma, bu göçle ilgisiz) aynı uyarıyı alıyor.
-- Ayrıca auth tarafında "sızmış parola koruması kapalı" uyarısı var —
-  panelden açılabilir, göçle ilgisi yok.
+- [x] Uçtan uca denendi (Dev + üretim, geri alınan işlem içinde, giriş yapmış
+      kullanıcı rolüyle): ekleme `server_rev` aldı, güncelleme artırdı,
+      `sync_delete` sildi, silme işareti düştü, fonksiyonu doğrudan çağırmak
+      `42501` (yetki yok) verdi. Üretimde iz kalmadı.
+- [x] Denetçi üretimde yalnız bir uyarı gösteriyor.
+- [ ] **Sızmış parola koruması** (HaveIBeenPwned kontrolü) kapalı — yalnız
+      Supabase panelinden açılır (Authentication → Sign In / Providers →
+      Email). Ücretli plan istiyor olabilir; göçle ilgisi yok.
 
 ## 🔵 Ticari ürüne hazırlık — docs/23 (2026-09-22, karar bekliyor)
 
@@ -124,14 +124,22 @@ ticari üründe düşüyor.
       bu damga saat bozukken yazıldı. Bir sonraki gerçek gönderimde
       kendiliğinden düzelir (kuyruk boş olduğu için henüz gönderim olmadı).
 
-## 🐛 Açık dayanıklılık boşluğu — çekmede tek bozuk işaret turu kilitliyor
+## ✅ Çekmede tek bozuk kayıt turu kilitliyordu — düzeltildi (2026-09-23, `b840657`)
 
-Yukarıdaki FK hatası bütün çekmeyi düşürdü ve **her turda yeniden** düştü:
-bir sayfadaki mezar taşları tek transaction'da uygulanıyor, biri patlayınca
-imleç ilerlemiyor. Aşama 7 bu sorunu **gönderim** tarafında çözmüştü (bozuk
-satır ayrılır, kuyruk durmaz); çekme tarafında karşılığı yok. Ayrıca
-ebeveyn ile çocuğu farklı sayfalara düşen büyük silmelerde sıralama
-düzeltmesi de yetmez.
+Problem: bir sayfadaki satırlar/silme işaretleri tek transaction'da
+uygulanıyordu; biri patlayınca bütün sayfa geri alınıyor, imleç ilerlemiyor,
+her turda aynı yerde düşülüyordu (cihazda FK 787 ile yaşandı). Farklı
+sayfalara düşen ebeveyn–çocuk silmesinde sıralama düzeltmesi de yetmiyordu.
+
+Çözüm: her kayıt sayfa transaction'ı içinde **kendi kayıt noktasında**
+(SAVEPOINT); bozuk olan atlanıp günlüğe yazılır, sayfa ve imleç sürer.
+Uygulanamayan silme işareti sayfalar bitince bir kez daha denenir. Haftalık
+tam uzlaştırma atlananı yeniden dener. Kural docs/20 §6.1'de.
+
+- [x] 3 yeni test kırmızı-yeşil: sayfa sınırındaki ebeveyn–çocuk, silinemeyen
+      işaret (sonraki tur da takılmıyor), uygulanamayan satır. 586 test yeşil.
+- [ ] Cihazda gözle görülecek bir şey yok; bir sonraki kurulumla birlikte gider.
+
 - [ ] Abonelik katmanı ayrı iş — satın alma geldiğinde (docs/23 §4 kararı hazır).
 
 **Neden acil:** saat sapması bugün **sessiz** veri kaybı yapıyor — saati geride

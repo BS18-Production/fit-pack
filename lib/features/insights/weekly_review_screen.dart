@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/i18n/formatting.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
@@ -16,16 +17,17 @@ import '../workout/workout_ui.dart';
 import 'weekly_review.dart';
 import 'weekly_review_providers.dart';
 
-/// **Haftalık değerlendirme ekranı** (docs/22 §4).
+/// **Haftalık değerlendirme ekranı** (docs/22 §4, görsel yenileme §10).
 ///
-/// Bölümler motorun sırasıyla kart olarak dizilir. İki ilke:
-/// 1. **Verisi olmayan bölüm gizlenmez** — "bu hafta kayıt yok" der;
-///    eksikliğin kendisi bilgi.
-/// 2. **Her kartta "nereden hesaplandı"** (A3) — sayıya itiraz eden kullanıcı
-///    kaynağı görebilmeli; güven için şart.
+/// **Bir bakışta okunur** (Samet, 2026-09-30: "çok yazı okutmadan, net"):
+/// 1. Üstte 4 metrik kutusu — büyük sayı + geçen haftaya göre değişim.
+/// 2. Hemen altında tek aksiyon: "Gelecek hafta".
+/// 3. Ayrıntı (ilerleme, kas dağılımı, hedef yönü) aşağıda, kısa satırlarla.
+/// 4. "Nereden hesaplandı" (A3) kaybolmadı — her bölüm başlığındaki ⓘ'de.
 ///
-/// Metinler yargısız: "kaçırdın" yok, "tersine" yazılsa bile "tek hafta tek
-/// başına sonuç değildir" ile birlikte.
+/// docs/22 kuralları aynen geçerli: verisi olmayan bölüm gizlenmez ("Kayıt
+/// yok" der); kayıtsız günden yargı çıkmaz; düşüş "kötü" diye boyanmaz;
+/// puan yok, hareketler toplanmaz.
 class WeeklyReviewScreen extends ConsumerStatefulWidget {
   const WeeklyReviewScreen({super.key});
 
@@ -50,9 +52,9 @@ class _WeeklyReviewScreenState extends ConsumerState<WeeklyReviewScreen> {
           children: [
             Skeleton.card(height: 72),
             AppSpacing.vGapMd,
-            Skeleton.card(height: 140),
+            Skeleton.card(height: 220),
             AppSpacing.vGapMd,
-            Skeleton.card(height: 140),
+            Skeleton.card(height: 100),
           ],
         ),
         error: (_, _) => ErrorState(
@@ -68,19 +70,28 @@ class _WeeklyReviewScreenState extends ConsumerState<WeeklyReviewScreen> {
               onNext: _offset == 0 ? null : () => setState(() => _offset--),
             ),
             AppSpacing.vGapMd,
-            _SummaryCard(review: r),
-            AppSpacing.vGapMd,
-            _WorkoutCard(review: r),
-            AppSpacing.vGapMd,
-            _ProgressCard(review: r),
-            AppSpacing.vGapMd,
-            _NutritionCard(review: r),
-            AppSpacing.vGapMd,
-            _WeightCard(review: r),
-            AppSpacing.vGapMd,
-            _MuscleCard(review: r),
-            AppSpacing.vGapMd,
+            _SectionTitle(
+              title: l.wrThisWeek,
+              info: [
+                l.wrWorkoutSource(r.workout.sessions),
+                l.wrNutritionSource,
+                l.wrWeightSource,
+              ],
+            ),
+            _KpiGrid(review: r),
+            AppSpacing.vGapLg,
             _FocusCard(review: r),
+            AppSpacing.vGapLg,
+            _SectionTitle(
+                title: l.wrProgressTitle, info: [l.wrProgressSource]),
+            _ProgressCard(review: r),
+            AppSpacing.vGapLg,
+            _SectionTitle(title: l.wrMuscleTitle, info: [l.wrMuscleSource]),
+            _MuscleCard(review: r),
+            AppSpacing.vGapLg,
+            _SectionTitle(
+                title: l.wrDirectionLabel, info: [l.wrWeightSource]),
+            const _DirectionCard(),
             AppSpacing.vGapXl,
           ],
         ),
@@ -140,43 +151,54 @@ class _WeekHeader extends StatelessWidget {
   }
 }
 
-// ───────────────────────────── Kart iskeleti ─────────────────────────────
+// ───────────────────────────── Bölüm başlığı ─────────────────────────────
 
-/// Başlık + içerik + "nereden hesaplandı" satırı. Her bölüm bunu kullanır ki
-/// kaynak satırı hiçbir kartta unutulmasın.
-class _ReviewCard extends StatelessWidget {
-  final IconData icon;
+/// Bölüm başlığı + ⓘ: "nereden hesaplandı" metni (A3) alt sayfada açılır —
+/// ekranda sürekli okunacak yazı olmaktan çıktı, kaybolmadı.
+class _SectionTitle extends StatelessWidget {
   final String title;
-  final List<Widget> children;
-  final String source;
-
-  const _ReviewCard({
-    required this.icon,
-    required this.title,
-    required this.children,
-    required this.source,
-  });
+  final List<String> info;
+  const _SectionTitle({required this.title, required this.info});
 
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
-    return GlassCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    final l = AppL10n.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(left: AppSpacing.xs, bottom: AppSpacing.xs),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Icon(icon, size: AppIconSize.md, color: c.primary),
-              AppSpacing.hGapSm,
-              Text(title, style: context.texts.titleSmall),
-            ],
+          Expanded(
+            child: Text(title,
+                style: context.texts.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w800)),
           ),
-          AppSpacing.vGapSm,
-          ...children,
-          AppSpacing.vGapSm,
-          Text(
-            source,
-            style: context.texts.bodySmall?.copyWith(color: c.onSurfaceVariant),
+          IconButton(
+            tooltip: l.wrHowCalculated,
+            visualDensity: VisualDensity.compact,
+            icon: Icon(Icons.info_outline_rounded,
+                size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
+            onPressed: () => showModalBottomSheet<void>(
+              context: context,
+              showDragHandle: true,
+              builder: (ctx) => SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l.wrHowCalculated, style: ctx.texts.titleMedium),
+                      AppSpacing.vGapMd,
+                      for (final t in info) ...[
+                        Text(t, style: ctx.texts.bodyMedium),
+                        AppSpacing.vGapSm,
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -184,24 +206,7 @@ class _ReviewCard extends StatelessWidget {
   }
 }
 
-class _Line extends StatelessWidget {
-  final String text;
-  final bool muted;
-  const _Line(this.text, {this.muted = false});
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-        child: Text(
-          text,
-          style: context.texts.bodyMedium?.copyWith(
-            color: muted ? context.colors.onSurfaceVariant : null,
-          ),
-        ),
-      );
-}
-
-/// "+0,4" / "−1,0" — işaretli, birimle.
+/// "+0,4 kg" / "−1,0 kg" — işaretli, birimle.
 String _signed(Units u, double kg) {
   final s = u.weight(kg.abs());
   if (kg > 0) return '+$s';
@@ -209,250 +214,224 @@ String _signed(Units u, double kg) {
   return s;
 }
 
-// ───────────────────────────── Bölümler ─────────────────────────────
+// ───────────────────────────── Metrik kutuları ─────────────────────────────
 
-class _SummaryCard extends ConsumerWidget {
-  final WeeklyReview review;
-  const _SummaryCard({required this.review});
+/// Değişim satırı: ok ikonu + işaretli metin + ton rengi. Renk hiçbir zaman
+/// tek başına bilgi taşımaz (ok + metin var).
+class _Delta {
+  final String text;
+  final int sign; // −1, 0, 1
+  final DeltaTone tone;
+  const _Delta(this.text, this.sign, this.tone);
+}
+
+class _KpiTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final String? unit;
+  final _Delta? delta;
+  final List<String> notes;
+  const _KpiTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.unit,
+    this.delta,
+    this.notes = const [],
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppL10n.of(context);
-    final u = ref.watch(unitsProvider);
-    final n = review.nutrition;
-    final w = review.weight;
-    final facts = <String>[
-      l.wrFactWorkouts(review.workout.sessions),
-      n.loggedDays == 0 ? l.wrFactNoFood : l.wrFactFoodDays(n.loggedDays),
-      if (w.delta != null)
-        l.wrFactWeightDelta(_signed(u, w.delta!))
-      else if (w.count > 0)
-        l.wrFactNoPrevWeight
-      else
-        l.wrFactNoWeight,
-    ];
-    final metin = facts.join(' · ');
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final d = delta;
+    final toneColor = switch (d?.tone) {
+      DeltaTone.good => context.semantic.success,
+      DeltaTone.caution => context.semantic.warning,
+      _ => c.onSurfaceVariant,
+    };
     return GlassCard(
+      padding: AppSpacing.cardCompact,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l.wrSummaryTitle, style: context.texts.titleSmall),
+          Row(
+            children: [
+              Icon(icon, size: 16, color: c.primary),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.texts.labelMedium?.copyWith(
+                        color: c.onSurfaceVariant,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
           AppSpacing.vGapSm,
-          Text(metin[0].toUpperCase() + metin.substring(1),
-              style: context.texts.bodyLarge),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text.rich(
+              TextSpan(children: [
+                TextSpan(
+                    text: value,
+                    style: context.texts.headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.w800, height: 1.1)),
+                if (unit != null)
+                  TextSpan(
+                      text: ' $unit',
+                      style: context.texts.titleSmall?.copyWith(
+                          color: c.onSurfaceVariant,
+                          fontWeight: FontWeight.w600)),
+              ]),
+            ),
+          ),
+          if (d != null) ...[
+            AppSpacing.vGapXs,
+            Row(
+              children: [
+                Icon(
+                    d.sign > 0
+                        ? Icons.arrow_upward_rounded
+                        : d.sign < 0
+                            ? Icons.arrow_downward_rounded
+                            : Icons.remove_rounded,
+                    size: 14,
+                    color: toneColor),
+                const SizedBox(width: 2),
+                Flexible(
+                  child: Text(d.text,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.texts.labelMedium?.copyWith(
+                          color: toneColor, fontWeight: FontWeight.w800)),
+                ),
+              ],
+            ),
+          ],
+          for (final n in notes) ...[
+            const SizedBox(height: 2),
+            Text(n,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: context.texts.bodySmall
+                    ?.copyWith(color: c.onSurfaceVariant)),
+          ],
         ],
       ),
     );
   }
 }
 
-class _WorkoutCard extends ConsumerWidget {
+class _KpiGrid extends ConsumerWidget {
   final WeeklyReview review;
-  const _WorkoutCard({required this.review});
+  const _KpiGrid({required this.review});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
     final u = ref.watch(unitsProvider);
+    final nf = context.numFmt;
     final w = review.workout;
-    return _ReviewCard(
-      icon: Icons.fitness_center_rounded,
-      title: l.wrWorkoutTitle,
-      source: l.wrWorkoutSource(w.sessions),
-      children: [
-        if (w.sessions == 0 && w.planned == null)
-          _Line(l.wrWorkoutNone, muted: true)
-        else ...[
-          _Line(w.planned != null
-              ? l.wrWorkoutPlanned(w.sessions, w.planned!)
-              : l.wrWorkoutDone(w.sessions)),
-          if (w.sessions > 0)
-            _Line(l.wrWorkoutDetail(
-              w.completedSets,
-              w.totalMinutes,
-              u.weight(w.volumeKg, frac: 0),
-            )),
-        ],
-        _Line(l.wrWorkoutPrev(w.prevSessions), muted: true),
-      ],
-    );
-  }
-}
-
-class _ProgressCard extends ConsumerWidget {
-  final WeeklyReview review;
-  const _ProgressCard({required this.review});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppL10n.of(context);
-    final u = ref.watch(unitsProvider);
-    return _ReviewCard(
-      icon: Icons.trending_up_rounded,
-      title: l.wrProgressTitle,
-      source: l.wrProgressSource,
-      children: [
-        if (review.progress.isEmpty)
-          _Line(l.wrProgressNone, muted: true)
-        else
-          for (final p in review.progress)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(p.name, style: context.texts.bodyMedium),
-                  Text(
-                    l.wrProgressRow(
-                        u.lift(p.bestWeightKg), p.bestReps, u.lift(p.deltaE1rm)),
-                    style: context.texts.bodySmall
-                        ?.copyWith(color: context.colors.onSurfaceVariant),
-                  ),
-                ],
-              ),
-            ),
-      ],
-    );
-  }
-}
-
-class _NutritionCard extends StatelessWidget {
-  final WeeklyReview review;
-  const _NutritionCard({required this.review});
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppL10n.of(context);
     final n = review.nutrition;
-    return _ReviewCard(
+    final kg = review.weight;
+    // Hafta sürüyorsa tam haftayla kıyas yanıltır: değişim oku yok, yalnız
+    // "Geçen hafta: X" (W-2).
+    final complete = review.period.isComplete;
+
+    final sessionsDelta = w.sessions - w.prevSessions;
+    final workouts = _KpiTile(
+      icon: Icons.fitness_center_rounded,
+      label: l.wrKpiWorkouts,
+      value: '${w.sessions}',
+      unit: w.planned != null ? '/ ${w.planned}' : null,
+      delta: complete && sessionsDelta != 0
+          ? _Delta('${sessionsDelta > 0 ? '+' : '−'}${sessionsDelta.abs()}',
+              sessionsDelta.sign, countTone(sessionsDelta))
+          : null,
+      notes: [l.wrPrevValue('${w.prevSessions}')],
+    );
+
+    final pct = percentChange(w.volumeKg, w.prevVolumeKg);
+    final volume = _KpiTile(
+      icon: Icons.stacked_bar_chart_rounded,
+      label: l.wrKpiVolume,
+      value: w.volumeKg == 0 ? '0' : nf.format(u.weightFromKg(w.volumeKg).round()),
+      unit: u.weightUnit,
+      delta: complete && pct != null && pct != 0
+          ? _Delta('${pct > 0 ? '+' : '−'}${pct.abs()}%', pct.sign,
+              countTone(pct))
+          : null,
+      notes: [
+        l.wrPrevValue(w.prevVolumeKg == 0
+            ? '0'
+            : u.weight(w.prevVolumeKg, frac: 0)),
+      ],
+    );
+
+    // Beslenme: kayıtsız günden yargı yok → değişim oku/renk hiç yok.
+    final food = _KpiTile(
       icon: Icons.restaurant_rounded,
-      title: l.wrNutritionTitle,
-      source: l.wrNutritionSource,
-      children: [
-        // Kayıt yoksa hiçbir hedef yargısı yok (Samet kuralı).
-        if (n.loggedDays == 0)
-          _Line(l.wrNutritionNone, muted: true)
-        else ...[
-          _Line(l.wrNutritionLogged(n.loggedDays)),
-          _Line(l.wrNutritionAvg(n.avgKcal!, n.avgProtein!)),
-          if (n.kcalGoal > 0)
-            _Line(l.wrNutritionGoal(n.kcalGoal, n.proteinGoal), muted: true),
-        ],
-      ],
+      label: l.wrKpiKcal,
+      value: n.avgKcal == null ? '—' : nf.format(n.avgKcal),
+      unit: n.avgKcal == null ? null : 'kcal',
+      notes: n.loggedDays == 0
+          ? [l.wrNoRecord]
+          : [
+              l.wrLoggedOf(n.loggedDays, review.period.daysElapsed),
+              [
+                l.wrProteinAvg(n.avgProtein!),
+                if (n.kcalGoal > 0) l.wrGoalShort(n.kcalGoal),
+              ].join(' · '),
+            ],
     );
-  }
-}
 
-class _WeightCard extends ConsumerWidget {
-  final WeeklyReview review;
-  const _WeightCard({required this.review});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppL10n.of(context);
-    final u = ref.watch(unitsProvider);
-    final w = review.weight;
-    final profile = ref.watch(userProfileProvider).valueOrNull;
-    final dir = GoalDirection.tryParse(profile?.goalDirection);
-    final conflict = ref.watch(goalConflictProvider).valueOrNull ?? false;
-
-    final meaning = switch (w.meaning) {
-      WeightMeaning.onTrack => l.wrMeaningOnTrack,
-      WeightMeaning.against => l.wrMeaningAgainst,
-      WeightMeaning.flat => l.wrMeaningFlat,
-      WeightMeaning.unknown => null,
-    };
-
-    return _ReviewCard(
+    final weight = _KpiTile(
       icon: Icons.monitor_weight_rounded,
-      title: l.wrWeightTitle,
-      source: l.wrWeightSource,
-      children: [
-        if (w.count == 0)
-          _Line(l.wrWeightNone, muted: true)
-        else ...[
-          _Line(l.wrWeightAvg(u.weight(w.weekAvg!), w.count)),
-          if (w.singleMeasurement)
-            _Line(l.wrWeightSingle, muted: true)
-          else if (w.delta != null)
-            _Line(l.wrWeightDelta(_signed(u, w.delta!)))
-          else
-            _Line(l.wrWeightNoPrev, muted: true),
-          if (meaning != null) _Line(meaning),
-        ],
-        AppSpacing.vGapSm,
-        Text(l.wrDirectionLabel, style: context.texts.labelMedium),
-        AppSpacing.vGapXs,
-        SegmentedButton<GoalDirection>(
-          emptySelectionAllowed: true,
-          showSelectedIcon: false,
-          segments: [
-            ButtonSegment(value: GoalDirection.lose, label: Text(l.wrDirLose)),
-            ButtonSegment(
-                value: GoalDirection.maintain, label: Text(l.wrDirMaintain)),
-            ButtonSegment(value: GoalDirection.gain, label: Text(l.wrDirGain)),
-          ],
-          selected: {?dir},
-          onSelectionChanged: (s) => ref
-              .read(userProfileDaoProvider)
-              .setGoalDirection(s.isEmpty ? null : s.first.name),
-        ),
-        if (dir == null) ...[
-          AppSpacing.vGapXs,
-          _Line(l.wrDirectionUnset, muted: true),
-        ],
-        if (conflict) ...[
-          AppSpacing.vGapSm,
-          _Line(l.wrGoalConflict),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton(
-              onPressed: () => context.push(AppRoutes.profile),
-              child: Text(l.wrGoalConflictAction),
-            ),
+      label: l.wrKpiWeight,
+      value: kg.weekAvg == null ? '—' : u.weightValue(kg.weekAvg!),
+      unit: kg.weekAvg == null ? null : u.weightUnit,
+      delta: kg.delta == null || kg.singleMeasurement
+          ? null
+          : _Delta(_signed(u, kg.delta!), kg.delta!.sign.toInt(),
+              weightTone(kg.meaning)),
+      notes: kg.count == 0
+          ? [l.wrNoRecord]
+          : [
+              kg.singleMeasurement
+                  ? l.wrSingleShort
+                  : kg.delta == null
+                      ? l.wrNoPrevShort
+                      : l.wrMeasureCount(kg.count),
+            ],
+    );
+
+    Widget row(Widget a, Widget b) => IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: a),
+              AppSpacing.hGapMd,
+              Expanded(child: b),
+            ],
           ),
-        ],
-      ],
-    );
-  }
-}
+        );
 
-class _MuscleCard extends StatelessWidget {
-  final WeeklyReview review;
-  const _MuscleCard({required this.review});
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppL10n.of(context);
-    final rows = review.muscleSets.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    return _ReviewCard(
-      icon: Icons.accessibility_new_rounded,
-      title: l.wrMuscleTitle,
-      source: l.wrMuscleSource,
+    return Column(
       children: [
-        if (rows.isEmpty)
-          _Line(l.wrMuscleNone, muted: true)
-        else
-          for (final e in rows)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(WorkoutUi.muscleLabel(e.key),
-                        style: context.texts.bodyMedium),
-                  ),
-                  Text(l.wrMuscleRow(e.value),
-                      style: context.texts.bodyMedium),
-                ],
-              ),
-            ),
+        row(workouts, volume),
+        AppSpacing.vGapMd,
+        row(food, weight),
       ],
     );
   }
 }
 
+// ───────────────────────────── Odak ─────────────────────────────
+
+/// Tek aksiyon — metrik kutularının hemen altında, vurgulu.
 class _FocusCard extends StatelessWidget {
   final WeeklyReview review;
   const _FocusCard({required this.review});
@@ -460,6 +439,7 @@ class _FocusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
+    final c = context.colors;
     final f = review.focus;
     final metin = switch (f.kind) {
       FocusKind.completePlan => l.wrFocusCompletePlan(f.planned!, f.done!),
@@ -468,13 +448,272 @@ class _FocusCard extends StatelessWidget {
       FocusKind.reviewCalories => l.wrFocusCalories,
       FocusKind.keepRhythm => l.wrFocusKeep,
     };
-    return _ReviewCard(
-      icon: Icons.flag_rounded,
-      title: l.wrFocusTitle,
-      source: l.wrFocusSource,
-      children: [
-        Text(metin, style: context.texts.bodyLarge),
-      ],
+    return Container(
+      padding: AppSpacing.card,
+      decoration: BoxDecoration(
+        color: c.primary.withValues(alpha: 0.10),
+        borderRadius: AppRadius.brLg,
+        border: Border.all(color: c.primary.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: c.primary.withValues(alpha: 0.16),
+              borderRadius: AppRadius.brMd,
+            ),
+            child: Icon(Icons.flag_rounded, color: c.primary, size: 20),
+          ),
+          AppSpacing.hGapMd,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(l.wrFocusTitle,
+                          style: context.texts.labelLarge?.copyWith(
+                              color: c.primary, fontWeight: FontWeight.w800)),
+                    ),
+                    _InfoButton(info: [l.wrFocusSource]),
+                  ],
+                ),
+                Text(metin,
+                    style: context.texts.bodyLarge
+                        ?.copyWith(fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Odak kartı içindeki küçük ⓘ (başlık satırı olmayan yerler için).
+class _InfoButton extends StatelessWidget {
+  final List<String> info;
+  const _InfoButton({required this.info});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    return InkWell(
+      borderRadius: AppRadius.brPill,
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (ctx) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.wrHowCalculated, style: ctx.texts.titleMedium),
+                AppSpacing.vGapMd,
+                for (final t in info) Text(t, style: ctx.texts.bodyMedium),
+              ],
+            ),
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xs),
+        child: Icon(Icons.info_outline_rounded,
+            size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
+      ),
+    );
+  }
+}
+
+// ───────────────────────────── Ayrıntı ─────────────────────────────
+
+class _EmptyLine extends StatelessWidget {
+  final String text;
+  const _EmptyLine(this.text);
+
+  // Tam genişlik: boş kart, dolu kartlarla aynı hizada dursun.
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        width: double.infinity,
+        child: Text(text,
+            style: context.texts.bodyMedium
+                ?.copyWith(color: context.colors.onSurfaceVariant)),
+      );
+}
+
+/// En çok ilerleyen hareketler: ad | en iyi set | 1TM farkı. Her hareket ayrı.
+class _ProgressCard extends ConsumerWidget {
+  final WeeklyReview review;
+  const _ProgressCard({required this.review});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
+    final u = ref.watch(unitsProvider);
+    final c = context.colors;
+    return GlassCard(
+      child: review.progress.isEmpty
+          ? _EmptyLine(l.wrProgressNone)
+          : Column(
+              children: [
+                for (final (i, p) in review.progress.indexed) ...[
+                  if (i > 0) Divider(height: AppSpacing.lg, color: c.outlineVariant),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(p.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.texts.bodyMedium
+                                    ?.copyWith(fontWeight: FontWeight.w700)),
+                            Text('${u.lift(p.bestWeightKg)} × ${p.bestReps}',
+                                style: context.texts.bodySmall
+                                    ?.copyWith(color: c.onSurfaceVariant)),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.arrow_upward_rounded,
+                          size: 14, color: context.semantic.success),
+                      const SizedBox(width: 2),
+                      Text(l.wrProgressDelta(u.lift(p.deltaE1rm)),
+                          style: context.texts.labelLarge?.copyWith(
+                              color: context.semantic.success,
+                              fontWeight: FontWeight.w800)),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+    );
+  }
+}
+
+/// Kas grubu dağılımı — yatay çubuklar (tek renk; büyüklük = set sayısı).
+/// Yalnız sayım: "az çalıştın" gibi yargı yok.
+class _MuscleCard extends StatelessWidget {
+  final WeeklyReview review;
+  const _MuscleCard({required this.review});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    final c = context.colors;
+    final rows = review.muscleSets.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final max = rows.isEmpty ? 1 : rows.first.value;
+    return GlassCard(
+      child: rows.isEmpty
+          ? _EmptyLine(l.wrMuscleNone)
+          : Column(
+              children: [
+                for (final e in rows)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 5),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 92,
+                          child: Text(WorkoutUi.muscleLabel(e.key),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: context.texts.bodySmall),
+                        ),
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: AppRadius.brPill,
+                            child: Stack(
+                              children: [
+                                Container(
+                                    height: 8,
+                                    color: c.primary.withValues(alpha: 0.12)),
+                                FractionallySizedBox(
+                                  widthFactor: e.value / max,
+                                  child: Container(height: 8, color: c.primary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 56,
+                          child: Text(l.wrMuscleRow(e.value),
+                              textAlign: TextAlign.end,
+                              style: context.texts.bodySmall?.copyWith(
+                                  fontWeight: FontWeight.w700)),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+    );
+  }
+}
+
+/// Kilo hedefi yönü + çelişki notu (docs/22 §9). Metrik kutusundaki kilo
+/// renginin kaynağı burası.
+class _DirectionCard extends ConsumerWidget {
+  const _DirectionCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
+    final profile = ref.watch(userProfileProvider).valueOrNull;
+    final dir = GoalDirection.tryParse(profile?.goalDirection);
+    final conflict = ref.watch(goalConflictProvider).valueOrNull ?? false;
+    final muted = context.texts.bodySmall
+        ?.copyWith(color: context.colors.onSurfaceVariant);
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<GoalDirection>(
+              emptySelectionAllowed: true,
+              showSelectedIcon: false,
+              segments: [
+                ButtonSegment(
+                    value: GoalDirection.lose, label: Text(l.wrDirLose)),
+                ButtonSegment(
+                    value: GoalDirection.maintain,
+                    label: Text(l.wrDirMaintain)),
+                ButtonSegment(
+                    value: GoalDirection.gain, label: Text(l.wrDirGain)),
+              ],
+              selected: {?dir},
+              onSelectionChanged: (s) => ref
+                  .read(userProfileDaoProvider)
+                  .setGoalDirection(s.isEmpty ? null : s.first.name),
+            ),
+          ),
+          if (dir == null) ...[
+            AppSpacing.vGapSm,
+            Text(l.wrDirectionUnset, style: muted),
+          ],
+          if (conflict) ...[
+            AppSpacing.vGapSm,
+            Text(l.wrGoalConflict, style: context.texts.bodyMedium),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                onPressed: () => context.push(AppRoutes.profile),
+                child: Text(l.wrGoalConflictAction),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

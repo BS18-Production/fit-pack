@@ -10,6 +10,14 @@ Kullanım:
     python3 tools/make_rest_sounds.py            # seçilen varyantları yazar
     python3 tools/make_rest_sounds.py --demo DIR # bütün adayları DIR'e yazar
 
+**Tek parça geri sayım (2026-09-30).** Uygulama artık tık ve bitişi ayrı
+ayrı çalmıyor: `rest_countdown.wav` = 3 tık (0, 1, 2. sn) + bitiş (3. sn)
+tek dosyada. Bitişten tam 3 sn önce bir kez başlatılır. Neden: her saniye
+oynatıcıyı durdurup yeniden başlatmak (stop + resume) zayıf telefonlarda
+50-300 ms değişken gecikme veriyordu → 2. ve 3. bip "kayıyordu". Tek dosyada
+aralıklar örnek (sample) hassasiyetinde sabit. Aynı dosya Android'de
+`res/raw/`a da yazılır — arka plan servisi oradan çalar.
+
 Tasarım notları:
 - **Tik** kısa olmalı (~100 ms): geri sayım 1 sn aralıklı, uzun ses üst üste
   biner. Salon gürültüsünde duyulsun diye temel frekans 700-1000 Hz bandında.
@@ -107,12 +115,36 @@ def bitis_akor():
     ])
 
 
-TIKLAR = {"marimba": tik_marimba, "yumusak": tik_yumusak, "cam": tik_cam}
-BITISLER = {"beslik": bitis_beslik, "akor": bitis_akor}
+def tik_yaris():
+    """Yarış/start tınısı — kısa, net, hafif 'dijital'. Salon gürültüsünde
+    sinüsten daha iyi seçilir (tek harmonikler kulağa 'bip' gibi gelir)."""
+    return _ton(784.0, 0.15, harmonikler=(1.0, 0.0, 0.33, 0.0, 0.2),
+                tau_s=0.25, giris_s=0.004)
 
-# Uygulamaya giren seçim.
-SECILI_TIK = "yumusak"
-SECILI_BITIS = "akor"
+
+def bitis_yaris():
+    """Yarış başlangıcı: bir oktav yukarı, uzun tek bip — 'başla!'."""
+    return _ton(1568.0, 0.55, harmonikler=(1.0, 0.0, 0.25, 0.0, 0.12),
+                tau_s=0.45, giris_s=0.004)
+
+
+TIKLAR = {"marimba": tik_marimba, "yumusak": tik_yumusak, "cam": tik_cam,
+          "yaris": tik_yaris}
+BITISLER = {"beslik": bitis_beslik, "akor": bitis_akor, "yaris": bitis_yaris}
+
+# Uygulamaya giren seçim. 2026-09-30: Samet sesi değiştirmek istedi →
+# "yarış" (3 kısa + 1 uzun yüksek bip; spor saatlerinin tanıdık geri sayımı).
+SECILI_TIK = "yaris"
+SECILI_BITIS = "yaris"
+
+# Demo'da dinletilen tam geri sayım çiftleri (tik, bitiş).
+DEMO_CIFTLER = [("yaris", "yaris"), ("yumusak", "akor"),
+                ("marimba", "beslik"), ("cam", "akor")]
+
+
+def geri_sayim(tik, bitis):
+    """3 tık (0, 1, 2. sn) + bitiş (3. sn) — tek parça."""
+    return _karistir([(float(i), tik()) for i in range(3)] + [(3.0, bitis())])
 
 
 def main():
@@ -125,17 +157,20 @@ def main():
 
     if args.demo:
         os.makedirs(args.demo, exist_ok=True)
-        for ad, uret in TIKLAR.items():
-            _yaz(os.path.join(args.demo, f"tik_{ad}.wav"), uret())
-        for ad, uret in BITISLER.items():
-            _yaz(os.path.join(args.demo, f"bitis_{ad}.wav"), uret())
+        for t, b in DEMO_CIFTLER:
+            _yaz(os.path.join(args.demo, f"geri_sayim_{t}_{b}.wav"),
+                 geri_sayim(TIKLAR[t], BITISLER[b]))
         print(f"adaylar yazıldı: {args.demo}")
         return
 
-    kok = os.path.join(os.path.dirname(__file__), "..", "assets", "sounds")
-    _yaz(os.path.join(kok, "rest_tick.wav"), TIKLAR[args.tik]())
-    _yaz(os.path.join(kok, "rest_done.wav"), BITISLER[args.bitis]())
-    print(f"yazıldı: rest_tick.wav ({args.tik}), rest_done.wav ({args.bitis})")
+    kok = os.path.join(os.path.dirname(__file__), "..")
+    ornekler = geri_sayim(TIKLAR[args.tik], BITISLER[args.bitis])
+    for yol in ("assets/sounds/rest_countdown.wav",
+                "android/app/src/main/res/raw/rest_countdown.wav"):
+        tam = os.path.join(kok, yol)
+        os.makedirs(os.path.dirname(tam), exist_ok=True)
+        _yaz(tam, ornekler)
+    print(f"yazıldı: rest_countdown.wav ({args.tik} + {args.bitis})")
 
 
 if __name__ == "__main__":

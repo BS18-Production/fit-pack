@@ -55,48 +55,45 @@ typedef CurrentSet = ({SetValues values, bool warmup});
 
 /// [index]'teki set için öneri.
 ///
-/// Bu seansta YUKARIDAKİ en yakın dolu set referans alınır (ısınma seti
-/// çalışma setine referans olmaz — hafif kilo taşınmasın; hedef set de
-/// ısınmaysa olur):
-/// 1. Referans set geçen seansın aynı numaralı setiyle AYNIYSA kullanıcı geçen
-///    seansı takip ediyordur → geçen seansın bu numaralı seti önerilir
-///    (piramit 100→120→140 bozulmaz; öneri "ÖNCEKİ" sütunuyla aynı kalır).
-///    Geçen seansta bu numara yoksa referans set taşınır.
-/// 2. Referans set farklıysa (bugün kilo artırıldı) o değer sonraki setlere
-///    taşınır — Samet'in asıl isteği: "önceki setin değeri sonrakine".
-/// 3. Yukarıda dolu set yoksa geçen seansın aynı numaralı seti; o da yoksa
-///    öneri yok.
+/// **Kural (sade — Samet 2026-09-30):** öneri bu seansta YUKARIDAKİ en yakın
+/// dolu settir. 1. set 55×10 yapıldıysa 2. ve 3. sete 55×10 önerilir;
+/// kilo artırılacaksa kullanıcı yazar (ya da ± adım düğmesini kullanır).
+/// Isınma seti çalışma setine referans olmaz — hafif kilo taşınmasın; hedef
+/// set de ısınmaysa olur.
+///
+/// Yukarıda dolu set yoksa (ilk set, ya da yalnız ısınma yapılmış) geçen
+/// seansın aynı numaralı seti; o da yoksa öneri yok.
+///
+/// *Eski kural (G-2, 2026-09-15):* 1. set geçen seansla aynıysa 2. sete
+/// geçen seansın 2. seti öneriliyordu (piramit için). Salonda anlaşılmadı —
+/// bugün 55 yapılmışken başka kilo önerilmesi kafa karıştırıyordu.
 SetValues? suggestionFor({
   required int index,
   required List<CurrentSet> current,
   required List<SetValues> lastSession,
   required String measure,
 }) {
-  SetValues? last(int i) =>
-      i < lastSession.length && lastSession[i].hasAny(measure)
-      ? lastSession[i]
-      : null;
-
   final targetWarmup = current[index].warmup;
   for (var j = index - 1; j >= 0; j--) {
     final above = current[j];
     if (above.warmup && !targetWarmup) continue;
     if (!above.values.hasAny(measure)) continue;
-    final following = _sameMeasure(above.values, last(j), measure);
-    return following ? (last(index) ?? above.values) : above.values;
+    // Üstteki set yarım olabilir (ör. ± ile yalnız kilo yazıldı): eksik
+    // alanları kendi önerisinden tamamlanır — ✓'e basılınca kaydedeceği
+    // değerin aynısı. Yoksa 3. sete "57,5 × —" önerilirdi.
+    final aboveSuggestion = suggestionFor(
+      index: j,
+      current: current,
+      lastSession: lastSession,
+      measure: measure,
+    );
+    return aboveSuggestion == null
+        ? above.values
+        : fillMissing(above.values, aboveSuggestion, measure);
   }
-  return last(index);
-}
-
-/// İki setin ölçüm tipindeki alanları aynı mı (RPE vb. dikkate alınmaz).
-bool _sameMeasure(SetValues a, SetValues? b, String measure) {
-  if (b == null) return false;
-  return switch (measure) {
-    'reps' => a.reps == b.reps,
-    'time' => a.durationSec == b.durationSec,
-    'distance' => a.distanceM == b.distanceM && a.durationSec == b.durationSec,
-    _ => a.weightKg == b.weightKg && a.reps == b.reps,
-  };
+  return index < lastSession.length && lastSession[index].hasAny(measure)
+      ? lastSession[index]
+      : null;
 }
 
 /// ✓'e basılınca: [entered] içinde BOŞ olan alanları [suggestion]'dan

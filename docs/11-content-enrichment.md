@@ -250,3 +250,31 @@ hareketi** — bunlarda free-exercise-db'de sade sürüm yok, yalnız varyant va
 > 💡 **Satın alma kararına girdi:** kapsanamayan ~56 kuvvet hareketi, ücretli
 > bir animasyon kütüphanesinin (MoveKit 206 hareket, ₺1.699) gerçekten değer
 > katacağı tek yer. Ücretsiz kaynak buraya kadar getirdi.
+
+## 13. Besin listesi genişletmesi — USDA + tarif hesabı (2026-09-30)
+
+**Durum:** ✅ 111 → **308** hazır besin. C-4'ün (TÜRKOMP) yerine geçti.
+
+**TÜRKOMP neden kullanılmadı:** kendi kullanım koşulları ([useofdata](https://turkomp.tarimorman.gov.tr/useofdata))
+ticari yazılımda kullanımı TÜBİTAK ile ücretli sözleşmeye bağlıyor (yıllık;
+126-625 bileşen verisi 37.961 TL + KDV, 2026-09-30). İzinsiz çekme
+yapılmadı — Samet: "şimdilik boşver". Uygulama gelir getirince sözleşmeyle
+eklenebilir; o zaman ad eşleşmesiyle aynı kayıtlar güncellenir.
+
+**Yapılan:**
+- **158 temel gıda — USDA FoodData Central SR Legacy** (kamu malı, ticari
+  kullanım serbest). Türkçe ad elle; her kayıtta `source_ref: usda:<fdc_id>`.
+- **39 Türk yemeği — tarif hesabı:** standart ev tarifi malzemeleri (USDA)
+  toplanıp pişmiş ağırlığa bölündü (`source_ref: recipe`). Tahmindir.
+- Üretici: `tools/build_food_list.py` (USDA CSV'si repoda değil — betik
+  başında indirme adresi). Çıktı: `assets/data/foods_extended.json`.
+- Yeni gruplar: `sweet` (Tatlı ve atıştırmalık), `drink` (İçecek).
+- Mevcut kurulumlar: `SeedManager.seedVersion = 4` →
+  `backfillExtendedFoods` (aynı adda herhangi bir besin varsa eklemez).
+- Atıf ekranına USDA eklendi.
+
+**Kural:** adlar kalıcı — senkron hazır besini adıyla eşler (sync_apply).
+**Test:** `test/data/food_categories_test.dart` — ad benzersizliği, 300+
+kayıt, kcal/makro tutarlılığı (Atwater ±%35; lifli gıda ve içki istisna),
+`source_ref` zorunlu, mevcut kurulum backfill'i (idempotent, kullanıcının
+aynı adlı besinine dokunmaz).

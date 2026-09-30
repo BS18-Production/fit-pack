@@ -35,6 +35,8 @@ const foodCategoryOrder = <String>[
   'fruit',
   'fat',
   'dish',
+  'sweet',
+  'drink',
   'other',
 ];
 
@@ -49,6 +51,8 @@ String foodCategoryLabel(AppL10n l, String category) => switch (category) {
   'fruit' => l.foodCatFruit,
   'fat' => l.foodCatFat,
   'dish' => l.foodCatDish,
+  'sweet' => l.foodCatSweet,
+  'drink' => l.foodCatDrink,
   'other' => l.foodCatOther,
   _ => category,
 };

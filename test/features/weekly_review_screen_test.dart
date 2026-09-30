@@ -55,25 +55,25 @@ void main() {
     await ac(tester);
 
     expect(find.text('Haftalık değerlendirme'), findsOneWidget);
-    expect(find.text('Bu hafta antrenman kaydı yok'), findsOneWidget);
-    await kaydir(tester, find.text('Bu hafta beslenme kaydı yok'));
-    expect(find.text('Bu hafta beslenme kaydı yok'), findsOneWidget);
-    await kaydir(tester, find.text('Bu hafta kilo ölçümü yok'));
-    expect(find.text('Bu hafta kilo ölçümü yok'), findsOneWidget);
+    // Metrik kutuları: antrenman 0, beslenme ve kilo "Kayıt yok".
+    expect(find.text('Antrenman'), findsOneWidget);
+    expect(find.text('Kayıt yok'), findsNWidgets(2));
     await kaydir(tester, find.text('Bu hafta tamamlanmış set yok'));
     expect(find.text('Bu hafta tamamlanmış set yok'), findsOneWidget);
   });
 
-  testWidgets('her kartta "nereden hesaplandı" satırı var', (tester) async {
+  testWidgets('"nereden hesaplandı" ⓘ ile açılır — kural metni kaybolmadı',
+      (tester) async {
     await db.userProfileDao.ensureProfile();
     await ac(tester);
-    // Beslenme kuralı ekranda açıkça yazmalı (Samet kuralı).
-    final kaynak = find.textContaining('Kayıtsız gün 0 sayılmaz');
-    await kaydir(tester, kaynak);
-    expect(kaynak, findsOneWidget);
+    // "Bu hafta" başlığındaki ilk ⓘ: antrenman + beslenme + kilo kaynakları.
+    await tester.tap(find.byTooltip('Nasıl hesaplandı?').first);
+    await tester.pumpAndSettle();
+    // Beslenme kuralı açıkça yazmalı (Samet kuralı).
+    expect(find.textContaining('Kayıtsız gün 0 sayılmaz'), findsOneWidget);
   });
 
-  testWidgets('beslenme: kayıtlı günlerin ortalaması gösterilir',
+  testWidgets('beslenme: kayıtlı günlerin ortalaması, yargısız',
       (tester) async {
     await db.userProfileDao.ensureProfile();
     final bugun = DateTime.now();
@@ -96,11 +96,10 @@ void main() {
         ));
     await ac(tester);
 
-    final satir =
-        find.text('Kayıtlı günlerin ortalaması: 2000 kcal · 150 g protein');
-    await kaydir(tester, satir);
-    expect(satir, findsOneWidget);
-    expect(find.text('1 gün kayıt'), findsOneWidget);
+    // Büyük sayı = kayıtlı günlerin ortalaması (7'ye bölünmez).
+    expect(find.textContaining('2.000'), findsOneWidget);
+    expect(find.textContaining('150 g protein'), findsOneWidget);
+    expect(find.textContaining('gün kayıt'), findsOneWidget);
   });
 
   testWidgets('hedef yönü seçilince profile yazılır, tarihiyle', (tester) async {

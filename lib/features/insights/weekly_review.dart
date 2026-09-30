@@ -163,6 +163,9 @@ class WorkoutSection {
 
   /// Ana sayfadaki "hacim" ile AYNI hesap (W-9): Σ kg × tekrar.
   final int volumeKg;
+
+  /// Önceki haftanın hacmi (aynı hesap) — metrik kutusundaki karşılaştırma.
+  final int prevVolumeKg;
   final int kcalBurned;
 
   /// Planlı gün sayısı; plan yoksa `null` → "X/Y" değil yalnız "X" yazılır.
@@ -174,6 +177,7 @@ class WorkoutSection {
     required this.completedSets,
     required this.totalMinutes,
     required this.volumeKg,
+    this.prevVolumeKg = 0,
     required this.kcalBurned,
     required this.planned,
   });
@@ -328,6 +332,11 @@ WorkoutSection _workout(WeeklyReviewInput i) {
     completedSets: completedSets,
     totalMinutes: minutes,
     volumeKg: agg.volumeKg,
+    prevVolumeKg: aggregateWorkouts(
+      sessions: i.prevSessions,
+      setsBySession: i.prevSetsBySession,
+      bodyWeightKg: i.bodyWeightKg,
+    ).volumeKg,
     kcalBurned: agg.kcalBurned,
     planned: i.scheduledWeekdays.isEmpty ? null : i.scheduledWeekdays.length,
   );
@@ -580,3 +589,30 @@ bool _weightAgainstTwoWeeks(WeeklyReviewInput i) {
   return _meaning(w0 - w1, dir) == WeightMeaning.against &&
       _meaning(w1 - w2, dir) == WeightMeaning.against;
 }
+
+// ──────────────────── Görsel özet yardımcıları (2026-09-30) ────────────────────
+
+/// Metrik kutusundaki değişimin tonu. Renk = yön × o yönün iyi olup olmadığı;
+/// ekran rengi hep ok ikonu + işaretli metinle birlikte verir (yalnız renk
+/// bilgi taşımaz).
+///
+/// **Samet'in kuralı:** düşüş "kötü" diye boyanmaz — yargı yok. Antrenman
+/// ve hacimde artış yeşil, düşüş nötr. Yalnız kilo, kullanıcının seçtiği
+/// hedef yönüne göre "dikkat" alabilir.
+enum DeltaTone { good, caution, neutral }
+
+/// Sayım metrikleri (antrenman, hacim): artış iyi, düşüş nötr.
+DeltaTone countTone(num delta) =>
+    delta > 0 ? DeltaTone.good : DeltaTone.neutral;
+
+/// Kilo değişiminin tonu hedef yönünden gelir; yön yoksa nötr.
+DeltaTone weightTone(WeightMeaning m) => switch (m) {
+      WeightMeaning.onTrack => DeltaTone.good,
+      WeightMeaning.against => DeltaTone.caution,
+      WeightMeaning.flat || WeightMeaning.unknown => DeltaTone.neutral,
+    };
+
+/// Yüzde değişim (yuvarlanmış). Önceki değer 0 ise `null` — "sonsuz artış"
+/// yazılmaz.
+int? percentChange(int now, int prev) =>
+    prev <= 0 ? null : ((now - prev) * 100 / prev).round();

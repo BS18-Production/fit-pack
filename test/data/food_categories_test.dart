@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart' show Value;
 import 'package:fit_pack/data/database/app_database.dart';
+import 'package:fit_pack/data/seed/seed_manager.dart';
 import 'package:fit_pack/features/nutrition/foods_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -15,9 +16,14 @@ void main() {
   late List<dynamic> seed;
 
   setUpAll(() {
-    seed = json.decode(
-      File('assets/data/turkish_foods.json').readAsStringSync(),
-    ) as List<dynamic>;
+    // Çekirdek (elle) + genişletilmiş (USDA + tarif, 2026-09-30) liste.
+    seed = [
+      for (final f in [
+        'assets/data/turkish_foods.json',
+        'assets/data/foods_extended.json',
+      ])
+        ...json.decode(File(f).readAsStringSync()) as List<dynamic>,
+    ];
   });
 
   test('her hazır yemeğin geçerli bir grubu var', () {
@@ -129,5 +135,69 @@ void main() {
     expect(after.firstWhere((f) => !f.isCustom).category, isNotNull);
     expect(after.firstWhere((f) => f.isCustom).category, isNull,
         reason: 'kullanıcının kendi yemeğine dokunulmamalı');
+  });
+
+  group('genişletilmiş liste (foods_extended.json)', () {
+    test('adlar iki dosyada da benzersiz — senkron adla eşler', () {
+      final names = [for (final f in seed) (f as Map)['name'] as String];
+      final dup = {
+        for (final n in names)
+          if (names.where((x) => x == n).length > 1) n,
+      };
+      expect(dup, isEmpty);
+      expect(names.length, greaterThanOrEqualTo(300));
+    });
+
+    test('değerler akla yatkın: 0-900 kcal, makrolar 100 g içinde', () {
+      for (final f in seed.cast<Map<String, dynamic>>()) {
+        final kcal = f['kcal_per_100g'] as num;
+        final p = f['protein_per_100g'] as num;
+        final c = f['carb_per_100g'] as num;
+        final y = f['fat_per_100g'] as num;
+        expect(kcal, inInclusiveRange(0, 900), reason: f['name']);
+        expect(p + c + y, lessThanOrEqualTo(100.5), reason: f['name']);
+        // Enerji makrolarla tutarlı (Atwater 4-4-9, lif/alkol payı ±%35).
+        final atwater = 4 * p + 4 * c + 9 * y;
+        // İstisnalar: USDA karbonhidratı lifi de içerir (lif ~0 kcal) →
+        // yüksek lifli gıdada hesap şişer; içkide enerji alkolden gelir.
+        const lifli = {'Yulaf Kepeği', 'Kakao (Şekersiz)'};
+        if (kcal > 50 && f['category'] != 'drink' && !lifli.contains(f['name'])) {
+          expect((atwater - kcal).abs() / kcal, lessThan(0.35),
+              reason: '${f['name']}: $kcal kcal ≠ ${atwater.round()}');
+        }
+      }
+    });
+
+    test('kaynağı belli: her kaydın source_ref değeri var', () {
+      final ext = json.decode(
+          File('assets/data/foods_extended.json').readAsStringSync()) as List;
+      for (final f in ext.cast<Map<String, dynamic>>()) {
+        expect(f['source_ref'], matches(RegExp(r'^(usda:\d+|recipe)$')),
+            reason: f['name']);
+      }
+    });
+
+    testWidgets('mevcut kurulum: eksikler eklenir, var olana dokunulmaz',
+        (tester) async {
+      final db = newTestDatabase();
+      addTearDown(db.close);
+      // Kullanıcının kendi "Menemen"i: aynı adda hazır kayıt eklenmemeli.
+      await db.nutritionDao.insertFood(FoodsCompanion.insert(
+        name: 'Menemen',
+        kcalPer100g: 1,
+        proteinPer100g: 1,
+        carbPer100g: 1,
+        fatPer100g: 1,
+        isCustom: const Value(true),
+      ));
+      final seedMgr = SeedManager(db);
+      final added =
+          await tester.runAsync(() => seedMgr.backfillExtendedFoods());
+      final all = await tester.runAsync(() => db.nutritionDao.getAllFoods());
+      expect(all!.where((f) => f.name == 'Menemen'), hasLength(1));
+      expect(added, greaterThan(150));
+      // İkinci çalıştırma no-op (idempotent).
+      expect(await tester.runAsync(() => seedMgr.backfillExtendedFoods()), 0);
+    });
   });
 }

@@ -2291,25 +2291,6 @@ class AppL10nTr extends AppL10n {
   String get homeRhythmKicker => 'RİTMİN';
 
   @override
-  String homeRhythmTitle(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count haftadır ritimdesin',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get homeRhythmTitleEmpty => 'Ritmini başlat';
-
-  @override
-  String get homeRhythmTitleFirst => 'İlk haftanı tamamla';
-
-  @override
-  String get homeRhythmTitleRestart => 'Yeni seri başlıyor';
-
-  @override
   String homeRhythmLeft(int done, int goal, int left) {
     return 'Bu hafta $done/$goal antrenman · hedefe $left kaldı';
   }
@@ -2392,4 +2373,380 @@ class AppL10nTr extends AppL10n {
   String calWaterLine(String liters) {
     return '$liters L su';
   }
+
+  @override
+  String get asMoveUp => 'Yukarı taşı';
+
+  @override
+  String get asMoveDown => 'Aşağı taşı';
+
+  @override
+  String get asRestTitle => 'Setler arası dinlenme';
+
+  @override
+  String get asRestRoutineNote =>
+      'Rutine de kaydedilir — sonraki antrenman bu süreyle başlar.';
+
+  @override
+  String get asRestSessionNote => 'Bu antrenman için geçerli.';
+
+  @override
+  String get asRestChange => 'Dinlenme süresini değiştir';
+
+  @override
+  String get asRestSaveError => 'Dinlenme süresi rutine kaydedilemedi';
+
+  @override
+  String asSuggestHint(String value) {
+    return '✓ ile $value kaydedilir';
+  }
+
+  @override
+  String get asStepTitle => 'Kilo adımı';
+
+  @override
+  String get asStepHelp =>
+      '− ve + düğmeleri kiloyu bu kadar değiştirir. Bu hareket için hatırlanır.';
+
+  @override
+  String get asStepChange => 'Kilo adımını değiştir';
+
+  @override
+  String asStepDecrease(String step) {
+    return 'Kiloyu $step azalt';
+  }
+
+  @override
+  String asStepIncrease(String step) {
+    return 'Kiloyu $step artır';
+  }
+
+  @override
+  String get wrThisWeek => 'Bu hafta';
+
+  @override
+  String get wrHowCalculated => 'Nasıl hesaplandı?';
+
+  @override
+  String get wrKpiWorkouts => 'Antrenman';
+
+  @override
+  String get wrKpiVolume => 'Hacim';
+
+  @override
+  String get wrKpiKcal => 'Ort. kalori';
+
+  @override
+  String get wrKpiWeight => 'Ort. kilo';
+
+  @override
+  String wrPrevValue(String value) {
+    return 'Geçen hafta: $value';
+  }
+
+  @override
+  String wrPlannedOf(int planned) {
+    return '$planned planlıdan';
+  }
+
+  @override
+  String wrLoggedOf(int days, int total) {
+    return '$days/$total gün kayıt';
+  }
+
+  @override
+  String wrProteinAvg(int protein) {
+    return '$protein g protein';
+  }
+
+  @override
+  String wrGoalShort(int kcal) {
+    return 'Hedef $kcal';
+  }
+
+  @override
+  String wrMeasureCount(int count) {
+    return '$count ölçüm';
+  }
+
+  @override
+  String get wrSingleShort => 'Tek ölçüm — trend değil';
+
+  @override
+  String get wrNoPrevShort => 'Geçen hafta ölçüm yok';
+
+  @override
+  String get wrNoRecord => 'Kayıt yok';
+
+  @override
+  String wrProgressDelta(String delta) {
+    return '1TM +$delta';
+  }
+
+  @override
+  String get wrVsPrev => 'geçen haftaya göre';
+
+  @override
+  String get rhythmStart => 'Ritmini başlat';
+
+  @override
+  String get rhythmFirstWeek => 'İlk haftanı tamamla';
+
+  @override
+  String get rhythmFirstWeekLastOne => 'Bir antrenman daha, ilk hafta cepte';
+
+  @override
+  String get rhythmWeek1 => 'İlk hafta cepte!';
+
+  @override
+  String get rhythmWeek2 => '2 hafta üst üste, alışkanlık doğuyor';
+
+  @override
+  String get rhythmWeek3 => '3 hafta! Ritmi yakaladın';
+
+  @override
+  String get rhythmMonth1 => 'Bir ay tamam, artık bu senin rutinin';
+
+  @override
+  String get rhythmMonth2 => '2 aydır aralıksız, ciddi iş';
+
+  @override
+  String get rhythmMonth3 => '3 ay! Disiplin kazanıyor';
+
+  @override
+  String get rhythmHalfYear => 'Yarım yıl kesintisiz, efsane seri';
+
+  @override
+  String get rhythmYear1 => 'Tam 1 yıl, şapka çıkarıyoruz';
+
+  @override
+  String rhythmDoneA(int n) {
+    return '$n. hafta da cepte';
+  }
+
+  @override
+  String rhythmDoneB(int n) {
+    return '$n haftadır durmak yok';
+  }
+
+  @override
+  String rhythmDoneC(int n) {
+    return 'Seri $n hafta, alev alev';
+  }
+
+  @override
+  String rhythmDoneD(int n) {
+    return '$n hafta, tek kopuş yok';
+  }
+
+  @override
+  String rhythmOngoingA(int n) {
+    return '$n haftalık seri, bu haftayı da al';
+  }
+
+  @override
+  String rhythmOngoingB(int next) {
+    return 'Seriyi $next. haftaya taşı';
+  }
+
+  @override
+  String rhythmOngoingC(int n) {
+    return '$n hafta oldu, şimdi bırakmak yok';
+  }
+
+  @override
+  String rhythmOngoingLastOne(int next) {
+    return 'Bir antrenman daha, seri $next. haftada';
+  }
+
+  @override
+  String get rhythmRestartA => 'Yeni seri başlıyor';
+
+  @override
+  String get rhythmRestartB => 'Kaldığın yerden devam';
+
+  @override
+  String get rhythmRestartC => 'Her seri tek antrenmanla başlar';
+
+  @override
+  String get nhUsualBreakfast => 'Her zamanki kahvaltın';
+
+  @override
+  String get nhUsualLunch => 'Her zamanki öğle yemeğin';
+
+  @override
+  String get nhUsualDinner => 'Her zamanki akşam yemeğin';
+
+  @override
+  String get nhUsualSnack => 'Her zamanki ara öğünün';
+
+  @override
+  String nhUsualSub(int count, int kcal, int protein) {
+    return '$count besin · $kcal kcal · $protein g protein';
+  }
+
+  @override
+  String get nhUsualAdd => 'Ekle';
+
+  @override
+  String get nhUsualLater => 'Şimdi değil';
+
+  @override
+  String nhUsualAdded(String meal) {
+    return '$meal eklendi';
+  }
+
+  @override
+  String nhWeekStart(int goal) {
+    return 'Bu hafta ilk kaydını gir · hedef $goal gün';
+  }
+
+  @override
+  String nhWeekGoing(int done, int goal, int left) {
+    return 'Bu hafta $done/$goal gün kayıt · $left gün daha';
+  }
+
+  @override
+  String nhWeekLastOne(int done, int goal) {
+    return 'Bu hafta $done/$goal gün · bir gün daha, hafta tamam';
+  }
+
+  @override
+  String nhWeekDone(int done, int goal) {
+    return 'Bu haftanın kayıt hedefi tamam ($done/$goal)';
+  }
+
+  @override
+  String get nhQuickButton => 'Hızlı: kcal + protein';
+
+  @override
+  String get nhQuickTitle => 'Hızlı giriş';
+
+  @override
+  String get nhQuickHint =>
+      'Tartamadığın öğünler için: yalnız kalori ve protein. Besin listene de eklenir, bir dahaki sefere aratıp seçebilirsin.';
+
+  @override
+  String get nhQuickName => 'Ne yedin? (isteğe bağlı)';
+
+  @override
+  String get nhQuickDefaultName => 'Hızlı giriş';
+
+  @override
+  String get nhQuickKcal => 'Kalori (kcal)';
+
+  @override
+  String get nhQuickProtein => 'Protein (g, isteğe bağlı)';
+
+  @override
+  String get nhQuickEntry => 'hızlı giriş';
+
+  @override
+  String nhQuickAdded(String name) {
+    return '$name eklendi';
+  }
+
+  @override
+  String get nhReminderCta =>
+      'Öğünleri unutmamak için hatırlatıcı aç — girdiğin öğün için bildirim gelmez.';
+
+  @override
+  String get nhReminderEnable => 'Aç';
+
+  @override
+  String get nhReminderEnabled => 'Öğün hatırlatıcısı açıldı';
+
+  @override
+  String get notifMealLabel => 'Öğün hatırlatıcısı';
+
+  @override
+  String get notifMealSub =>
+      'Öğünü girmediysen, genelde girdiğin saatten biraz sonra. Girdiysen bildirim gelmez.';
+
+  @override
+  String get notifMealBreakfastTitle => 'Kahvaltını ekledin mi?';
+
+  @override
+  String get notifMealLunchTitle => 'Öğle yemeğini ekledin mi?';
+
+  @override
+  String get notifMealDinnerTitle => 'Akşam yemeğini ekledin mi?';
+
+  @override
+  String get notifMealBody => 'Eklemek 10 saniye sürer.';
+
+  @override
+  String get nhPortion => 'porsiyon';
+
+  @override
+  String get foodCatSweet => 'Tatlı ve atıştırmalık';
+
+  @override
+  String get foodCatDrink => 'İçecek';
+
+  @override
+  String get attribUsdaDesc =>
+      'Temel gıdaların besin değerleri; Türk yemekleri malzemelerinden hesaplanan tahminlerdir';
+
+  @override
+  String get afScan => 'Barkod';
+
+  @override
+  String get afQuick => 'Hızlı kalori';
+
+  @override
+  String get afCustom => 'Kendi besinin';
+
+  @override
+  String get afRecent => 'Son eklediklerin';
+
+  @override
+  String afAllCount(int count) {
+    return 'Tüm besinler · $count';
+  }
+
+  @override
+  String afResults(int count) {
+    return '$count sonuç';
+  }
+
+  @override
+  String get afCatAll => 'Tümü';
+
+  @override
+  String afAdded(String name) {
+    return '$name eklendi';
+  }
+
+  @override
+  String afSessionCount(int count) {
+    return '$count kayıt eklendi';
+  }
+
+  @override
+  String get afDone => 'Bitti';
+
+  @override
+  String get afAddBreakfast => 'Kahvaltıya ekle';
+
+  @override
+  String get afAddLunch => 'Öğle yemeğine ekle';
+
+  @override
+  String get afAddDinner => 'Akşam yemeğine ekle';
+
+  @override
+  String get afAddSnack => 'Ara öğüne ekle';
+
+  @override
+  String afQuickAddTip(String portion) {
+    return 'Hemen ekle: $portion';
+  }
+
+  @override
+  String get afChangeMeal => 'Öğünü değiştir';
+
+  @override
+  String get afEditHint =>
+      'Miktarı değiştirmek için satıra dokun, hemen eklemek için +';
 }

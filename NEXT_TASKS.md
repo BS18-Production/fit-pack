@@ -1,5 +1,112 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## 🍽️ Yemek ekleme paneli — yeniden tasarım ✅ (2026-09-30)
+
+**Problem:** bir besin eklemek ≥3 adım (satır → alttaki panel → Ekle);
+liste "/100g" kalorisi gösteriyordu (yenen miktar değil); arama Türkçe
+harfsiz çalışmıyordu ("sut" → Süt yok), sıralama alfabetik; son
+kullanılanlar küçük çipti ve miktarı hatırlamıyordu; barkod/özel
+besin/hızlı giriş dağınıktı; 4 bölümlü öğün seçici yer kaplıyordu; geri
+alma yoktu.
+
+**Beklenen (MyFitnessPal/Yazio/Lose It ortak pratiği):** her satırda ⊕ =
+porsiyonu (ya da son kullanılan miktarı) tek dokunuşla ekle; satır
+"1 porsiyon · 200 g · P K Y · 194 kcal"; arama Türkçe harf duyarsız + alaka
+sıralı (ilk kelime tam > tam kelime > ad başı > kelime başı; eşitlikte son
+kullanılan); kısayollar tek sırada (Barkod · Hızlı kalori · Kendi besinin);
+"Son eklediklerin" (son miktarla) + kategori çipleri; öğün seçici tek çip
+(açılış öğünü günün saatine göre); satıra dokununca miktar paneli (canlı
+kalori + makro, birim/gram, −/+, ½·1·1½·2 / 50·100·150·200 g, "Akşam
+yemeğine ekle · 152 kcal"); panel içinde "✓ eklendi · Geri al"; ilk
+eklemeden sonra ✕ yerine "Bitti". Renk: beslenmenin turkuazı (secondary)
+ikon/vurgu, ana eylem primary (FAB ile aynı).
+
+**Doğrulama:** `food_search_test` (10 test: Türkçe harf, sıralama, her
+kelime eşleşmeli, son kullanılan önceliği, tek dokunuş miktarı, son
+miktar DAO'su). Emülatörde: "sut" → 10 sonuç, Süt önde; Kakaolu Süt
+miktar paneli → Ekle → şerit → Geri al → kayıt silindi; Sebze çipi +
+⊕ tek dokunuş eklendi. Kod: `lib/features/nutrition/add_food_sheet.dart`
+(nutrition_screen'den ayrıldı), `food_search.dart`.
+
+- [ ] **Samet — görsel onay** (telefonda).
+
+## 🍲 Besin listesi 111 → 308 ✅ (2026-09-30) · docs/11 §13
+
+- [x] 158 temel gıda (USDA SR Legacy, kamu malı) + 39 Türk yemeği (tarif
+      hesabı: menemen, karnıyarık, mantı, kısır, ezogelin, börek, iskender,
+      baklava, sütlaç…). Yeni gruplar: Tatlı ve atıştırmalık, İçecek.
+- [x] Mevcut kurulumlara otomatik eklenir (seed v4); emülatörde doğrulandı.
+- [ ] **TÜRKOMP** ertelendi: ticari kullanım ücretli sözleşme (yıllık ~38 bin
+      TL + KDV, 126-625 bileşen). Gelir gelince değerlendirilecek.
+- [ ] **Samet — tarif değerlerine göz at** (`tools/build_food_list.py`
+      RECIPES): porsiyon/tarif kendi mutfağına uymuyorsa tek satır.
+
+## 🥗 Beslenme kaydı alışkanlığı ✅ kodlandı (2026-09-30) · [docs/26](docs/26-nutrition-logging-habit.md)
+
+Samet: "her gün besin girmesi için nasıl motive ederiz?" → araştırmaya dayalı
+sıra: önce yük azalt, sonra doğru anda hatırlat, en son dürüst ödül.
+
+- [x] **Her zamanki öğün — tek dokunuş** (Ana sayfa + Beslenme): son 14 günde
+      aynı içerikle ≥2 gün girilmiş öğün, saatine göre; Ekle + Geri al.
+- [x] **Hızlı giriş — kcal + protein** (besin ekleme paneli): özel besin olur,
+      1 porsiyon = 100 g; listede aranıp yeniden seçilebilir.
+- [x] **Öğün hatırlatıcısı**: alışkanlık saati (medyan + 60 dk) ya da
+      10:30 / 14:00 / 20:30; girilen öğün için bildirim yok; tek seferlik,
+      her kayıtta yeniden kurulur. Ayarlar + Beslenme'deki öneri kartı.
+- [x] **Haftalık kayıt hedefi 5 gün** (günlük seri değil): "Bu hafta 3/5 gün".
+- [ ] **Samet — kararlar** (docs/26 §0): hedef 5 gün, +60 dk, widget.
+- [ ] **Ana ekran widget'ı** (öneri 5) — ayrı iş, yerel Android kodu.
+
+Test: 649 yeşil (yeni: `nutrition_habits_test`, 14 test).
+
+## 🏋️ Antrenman içi iyileştirmeler — Samet'in salon notları ✅ kodlandı (2026-09-30)
+
+Kaynak: Samet'in antrenmanda aldığı 5 not. Dal: `feat/workout-gym-notes`
+(`feat/home-rhythm-calendar` üstüne). Kararlar (Samet, 2026-09-30):
+dinlenme süresi rutine **sormadan** yazılır; öneri sistemi anlaşılır olmalı;
+geri kalanı "best practice" ile.
+
+- [x] **A1 · Seansta hareket sırası** — hareket ⋯ menüsünde "Yukarı / Aşağı
+      taşı". Taslağa ve kayda (set yazım sırası) yansır, rutin değişmez;
+      taşınan kart ekranda tutulur. Emülatörde: taşı → uygulamayı kapat/aç →
+      sıra duruyor → bitir → özet aynı sırada.
+- [x] **A2 · Dinlenme süresi seansta** — hareket başlığında "⏱ 1:30"
+      etiketi → seçici. Rutindeki harekette süre **hemen rutine** yazılır
+      (`WorkoutDao.setRoutineExerciseRest`, yalnız farklıysa — senkron
+      kuyruğu boşuna dolmaz). Emülatörde 1:00 → 1:30; Dev sunucusunda
+      `target_rest_sec = 90` görüldü.
+- [x] **A3 · Mola sesi + arka plan** — [docs/25](docs/25-rest-timer-background.md).
+      Tek parça geri sayım dosyası (kayma yok) + yeni "yarış" sesi +
+      Android ön plan servisi (alttayken/ekran kapalıyken de çalar,
+      bildirimde canlı geri sayım). Emülatörde arka planda ses odağı
+      deadline − 3,00 sn'de alındı.
+      - [ ] **Samet — telefonda dene** (docs/25 §3): alttayken, ekran
+            kilitliyken, bipler 3-2-1 ile aynı anda mı; ses beğenildi mi.
+      - [ ] Play Store'a çıkarken: ön plan servisi beyanı (docs/25 §0).
+- [x] **A4 · Set doldurma + kilo ±** — öneri kuralı sadeleşti: **her zaman
+      bir üstteki set** (geçen seans yalnız 1. set için). Sıradaki setin
+      altında açık satır: "✓ ile 55 kg × 10 kaydedilir" + **− adım +**
+      düğmeleri. Adım: seçilen (hareket başına, cihazda) → geçmişten tahmin
+      (55→57,5→60 ⇒ 2,5) → ekipman (halter 2,5 · dambıl 2 · makine 5).
+      Şema değişmedi. Adım etiketine dokununca 0,5–10 kg seçici.
+- [x] **A5 · Haftalık değerlendirme** — docs/22 §10: 4 metrik kutusu (büyük
+      sayı + ok ikonlu değişim), hemen altında "Gelecek hafta", kaynak
+      metinleri ⓘ'de, ilerleme listesi + kas çubukları. Düşüş gri (yargı
+      yok); hafta sürerken ok yok; beslenmede ok/renk yok.
+- [x] **Ritim başlığı her hafta farklı** (Samet: "1 haftadır ritimdesin"
+      sıkıcı). `rhythmHeadline` (rhythm_state.dart, testli): 1-2-3. hafta,
+      1-2-3. ay, yarım yıl, 1 yıl kilometre taşları; aradaki haftalarda
+      4 kutlama + 3 "devam" cümlesi sırayla döner (art arda iki hafta aynı
+      cümle yok); hedefe 1 antrenman kalınca "Bir antrenman daha, seri
+      N. haftada"; kopunca 3 "yeniden başla" cümlesi. Aynı hafta içinde
+      cümle sabit. Emülatörde "İlk hafta cepte!" görüldü.
+- [ ] **Samet — görsel onay:** seans ekranındaki yeni satır/etiketler ve
+      haftalık değerlendirmenin yeni hali (gerçek veriyle daha anlamlı).
+
+Test: 626 → **635 yeşil** (yeni: `weight_step_test`, prefill kural
+testleri, `countdownPlan`, ton/yüzde yardımcıları, ekran testleri).
+Emülatör testi Dev projesinde test hesabıyla (`duman@fitpack.test`).
+
 ## ✅ BİTTİ — üretim göçü + telefonda senkron doğrulaması (2026-09-22)
 
 **Üretim Supabase göçü uygulandı ve telefonda doğrulandı.** Sunucu artık
@@ -164,7 +271,10 @@ Sıra: başlık → haftalık şerit → bugünün eylemi → ritim → günün 
 - [x] Dört kutulu "Bu Hafta" ızgarası kalktı (Haftalık Değerlendirme'de var).
 - [x] 8 widget + 13 birim testi; 604 yeşil. iOS simülatöründe açık/koyu
       tema, geçmiş hafta, gün paneli, ay görünümü görüldü (docs/24 §5).
-- [ ] **Android telefonda görsel kontrol** — cihaz bağlı değildi.
+- [x] İnceleme turu (2026-09-24): dar ekran taşması, Türkçe büyük harf,
+      yaz saatinde hafta kayması düzeltildi; Türkçe arayüz simülatörde görüldü
+      (docs/24 §5).
+- [ ] **Android telefonda görsel kontrol** — APK Samet'e gönderildi (2026-09-23).
 - [ ] Figma'dan bilinçli farklar docs/24 §4'te (10 madde) — Samet'in onayı.
 
 ## 🔊 Mola geri sayım sesi — yenilendi ✅ (2026-09-23)

@@ -255,8 +255,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
 
-    // Kartlar öğün sırasında: ilk "⋯" kahvaltıya ait.
-    await tester.tap(find.byIcon(Icons.more_horiz_rounded).first);
+    // Kartlar öğün sırasında: ilk "⋯" kahvaltıya ait. Üstte alışkanlık
+    // kartları var (docs/26) — önce görünür alana kaydır.
+    final menu = find.byIcon(Icons.more_horiz_rounded).first;
+    await tester.ensureVisible(menu);
+    await tester.pumpAndSettle();
+    await tester.tap(menu);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Başka günden kopyala'));
     await tester.pumpAndSettle();

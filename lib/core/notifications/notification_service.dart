@@ -19,9 +19,15 @@ class NotificationService {
   static const idWater = 3;
   static const idWeeklyReview = 4;
 
+  /// Öğün hatırlatıcıları (docs/26): `idMealBase + öğün × 3 + gün` —
+  /// 3 öğün × 3 gün = 20…28. Hepsi her yeniden kurulumda iptal edilir.
+  static const idMealBase = 20;
+  static const mealReminderSlots = 9;
+
   /// Dokununca açılacak ekranı söyleyen yük (payload). Uygulama kökü bunu
   /// dinleyip ilgili rotaya gider.
   static const payloadWeeklyReview = 'weekly_review';
+  static const payloadNutrition = 'nutrition';
 
   static const _chRest = AndroidNotificationDetails(
     'rest_timer',
@@ -213,6 +219,31 @@ class NotificationService {
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+      payload: payload,
+    );
+  }
+
+  /// Tek seferlik bildirim [when] anında (öğün hatırlatıcısı — docs/26).
+  /// Dakiklik kritik değil → inexact (özel izin istemez).
+  Future<void> scheduleOnce({
+    required int id,
+    required DateTime when,
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    await init();
+    await _plugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime(tz.local, when.year, when.month, when.day,
+          when.hour, when.minute),
+      notificationDetails: const NotificationDetails(
+        android: _chReminders,
+        iOS: _iosReminders,
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       payload: payload,
     );
   }

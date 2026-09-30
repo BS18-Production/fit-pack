@@ -1362,13 +1362,6 @@
   "homeInProgress": "IN PROGRESS",
   "homeResumeAction": "Resume session",
   "homeRhythmKicker": "YOUR RHYTHM",
-  "homeRhythmTitle": "{count, plural, one{1-week streak} other{{count}-week streak}}",
-  "@homeRhythmTitle": {
-    "placeholders": { "count": { "type": "int" } }
-  },
-  "homeRhythmTitleEmpty": "Start your rhythm",
-  "homeRhythmTitleFirst": "Complete your first week",
-  "homeRhythmTitleRestart": "A new streak starts",
   "homeRhythmLeft": "This week {done}/{goal} workouts · {left} to go",
   "@homeRhythmLeft": {
     "placeholders": { "done": { "type": "int" }, "goal": { "type": "int" }, "left": { "type": "int" } }
@@ -1413,5 +1406,198 @@
   "calWaterLine": "{liters} L water",
   "@calWaterLine": {
     "placeholders": { "liters": { "type": "String" } }
-  }
+  },
+  "asMoveUp": "Move up",
+  "asMoveDown": "Move down",
+  "asRestTitle": "Rest between sets",
+  "asRestRoutineNote": "Saved to the routine too — next time it starts with this.",
+  "asRestSessionNote": "Applies to this workout.",
+  "asRestChange": "Change rest time",
+  "asRestSaveError": "Couldn't save the rest time to the routine",
+  "asSuggestHint": "Tap ✓ to log {value}",
+  "@asSuggestHint": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "asStepTitle": "Weight step",
+  "asStepHelp": "The − and + buttons change the weight by this amount. Remembered for this exercise.",
+  "asStepChange": "Change weight step",
+  "asStepDecrease": "Decrease weight by {step}",
+  "@asStepDecrease": {
+    "placeholders": { "step": { "type": "String" } }
+  },
+  "asStepIncrease": "Increase weight by {step}",
+  "@asStepIncrease": {
+    "placeholders": { "step": { "type": "String" } }
+  },
+  "wrThisWeek": "This week",
+  "wrHowCalculated": "How it's calculated",
+  "wrKpiWorkouts": "Workouts",
+  "wrKpiVolume": "Volume",
+  "wrKpiKcal": "Avg. calories",
+  "wrKpiWeight": "Avg. weight",
+  "wrPrevValue": "Last week: {value}",
+  "@wrPrevValue": {
+    "placeholders": { "value": { "type": "String" } }
+  },
+  "wrPlannedOf": "of {planned} planned",
+  "@wrPlannedOf": {
+    "placeholders": { "planned": { "type": "int" } }
+  },
+  "wrLoggedOf": "{days}/{total} days logged",
+  "@wrLoggedOf": {
+    "placeholders": { "days": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "wrProteinAvg": "{protein} g protein",
+  "@wrProteinAvg": {
+    "placeholders": { "protein": { "type": "int" } }
+  },
+  "wrGoalShort": "Goal {kcal}",
+  "@wrGoalShort": {
+    "placeholders": { "kcal": { "type": "int" } }
+  },
+  "wrMeasureCount": "{count, plural, =1{1 weigh-in} other{{count} weigh-ins}}",
+  "@wrMeasureCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "wrSingleShort": "Single weigh-in — not a trend",
+  "wrNoPrevShort": "No weigh-in last week",
+  "wrNoRecord": "No data",
+  "wrProgressDelta": "1RM +{delta}",
+  "@wrProgressDelta": {
+    "placeholders": { "delta": { "type": "String" } }
+  },
+  "wrVsPrev": "vs last week",
+  "rhythmStart": "Start your rhythm",
+  "rhythmFirstWeek": "Complete your first week",
+  "rhythmFirstWeekLastOne": "One more workout and week one is yours",
+  "rhythmWeek1": "Week one: done!",
+  "rhythmWeek2": "2 weeks in a row, a habit is forming",
+  "rhythmWeek3": "3 weeks! You've found your rhythm",
+  "rhythmMonth1": "One month strong, this is your routine now",
+  "rhythmMonth2": "2 months without a break, serious work",
+  "rhythmMonth3": "3 months! Discipline is winning",
+  "rhythmHalfYear": "Half a year unbroken, legendary streak",
+  "rhythmYear1": "A full year. Hats off",
+  "rhythmDoneA": "Week {n}, in the bag",
+  "@rhythmDoneA": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "rhythmDoneB": "{n} weeks and no stopping",
+  "@rhythmDoneB": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "rhythmDoneC": "{n}-week streak, on fire",
+  "@rhythmDoneC": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "rhythmDoneD": "{n} weeks, not a single miss",
+  "@rhythmDoneD": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "rhythmOngoingA": "{n}-week streak, take this week too",
+  "@rhythmOngoingA": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "rhythmOngoingB": "Carry the streak into week {next}",
+  "@rhythmOngoingB": {
+    "placeholders": { "next": { "type": "int" } }
+  },
+  "rhythmOngoingC": "{n} weeks in, no quitting now",
+  "@rhythmOngoingC": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "rhythmOngoingLastOne": "One more workout, then week {next}",
+  "@rhythmOngoingLastOne": {
+    "placeholders": { "next": { "type": "int" } }
+  },
+  "rhythmRestartA": "A new streak starts",
+  "rhythmRestartB": "Pick up where you left off",
+  "rhythmRestartC": "Every streak starts with one workout",
+  "nhUsualBreakfast": "Your usual breakfast",
+  "nhUsualLunch": "Your usual lunch",
+  "nhUsualDinner": "Your usual dinner",
+  "nhUsualSnack": "Your usual snack",
+  "nhUsualSub": "{count, plural, =1{1 food} other{{count} foods}} · {kcal} kcal · {protein} g protein",
+  "@nhUsualSub": {
+    "placeholders": { "count": { "type": "int" }, "kcal": { "type": "int" }, "protein": { "type": "int" } }
+  },
+  "nhUsualAdd": "Add",
+  "nhUsualLater": "Not now",
+  "nhUsualAdded": "{meal} added",
+  "@nhUsualAdded": {
+    "placeholders": { "meal": { "type": "String" } }
+  },
+  "nhWeekStart": "Log your first day this week · goal {goal} days",
+  "@nhWeekStart": {
+    "placeholders": { "goal": { "type": "int" } }
+  },
+  "nhWeekGoing": "This week {done}/{goal} days logged · {left} to go",
+  "@nhWeekGoing": {
+    "placeholders": { "done": { "type": "int" }, "goal": { "type": "int" }, "left": { "type": "int" } }
+  },
+  "nhWeekLastOne": "This week {done}/{goal} days · one more and the week is done",
+  "@nhWeekLastOne": {
+    "placeholders": { "done": { "type": "int" }, "goal": { "type": "int" } }
+  },
+  "nhWeekDone": "This week's logging goal is done ({done}/{goal})",
+  "@nhWeekDone": {
+    "placeholders": { "done": { "type": "int" }, "goal": { "type": "int" } }
+  },
+  "nhQuickButton": "Quick: kcal + protein",
+  "nhQuickTitle": "Quick entry",
+  "nhQuickHint": "For meals you can't weigh: just calories and protein. It's also saved to your foods so you can find it next time.",
+  "nhQuickName": "What did you eat? (optional)",
+  "nhQuickDefaultName": "Quick entry",
+  "nhQuickKcal": "Calories (kcal)",
+  "nhQuickProtein": "Protein (g, optional)",
+  "nhQuickEntry": "quick entry",
+  "nhQuickAdded": "{name} added",
+  "@nhQuickAdded": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "nhReminderCta": "Turn on meal reminders — no notification for meals you've already logged.",
+  "nhReminderEnable": "Turn on",
+  "nhReminderEnabled": "Meal reminders are on",
+  "notifMealLabel": "Meal reminders",
+  "notifMealSub": "If you haven't logged a meal, a bit after you usually do. Logged meals get no notification.",
+  "notifMealBreakfastTitle": "Logged your breakfast?",
+  "notifMealLunchTitle": "Logged your lunch?",
+  "notifMealDinnerTitle": "Logged your dinner?",
+  "notifMealBody": "It takes 10 seconds.",
+  "nhPortion": "portion",
+  "foodCatSweet": "Sweets & snacks",
+  "foodCatDrink": "Drinks",
+  "attribUsdaDesc": "Basic food nutrition values; Turkish dishes are estimated from their ingredients",
+  "afScan": "Barcode",
+  "afQuick": "Quick calories",
+  "afCustom": "Your own food",
+  "afRecent": "Recently added",
+  "afAllCount": "All foods · {count}",
+  "@afAllCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "afResults": "{count, plural, =1{1 result} other{{count} results}}",
+  "@afResults": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "afCatAll": "All",
+  "afAdded": "{name} added",
+  "@afAdded": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "afSessionCount": "{count, plural, =1{1 entry added} other{{count} entries added}}",
+  "@afSessionCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "afDone": "Done",
+  "afAddBreakfast": "Add to breakfast",
+  "afAddLunch": "Add to lunch",
+  "afAddDinner": "Add to dinner",
+  "afAddSnack": "Add to snack",
+  "afQuickAddTip": "Add now: {portion}",
+  "@afQuickAddTip": {
+    "placeholders": { "portion": { "type": "String" } }
+  },
+  "afChangeMeal": "Change meal",
+  "afEditHint": "Tap a row to change the amount, + to add right away"
 }

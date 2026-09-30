@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../database/app_database.dart';
@@ -16,7 +17,10 @@ class SeedManager {
   /// v2 (2026-07-25): küratörlü hareketlere form görseli backfill'i
   /// (`_backfillExerciseImages`, docs/11 §12) — artırılmazsa mevcut
   /// kurulumlarda hiç çalışmaz (M-04 dersi).
-  static const seedVersion = 3; // 3: yemek kategorileri (C-5)
+  /// v4 (2026-09-30): genişletilmiş besin listesi (`foods_extended.json`,
+  /// USDA + tarif hesabı — tools/build_food_list.py) mevcut kurulumlara da
+  /// eklenir (`_backfillExtendedFoods`).
+  static const seedVersion = 4;
   static const seedVersionKey = 'seed_version';
 
   Future<void> seedIfNeeded() async {
@@ -39,6 +43,8 @@ class SeedManager {
       // Yemek grupları (C-5): kategori JSON'a 2026-09-17'de eklendi; mevcut
       // kurulumlarda kolon boş kaldığı için ada göre doldurulur.
       await _backfillFoodCategories();
+      // Genişletilmiş besin listesi (111 → ~300): yalnız adı DB'de olmayanlar.
+      await backfillExtendedFoods();
       // Antrenman V2 (docs/09-workout-v2.md): mevcut kurulumlara yeni
       // İngilizce hareket kütüphanesini getir (eksikleri ekle + meta doldur).
       await _backfillExercises();
@@ -264,11 +270,42 @@ class SeedManager {
     }
   }
 
-  Future<void> _seedTurkishFoods() async {
-    final jsonStr = await rootBundle.loadString('assets/data/turkish_foods.json');
-    final List<dynamic> foodList = json.decode(jsonStr);
+  /// Hazır besin dosyaları: elle küratörlü çekirdek + genişletilmiş liste.
+  static const _foodFiles = [
+    'assets/data/turkish_foods.json',
+    'assets/data/foods_extended.json',
+  ];
 
-    final foods = foodList.map((f) {
+  Future<void> _seedTurkishFoods() async {
+    final foodList = <dynamic>[
+      for (final f in _foodFiles) ...json.decode(await rootBundle.loadString(f)),
+    ];
+    await db.nutritionDao.insertFoods(_foodCompanions(foodList));
+  }
+
+  /// Genişletilmiş listeyi mevcut kuruluma ekler (idempotent). **Ad
+  /// eşleşmesi kazanır:** aynı adda herhangi bir besin (kullanıcının kendi
+  /// eklediği dahil) varsa eklenmez — listede iki "Menemen" görünmesin.
+  /// Senkron: hazır (katalog) satırlar kuyruğa girmez; kullanıldığında adıyla
+  /// eşlenir (sync_apply) — bu yüzden adlar kalıcıdır.
+  @visibleForTesting
+  Future<int> backfillExtendedFoods() async {
+    final existing = {
+      for (final f in await db.nutritionDao.getAllFoods()) f.name,
+    };
+    final List<dynamic> list = json.decode(
+        await rootBundle.loadString('assets/data/foods_extended.json'));
+    final missing = [
+      for (final f in list)
+        if (!existing.contains((f as Map<String, dynamic>)['name'])) f,
+    ];
+    if (missing.isEmpty) return 0;
+    await db.nutritionDao.insertFoods(_foodCompanions(missing));
+    return missing.length;
+  }
+
+  List<FoodsCompanion> _foodCompanions(List<dynamic> foodList) {
+    return foodList.map((f) {
       // V2 birim alanları opsiyonel: JSON'da yoksa NULL (sadece gram).
       final portion = f['default_portion_g'];
       final unit = f['unit_label'];
@@ -287,7 +324,5 @@ class SeedManager {
         unitLabel: Value(unit as String?),
       );
     }).toList();
-
-    await db.nutritionDao.insertFoods(foods);
   }
 }

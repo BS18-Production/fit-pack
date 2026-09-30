@@ -8,7 +8,11 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_mode_provider.dart';
 import 'shared/widgets/glass.dart';
 import 'core/i18n/locale_provider.dart';
+import 'package:drift/drift.dart' show TableUpdateQuery;
+import 'core/notifications/notification_prefs.dart';
 import 'core/notifications/notification_service.dart';
+import 'data/providers.dart';
+import 'features/nutrition/meal_reminders.dart';
 import 'core/router/app_router.dart';
 import 'core/router/app_routes.dart';
 import 'l10n/app_l10n.dart';
@@ -92,6 +96,8 @@ class _FitPackAppState extends ConsumerState<FitPackApp> {
     }
     if (payload == NotificationService.payloadWeeklyReview) {
       _router.push(AppRoutes.weeklyReview);
+    } else if (payload == NotificationService.payloadNutrition) {
+      _router.go(AppRoutes.nutrition); // öğün hatırlatıcısı (docs/26)
     }
   }
 
@@ -171,6 +177,32 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     with WidgetsBindingObserver {
   late DateTime _day = _today();
 
+  // ── Öğün hatırlatıcıları (docs/26): kayıt değişince, öne gelince ve ayar
+  // değişince yeniden kurulur — girilen öğünün bildirimi böyle iptal olur.
+  StreamSubscription<void>? _foodLogChanges;
+  Timer? _mealSyncDebounce;
+
+  void _scheduleMealSync() {
+    _mealSyncDebounce?.cancel();
+    // Çoklu yazım (öğün kopyalama, senkron çekme) tek kuruluma insin.
+    _mealSyncDebounce = Timer(const Duration(seconds: 1), _syncMeals);
+  }
+
+  Future<void> _syncMeals() async {
+    if (!mounted) return;
+    try {
+      await syncMealReminders(
+        service: ref.read(notificationServiceProvider),
+        dao: ref.read(nutritionDaoProvider),
+        l: AppL10n.of(context),
+        enabled: ref.read(notificationPrefsProvider).mealEnabled,
+      );
+    } catch (_) {
+      // Bildirim eklentisi yok (test) ya da zamanlama reddedildi: hatırlatma
+      // en iyi çaba — uygulamanın akışını bozmaz.
+    }
+  }
+
   static DateTime _today() {
     final now = DateTime.now();
     return DateTime(now.year, now.month, now.day);
@@ -180,17 +212,28 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    final db = ref.read(databaseProvider);
+    _foodLogChanges = db
+        .tableUpdates(TableUpdateQuery.onTable(db.foodLogs))
+        .listen((_) => _scheduleMealSync());
+    ref.listenManual(notificationPrefsProvider, (prev, next) {
+      if (prev?.mealEnabled != next.mealEnabled) _scheduleMealSync();
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scheduleMealSync());
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _foodLogChanges?.cancel();
+    _mealSyncDebounce?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
+    _scheduleMealSync();
     final today = _today();
     if (today == _day) return;
     _day = today;

@@ -226,3 +226,28 @@ seçilen yön hedef kiloyla çelişiyorsa kilo kartında uyarı + "Profili aç";
 | 2 | **Profildeki çelişki** | Hedef yönü alanı ilk kez doldurulurken tek soru: "Hedefin ne?" Cevap "kilo al" ise hedef kilo 80 kg değeri düzeltilir; "ver" ise kalori hedefi harcamanın altına çekilir. Otomatik değiştirme yok, onayla. |
 | 3 | **Odak cümlesinin tonu** | Yargısız ve tek cümle ("Bu hafta planındaki 4 antrenmandan 3'ünü tamamladın — hedef aynı ritmi sürdürmek"). Suçlayıcı dil ("kaçırdın") yok. |
 | 4 | **Şema sürümü** | ✅ Çözüldü: senkron v2 v11'i aldı (2026-09-18), bu iş **v12** olacak. Karar gerekmiyor. |
+
+## 10. Görsel yenileme — "bir bakışta" (2026-09-30)
+
+**Problem (Samet):** içerik iyi ama çok yazı var; metrikler belirgin değil.
+Kart başına 3-4 cümle + her kartta "Kaynak:" satırı.
+
+**Uygulanan (yaygın özet ekranı pratikleri: büyük sayı + dönem kıyası +
+tek aksiyon + ayrıntı istenince):**
+1. Özet cümlesi ve üç metin kartı yerine **4 metrik kutusu**: Antrenman
+   (planlıysa "3 / 4"), Hacim, Ort. kalori, Ort. kilo. Büyük sayı + ok
+   ikonlu değişim + tek satır bağlam ("Geçen hafta: 2", "5/7 gün kayıt").
+2. **"Gelecek hafta"** kutuların hemen altında, vurgulu — tek aksiyon.
+3. "Nereden hesaplandı" (A3) **ⓘ'ye taşındı** — metin aynı, kaybolmadı.
+4. Hareket ilerlemesi satır listesi (ad | en iyi set | ↑ 1TM farkı), kas
+   dağılımı yatay çubuklar.
+
+**Kurallar korunarak:**
+- Renk = yön × iyi mi: antrenman/hacim artışı yeşil, **düşüş nötr gri**
+  ("kötü" yok). Kilo rengi yalnız seçilen hedef yönünden (hedefle aynı →
+  yeşil, tersi → sarı "dikkat"); yön yoksa nötr. Renk hep ok + metinle.
+- Hafta sürerken değişim oku **gösterilmez** (yarım hafta tam haftayla
+  kıyaslanmaz); yalnız "Geçen hafta: X".
+- Beslenmede ok/renk **hiç yok** — kayıtsız günden yargı çıkmaz.
+- Motor değişikliği yalnız: `prevVolumeKg` + ton/yüzde yardımcıları
+  (`countTone`, `weightTone`, `percentChange`) — birim testli.

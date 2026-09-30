@@ -2301,26 +2301,6 @@ class AppL10nEn extends AppL10n {
   String get homeRhythmKicker => 'YOUR RHYTHM';
 
   @override
-  String homeRhythmTitle(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count-week streak',
-      one: '1-week streak',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get homeRhythmTitleEmpty => 'Start your rhythm';
-
-  @override
-  String get homeRhythmTitleFirst => 'Complete your first week';
-
-  @override
-  String get homeRhythmTitleRestart => 'A new streak starts';
-
-  @override
   String homeRhythmLeft(int done, int goal, int left) {
     return 'This week $done/$goal workouts · $left to go';
   }
@@ -2404,4 +2384,404 @@ class AppL10nEn extends AppL10n {
   String calWaterLine(String liters) {
     return '$liters L water';
   }
+
+  @override
+  String get asMoveUp => 'Move up';
+
+  @override
+  String get asMoveDown => 'Move down';
+
+  @override
+  String get asRestTitle => 'Rest between sets';
+
+  @override
+  String get asRestRoutineNote =>
+      'Saved to the routine too — next time it starts with this.';
+
+  @override
+  String get asRestSessionNote => 'Applies to this workout.';
+
+  @override
+  String get asRestChange => 'Change rest time';
+
+  @override
+  String get asRestSaveError => 'Couldn\'t save the rest time to the routine';
+
+  @override
+  String asSuggestHint(String value) {
+    return 'Tap ✓ to log $value';
+  }
+
+  @override
+  String get asStepTitle => 'Weight step';
+
+  @override
+  String get asStepHelp =>
+      'The − and + buttons change the weight by this amount. Remembered for this exercise.';
+
+  @override
+  String get asStepChange => 'Change weight step';
+
+  @override
+  String asStepDecrease(String step) {
+    return 'Decrease weight by $step';
+  }
+
+  @override
+  String asStepIncrease(String step) {
+    return 'Increase weight by $step';
+  }
+
+  @override
+  String get wrThisWeek => 'This week';
+
+  @override
+  String get wrHowCalculated => 'How it\'s calculated';
+
+  @override
+  String get wrKpiWorkouts => 'Workouts';
+
+  @override
+  String get wrKpiVolume => 'Volume';
+
+  @override
+  String get wrKpiKcal => 'Avg. calories';
+
+  @override
+  String get wrKpiWeight => 'Avg. weight';
+
+  @override
+  String wrPrevValue(String value) {
+    return 'Last week: $value';
+  }
+
+  @override
+  String wrPlannedOf(int planned) {
+    return 'of $planned planned';
+  }
+
+  @override
+  String wrLoggedOf(int days, int total) {
+    return '$days/$total days logged';
+  }
+
+  @override
+  String wrProteinAvg(int protein) {
+    return '$protein g protein';
+  }
+
+  @override
+  String wrGoalShort(int kcal) {
+    return 'Goal $kcal';
+  }
+
+  @override
+  String wrMeasureCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count weigh-ins',
+      one: '1 weigh-in',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get wrSingleShort => 'Single weigh-in — not a trend';
+
+  @override
+  String get wrNoPrevShort => 'No weigh-in last week';
+
+  @override
+  String get wrNoRecord => 'No data';
+
+  @override
+  String wrProgressDelta(String delta) {
+    return '1RM +$delta';
+  }
+
+  @override
+  String get wrVsPrev => 'vs last week';
+
+  @override
+  String get rhythmStart => 'Start your rhythm';
+
+  @override
+  String get rhythmFirstWeek => 'Complete your first week';
+
+  @override
+  String get rhythmFirstWeekLastOne => 'One more workout and week one is yours';
+
+  @override
+  String get rhythmWeek1 => 'Week one: done!';
+
+  @override
+  String get rhythmWeek2 => '2 weeks in a row, a habit is forming';
+
+  @override
+  String get rhythmWeek3 => '3 weeks! You\'ve found your rhythm';
+
+  @override
+  String get rhythmMonth1 => 'One month strong, this is your routine now';
+
+  @override
+  String get rhythmMonth2 => '2 months without a break, serious work';
+
+  @override
+  String get rhythmMonth3 => '3 months! Discipline is winning';
+
+  @override
+  String get rhythmHalfYear => 'Half a year unbroken, legendary streak';
+
+  @override
+  String get rhythmYear1 => 'A full year. Hats off';
+
+  @override
+  String rhythmDoneA(int n) {
+    return 'Week $n, in the bag';
+  }
+
+  @override
+  String rhythmDoneB(int n) {
+    return '$n weeks and no stopping';
+  }
+
+  @override
+  String rhythmDoneC(int n) {
+    return '$n-week streak, on fire';
+  }
+
+  @override
+  String rhythmDoneD(int n) {
+    return '$n weeks, not a single miss';
+  }
+
+  @override
+  String rhythmOngoingA(int n) {
+    return '$n-week streak, take this week too';
+  }
+
+  @override
+  String rhythmOngoingB(int next) {
+    return 'Carry the streak into week $next';
+  }
+
+  @override
+  String rhythmOngoingC(int n) {
+    return '$n weeks in, no quitting now';
+  }
+
+  @override
+  String rhythmOngoingLastOne(int next) {
+    return 'One more workout, then week $next';
+  }
+
+  @override
+  String get rhythmRestartA => 'A new streak starts';
+
+  @override
+  String get rhythmRestartB => 'Pick up where you left off';
+
+  @override
+  String get rhythmRestartC => 'Every streak starts with one workout';
+
+  @override
+  String get nhUsualBreakfast => 'Your usual breakfast';
+
+  @override
+  String get nhUsualLunch => 'Your usual lunch';
+
+  @override
+  String get nhUsualDinner => 'Your usual dinner';
+
+  @override
+  String get nhUsualSnack => 'Your usual snack';
+
+  @override
+  String nhUsualSub(int count, int kcal, int protein) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count foods',
+      one: '1 food',
+    );
+    return '$_temp0 · $kcal kcal · $protein g protein';
+  }
+
+  @override
+  String get nhUsualAdd => 'Add';
+
+  @override
+  String get nhUsualLater => 'Not now';
+
+  @override
+  String nhUsualAdded(String meal) {
+    return '$meal added';
+  }
+
+  @override
+  String nhWeekStart(int goal) {
+    return 'Log your first day this week · goal $goal days';
+  }
+
+  @override
+  String nhWeekGoing(int done, int goal, int left) {
+    return 'This week $done/$goal days logged · $left to go';
+  }
+
+  @override
+  String nhWeekLastOne(int done, int goal) {
+    return 'This week $done/$goal days · one more and the week is done';
+  }
+
+  @override
+  String nhWeekDone(int done, int goal) {
+    return 'This week\'s logging goal is done ($done/$goal)';
+  }
+
+  @override
+  String get nhQuickButton => 'Quick: kcal + protein';
+
+  @override
+  String get nhQuickTitle => 'Quick entry';
+
+  @override
+  String get nhQuickHint =>
+      'For meals you can\'t weigh: just calories and protein. It\'s also saved to your foods so you can find it next time.';
+
+  @override
+  String get nhQuickName => 'What did you eat? (optional)';
+
+  @override
+  String get nhQuickDefaultName => 'Quick entry';
+
+  @override
+  String get nhQuickKcal => 'Calories (kcal)';
+
+  @override
+  String get nhQuickProtein => 'Protein (g, optional)';
+
+  @override
+  String get nhQuickEntry => 'quick entry';
+
+  @override
+  String nhQuickAdded(String name) {
+    return '$name added';
+  }
+
+  @override
+  String get nhReminderCta =>
+      'Turn on meal reminders — no notification for meals you\'ve already logged.';
+
+  @override
+  String get nhReminderEnable => 'Turn on';
+
+  @override
+  String get nhReminderEnabled => 'Meal reminders are on';
+
+  @override
+  String get notifMealLabel => 'Meal reminders';
+
+  @override
+  String get notifMealSub =>
+      'If you haven\'t logged a meal, a bit after you usually do. Logged meals get no notification.';
+
+  @override
+  String get notifMealBreakfastTitle => 'Logged your breakfast?';
+
+  @override
+  String get notifMealLunchTitle => 'Logged your lunch?';
+
+  @override
+  String get notifMealDinnerTitle => 'Logged your dinner?';
+
+  @override
+  String get notifMealBody => 'It takes 10 seconds.';
+
+  @override
+  String get nhPortion => 'portion';
+
+  @override
+  String get foodCatSweet => 'Sweets & snacks';
+
+  @override
+  String get foodCatDrink => 'Drinks';
+
+  @override
+  String get attribUsdaDesc =>
+      'Basic food nutrition values; Turkish dishes are estimated from their ingredients';
+
+  @override
+  String get afScan => 'Barcode';
+
+  @override
+  String get afQuick => 'Quick calories';
+
+  @override
+  String get afCustom => 'Your own food';
+
+  @override
+  String get afRecent => 'Recently added';
+
+  @override
+  String afAllCount(int count) {
+    return 'All foods · $count';
+  }
+
+  @override
+  String afResults(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count results',
+      one: '1 result',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get afCatAll => 'All';
+
+  @override
+  String afAdded(String name) {
+    return '$name added';
+  }
+
+  @override
+  String afSessionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries added',
+      one: '1 entry added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get afDone => 'Done';
+
+  @override
+  String get afAddBreakfast => 'Add to breakfast';
+
+  @override
+  String get afAddLunch => 'Add to lunch';
+
+  @override
+  String get afAddDinner => 'Add to dinner';
+
+  @override
+  String get afAddSnack => 'Add to snack';
+
+  @override
+  String afQuickAddTip(String portion) {
+    return 'Add now: $portion';
+  }
+
+  @override
+  String get afChangeMeal => 'Change meal';
+
+  @override
+  String get afEditHint =>
+      'Tap a row to change the amount, + to add right away';
 }

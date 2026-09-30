@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-09-23
+> **Son güncelleme:** 2026-09-30
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -13,6 +13,35 @@
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v13 · **Sahibi:** Samet Orhan (kişisel proje)
+
+## 🍽️ Yemek ekleme paneli yeniden tasarlandı ✅ — 2026-09-30
+
+Tek dokunuş ⊕ (porsiyon / son miktar), porsiyon kalorisi, Türkçe harf
+duyarsız alaka sıralı arama, kısayollar tek sırada, son eklenenler +
+kategori çipleri, miktar paneli (canlı makro, hazır miktarlar), panel içi
+geri alma. `add_food_sheet.dart` + `food_search.dart`.
+
+## 🍲 Besin listesi 111 → 308 ✅ — 2026-09-30 · docs/11 §13
+
+USDA SR Legacy (kamu malı) 158 temel gıda + 39 Türk yemeği (tarif hesabı).
+TÜRKOMP ticari kullanımı ücretli sözleşme gerektirdiği için kullanılmadı.
+Seed v4 ile mevcut kurulumlara eklenir. 653 test yeşil.
+
+## 🥗 Beslenme kaydı alışkanlığı ✅ (kodlandı) — 2026-09-30 · docs/26
+
+Her zamanki öğün tek dokunuş · hızlı kcal + protein · alışkanlık saatine göre
+öğün hatırlatıcısı (girilen öğüne bildirim yok) · haftada 5 gün kayıt hedefi
+(günlük seri değil). Şema değişmedi. Emülatörde doğrulandı.
+
+## 🏋️ Salon notları paketi ✅ (kodlandı) — 2026-09-30 · docs/25, docs/22 §10
+
+Samet'in antrenman notlarından 5 iş (dal `feat/workout-gym-notes`):
+seansta hareket sırası · seansta dinlenme süresi (rutine sormadan yazılır) ·
+öneri kuralı sadeleşti + "✓ ile 55 kg × 10 kaydedilir" satırı + kilo ±
+adımı (hareket başına) · tek parça geri sayım sesi + Android ön plan servisi
+(alttayken de çalar) · haftalık değerlendirme metrik kutularıyla yeniden.
+Şema değişmedi. 630 test yeşil. Emülatörde (Dev projesi, test hesabı)
+doğrulandı; **telefonda ses/arka plan denemesi Samet'te** (docs/25 §3).
 
 ## 🏠 Ana Sayfa yenilemesi ✅ (kodlandı) — 2026-09-23 · docs/24
 

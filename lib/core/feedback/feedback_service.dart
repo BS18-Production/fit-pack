@@ -57,6 +57,24 @@ int restTickDelayMs(int leftMs) {
   return kalan == 0 ? 1000 : kalan;
 }
 
+/// Tek parça geri sayım dosyasında bitiş sesinin başladığı an (ms).
+/// `rest_countdown.wav`: 0, 1, 2. sn'de tık, 3. sn'de bitiş.
+const restCountdownLeadMs = 3000;
+
+/// Geri sayım sesinin ne zaman ve dosyanın neresinden başlayacağı.
+/// [leftMs]: bitişe kalan süre. Süre bitmişse null.
+///
+/// - 3 sn'den fazla kaldıysa: `leftMs - 3000` sonra, baştan.
+/// - Daha az kaldıysa (−15 sn ile kısaltıldı): hemen, dosyanın içinden —
+///   ör. 1200 ms kaldıysa 1800. ms'den (3. tıktan hemen önce).
+({int delayMs, int offsetMs})? countdownPlan(int leftMs) {
+  if (leftMs <= 0) return null;
+  if (leftMs > restCountdownLeadMs) {
+    return (delayMs: leftMs - restCountdownLeadMs, offsetMs: 0);
+  }
+  return (delayMs: 0, offsetMs: restCountdownLeadMs - leftMs);
+}
+
 /// Uygulama geneli ses + titreşim geri bildirimi (G-1). Ekranlar
 /// `HapticFeedback`'i doğrudan çağırmak yerine buradan geçer — ileride seans
 /// bitişi, su hedefi gibi anlar aynı tercihleri ve aynı sesleri kullanır.
@@ -65,9 +83,12 @@ int restTickDelayMs(int leftMs) {
 /// kulaklık takılıysa kulaklıktan gelir. Telefonun sessiz anahtarını dinlemez
 /// — salonda telefon çoğunlukla sessizde, sesin tam gerektiği yer orası.
 /// İstemeyen Ayarlar → Bildirimler → "Mola sonu sesi"ni kapatır.
+///
+/// **Android'de mola sesi buradan çalmaz** — yerel servis çalar
+/// (bkz. `rest_alarm.dart`, docs/25). Bu yol iOS'ta ve servis
+/// başlatılamadığında kullanılır.
 class FeedbackService {
-  static const _tickAsset = 'sounds/rest_tick.wav';
-  static const _doneAsset = 'sounds/rest_done.wav';
+  static const _countdownAsset = 'sounds/rest_countdown.wav';
 
   static final _audioContext = AudioContext(
     android: const AudioContextAndroid(
@@ -82,8 +103,7 @@ class FeedbackService {
     ),
   );
 
-  AudioPlayer? _tick;
-  AudioPlayer? _done;
+  AudioPlayer? _countdown;
   Future<void>? _ready;
 
   // Kurulum başarısızsa bir sonraki denemede yeniden kurulsun.
@@ -94,38 +114,49 @@ class FeedbackService {
 
   Future<void> _init() async {
     // iOS ses bağlamı uygulama geneli; Android'de yeni oynatıcıların
-    // varsayılanı olur. Oynatıcılar bundan SONRA kurulur.
+    // varsayılanı olur. Oynatıcı bundan SONRA kurulur.
     await AudioPlayer.global.setAudioContext(_audioContext);
-    final tick = AudioPlayer();
-    final done = AudioPlayer();
-    for (final p in [tick, done]) {
-      await p.setReleaseMode(ReleaseMode.stop);
-      if (defaultTargetPlatform == TargetPlatform.android) {
-        await p.setAudioContext(_audioContext);
-      }
+    final p = AudioPlayer();
+    await p.setReleaseMode(ReleaseMode.stop);
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      await p.setAudioContext(_audioContext);
     }
-    await tick.setSource(AssetSource(_tickAsset));
-    await done.setSource(AssetSource(_doneAsset));
-    _tick = tick;
-    _done = done;
+    await p.setSource(AssetSource(_countdownAsset));
+    _countdown = p;
   }
 
-  /// Seans ekranı açılınca çağrılır — ilk tıkta yükleme gecikmesi olmasın.
+  /// Seans ekranı açılınca çağrılır — ilk çalışta yükleme gecikmesi olmasın.
   void warmUp() => unawaited(_ensureReady().catchError((_) {}));
 
-  /// Mola sayacı işareti. Titreşim her zaman, ses [sound] açıksa.
-  void restCue(RestCue cue, {required bool sound}) {
-    switch (cue) {
-      case RestCue.none:
-        return;
-      case RestCue.tick:
-        if (sound) _play(() => _tick);
-      case RestCue.done:
-        // Cepteki telefon için belirgin titreşim (hafif "tık" değil).
-        HapticFeedback.vibrate();
-        if (sound) _play(() => _done);
-    }
+  /// Geri sayım sesini [offsetMs]'den başlatır (bkz. [countdownPlan]).
+  /// Tek dosya olduğu için tıklar arası aralık oynatıcı gecikmesinden
+  /// etkilenmez — eski "her saniye durdur/başlat" yolunda 2. ve 3. bip
+  /// kayıyordu (Samet, 2026-09-30).
+  void playCountdown({int offsetMs = 0}) {
+    unawaited(() async {
+      try {
+        await _ensureReady();
+        final p = _countdown;
+        if (p == null) return;
+        await p.stop();
+        if (offsetMs > 0) await p.seek(Duration(milliseconds: offsetMs));
+        await p.resume();
+      } catch (_) {
+        // Ses en iyi çaba: çalınamazsa (ses servisi yok, dosya açılamadı)
+        // titreşim yine verilir; hata mesajı seansı bozar. Bilinçli sessiz.
+      }
+    }());
   }
+
+  /// Süre değişti ya da mola atlandı: çalan geri sayımı kes.
+  void stopCountdown() {
+    final p = _countdown;
+    if (p == null) return;
+    unawaited(p.stop().catchError((_) {}));
+  }
+
+  /// Mola bitti — cepteki telefon için belirgin titreşim (hafif "tık" değil).
+  void restDone() => HapticFeedback.vibrate();
 
   /// Set tamamlandı.
   void setDone() => HapticFeedback.lightImpact();
@@ -133,25 +164,8 @@ class FeedbackService {
   /// Kişisel rekor kırıldı.
   void record() => HapticFeedback.heavyImpact();
 
-  void _play(AudioPlayer? Function() player) {
-    unawaited(() async {
-      try {
-        await _ensureReady();
-        final p = player();
-        if (p == null) return;
-        await p.stop();
-        await p.resume();
-      } catch (_) {
-        // Ses en iyi çaba: çalınamazsa (ses servisi yok, dosya açılamadı)
-        // titreşim zaten verildi; her saniye hata mesajı göstermek seansı
-        // bozar. Bilinçli olarak sessiz geçilir.
-      }
-    }());
-  }
-
   Future<void> dispose() async {
-    await _tick?.dispose();
-    await _done?.dispose();
+    await _countdown?.dispose();
   }
 }
 

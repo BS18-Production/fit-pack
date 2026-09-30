@@ -10,6 +10,31 @@ import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/setting_tiles.dart';
 
+/// Öğün hatırlatıcısını aç/kapat (docs/26). Ayarlar ve Beslenme ekranındaki
+/// öneri kartı aynı yolu kullanır. Açarken izin ister; zamanlamanın kendisi
+/// uygulama kökünde, tercih değişimini dinleyerek yapılır (app.dart).
+/// Açıldıysa `true`.
+Future<bool> setMealReminders(
+    BuildContext context, WidgetRef ref, bool enabled) async {
+  if (enabled) {
+    final ok =
+        await ref.read(notificationServiceProvider).requestPermission();
+    if (!ok) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppL10n.of(context).notifPermissionDenied)),
+        );
+      }
+      return false;
+    }
+  }
+  final prefs = ref.read(notificationPrefsProvider);
+  await ref
+      .read(notificationPrefsProvider.notifier)
+      .update(prefs.copyWith(mealEnabled: enabled));
+  return enabled;
+}
+
 /// Bildirim ayarları (docs/16 §5 — B6): dinlenme sayacı + günlük antrenman/su
 /// hatırlatıcıları. Anahtar açılırken izin istenir; hatırlatıcılar açılınca /
 /// saati değişince hemen (yeniden) zamanlanır, kapatılınca iptal edilir.
@@ -216,6 +241,18 @@ class NotificationsScreen extends ConsumerWidget {
                   value: _fmt(prefs.waterHour, prefs.waterMinute),
                   onTap: () => _pickTime(context, ref, isWorkout: false),
                 ),
+            ],
+          ),
+          AppSpacing.vGapLg,
+          SettingsSection(
+            children: [
+              SwitchListTile(
+                secondary: const Icon(Icons.restaurant_rounded),
+                title: Text(l.notifMealLabel),
+                subtitle: Text(l.notifMealSub),
+                value: prefs.mealEnabled,
+                onChanged: (v) => setMealReminders(context, ref, v),
+              ),
             ],
           ),
           AppSpacing.vGapLg,

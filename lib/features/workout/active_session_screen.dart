@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../core/feedback/feedback_service.dart';
+import '../../core/feedback/rest_alarm.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
@@ -23,6 +24,7 @@ import 'progression.dart';
 import 'record_calc.dart';
 import 'session_progress.dart';
 import 'set_prefill.dart';
+import 'weight_step.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
@@ -91,7 +93,11 @@ class _SessionExercise {
   // Hareketin son yapıldığı seanstaki setler, set sırasıyla (G-2).
   final List<WorkoutSet> lastSets;
   final List<_SetEntry> sets;
-  final int restSec; // setler arası dinlenme (rutinden ya da kategoriye göre)
+  // Setler arası dinlenme (rutinden ya da kategoriye göre). Seansta
+  // değiştirilebilir; rutindeki hareketse rutine de yazılır (A2).
+  int restSec;
+  // Hareket açılan rutinde var mı — dinlenme değişikliği rutine yazılır mı.
+  final bool inRoutine;
   // Seans öncesi kişisel rekorlar (record_calc) — canlı modda, yalnız ağırlık
   // ölçümlü hareketlerde yüklenir. 0 = geçmiş yok → anlık rozet üretilmez.
   // Seans içinde rekor kırılınca güncellenir ki aynı seansta yalnız gerçek
@@ -108,6 +114,7 @@ class _SessionExercise {
       {required this.lastSets,
       required this.restSec,
       required Units units,
+      this.inRoutine = false,
       this.advice,
       this.appliedIncrementKg})
       : previous = prevLabel(
@@ -225,6 +232,13 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   // kalan süre gerçek zamandan hesaplanır — dönüşte doğru kalır.
   DateTime? _restDeadline;
   int _restRemaining = 0; // yalnız görüntü için (deadline'dan türetilir)
+  // Mola sesi/titreşimi Android yerel servisinde mi (docs/25)? true ise
+  // ekran çalmaz; false ise (iOS, servis başlatılamadı) uygulama içi yol.
+  bool _nativeRest = false;
+  Timer? _countdownTimer; // uygulama içi yol: geri sayım sesinin başlangıcı
+  // dispose'ta ref kullanılmaz — servisler baştan yakalanır.
+  late final RestAlarm _restAlarm = ref.read(restAlarmProvider);
+  late final FeedbackService _feedback = ref.read(feedbackServiceProvider);
 
   @override
   void initState() {
@@ -238,7 +252,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _draftClearCount = _drafts.clearCount;
     if (!_isManual) {
       WakelockPlus.enable(); // antrenman boyunca ekran uyanık kalsın (docs/12)
-      ref.read(feedbackServiceProvider).warmUp(); // ilk bip gecikmesin (G-1)
+      _feedback.warmUp(); // ilk bip gecikmesin (G-1)
       WidgetsBinding.instance.addObserver(this);
       _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() => _elapsed = DateTime.now().difference(_startedAt));
@@ -276,9 +290,11 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
     // P-11 (docs/16 §5): dinlenme sürerken arka plana geçildiyse bitişe
     // bildirim kur; öne dönünce iptal (uygulama içinde sayaç zaten görünür).
+    // Android yerel servisi çalışıyorsa bildirimi o verir (docs/25).
     if (state == AppLifecycleState.paused) {
       final deadline = _restDeadline;
-      if (deadline != null &&
+      if (!_nativeRest &&
+          deadline != null &&
           deadline.isAfter(DateTime.now()) &&
           ref.read(notificationPrefsProvider).restEnabled &&
           mounted) {
@@ -291,6 +307,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       }
     } else if (state == AppLifecycleState.resumed) {
       ref.read(notificationServiceProvider).cancelRestDone();
+      _restAlarm.dismissDone();
     }
   }
 
@@ -385,6 +402,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         // Geçen seans taslakta değil DB'de — devam ederken yeniden okunur.
         lastSets: lastSets,
         restSec: de.restSec,
+        inRoutine: targets.containsKey(ex.id),
         units: ref.read(unitsProvider),
         advice: _adviceFor(ex, lastSets, targets[ex.id]),
         appliedIncrementKg: de.appliedIncrementKg,
@@ -441,6 +459,12 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   void dispose() {
     _ticker?.cancel();
     _restTimer?.cancel();
+    _countdownTimer?.cancel();
+    if (_restDeadline != null) {
+      // Seanstan çıkıldı/bitti: çalan mola servisi de kapansın.
+      _restAlarm.stop();
+      _feedback.stopCountdown();
+    }
     // Yazıp hemen ekrandan çıkıldıysa bekleyen yazımı tamamla. _saveDraft
     // ref kullanmaz; temizlenmiş/başka yerden silinmiş taslağı yazmaz.
     if (_draftDebounce?.isActive ?? false) _saveDraft();
@@ -479,6 +503,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
           lastSets: lastSets,
           restSec: it.routineExercise.targetRestSec ??
               WorkoutUi.defaultRestSec(it.exercise.category),
+          inRoutine: true,
           units: ref.read(unitsProvider),
           advice: _adviceFor(it.exercise, lastSets, it.routineExercise),
         );
@@ -534,7 +559,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
     if (record) {
       set.isRecord = true;
-      ref.read(feedbackServiceProvider).record();
+      _feedback.record();
     }
   }
 
@@ -553,7 +578,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       }
     });
     if (set.done) {
-      ref.read(feedbackServiceProvider).setDone();
+      _feedback.setDone();
       // Hareketin kullanıcı tarafından belirlenen dinlenme süresi (0 = yok).
       // Geçmiş kayıt modunda dinlenme sayacı anlamsız — canlı değil.
       if (!_isManual && ex.restSec > 0) _startRest(ex.restSec);
@@ -605,6 +630,108 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _saveDraft();
   }
 
+  /// Hareketi seans içinde bir yukarı/aşağı taşır (A1). Rutin değişmez;
+  /// yeni sıra taslağa ve kayda (setler bu sırayla yazılır) yansır.
+  void _moveExercise(_SessionExercise ex, int delta) {
+    final i = _exercises.indexOf(ex);
+    final j = i + delta;
+    if (i < 0 || j < 0 || j >= _exercises.length) return;
+    _dismissKeyboard();
+    setState(() {
+      _exercises.removeAt(i);
+      _exercises.insert(j, ex);
+    });
+    _saveDraft();
+    // Taşınan kart ekranda kalsın — kullanıcı nereye gittiğini görsün.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = GlobalObjectKey(ex).currentContext;
+      if (ctx != null && ctx.mounted) {
+        Scrollable.ensureVisible(ctx,
+            duration: AppDuration.normal, alignmentPolicy:
+                delta < 0
+                    ? ScrollPositionAlignmentPolicy.keepVisibleAtStart
+                    : ScrollPositionAlignmentPolicy.keepVisibleAtEnd);
+      }
+    });
+  }
+
+  /// Menü/seçici/± kullanılınca klavye kapanır. Açık alan, menü ya da sheet
+  /// kapanınca odağı geri alıp klavyeyi yeniden açıyor ve listeyi o alana
+  /// kaydırıyordu (emülatörde görüldü, 2026-09-30) — ikinci çağrı o geri
+  /// dönüşü yakalar.
+  void _dismissKeyboard() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => FocusManager.instance.primaryFocus?.unfocus());
+  }
+
+  /// Hareketin dinlenme süresini değiştir (A2). Rutindeki hareketse süre
+  /// sormadan rutine de yazılır (Samet 2026-09-30) — sonraki antrenman bu
+  /// süreyle başlar. Çalışan sayaç etkilenmez; yeni süre sonraki setten
+  /// itibaren geçerli.
+  Future<void> _pickRest(_SessionExercise ex) async {
+    _dismissKeyboard();
+    final picked = await showModalBottomSheet<int>(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => _RestPickerSheet(
+          current: ex.restSec, savesToRoutine: ex.inRoutine),
+    );
+    _dismissKeyboard();
+    if (picked == null || picked == ex.restSec || !mounted) return;
+    setState(() => ex.restSec = picked);
+    _saveDraft();
+    final routineId = _routineId;
+    if (!ex.inRoutine || routineId == null) return;
+    try {
+      await ref.read(workoutDaoProvider).setRoutineExerciseRest(
+          routineId: routineId, exerciseId: ex.exercise.id, restSec: picked);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppL10n.of(context).asRestSaveError)));
+      }
+    }
+  }
+
+  /// Hareketin kilo adımı (A4): seçilen → geçmişten tahmin → ekipman.
+  double _stepKgFor(_SessionExercise ex, Map<int, double> saved) =>
+      saved[ex.exercise.id] ??
+      inferStepKg([
+        for (final s in ex.lastSets)
+          if (s.weightKg != null) s.weightKg!,
+        for (final s in ex.sets)
+          if (s.weight != null) s.weight!,
+      ]) ??
+      defaultStepKg(ex.exercise.equipment, ref.read(unitsProvider));
+
+  /// ± düğmesi: boş alanda öneriden başlar. Dokunuş kullanıcı girişi
+  /// sayılır — değer alana yazılır (✓ onayı yine gerekir).
+  void _stepWeight(_SessionExercise ex, _SetEntry set, int direction) {
+    final base = ex.suggestionAt(ex.sets.indexOf(set))?.weightKg;
+    final step = _stepKgFor(ex, ref.read(weightStepPrefsProvider));
+    _dismissKeyboard();
+    setState(() {
+      set.weight = applyStepKg(
+          current: set.weight, base: base, stepKg: step, direction: direction);
+      set.fillGen++;
+    });
+    _scheduleDraftSave();
+  }
+
+  Future<void> _pickStep(_SessionExercise ex) async {
+    _dismissKeyboard();
+    final current = _stepKgFor(ex, ref.read(weightStepPrefsProvider));
+    final picked = await showModalBottomSheet<double>(
+      context: context,
+      showDragHandle: true,
+      builder: (_) => _StepPickerSheet(currentKg: current),
+    );
+    _dismissKeyboard();
+    if (picked == null) return;
+    await ref.read(weightStepPrefsProvider.notifier).set(ex.exercise.id, picked);
+  }
+
   Future<void> _addExercise() async {
     final ex = await context.push<Exercise>(AppRoutes.exercisesSelect);
     if (ex == null) return;
@@ -631,10 +758,47 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _restDeadline = DateTime.now().add(Duration(seconds: seconds));
     _tickRest();
     _scheduleRestTick();
+    _armRestAlarm();
+  }
+
+  /// Mola sonu sesini/titreşimini kurar ya da yeniler (±15 sn) — docs/25.
+  ///
+  /// Android: yerel ön plan servisi — uygulama alttayken ve ekran kapalıyken
+  /// de zamanında çalar, bildirimde canlı geri sayım gösterir.
+  /// Diğer (iOS, servis başlatılamadı): uygulama içi zamanlayıcı, bitişten
+  /// 3 sn önce tek parça geri sayım sesini başlatır.
+  Future<void> _armRestAlarm() async {
+    final deadline = _restDeadline;
+    _countdownTimer?.cancel();
+    _feedback.stopCountdown();
+    if (deadline == null) return;
+    final prefs = ref.read(notificationPrefsProvider);
+    final l = AppL10n.of(context);
+    final native = await _restAlarm.start(
+      deadline: deadline,
+      sound: prefs.restSoundEnabled,
+      title: l.labelRest,
+      // Boş = "bitti" bildirimi yok (kullanıcı mola bildirimini kapattı).
+      doneTitle: prefs.restEnabled ? l.notifRestDoneTitle : '',
+      doneBody: l.notifRestDoneBody,
+    );
+    // Beklerken süre değiştiyse/atlandıysa bu çağrının sonucu eskidi.
+    if (!mounted || _restDeadline != deadline) return;
+    _nativeRest = native;
+    if (native || !prefs.restSoundEnabled) return;
+    final plan = countdownPlan(deadline.difference(DateTime.now()).inMilliseconds);
+    if (plan == null) return;
+    _countdownTimer = Timer(Duration(milliseconds: plan.delayMs), () {
+      if (_restDeadline != deadline) return;
+      // Zamanlayıcı geç düştüyse dosyanın doğru yerinden başla.
+      final now = countdownPlan(deadline.difference(DateTime.now()).inMilliseconds);
+      if (now != null) _feedback.playCountdown(offsetMs: now.offsetMs);
+    });
   }
 
   /// Bir sonraki tıkı **hedeften yeniden hesaplayarak** kurar; `Timer.periodic`
   /// kullanılmaz çünkü kaymayı biriktirir (bkz. [restTickDelayMs]).
+  /// Yalnız ekrandaki sayıyı günceller — ses tek parça dosyadan gelir.
   void _scheduleRestTick() {
     _restTimer?.cancel();
     final deadline = _restDeadline;
@@ -653,13 +817,11 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (deadline == null) return;
     final leftMs = deadline.difference(DateTime.now()).inMilliseconds;
     final left = (leftMs / 1000).ceil();
-    // G-1: ekran açıkken uygulama ön planda kalıyor, bildirim hiç düşmüyor —
-    // son 3 saniye tık + bitiş sesi/titreşimi buradan verilir.
     final cue = restCueFor(
         prevLeft: _restRemaining, left: left, overdueMs: -leftMs);
     setState(() => _restRemaining = left > 0 ? left : 0);
-    ref.read(feedbackServiceProvider).restCue(cue,
-        sound: ref.read(notificationPrefsProvider).restSoundEnabled);
+    // Bitiş titreşimi: Android'de servis veriyor (çift titreşim olmasın).
+    if (cue == RestCue.done && !_nativeRest) _feedback.restDone();
     if (left <= 0) {
       _restTimer?.cancel();
       _restDeadline = null;
@@ -670,13 +832,17 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (_restDeadline == null) return;
     _restDeadline = _restDeadline!.add(Duration(seconds: delta));
     _tickRest();
-    // Hedef değişti → sıradaki tık yeni hedefe göre yeniden kurulmalı.
+    // Hedef değişti → sıradaki tık ve ses yeni hedefe göre yeniden kurulur.
     _scheduleRestTick();
+    _armRestAlarm();
   }
 
   void _skipRest() {
     _restTimer?.cancel();
+    _countdownTimer?.cancel();
     _restDeadline = null;
+    _feedback.stopCountdown();
+    _restAlarm.stop();
     ref.read(notificationServiceProvider).cancelRestDone();
     setState(() => _restRemaining = 0);
   }
@@ -785,6 +951,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     final progress = SessionProgress.of(
         _exercises.map((e) => e.sets.map((s) => s.done)));
     final showProgress = !_isManual && !progress.isEmpty;
+    final stepPrefs = ref.watch(weightStepPrefsProvider);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
@@ -890,9 +1057,25 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                               // durumu konuma göre eşler; ortadan hareket
                               // silinince alttaki hareketin metin kutuları
                               // silinenin yazısını devralırdı (ekran ≠ kayıt).
-                              ..._exercises.map((e) => _ExerciseBlock(
-                                    key: ObjectKey(e),
+                              ..._exercises.indexed.map((ie) {
+                                final (i, e) = ie;
+                                return _ExerciseBlock(
+                                    // Global: taşımadan sonra karta
+                                    // kaydırmak için bağlamına erişilir.
+                                    key: GlobalObjectKey(e),
                                     ex: e,
+                                    onMoveUp: i > 0
+                                        ? () => _moveExercise(e, -1)
+                                        : null,
+                                    onMoveDown: i < _exercises.length - 1
+                                        ? () => _moveExercise(e, 1)
+                                        : null,
+                                    // Geçmiş kayıtta sayaç yok → süre de yok.
+                                    onPickRest:
+                                        _isManual ? null : () => _pickRest(e),
+                                    stepKg: _stepKgFor(e, stepPrefs),
+                                    onStep: (s, d) => _stepWeight(e, s, d),
+                                    onPickStep: () => _pickStep(e),
                                     onToggle: (s) => _toggleDone(e, s),
                                     onCycleType: _cycleType,
                                     onAddSet: () => _addSet(e),
@@ -903,7 +1086,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                                       setState(() {});
                                       _scheduleDraftSave();
                                     },
-                                  )),
+                                  );
+                              }),
                               AppSpacing.vGapMd,
                               OutlinedButton.icon(
                                 onPressed: _addExercise,
@@ -1126,9 +1310,22 @@ class _ExerciseBlock extends ConsumerWidget {
   final void Function(_SetEntry) onCycleType;
   final VoidCallback onAddSet, onRemoveSet, onRemoveExercise, onChanged;
   final VoidCallback onToggleAdvance;
+  // null = o yöne taşınamaz (ilk/son hareket).
+  final VoidCallback? onMoveUp, onMoveDown;
+  // null = geçmiş kayıt modu (dinlenme sayacı yok).
+  final VoidCallback? onPickRest;
+  final double stepKg; // ± düğmesinin adımı (kg)
+  final void Function(_SetEntry set, int direction) onStep;
+  final VoidCallback onPickStep;
   const _ExerciseBlock(
       {super.key,
       required this.ex,
+      required this.onMoveUp,
+      required this.onMoveDown,
+      required this.onPickRest,
+      required this.stepKg,
+      required this.onStep,
+      required this.onPickStep,
       required this.onToggle,
       required this.onCycleType,
       required this.onAddSet,
@@ -1163,11 +1360,39 @@ class _ExerciseBlock extends ConsumerWidget {
     }
   }
 
+  /// Ağırlık girilen ölçüm tipi mi (± düğmesi yalnız bunlarda).
+  static bool _weighted(String measure) =>
+      measure != 'reps' && measure != 'time' && measure != 'distance';
+
+  /// ✓'e basılınca kaydedilecek değerin metni ("55 kg × 10"); ✓ hiçbir
+  /// alanı doldurmayacaksa (öneri yok ya da set zaten dolu) null.
+  static String? _assistHint(
+      _SessionExercise ex, _SetEntry set, int index, Units units) {
+    final sug = ex.suggestionAt(index);
+    if (sug == null) return null;
+    final v = fillMissing(set.values, sug, ex.measure);
+    if (v == set.values) return null;
+    return switch (ex.measure) {
+      'reps' => v.reps == null ? null : '× ${v.reps}',
+      'time' => v.durationSec == null ? null : fmtDuration(v.durationSec!),
+      'distance' => [
+          if (v.distanceM != null)
+            '${units.distanceValue(v.distanceM!)} ${units.distanceUnit}',
+          if (v.durationSec != null) fmtDuration(v.durationSec!),
+        ].join(' · '),
+      _ => [
+          if (v.weightKg != null) units.lift(v.weightKg!),
+          if (v.reps != null) '× ${v.reps}',
+        ].join(' '),
+    };
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = context.colors;
     final dark = Theme.of(context).brightness == Brightness.dark;
     final units = ref.watch(unitsProvider);
+    final activeIndex = ex.sets.indexWhere((s) => !s.done);
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Padding(
@@ -1198,9 +1423,22 @@ class _ExerciseBlock extends ConsumerWidget {
                               ?.copyWith(color: c.primary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
-                      Text(WorkoutUi.equipmentLabel(ex.exercise.equipment),
-                          style: context.texts.bodySmall
-                              ?.copyWith(color: c.onSurfaceVariant)),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                                WorkoutUi.equipmentLabel(ex.exercise.equipment),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.texts.bodySmall
+                                    ?.copyWith(color: c.onSurfaceVariant)),
+                          ),
+                          if (onPickRest != null) ...[
+                            AppSpacing.hGapSm,
+                            _RestChip(restSec: ex.restSec, onTap: onPickRest!),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -1219,9 +1457,28 @@ class _ExerciseBlock extends ConsumerWidget {
                       color: c.onSurfaceVariant, size: AppIconSize.md),
                   tooltip: AppL10n.of(context).asExerciseOptions,
                   onSelected: (v) {
-                    if (v == 'remove') onRemoveExercise();
+                    switch (v) {
+                      case 'up':
+                        onMoveUp?.call();
+                      case 'down':
+                        onMoveDown?.call();
+                      case 'remove':
+                        onRemoveExercise();
+                    }
                   },
                   itemBuilder: (_) => [
+                    if (onMoveUp != null)
+                      PopupMenuItem(
+                        value: 'up',
+                        child: _MenuRow(Icons.arrow_upward_rounded,
+                            AppL10n.of(context).asMoveUp),
+                      ),
+                    if (onMoveDown != null)
+                      PopupMenuItem(
+                        value: 'down',
+                        child: _MenuRow(Icons.arrow_downward_rounded,
+                            AppL10n.of(context).asMoveDown),
+                      ),
                     PopupMenuItem(
                       value: 'remove',
                       child: Row(
@@ -1260,21 +1517,34 @@ class _ExerciseBlock extends ConsumerWidget {
             ),
             // Set satırları da kimlikli — set silme/ekleme kaydırmasında
             // TextFormField durumu doğru sette kalsın (H-02).
-            ...ex.sets.asMap().entries.map((e) => _SetRow(
-                  key: ObjectKey(e.value),
-                  index: e.key,
-                  set: e.value,
-                  measure: ex.measure,
-                  // "ÖNCEKİ": geçen seansın AYNI numaralı seti (G-2).
-                  previous: e.key < ex.lastSets.length
-                      ? prevLabel(ex.lastSets[e.key], ex.measure, units)
-                      : null,
-                  suggestion: e.value.done ? null : ex.suggestionAt(e.key),
-                  units: units,
-                  onToggle: () => onToggle(e.value),
-                  onCycleType: () => onCycleType(e.value),
-                  onChanged: onChanged,
-                )),
+            for (final (i, set) in ex.sets.indexed) ...[
+              _SetRow(
+                key: ObjectKey(set),
+                index: i,
+                set: set,
+                measure: ex.measure,
+                // "ÖNCEKİ": geçen seansın AYNI numaralı seti (G-2).
+                previous: i < ex.lastSets.length
+                    ? prevLabel(ex.lastSets[i], ex.measure, units)
+                    : null,
+                suggestion: set.done ? null : ex.suggestionAt(i),
+                units: units,
+                onToggle: () => onToggle(set),
+                onCycleType: () => onCycleType(set),
+                onChanged: onChanged,
+              ),
+              // Sıradaki set: ✓'in ne kaydedeceği + kilo ± (A4).
+              if (i == activeIndex)
+                _ActiveSetAssist(
+                  key: ObjectKey((set, 'assist')),
+                  hint: _assistHint(ex, set, i, units),
+                  showStepper: _weighted(ex.measure),
+                  stepLabel: units.lift(stepKg),
+                  onMinus: () => onStep(set, -1),
+                  onPlus: () => onStep(set, 1),
+                  onPickStep: onPickStep,
+                ),
+            ],
             AppSpacing.vGapXs,
             Row(
               children: [
@@ -1289,6 +1559,265 @@ class _ExerciseBlock extends ConsumerWidget {
                     icon: const Icon(Icons.remove_rounded, size: AppIconSize.sm),
                     label: Text(AppL10n.of(context).asRemoveSet),
                   ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Menü satırı: ikon + metin (hareket ⋯ menüsü).
+class _MenuRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _MenuRow(this.icon, this.label);
+
+  @override
+  Widget build(BuildContext context) => Row(
+        children: [
+          Icon(icon,
+              color: context.colors.onSurfaceVariant, size: AppIconSize.sm),
+          AppSpacing.hGapSm,
+          Text(label),
+        ],
+      );
+}
+
+/// Hareket başlığında dinlenme süresi ("⏱ 1:30"); dokununca değişir (A2).
+class _RestChip extends StatelessWidget {
+  final int restSec;
+  final VoidCallback onTap;
+  const _RestChip({required this.restSec, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final label =
+        WorkoutUi.restLabel(restSec, none: AppL10n.of(context).commonNone);
+    return Tooltip(
+      message: AppL10n.of(context).asRestChange,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.brPill,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm, vertical: 2),
+          decoration: BoxDecoration(
+            color: c.primary.withValues(alpha: 0.10),
+            borderRadius: AppRadius.brPill,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.timer_outlined, size: 13, color: c.primary),
+              const SizedBox(width: 3),
+              Text(label,
+                  style: context.texts.labelSmall?.copyWith(
+                      color: c.primary,
+                      fontWeight: FontWeight.w700,
+                      fontFeatures: const [FontFeature.tabularFigures()])),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Sıradaki (işaretlenmemiş ilk) setin altındaki yardım satırı (A4):
+/// solda ✓'in tam olarak ne kaydedeceği, sağda kilo − adım + düğmeleri.
+/// Önerinin soluk ipucu olarak kalıp anlaşılmaması sorununa cevap —
+/// kural artık ekranda yazıyor.
+class _ActiveSetAssist extends StatelessWidget {
+  final String? hint;
+  final bool showStepper;
+  final String stepLabel;
+  final VoidCallback onMinus, onPlus, onPickStep;
+  const _ActiveSetAssist(
+      {super.key,
+      required this.hint,
+      required this.showStepper,
+      required this.stepLabel,
+      required this.onMinus,
+      required this.onPlus,
+      required this.onPickStep});
+
+  @override
+  Widget build(BuildContext context) {
+    final h = hint;
+    if (h == null && !showStepper) return const SizedBox.shrink();
+    final c = context.colors;
+    final l = AppL10n.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(32, 0, 0, AppSpacing.sm),
+      child: Row(
+        children: [
+          Expanded(
+            child: h == null
+                ? const SizedBox.shrink()
+                : Row(
+                    children: [
+                      Icon(Icons.subdirectory_arrow_right_rounded,
+                          size: 14, color: c.primary),
+                      const SizedBox(width: 3),
+                      Flexible(
+                        child: Text(l.asSuggestHint(h),
+                            maxLines: 2,
+                            style: context.texts.labelMedium?.copyWith(
+                                color: c.primary,
+                                fontWeight: FontWeight.w600)),
+                      ),
+                    ],
+                  ),
+          ),
+          if (showStepper) ...[
+            AppSpacing.hGapXs,
+            _StepButton(
+                icon: Icons.remove_rounded,
+                tooltip: l.asStepDecrease(stepLabel),
+                onTap: onMinus),
+            Tooltip(
+              message: l.asStepChange,
+              child: InkWell(
+                onTap: onPickStep,
+                borderRadius: AppRadius.brSm,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xs, vertical: AppSpacing.xs),
+                  child: Text(stepLabel,
+                      style: context.texts.labelMedium?.copyWith(
+                          color: c.onSurfaceVariant,
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.underline,
+                          decorationStyle: TextDecorationStyle.dotted,
+                          fontFeatures: const [FontFeature.tabularFigures()])),
+                ),
+              ),
+            ),
+            _StepButton(
+                icon: Icons.add_rounded,
+                tooltip: l.asStepIncrease(stepLabel),
+                onTap: onPlus),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StepButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+  const _StepButton(
+      {required this.icon, required this.tooltip, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: c.primary.withValues(alpha: 0.10),
+        borderRadius: AppRadius.brSm,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppRadius.brSm,
+          child: SizedBox(
+            width: 36,
+            height: 30,
+            child: Icon(icon, size: AppIconSize.sm, color: c.primary),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Dinlenme süresi seçici (A2). Seçilen süreyi (sn) döner.
+class _RestPickerSheet extends StatelessWidget {
+  final int current;
+  final bool savesToRoutine;
+  const _RestPickerSheet({required this.current, required this.savesToRoutine});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.asRestTitle, style: context.texts.titleMedium),
+            AppSpacing.vGapXs,
+            Text(savesToRoutine ? l.asRestRoutineNote : l.asRestSessionNote,
+                style: context.texts.bodySmall
+                    ?.copyWith(color: context.colors.onSurfaceVariant)),
+            AppSpacing.vGapLg,
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                for (final sec in {...WorkoutUi.restOptions, current}.toList()
+                  ..sort())
+                  ChoiceChip(
+                    label: Text(WorkoutUi.restLabel(sec, none: l.commonNone)),
+                    selected: sec == current,
+                    onSelected: (_) => Navigator.pop(context, sec),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Kilo adımı seçici (A4). Seçilen adımı kg olarak döner.
+class _StepPickerSheet extends ConsumerWidget {
+  final double currentKg;
+  const _StepPickerSheet({required this.currentKg});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
+    final units = ref.watch(unitsProvider);
+    final options = units.imperial ? stepOptionsLb : stepOptionsKg;
+    final currentLabel = units.lift(currentKg);
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.asStepTitle, style: context.texts.titleMedium),
+            AppSpacing.vGapXs,
+            Text(l.asStepHelp,
+                style: context.texts.bodySmall
+                    ?.copyWith(color: context.colors.onSurfaceVariant)),
+            AppSpacing.vGapLg,
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                for (final o in options)
+                  Builder(builder: (_) {
+                    final kg = units.weightToKg(o);
+                    final label = units.lift(kg);
+                    return ChoiceChip(
+                      label: Text(label),
+                      selected: label == currentLabel,
+                      onSelected: (_) => Navigator.pop(context, kg),
+                    );
+                  }),
               ],
             ),
           ],

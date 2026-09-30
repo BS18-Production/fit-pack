@@ -108,4 +108,22 @@ void main() {
       expect(okunan, isNot([for (var i = 44; i >= 1; i--) i, 0]));
     });
   });
+
+  group('countdownPlan — tek parça geri sayım (2026-09-30)', () {
+    test('3 sn\'den fazla kaldıysa: bitişten 3 sn önce, baştan', () {
+      expect(countdownPlan(60000), (delayMs: 57000, offsetMs: 0));
+      expect(countdownPlan(3001), (delayMs: 1, offsetMs: 0));
+    });
+
+    test('3 sn ya da daha az kaldıysa: hemen, dosyanın içinden', () {
+      expect(countdownPlan(3000), (delayMs: 0, offsetMs: 0));
+      // −15 sn sonrası 1,2 sn kaldı → 3. tıktan hemen önceden başla.
+      expect(countdownPlan(1200), (delayMs: 0, offsetMs: 1800));
+    });
+
+    test('süre bitmişse çalma', () {
+      expect(countdownPlan(0), isNull);
+      expect(countdownPlan(-500), isNull);
+    });
+  });
 }

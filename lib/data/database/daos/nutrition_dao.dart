@@ -204,6 +204,27 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
     return result;
   }
 
+  /// Son eklenen farklı besinler + **son kullanılan miktar**:
+  /// yemek ekleme panelinde tek dokunuşla aynı miktar yeniden eklenir.
+  Future<List<({Food food, double grams})>> getRecentPortions(
+      {int limit = 8}) async {
+    final rows = await (select(foodLogs).join([
+      innerJoin(foods, foods.id.equalsExp(foodLogs.foodId)),
+    ])
+          ..orderBy([OrderingTerm.desc(foodLogs.id)])
+          ..limit(limit * 5))
+        .get();
+    final seen = <int>{};
+    final out = <({Food food, double grams})>[];
+    for (final r in rows) {
+      final f = r.readTable(foods);
+      if (!seen.add(f.id)) continue;
+      out.add((food: f, grams: r.readTable(foodLogs).grams));
+      if (out.length >= limit) break;
+    }
+    return out;
+  }
+
   /// Son [days] günde **aynı öğünde** kayıt bulunan günler, yeniden eskiye
   /// (docs/21 #2 küçük sürüm). [exclude] günü listelenmez — kullanıcı zaten
   /// o güne kopyalıyor.
@@ -261,9 +282,19 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
     DateTime day,
     String mealType,
     List<MealCopyItem> items,
+  ) async =>
+      (await addFoodsToMealIds(day, mealType, items)).length;
+
+  /// [addFoodsToMeal] ile aynı; eklenen kayıtların kimliklerini döner —
+  /// "her zamanki öğün" eklemesinin "Geri al"ı tam bu satırları siler
+  /// (docs/26).
+  Future<List<int>> addFoodsToMealIds(
+    DateTime day,
+    String mealType,
+    List<MealCopyItem> items,
   ) =>
       transaction(() async {
-        if (items.isEmpty) return 0;
+        if (items.isEmpty) return const <int>[];
         final gun = DateTime(day.year, day.month, day.day);
         final ids = items.map((i) => i.foodId).toSet().toList();
         final besinler = {
@@ -271,14 +302,14 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
               in await (select(foods)..where((f) => f.id.isIn(ids))).get())
             f.id: f,
         };
-        final eklenecek = <FoodLogsCompanion>[];
+        final eklenen = <int>[];
         for (final i in items) {
           final f = besinler[i.foodId];
           // Besin arada silinmişse o satırı atla — kopyalamanın tamamı
           // başarısız olmasın.
           if (f == null || i.grams <= 0) continue;
           final oran = i.grams / 100;
-          eklenecek.add(FoodLogsCompanion(
+          eklenen.add(await into(foodLogs).insert(FoodLogsCompanion(
             date: Value(gun),
             mealType: Value(mealType),
             foodId: Value(f.id),
@@ -287,11 +318,55 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
             computedProtein: Value(f.proteinPer100g * oran),
             computedCarb: Value(f.carbPer100g * oran),
             computedFat: Value(f.fatPer100g * oran),
-          ));
+          )));
         }
-        if (eklenecek.isEmpty) return 0;
-        await batch((b) => b.insertAll(foodLogs, eklenecek));
-        return eklenecek.length;
+        return eklenen;
+      });
+
+  /// Birden çok kaydı tek transaction'da siler ("Geri al").
+  Future<int> deleteFoodLogs(List<int> ids) => ids.isEmpty
+      ? Future.value(0)
+      : (delete(foodLogs)..where((l) => l.id.isIn(ids))).go();
+
+  /// **Hızlı giriş** (docs/26): yalnız kcal (+ isteğe bağlı protein).
+  /// Dışarıda yenen, tartılamayan öğün için — kişi o günü boş bırakmasın.
+  ///
+  /// Şema değişmez: değerler bir **özel besin** olur (100 g = girilen
+  /// değer, `source = 'quick'`) ve 100 g olarak kaydedilir. Besin listede
+  /// kalır; aynı yemek ("Döner dürüm") bir dahaki sefere aranarak bulunur.
+  /// Besin + kayıt tek transaction. Kaydın kimliğini döner.
+  Future<int> quickAddLog({
+    required DateTime day,
+    required String mealType,
+    required String name,
+    required double kcal,
+    double protein = 0,
+    String? portionLabel,
+  }) =>
+      transaction(() async {
+        final foodId = await into(foods).insert(FoodsCompanion(
+          name: Value(name),
+          // "1 porsiyon = 100 g": listede "/100g" değil porsiyonla seçilir.
+          defaultPortionGrams: const Value(100),
+          unitLabel: Value(portionLabel),
+          kcalPer100g: Value(kcal),
+          proteinPer100g: Value(protein),
+          carbPer100g: const Value(0),
+          fatPer100g: const Value(0),
+          source: const Value(quickFoodSource),
+          isCustom: const Value(true),
+          isRecipe: const Value(false),
+        ));
+        return into(foodLogs).insert(FoodLogsCompanion(
+          date: Value(DateTime(day.year, day.month, day.day)),
+          mealType: Value(mealType),
+          foodId: Value(foodId),
+          grams: const Value(100),
+          computedKcal: Value(kcal),
+          computedProtein: Value(protein),
+          computedCarb: const Value(0),
+          computedFat: const Value(0),
+        ));
       });
 
   /// [from] gününün tüm kayıtlarını [to] gününe kopyalar ("dünü kopyala").
@@ -350,6 +425,10 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
 }
 
 /// FoodLog + ait olduğu Food (join sonucu). UI yemek adını buradan okur.
+/// Hızlı girişle oluşturulan besinin kaynağı (docs/26). Satırda "100 g"
+/// yerine "hızlı giriş" yazılır.
+const quickFoodSource = 'quick';
+
 class FoodLogWithFood {
   final FoodLog log;
   final Food food;

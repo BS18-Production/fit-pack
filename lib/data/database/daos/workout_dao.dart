@@ -135,6 +135,23 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
         ayni(yeni.note, mevcut.note);
   }
 
+  /// Seansta değiştirilen dinlenme süresini rutine yazar (Samet 2026-09-30:
+  /// sormadan kaydedilir). Yalnız süresi gerçekten farklı satırlar yazılır —
+  /// aynı değeri yeniden yazmak senkron kuyruğuna boş satır sokardı.
+  /// Etkilenen satır sayısını döner (hareket rutinde yoksa 0).
+  Future<int> setRoutineExerciseRest({
+    required int routineId,
+    required int exerciseId,
+    required int restSec,
+  }) =>
+      (update(routineExercises)
+            ..where((e) =>
+                e.routineId.equals(routineId) &
+                e.exerciseId.equals(exerciseId) &
+                (e.targetRestSec.isNull() |
+                    e.targetRestSec.equals(restSec).not())))
+          .write(RoutineExercisesCompanion(targetRestSec: Value(restSec)));
+
   /// Rutinin tüm hareketlerini siler.
   Future<void> clearRoutineExercises(int routineId) =>
       (delete(routineExercises)..where((e) => e.routineId.equals(routineId)))

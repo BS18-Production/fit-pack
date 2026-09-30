@@ -281,7 +281,13 @@ class _SilentFeedback extends FeedbackService {
   void warmUp() {}
 
   @override
-  void restCue(RestCue cue, {required bool sound}) {}
+  void playCountdown({int offsetMs = 0}) {}
+
+  @override
+  void stopCountdown() {}
+
+  @override
+  void restDone() {}
 
   @override
   void setDone() {}

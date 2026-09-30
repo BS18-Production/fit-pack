@@ -4069,30 +4069,6 @@ abstract class AppL10n {
   /// **'YOUR RHYTHM'**
   String get homeRhythmKicker;
 
-  /// No description provided for @homeRhythmTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, one{1-week streak} other{{count}-week streak}}'**
-  String homeRhythmTitle(int count);
-
-  /// No description provided for @homeRhythmTitleEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'Start your rhythm'**
-  String get homeRhythmTitleEmpty;
-
-  /// No description provided for @homeRhythmTitleFirst.
-  ///
-  /// In en, this message translates to:
-  /// **'Complete your first week'**
-  String get homeRhythmTitleFirst;
-
-  /// No description provided for @homeRhythmTitleRestart.
-  ///
-  /// In en, this message translates to:
-  /// **'A new streak starts'**
-  String get homeRhythmTitleRestart;
-
   /// No description provided for @homeRhythmLeft.
   ///
   /// In en, this message translates to:
@@ -4218,6 +4194,624 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'{liters} L water'**
   String calWaterLine(String liters);
+
+  /// No description provided for @asMoveUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get asMoveUp;
+
+  /// No description provided for @asMoveDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get asMoveDown;
+
+  /// No description provided for @asRestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest between sets'**
+  String get asRestTitle;
+
+  /// No description provided for @asRestRoutineNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to the routine too — next time it starts with this.'**
+  String get asRestRoutineNote;
+
+  /// No description provided for @asRestSessionNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to this workout.'**
+  String get asRestSessionNote;
+
+  /// No description provided for @asRestChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change rest time'**
+  String get asRestChange;
+
+  /// No description provided for @asRestSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the rest time to the routine'**
+  String get asRestSaveError;
+
+  /// No description provided for @asSuggestHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap ✓ to log {value}'**
+  String asSuggestHint(String value);
+
+  /// No description provided for @asStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight step'**
+  String get asStepTitle;
+
+  /// No description provided for @asStepHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The − and + buttons change the weight by this amount. Remembered for this exercise.'**
+  String get asStepHelp;
+
+  /// No description provided for @asStepChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change weight step'**
+  String get asStepChange;
+
+  /// No description provided for @asStepDecrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease weight by {step}'**
+  String asStepDecrease(String step);
+
+  /// No description provided for @asStepIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase weight by {step}'**
+  String asStepIncrease(String step);
+
+  /// No description provided for @wrThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get wrThisWeek;
+
+  /// No description provided for @wrHowCalculated.
+  ///
+  /// In en, this message translates to:
+  /// **'How it\'s calculated'**
+  String get wrHowCalculated;
+
+  /// No description provided for @wrKpiWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Workouts'**
+  String get wrKpiWorkouts;
+
+  /// No description provided for @wrKpiVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get wrKpiVolume;
+
+  /// No description provided for @wrKpiKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg. calories'**
+  String get wrKpiKcal;
+
+  /// No description provided for @wrKpiWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg. weight'**
+  String get wrKpiWeight;
+
+  /// No description provided for @wrPrevValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Last week: {value}'**
+  String wrPrevValue(String value);
+
+  /// No description provided for @wrPlannedOf.
+  ///
+  /// In en, this message translates to:
+  /// **'of {planned} planned'**
+  String wrPlannedOf(int planned);
+
+  /// No description provided for @wrLoggedOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}/{total} days logged'**
+  String wrLoggedOf(int days, int total);
+
+  /// No description provided for @wrProteinAvg.
+  ///
+  /// In en, this message translates to:
+  /// **'{protein} g protein'**
+  String wrProteinAvg(int protein);
+
+  /// No description provided for @wrGoalShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {kcal}'**
+  String wrGoalShort(int kcal);
+
+  /// No description provided for @wrMeasureCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 weigh-in} other{{count} weigh-ins}}'**
+  String wrMeasureCount(int count);
+
+  /// No description provided for @wrSingleShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Single weigh-in — not a trend'**
+  String get wrSingleShort;
+
+  /// No description provided for @wrNoPrevShort.
+  ///
+  /// In en, this message translates to:
+  /// **'No weigh-in last week'**
+  String get wrNoPrevShort;
+
+  /// No description provided for @wrNoRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'No data'**
+  String get wrNoRecord;
+
+  /// No description provided for @wrProgressDelta.
+  ///
+  /// In en, this message translates to:
+  /// **'1RM +{delta}'**
+  String wrProgressDelta(String delta);
+
+  /// No description provided for @wrVsPrev.
+  ///
+  /// In en, this message translates to:
+  /// **'vs last week'**
+  String get wrVsPrev;
+
+  /// No description provided for @rhythmStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your rhythm'**
+  String get rhythmStart;
+
+  /// No description provided for @rhythmFirstWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your first week'**
+  String get rhythmFirstWeek;
+
+  /// No description provided for @rhythmFirstWeekLastOne.
+  ///
+  /// In en, this message translates to:
+  /// **'One more workout and week one is yours'**
+  String get rhythmFirstWeekLastOne;
+
+  /// No description provided for @rhythmWeek1.
+  ///
+  /// In en, this message translates to:
+  /// **'Week one: done!'**
+  String get rhythmWeek1;
+
+  /// No description provided for @rhythmWeek2.
+  ///
+  /// In en, this message translates to:
+  /// **'2 weeks in a row, a habit is forming'**
+  String get rhythmWeek2;
+
+  /// No description provided for @rhythmWeek3.
+  ///
+  /// In en, this message translates to:
+  /// **'3 weeks! You\'ve found your rhythm'**
+  String get rhythmWeek3;
+
+  /// No description provided for @rhythmMonth1.
+  ///
+  /// In en, this message translates to:
+  /// **'One month strong, this is your routine now'**
+  String get rhythmMonth1;
+
+  /// No description provided for @rhythmMonth2.
+  ///
+  /// In en, this message translates to:
+  /// **'2 months without a break, serious work'**
+  String get rhythmMonth2;
+
+  /// No description provided for @rhythmMonth3.
+  ///
+  /// In en, this message translates to:
+  /// **'3 months! Discipline is winning'**
+  String get rhythmMonth3;
+
+  /// No description provided for @rhythmHalfYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Half a year unbroken, legendary streak'**
+  String get rhythmHalfYear;
+
+  /// No description provided for @rhythmYear1.
+  ///
+  /// In en, this message translates to:
+  /// **'A full year. Hats off'**
+  String get rhythmYear1;
+
+  /// No description provided for @rhythmDoneA.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {n}, in the bag'**
+  String rhythmDoneA(int n);
+
+  /// No description provided for @rhythmDoneB.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} weeks and no stopping'**
+  String rhythmDoneB(int n);
+
+  /// No description provided for @rhythmDoneC.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}-week streak, on fire'**
+  String rhythmDoneC(int n);
+
+  /// No description provided for @rhythmDoneD.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} weeks, not a single miss'**
+  String rhythmDoneD(int n);
+
+  /// No description provided for @rhythmOngoingA.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}-week streak, take this week too'**
+  String rhythmOngoingA(int n);
+
+  /// No description provided for @rhythmOngoingB.
+  ///
+  /// In en, this message translates to:
+  /// **'Carry the streak into week {next}'**
+  String rhythmOngoingB(int next);
+
+  /// No description provided for @rhythmOngoingC.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} weeks in, no quitting now'**
+  String rhythmOngoingC(int n);
+
+  /// No description provided for @rhythmOngoingLastOne.
+  ///
+  /// In en, this message translates to:
+  /// **'One more workout, then week {next}'**
+  String rhythmOngoingLastOne(int next);
+
+  /// No description provided for @rhythmRestartA.
+  ///
+  /// In en, this message translates to:
+  /// **'A new streak starts'**
+  String get rhythmRestartA;
+
+  /// No description provided for @rhythmRestartB.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick up where you left off'**
+  String get rhythmRestartB;
+
+  /// No description provided for @rhythmRestartC.
+  ///
+  /// In en, this message translates to:
+  /// **'Every streak starts with one workout'**
+  String get rhythmRestartC;
+
+  /// No description provided for @nhUsualBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Your usual breakfast'**
+  String get nhUsualBreakfast;
+
+  /// No description provided for @nhUsualLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Your usual lunch'**
+  String get nhUsualLunch;
+
+  /// No description provided for @nhUsualDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Your usual dinner'**
+  String get nhUsualDinner;
+
+  /// No description provided for @nhUsualSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Your usual snack'**
+  String get nhUsualSnack;
+
+  /// No description provided for @nhUsualSub.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 food} other{{count} foods}} · {kcal} kcal · {protein} g protein'**
+  String nhUsualSub(int count, int kcal, int protein);
+
+  /// No description provided for @nhUsualAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get nhUsualAdd;
+
+  /// No description provided for @nhUsualLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get nhUsualLater;
+
+  /// No description provided for @nhUsualAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{meal} added'**
+  String nhUsualAdded(String meal);
+
+  /// No description provided for @nhWeekStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your first day this week · goal {goal} days'**
+  String nhWeekStart(int goal);
+
+  /// No description provided for @nhWeekGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'This week {done}/{goal} days logged · {left} to go'**
+  String nhWeekGoing(int done, int goal, int left);
+
+  /// No description provided for @nhWeekLastOne.
+  ///
+  /// In en, this message translates to:
+  /// **'This week {done}/{goal} days · one more and the week is done'**
+  String nhWeekLastOne(int done, int goal);
+
+  /// No description provided for @nhWeekDone.
+  ///
+  /// In en, this message translates to:
+  /// **'This week\'s logging goal is done ({done}/{goal})'**
+  String nhWeekDone(int done, int goal);
+
+  /// No description provided for @nhQuickButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick: kcal + protein'**
+  String get nhQuickButton;
+
+  /// No description provided for @nhQuickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick entry'**
+  String get nhQuickTitle;
+
+  /// No description provided for @nhQuickHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For meals you can\'t weigh: just calories and protein. It\'s also saved to your foods so you can find it next time.'**
+  String get nhQuickHint;
+
+  /// No description provided for @nhQuickName.
+  ///
+  /// In en, this message translates to:
+  /// **'What did you eat? (optional)'**
+  String get nhQuickName;
+
+  /// No description provided for @nhQuickDefaultName.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick entry'**
+  String get nhQuickDefaultName;
+
+  /// No description provided for @nhQuickKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories (kcal)'**
+  String get nhQuickKcal;
+
+  /// No description provided for @nhQuickProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein (g, optional)'**
+  String get nhQuickProtein;
+
+  /// No description provided for @nhQuickEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'quick entry'**
+  String get nhQuickEntry;
+
+  /// No description provided for @nhQuickAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added'**
+  String nhQuickAdded(String name);
+
+  /// No description provided for @nhReminderCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on meal reminders — no notification for meals you\'ve already logged.'**
+  String get nhReminderCta;
+
+  /// No description provided for @nhReminderEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on'**
+  String get nhReminderEnable;
+
+  /// No description provided for @nhReminderEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal reminders are on'**
+  String get nhReminderEnabled;
+
+  /// No description provided for @notifMealLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal reminders'**
+  String get notifMealLabel;
+
+  /// No description provided for @notifMealSub.
+  ///
+  /// In en, this message translates to:
+  /// **'If you haven\'t logged a meal, a bit after you usually do. Logged meals get no notification.'**
+  String get notifMealSub;
+
+  /// No description provided for @notifMealBreakfastTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged your breakfast?'**
+  String get notifMealBreakfastTitle;
+
+  /// No description provided for @notifMealLunchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged your lunch?'**
+  String get notifMealLunchTitle;
+
+  /// No description provided for @notifMealDinnerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged your dinner?'**
+  String get notifMealDinnerTitle;
+
+  /// No description provided for @notifMealBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It takes 10 seconds.'**
+  String get notifMealBody;
+
+  /// No description provided for @nhPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'portion'**
+  String get nhPortion;
+
+  /// No description provided for @foodCatSweet.
+  ///
+  /// In en, this message translates to:
+  /// **'Sweets & snacks'**
+  String get foodCatSweet;
+
+  /// No description provided for @foodCatDrink.
+  ///
+  /// In en, this message translates to:
+  /// **'Drinks'**
+  String get foodCatDrink;
+
+  /// No description provided for @attribUsdaDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic food nutrition values; Turkish dishes are estimated from their ingredients'**
+  String get attribUsdaDesc;
+
+  /// No description provided for @afScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get afScan;
+
+  /// No description provided for @afQuick.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick calories'**
+  String get afQuick;
+
+  /// No description provided for @afCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Your own food'**
+  String get afCustom;
+
+  /// No description provided for @afRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added'**
+  String get afRecent;
+
+  /// No description provided for @afAllCount.
+  ///
+  /// In en, this message translates to:
+  /// **'All foods · {count}'**
+  String afAllCount(int count);
+
+  /// No description provided for @afResults.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 result} other{{count} results}}'**
+  String afResults(int count);
+
+  /// No description provided for @afCatAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get afCatAll;
+
+  /// No description provided for @afAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added'**
+  String afAdded(String name);
+
+  /// No description provided for @afSessionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry added} other{{count} entries added}}'**
+  String afSessionCount(int count);
+
+  /// No description provided for @afDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get afDone;
+
+  /// No description provided for @afAddBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to breakfast'**
+  String get afAddBreakfast;
+
+  /// No description provided for @afAddLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to lunch'**
+  String get afAddLunch;
+
+  /// No description provided for @afAddDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to dinner'**
+  String get afAddDinner;
+
+  /// No description provided for @afAddSnack.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to snack'**
+  String get afAddSnack;
+
+  /// No description provided for @afQuickAddTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add now: {portion}'**
+  String afQuickAddTip(String portion);
+
+  /// No description provided for @afChangeMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Change meal'**
+  String get afChangeMeal;
+
+  /// No description provided for @afEditHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a row to change the amount, + to add right away'**
+  String get afEditHint;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

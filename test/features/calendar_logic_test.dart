@@ -70,6 +70,55 @@ void main() {
     test('önceki hafta kaçtı, bu hafta başlandı → yine yeni seri',
         () => expect(of(0, 1, 3, earlier: true), RhythmState.restart));
   });
+  group('ritim başlığı — haftadan haftaya değişir', () {
+    RhythmHeadline h(int weeks, int done, int goal,
+            {bool earlier = true, int weekIndex = 0}) =>
+        rhythmHeadline(
+            WeeklyStreak(
+                weeks: weeks,
+                thisWeekDone: done,
+                weeklyGoal: goal,
+                hasEarlierSessions: earlier),
+            weekIndex: weekIndex);
+
+    test('kilometre taşları: 1, 2, 3 hafta · 1, 2, 3 ay · yarım yıl · 1 yıl',
+        () {
+      expect(h(1, 3, 3, earlier: false).line, RhythmLine.week1);
+      expect(h(2, 3, 3).line, RhythmLine.week2);
+      expect(h(3, 3, 3).line, RhythmLine.week3);
+      expect(h(4, 3, 3).line, RhythmLine.month1);
+      expect(h(8, 3, 3).line, RhythmLine.month2);
+      expect(h(12, 3, 3).line, RhythmLine.month3);
+      expect(h(26, 3, 3).line, RhythmLine.halfYear);
+      expect(h(52, 3, 3).line, RhythmLine.year1);
+    });
+
+    test('sıradan haftalarda art arda iki hafta aynı cümle çıkmaz', () {
+      for (var w = 5; w < 60; w++) {
+        if ({8, 12, 26, 52}.contains(w) || {8, 12, 26, 52}.contains(w + 1)) {
+          continue;
+        }
+        expect(h(w, 3, 3).line, isNot(h(w + 1, 3, 3).line), reason: '$w');
+        expect(h(w, 1, 3).line, isNot(h(w + 1, 1, 3).line), reason: '$w');
+      }
+    });
+
+    test('hedefe 1 antrenman kaldıysa o cümle öncelikli', () {
+      expect(h(5, 2, 3).line, RhythmLine.ongoingLastOne);
+      expect(h(0, 2, 3, earlier: false).line, RhythmLine.firstWeekLastOne);
+    });
+
+    test('yeniden başlarken cümle haftaya göre döner', () {
+      final a = h(0, 0, 3, weekIndex: 40).line;
+      final b = h(0, 0, 3, weekIndex: 41).line;
+      expect(a, isNot(b));
+    });
+
+    test('hiç kayıt yok → başlat', () {
+      expect(h(0, 0, 3, earlier: false).line, RhythmLine.start);
+    });
+  });
+
   group('dile duyarlı büyük harf', () {
     test('Türkçede i → İ, ı → I', () {
       expect(upperForLanguage('pazartesi · 21 nisan', const Locale('tr')),

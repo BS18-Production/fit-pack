@@ -30,6 +30,12 @@ class AttributionScreen extends StatelessWidget {
             url: 'https://world.openfoodfacts.org',
           ),
           _SourceCard(
+            name: 'USDA FoodData Central (SR Legacy)',
+            license: 'Public Domain (U.S. Government Work)',
+            description: l.attribUsdaDesc,
+            url: 'https://fdc.nal.usda.gov',
+          ),
+          _SourceCard(
             name: 'free-exercise-db',
             license: 'Public Domain (Unlicense)',
             description: l.attribFedDesc,

@@ -19,6 +19,8 @@ import '../workout/workout_draft.dart';
 import '../nutrition/macro_goals.dart';
 import 'providers/dashboard_providers.dart';
 import 'providers/home_providers.dart';
+import '../../core/prefs/week_start_provider.dart';
+import '../nutrition/nutrition_habit_widgets.dart';
 import 'rhythm_state.dart';
 import 'streak_calc.dart';
 
@@ -67,6 +69,8 @@ class HomeScreen extends ConsumerWidget {
             AppSpacing.vGapxl_,
             _DayLogHeader(),
             AppSpacing.vGapMd,
+            // Tek dokunuş: saatine uygun "her zamanki öğün" (docs/26).
+            UsualMealCard(),
             _CompactNutrition(),
             AppSpacing.vGapxl_,
             _InsightCard(),
@@ -459,6 +463,35 @@ class _RestDayCard extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────── Ritim kartı
 
+/// Ritim başlığının metni — seçim `rhythmHeadline`'da (birim testli).
+String _rhythmTitle(AppL10n l, RhythmHeadline h) {
+  final n = h.n, next = h.n + 1;
+  return switch (h.line) {
+    RhythmLine.start => l.rhythmStart,
+    RhythmLine.firstWeek => l.rhythmFirstWeek,
+    RhythmLine.firstWeekLastOne => l.rhythmFirstWeekLastOne,
+    RhythmLine.week1 => l.rhythmWeek1,
+    RhythmLine.week2 => l.rhythmWeek2,
+    RhythmLine.week3 => l.rhythmWeek3,
+    RhythmLine.month1 => l.rhythmMonth1,
+    RhythmLine.month2 => l.rhythmMonth2,
+    RhythmLine.month3 => l.rhythmMonth3,
+    RhythmLine.halfYear => l.rhythmHalfYear,
+    RhythmLine.year1 => l.rhythmYear1,
+    RhythmLine.doneA => l.rhythmDoneA(n),
+    RhythmLine.doneB => l.rhythmDoneB(n),
+    RhythmLine.doneC => l.rhythmDoneC(n),
+    RhythmLine.doneD => l.rhythmDoneD(n),
+    RhythmLine.ongoingA => l.rhythmOngoingA(n),
+    RhythmLine.ongoingB => l.rhythmOngoingB(next),
+    RhythmLine.ongoingC => l.rhythmOngoingC(n),
+    RhythmLine.ongoingLastOne => l.rhythmOngoingLastOne(next),
+    RhythmLine.restartA => l.rhythmRestartA,
+    RhythmLine.restartB => l.rhythmRestartB,
+    RhythmLine.restartC => l.rhythmRestartC,
+  };
+}
+
 /// Seri + bu haftanın ilerlemesi + son 30 günün özeti (docs/24 §2).
 /// Seri [weeklyStreakProvider]'dan: haftalık hedef bazlı — dinlenme günü ya da
 /// uygulamayı açmamak seriyi kırmaz; devam eden hafta seriyi sıfırlamaz.
@@ -478,13 +511,14 @@ class _RhythmCard extends ConsumerWidget {
 
     final state = rhythmStateOf(streak);
     final done = streak.thisWeekDone, goal = streak.weeklyGoal;
-    final title = switch (state) {
-      RhythmState.empty => l.homeRhythmTitleEmpty,
-      RhythmState.firstWeek => l.homeRhythmTitleFirst,
-      RhythmState.restart => l.homeRhythmTitleRestart,
-      RhythmState.ongoing ||
-      RhythmState.weekDone => l.homeRhythmTitle(streak.weeks),
-    };
+    // Haftanın sırası: seri 0 iken başlığın haftadan haftaya dönmesi için.
+    final weekStart = startOfWeek(DateTime.now(), ref.watch(weekStartProvider));
+    final weekIndex =
+        DateTime.utc(weekStart.year, weekStart.month, weekStart.day)
+                .millisecondsSinceEpoch ~/
+            Duration.millisecondsPerDay ~/
+            7;
+    final title = _rhythmTitle(l, rhythmHeadline(streak, weekIndex: weekIndex));
     final subtitle = switch (state) {
       RhythmState.empty => l.homeRhythmEmptySub(goal),
       RhythmState.restart => l.homeRhythmRestartSub(done, goal),
@@ -640,13 +674,21 @@ class _DayLogHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: Text(l.homeDayLog, style: context.texts.titleLarge)),
-        TextButton(
-          onPressed: () => context.go(AppRoutes.nutrition),
-          child: Text('${l.navNutrition} ›'),
+        Row(
+          children: [
+            Expanded(
+                child: Text(l.homeDayLog, style: context.texts.titleLarge)),
+            TextButton(
+              onPressed: () => context.go(AppRoutes.nutrition),
+              child: Text('${l.navNutrition} ›'),
+            ),
+          ],
         ),
+        // Haftalık kayıt hedefi — günlük seri değil (docs/26).
+        const LogWeekLineText(),
       ],
     );
   }

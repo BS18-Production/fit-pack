@@ -470,4 +470,38 @@ void main() {
     expect(r.muscleSets, {'chest': 2},
         reason: 'birincil kas yoksa listenin ilki');
   });
+
+  group('görsel özet yardımcıları (2026-09-30)', () {
+    test('sayımda artış iyi, düşüş nötr — "kötü" yok', () {
+      expect(countTone(2), DeltaTone.good);
+      expect(countTone(0), DeltaTone.neutral);
+      expect(countTone(-3), DeltaTone.neutral);
+    });
+
+    test('kilo tonu hedef yönünden gelir', () {
+      expect(weightTone(WeightMeaning.onTrack), DeltaTone.good);
+      expect(weightTone(WeightMeaning.against), DeltaTone.caution);
+      expect(weightTone(WeightMeaning.flat), DeltaTone.neutral);
+      expect(weightTone(WeightMeaning.unknown), DeltaTone.neutral);
+    });
+
+    test('yüzde değişim; önceki 0 ise yazılmaz', () {
+      expect(percentChange(1080, 1000), 8);
+      expect(percentChange(900, 1000), -10);
+      expect(percentChange(500, 0), isNull);
+    });
+
+    test('geçen haftanın hacmi ana sayfayla aynı hesapla bulunur', () {
+      final onceki = seans(pzt.subtract(const Duration(days: 3)));
+      final r = buildWeeklyReview(WeeklyReviewInput(
+        weekStart: pzt,
+        now: pazarAksami,
+        prevSessions: [onceki],
+        prevSetsBySession: {
+          onceki.id: [set(onceki.id, kg: 100, reps: 5)],
+        },
+      ));
+      expect(r.workout.prevVolumeKg, 500);
+    });
+  });
 }

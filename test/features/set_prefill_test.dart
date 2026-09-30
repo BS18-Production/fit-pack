@@ -27,8 +27,10 @@ void main() {
       expect(s, w140x7);
     });
 
-    test('geçen seans takip ediliyorsa piramit korunur', () {
-      // Geçen seans 100×10 → 120×9; bugün 1. set aynen 100×10 yapıldı.
+    test('geçen seansla aynı yapılsa da öneri bugünkü üst set (sade kural)',
+        () {
+      // Geçen seans 100×10 → 120×9; bugün 1. set 100×10. Eski kural 120×9
+      // öneriyordu; Samet'in kararıyla (2026-09-30) öneri hep üstteki set.
       const w100x10 = SetValues(weightKg: 100, reps: 10);
       const w120x9 = SetValues(weightKg: 120, reps: 9);
       final s = suggestionFor(
@@ -37,17 +39,38 @@ void main() {
         lastSession: const [w100x10, w120x9],
         measure: 'weight_reps',
       );
-      expect(s, w120x9);
+      expect(s, w100x10);
     });
 
-    test('takip ederken geçen seansı aşan sette üstteki set taşınır', () {
+    test('55×10 yapıldı → 2. ve 3. sete 55×10 önerilir', () {
+      const w55x10 = SetValues(weightKg: 55, reps: 10);
+      final current = [cur(w55x10), cur(empty), cur(empty)];
+      for (final i in [1, 2]) {
+        expect(
+          suggestionFor(
+            index: i,
+            current: current,
+            lastSession: const [SetValues(weightKg: 50, reps: 10)],
+            measure: 'weight_reps',
+          ),
+          w55x10,
+        );
+      }
+    });
+
+    test('üstteki set yarımsa eksiği kendi önerisinden tamamlanır', () {
+      // 1. set 55×10; 2. sete ± ile yalnız 57,5 yazıldı → 3. sete 57,5×10.
       final s = suggestionFor(
-        index: 1,
-        current: [cur(w140x7), cur(empty)],
-        lastSession: const [w140x7],
+        index: 2,
+        current: [
+          cur(const SetValues(weightKg: 55, reps: 10)),
+          cur(const SetValues(weightKg: 57.5)),
+          cur(empty),
+        ],
+        lastSession: const [],
         measure: 'weight_reps',
       );
-      expect(s, w140x7);
+      expect(s, const SetValues(weightKg: 57.5, reps: 10));
     });
 
     test('yukarıdaki boşsa daha yukarıdaki dolu set kullanılır', () {

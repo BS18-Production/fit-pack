@@ -35,7 +35,9 @@ final weekStartProvider =
 /// [day]'in içinde bulunduğu haftanın başlangıç gecesi (00:00).
 /// Dart'ta `%` negatif olmayan sonuç verir → weekStart=7 (Pazar) için de doğru:
 /// Pzt(1)−7 = −6 → %7 = 1 gün geri (dün Pazar'dı).
-DateTime startOfWeek(DateTime day, int weekStart) {
-  final d = DateTime(day.year, day.month, day.day);
-  return d.subtract(Duration(days: (d.weekday - weekStart) % 7));
-}
+///
+/// Takvim günüyle çıkarılır (`DateTime(y, m, d - n)`), `Duration` ile değil:
+/// yaz saatine geçilen hafta 23 saatlik bir gün içerir ve `n × 24 saat`
+/// çıkarmak önceki günün 23:00'üne düşürüp haftayı bir gün kaydırırdı.
+DateTime startOfWeek(DateTime day, int weekStart) =>
+    DateTime(day.year, day.month, day.day - (day.weekday - weekStart) % 7);

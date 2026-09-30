@@ -136,3 +136,20 @@ kalkar, bağlantısı ritim kartında durur (docs/23 §3.3).
   akışlarını uyandırmıyordu (eski ızgara "0/1", seri kartı "1/1" diyordu).
   Ayrı commit'te düzeltildi (`1e36dd9`).
 - **Android telefon:** bekliyor (cihaz bağlı değildi).
+
+### İnceleme turu (2026-09-24)
+
+- **Dar ekran + büyük yazı** (320 pt, %130): ay görünümünde lejant satırı
+  268 px taşıyordu → alt satıra inebilen `Wrap`. Ana sayfa ve ay görünümü için
+  kalıcı test eklendi.
+- **Türkçe büyük harf:** `toUpperCase()` dilden bağımsız ("PAZARTESI",
+  "NISAN"). `context.upper()` eklendi; ana sayfa başlığı, gün harfleri ve
+  Antrenman sekmesinin tarih başlığı (aynı hata oradaydı) buna geçti.
+- **Yaz saati:** `startOfWeek` hafta başını `n × 24 saat` çıkararak buluyordu;
+  yaz saatine geçilen haftada bir gün kayıyordu (Berlin saat diliminde
+  kırmızı-yeşil kanıtlandı). Takvim günüyle hesaplanıyor; tüm haftalık
+  pencereler (seri, şerit, haftalık istatistik) bunu kullanıyor. Türkiye'de
+  yaz saati yok, Samet etkilenmiyordu.
+- **Türkçe arayüz simülatörde** görüldü; gerçek veride dinlenme günü durumu:
+  [after-ios-tr-rest-day](assets/home-v2/after-ios-tr-rest-day.png).
+- 609 test yeşil (Türkiye ve `TZ=Europe/Berlin`), analyze temiz.

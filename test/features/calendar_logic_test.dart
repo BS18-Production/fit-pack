@@ -1,3 +1,6 @@
+import 'dart:ui' show Locale;
+
+import 'package:fit_pack/core/i18n/formatting.dart';
 import 'package:fit_pack/features/activity/activity_providers.dart';
 import 'package:fit_pack/features/calendar/calendar_logic.dart';
 import 'package:fit_pack/features/home/rhythm_state.dart';
@@ -66,5 +69,16 @@ void main() {
         () => expect(of(0, 0, 3, earlier: true), RhythmState.restart));
     test('önceki hafta kaçtı, bu hafta başlandı → yine yeni seri',
         () => expect(of(0, 1, 3, earlier: true), RhythmState.restart));
+  });
+  group('dile duyarlı büyük harf', () {
+    test('Türkçede i → İ, ı → I', () {
+      expect(upperForLanguage('pazartesi · 21 nisan', const Locale('tr')),
+          'PAZARTESİ · 21 NİSAN');
+      expect(upperForLanguage('salı · 22 eylül', const Locale('tr')),
+          'SALI · 22 EYLÜL');
+    });
+    test('İngilizcede olağan büyük harf', () {
+      expect(upperForLanguage('wednesday', const Locale('en')), 'WEDNESDAY');
+    });
   });
 }

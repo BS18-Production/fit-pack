@@ -159,16 +159,19 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.md),
-                    child: Row(
+                    // Wrap: dar ekranda / büyük yazıda satır taşmasın,
+                    // sığmayan parça alt satıra insin.
+                    child: Wrap(
+                      spacing: AppSpacing.md,
+                      runSpacing: AppSpacing.xs,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         _LegendDot(
                             color: context.semantic.success,
                             label: l.navWorkout),
-                        AppSpacing.hGapMd,
                         _LegendDot(
                             color: recordDotColor(context),
                             label: l.calLegendRecord),
-                        const Spacer(),
                         Text(
                           l.calSelected(
                               context.dateFmt('d MMM').format(_selected)),

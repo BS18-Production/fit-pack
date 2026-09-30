@@ -42,4 +42,15 @@ void main() {
       }
     });
   });
+  test('yaz saatine geçilen hafta kaymaz (DST)', () {
+    // Avrupa'da 2026-03-29 Pazar 23 saat sürer. Eski hesap (n × 24 saat)
+    // 30 Mart Pzt'nin haftasını 22 Mart 23:00'e düşürüyordu. Türkiye'de yaz
+    // saati yok; bu test `TZ=Europe/Berlin flutter test` ile anlamlıdır,
+    // diğer saat dilimlerinde de geçmelidir.
+    final s = startOfWeek(DateTime(2026, 4, 1, 12), DateTime.monday);
+    expect(s, DateTime(2026, 3, 30));
+    expect(s.hour, 0);
+    final paz = startOfWeek(DateTime(2026, 3, 30, 9), DateTime.sunday);
+    expect(paz, DateTime(2026, 3, 29));
+  });
 }

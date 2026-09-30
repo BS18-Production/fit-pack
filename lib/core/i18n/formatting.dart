@@ -25,4 +25,17 @@ extension L10nFormatting on BuildContext {
   /// ISO haftaiçi → kısa gün adı ("Pzt"/"Mon").
   String weekdayShort(int weekday) =>
       dateFmt('E').format(DateTime(2024, 1, weekday));
+
+  /// Aktif dilde BÜYÜK HARF. Dart'ın `toUpperCase()` dilden bağımsızdır:
+  /// Türkçede "i" → "I" yapar ("PAZARTESI", "NISAN"); doğrusu "İ".
+  String upper(String s) => upperForLanguage(s, Localizations.localeOf(this));
+}
+
+/// [upper]'ın bağlamsız hâli (test edilebilsin diye ayrı).
+String upperForLanguage(String s, Locale locale) {
+  final lang = locale.languageCode;
+  if (lang == 'tr' || lang == 'az') {
+    return s.replaceAll('i', 'İ').toUpperCase();
+  }
+  return s.toUpperCase();
 }

@@ -87,10 +87,8 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
     final c = context.colors;
-    final kicker = context
-        .dateFmt('EEEE · d MMMM')
-        .format(DateTime.now())
-        .toUpperCase();
+    final kicker =
+        context.upper(context.dateFmt('EEEE · d MMMM').format(DateTime.now()));
     return SafeArea(
       bottom: false,
       child: Padding(

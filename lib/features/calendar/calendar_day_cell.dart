@@ -126,7 +126,7 @@ class CalendarWeekdayRow extends StatelessWidget {
         for (final d in days)
           Expanded(
             child: Text(
-              fmt.format(d).toUpperCase(),
+              context.upper(fmt.format(d)),
               textAlign: TextAlign.center,
               style: context.texts.labelSmall?.copyWith(
                 color: context.colors.onSurfaceVariant,

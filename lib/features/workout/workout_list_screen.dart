@@ -120,7 +120,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
     final today = context.dateFmt('EEEE, d MMMM').format(DateTime.now());
-    final dateLabel = (today[0].toUpperCase() + today.substring(1)).toUpperCase();
+    final dateLabel = context.upper(today);
     return SafeArea(
       bottom: false,
       child: Padding(

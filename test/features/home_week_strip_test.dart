@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:fit_pack/core/theme/app_colors.dart';
 import 'package:fit_pack/data/database/app_database.dart';
 import 'package:fit_pack/data/providers.dart';
+import 'package:fit_pack/features/calendar/calendar_screen.dart';
 import 'package:fit_pack/features/calendar/week_strip.dart';
 import 'package:fit_pack/features/home/home_screen.dart';
 import 'package:fit_pack/features/workout/workout_draft.dart';
@@ -193,5 +194,63 @@ void main() {
     expect(find.text('Bugün dinlenme günü'), findsOneWidget);
     expect(find.text('Sıradaki: Alt Vücut'), findsOneWidget);
     expect(find.text('BUGÜNÜN PLANI'), findsNothing);
+  });
+  // Küçük ekran + büyük yazı: en dar yaygın telefon (320 pt) ve %130 yazı
+  // boyutunda hiçbir satır taşmamalı (taşma testte hata olarak düşer).
+  Future<void> dar(WidgetTester tester, Widget home) async {
+    tester.view.physicalSize = const Size(640, 1136);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(ProviderScope(
+      overrides: [databaseProvider.overrideWithValue(db)],
+      child: MaterialApp(
+        theme: ThemeData(
+          colorScheme: AppColors.lightScheme,
+          extensions: [AppColors.lightSemantic],
+        ),
+        locale: const Locale('tr'),
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: const TextScaler.linear(1.3)),
+          child: child!,
+        ),
+        home: Scaffold(body: home),
+      ),
+    ));
+    for (var i = 0; i < 6; i++) {
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+  }
+
+  testWidgets('dar ekran + büyük yazı: ana sayfa taşmaz', (tester) async {
+    await db.into(db.routines).insert(RoutinesCompanion.insert(
+          name: 'Üst Vücut A — Göğüs, Omuz ve Kol Günü',
+          createdAt: DateTime.now(),
+          scheduledWeekday: Value(DateTime.now().weekday),
+        ));
+    await seans(DateTime.now(), 'Üst Vücut A');
+    await db.userProfileDao.ensureProfile();
+    await dar(tester, const HomeScreen());
+    expect(tester.takeException(), isNull);
+    expect(find.text('BUGÜNÜN PLANI'), findsOneWidget);
+  });
+
+  testWidgets('dar ekran + büyük yazı: ay görünümü taşmaz', (tester) async {
+    await seans(DateTime(2026, 9, 16, 12), 'Push day');
+    await seans(DateTime(2026, 9, 16, 20), 'Pull day');
+    await dar(
+        tester,
+        CalendarScreen(
+            now: now, initialDate: DateTime(2026, 9, 16)));
+    expect(tester.takeException(), isNull);
+    // Dar ekranda kayıtlar görünür alanın altında: listeyi oraya kaydır.
+    await tester.scrollUntilVisible(find.textContaining(' +1'), 200,
+        scrollable: find.byType(Scrollable).first);
+    expect(tester.takeException(), isNull);
+    expect(find.textContaining(' +1'), findsOneWidget,
+        reason: 'iki seanslı gün adı +N ile yazılmalı');
   });
 }

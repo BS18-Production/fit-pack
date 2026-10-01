@@ -41,7 +41,7 @@ Samet (akşam/hafta sonu, ~7-10 saat/hafta)
 |---------|-------|
 | Flutter SDK | 3.x (sdk ^3.11) |
 | Repo (lokal) | `/Users/sametorhan/dev/fit_pack` |
-| Repo (uzak) | GitHub `anox2077/fit-pack` (private) |
+| Repo (uzak) | GitHub `BS18-Production/fit-pack` (public) |
 | Birincil test cihazı | Android SM A075F — device id `R96YB00XJPB` |
 | İkincil | iOS Simulator `92EFAB82-82C1-459D-A925-27DAA867E869` |
 | Emülatör | `MemoRush_Test` AVD (homebrew commandlinetools) |

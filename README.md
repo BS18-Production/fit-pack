@@ -71,7 +71,7 @@ lib/
 
 ## Git
 
-- **GitHub:** `anox2077/fit-pack` (private)
+- **GitHub:** `BS18-Production/fit-pack` (public)
 - **Sahip:** Samet Orhan
 
 ## Lisans

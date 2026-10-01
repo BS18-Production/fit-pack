@@ -664,7 +664,7 @@ Bu doküman, projenin **şu andaki canlı durumunu** anlatır. Her session sonun
 | Uygulama | V1.0.0+1 | Prod (lokal, Samet pilot) |
 | V2 hedef | 2.0.0 | Geliştirme — Sprint N (Beslenme V2) tamam |
 | DB schema | **v6** | v2(Beslenme), v3(Onboarding), v4(Su), v5(Hareket kütüphanesi), v6(Rutinler+gelişmiş set) — hepsi lossless test geçti |
-| GitHub | anox2077/fit-pack | private |
+| GitHub | BS18-Production/fit-pack | public |
 
 ---
 

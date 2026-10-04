@@ -17,7 +17,10 @@ Flutter · Drift (SQLite, lokal) · Riverpod · GoRouter · fl_chart · Supabase
 - **Package:** `com.sametorhan.fit_pack` · minSdk 24 · şema v13
 - **Ana cihaz:** iPhone 17 (gerçek, iOS 26.6, ID `00008150-000214C02E03C01C`)
   — Samet'in günlük telefonu, üretim verisi. Ücretsiz Apple hesabı → imza
-  7 günde bir yenilenir (aynı komutla yeniden kur, veri silinmez).
+  7 günde bir yenilenir. **`flutter install` KULLANMA** — önce uygulamayı
+  kaldırır, yerel veri ve gönderilmemiş senkron kuyruğu silinir
+  (2026-10-04'te bir silme kaybedildi). Yerinde güncelleme: aşağıdaki
+  `devicectl` komutu.
 - **Test cihazı:** SM A075F (Android, ID `R96YB00XJPB`)
 
 ## Oturum Başında Oku (bu sırayla)
@@ -49,7 +52,7 @@ dart run build_runner build --delete-conflicting-outputs   # tablo/DAO değişin
 flutter analyze                                             # 0 uyarı hedefi
 flutter test
 flutter run -d R96YB00XJPB                                  # Android test cihazı
-flutter build ios --release && flutter install -d 00008150-000214C02E03C01C --release   # iPhone (ana)
+flutter build ios --release && xcrun devicectl device install app --device 00008150-000214C02E03C01C build/ios/iphoneos/Runner.app   # iPhone (ana) — yerinde günceller
 ```
 
 ## Kritik Hatırlatmalar

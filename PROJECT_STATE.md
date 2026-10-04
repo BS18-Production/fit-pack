@@ -14,6 +14,19 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v13 · **Sahibi:** Samet Orhan (kişisel proje)
 
+## 🐞 "Silindi — Geri al" şeridi kapanmıyordu ✅ — 2026-10-04
+
+Flutter 3.41'de düğmeli SnackBar varsayılan olarak kendiliğinden kapanmıyor
+(`persist = action != null`); beslenmede öğün silince "Menemen silindi" şeridi
+ekranda kalıyordu. İki düğmeli şeride `persist: false`; ileride eklenecekleri
+yakalayan kaynak taraması bekçi testi (`test/core/snackbar_persist_test.dart`).
+
+**Kurulum dersi:** iPhone'a `flutter install` ile kurmak önce uygulamayı
+kaldırıyor → yerel veri ve gönderilmemiş senkron kuyruğu siliniyor. Bu turda
+menemenin silinmesi buluta ulaşmadan kayboldu (öğün geri gelecek, yeniden
+silinmeli). Kurulum artık `xcrun devicectl device install app` (yerinde
+günceller); CLAUDE.md ve README düzeltildi.
+
 ## 🔥 Isınma kısayolu + süreli set sayacı ✅ — 2026-10-04 · docs/27 F3
 
 Rutin oluşturucuda "Isınma ekle" hazır dinamik ısınma hareketini başa koyuyor.

@@ -67,6 +67,9 @@ class NutritionScreen extends ConsumerWidget {
     messenger.clearSnackBars();
     messenger.showSnackBar(SnackBar(
       content: Text(l.foodsDeleted(item.food.name)),
+      // Flutter 3.41'de düğmeli SnackBar varsayılan olarak kapanmıyor
+      // (persist = action != null) — "silindi" şeridi ekranda kalıyordu.
+      persist: false,
       action: SnackBarAction(
         label: l.commonUndo,
         onPressed: () async {

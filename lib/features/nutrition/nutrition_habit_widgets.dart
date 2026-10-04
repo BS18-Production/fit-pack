@@ -49,6 +49,7 @@ class _UsualMealCardState extends ConsumerState<UsualMealCard> {
       messenger.clearSnackBars();
       messenger.showSnackBar(SnackBar(
         content: Text(l.nhUsualAdded(mealName(l, u.mealType))),
+        persist: false, // düğmeli SnackBar varsayılanda kapanmıyor (3.41)
         action: SnackBarAction(
           label: l.commonUndo,
           onPressed: () => dao.deleteFoodLogs(ids),

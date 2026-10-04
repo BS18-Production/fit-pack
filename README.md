@@ -4,6 +4,12 @@ Sportif gelişimini tek yerde toplayan, AI destekli kişisel fitness asistanı u
 
 > **Durum:** V1 prod çalışır; V2 geliştirme — **Beslenme V2 + Premium Cila sprint'i tamam** (ghost değerler, antrenman geçmişi/ön izleme, kilo trend grafiği, son kullanılanlar/dünü kopyala, türetilmiş makro hedefleri).
 
+**2026-10-04 tasarım:** Performans Günlüğü — mat kömür, neon lime ve turuncu;
+tüm uygulamada ortak tema, yeni Ana Sayfa/enerji-makro kartı ve gerçek
+antrenman aktivitesi. Font ve görseller çevrimdışı paketlenir; kayıtlı tema
+tercihi korunur. Analiz temiz, 696 test geçti. Cihaz kontrolü ve iPhone
+güncellemesi açık: [uygulama rehberi ve doğrulama](docs/30-performance-journal-neon.md).
+
 ## Hızlı Bağlantılar
 
 - **⭐ Geliştirme kuralları (kod yazmadan önce oku):** [CONVENTIONS.md](CONVENTIONS.md)

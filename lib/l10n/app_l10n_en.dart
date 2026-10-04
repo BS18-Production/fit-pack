@@ -2866,4 +2866,62 @@ class AppL10nEn extends AppL10n {
   @override
   String get afEditHint =>
       'Tap a row to change the amount, + to add right away';
+
+  @override
+  String get journalTitle => 'One step further today.';
+
+  @override
+  String get journalSubtitle => 'Performance journal';
+
+  @override
+  String get journalEnergyMacros => 'Energy & macros';
+
+  @override
+  String get journalEnergyLogged => 'Energy logged';
+
+  @override
+  String get journalEnergyGoal => 'Daily goal';
+
+  @override
+  String get journalProteinRing => 'Inner ring: protein';
+
+  @override
+  String get journalMeals => 'Your meal journal';
+
+  @override
+  String get journalMealIdea => 'Meal idea · illustrative photo';
+
+  @override
+  String get journalSalmonSalad => 'Salmon salad';
+
+  @override
+  String get journalMealPhoto =>
+      'Illustrative photo of grilled salmon with greens, avocado and lemon';
+
+  @override
+  String get journalActivity => 'Workout activity';
+
+  @override
+  String get journalActivityPeriod => 'Last 7 days · estimated kcal';
+
+  @override
+  String get journalActivityEmpty => 'No workouts logged in the last 7 days.';
+
+  @override
+  String get journalEstimateMissing =>
+      'Weight and duration are needed to estimate calories.';
+
+  @override
+  String get journalNoWorkout => 'No workout logged on this day.';
+
+  @override
+  String journalActivitySessions(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count logged workouts',
+      one: '1 logged workout',
+    );
+    return '$_temp0';
+  }
 }

@@ -43,12 +43,12 @@ class WelcomeScreen extends StatelessWidget {
                           gradient: const LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: [AppColors.indigo, AppColors.indigoDeep],
+                            colors: [AppColors.lime, AppColors.limeDeep],
                           ),
                           boxShadow: [
                             BoxShadow(
                               color:
-                                  AppColors.indigoDeep.withValues(alpha: 0.30),
+                                  AppColors.limeDeep.withValues(alpha: 0.30),
                               blurRadius: 24,
                               offset: const Offset(0, 10),
                             ),

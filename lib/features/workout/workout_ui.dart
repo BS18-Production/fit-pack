@@ -10,20 +10,14 @@ import '../../core/utils/format.dart';
 class WorkoutUi {
   WorkoutUi._();
 
-  /// Calisthenics kategori rengi — palette'te mor yok, design'daki violet.
-  static const violet = Color(0xFF7C3AED);
-  static const violetBright = Color(0xFFA78BFA);
-
-  /// Kategori → vurgu rengi (design: compound→indigo, isolation→teal,
-  /// calisthenics→violet, cardio→blue, flexibility→amber).
+  /// Kategori vurguları ortak marka ve semantik renk rollerinden gelir.
   static Color categoryColor(BuildContext context, String category) {
     final s = context.semantic;
-    final dark = Theme.of(context).brightness == Brightness.dark;
     switch (category) {
       case 'isolation':
         return context.colors.secondary;
       case 'calisthenics':
-        return dark ? violetBright : violet;
+        return context.colors.tertiary;
       case 'cardio':
         return s.info;
       case 'flexibility':
@@ -136,7 +130,18 @@ class WorkoutUi {
 
   /// Rutin oluştururken sunulan dinlenme süresi seçenekleri (saniye).
   static const restOptions = <int>[
-    0, 30, 45, 60, 75, 90, 120, 150, 180, 210, 240, 300,
+    0,
+    30,
+    45,
+    60,
+    75,
+    90,
+    120,
+    150,
+    180,
+    210,
+    240,
+    300,
   ];
 
   /// "Muscle · Equipment" altyazısı (İngilizce).
@@ -215,7 +220,7 @@ class WorkoutUi {
       _trCategoryTerms[key] ?? const [];
 }
 
-/// Design'daki indigo gradient birincil buton (Kaydet / Başla / CTA).
+/// Lime birincil eylem (Kaydet / Başla).
 class GradientButton extends StatelessWidget {
   final String label;
   final IconData? icon;
@@ -240,11 +245,11 @@ class GradientButton extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [AppColors.indigo, AppColors.indigoDeep],
+            colors: [AppColors.lime, AppColors.limeDeep],
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.indigoDeep.withValues(alpha: 0.26),
+              color: AppColors.limeDeep.withValues(alpha: 0.14),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -257,7 +262,10 @@ class GradientButton extends StatelessWidget {
             onTap: enabled ? onTap : null,
             borderRadius: AppRadius.brLg,
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg + 1),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.lg + 1,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -266,18 +274,25 @@ class GradientButton extends StatelessWidget {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2.4, color: AppColors.onGradient),
+                        strokeWidth: 2.4,
+                        color: AppColors.onGradient,
+                      ),
                     )
                   else ...[
                     if (icon != null) ...[
                       Icon(icon, color: AppColors.onGradient, size: 20),
                       AppSpacing.hGapSm,
                     ],
-                    Text(label,
+                    Flexible(
+                      child: Text(
+                        label,
+                        textAlign: TextAlign.center,
                         style: context.texts.titleMedium?.copyWith(
                           color: AppColors.onGradient,
-                          fontWeight: FontWeight.w800,
-                        )),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -293,12 +308,19 @@ class GradientButton extends StatelessWidget {
 class DottedBorderBox extends StatelessWidget {
   final Widget child;
   final double radius;
-  const DottedBorderBox({super.key, required this.child, this.radius = AppRadius.lg});
+  const DottedBorderBox({
+    super.key,
+    required this.child,
+    this.radius = AppRadius.lg,
+  });
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: _DashedRectPainter(color: context.colors.outline, radius: radius),
+      painter: _DashedRectPainter(
+        color: context.colors.outline,
+        radius: radius,
+      ),
       child: child,
     );
   }
@@ -315,8 +337,10 @@ class _DashedRectPainter extends CustomPainter {
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
-    final rrect =
-        RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius));
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(radius),
+    );
     final path = Path()..addRRect(rrect);
     const dash = 5.0, gap = 4.0;
     for (final metric in path.computeMetrics()) {

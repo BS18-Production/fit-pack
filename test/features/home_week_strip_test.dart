@@ -130,6 +130,9 @@ void main() {
     await tester.pump();
 
     expect(find.text('Bugüne dön'), findsOneWidget);
+    // Enerji kartı önde; eylem yeni yerleşimde aşağı kaydırılarak görülür.
+    await tester.scrollUntilVisible(find.text('Üst Vücut A'), 150,
+        scrollable: find.byType(Scrollable).first);
     expect(find.text('BUGÜNÜN PLANI'), findsOneWidget,
         reason: 'eylem kartı yalnız bugüne bakar');
     expect(find.text('Üst Vücut A'), findsOneWidget);
@@ -171,6 +174,8 @@ void main() {
     await db.userProfileDao.ensureProfile();
     await ac(tester, const HomeScreen());
 
+    await tester.scrollUntilVisible(find.text('Ritmini başlat'), 200,
+        scrollable: find.byType(Scrollable).first);
     expect(find.text('Ritmini başlat'), findsOneWidget);
     expect(
         find.text(
@@ -234,6 +239,9 @@ void main() {
     await seans(DateTime.now(), 'Üst Vücut A');
     await db.userProfileDao.ensureProfile();
     await dar(tester, const HomeScreen());
+    expect(tester.takeException(), isNull);
+    await tester.scrollUntilVisible(find.text('BUGÜNÜN PLANI'), 200,
+        scrollable: find.byType(Scrollable).first);
     expect(tester.takeException(), isNull);
     expect(find.text('BUGÜNÜN PLANI'), findsOneWidget);
   });

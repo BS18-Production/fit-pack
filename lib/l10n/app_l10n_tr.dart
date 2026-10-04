@@ -2829,4 +2829,56 @@ class AppL10nTr extends AppL10n {
   @override
   String get afEditHint =>
       'Miktarı değiştirmek için satıra dokun, hemen eklemek için +';
+
+  @override
+  String get journalTitle => 'Bugün, bir adım ileri.';
+
+  @override
+  String get journalSubtitle => 'Performans günlüğü';
+
+  @override
+  String get journalEnergyMacros => 'Enerji ve makrolar';
+
+  @override
+  String get journalEnergyLogged => 'Alınan enerji';
+
+  @override
+  String get journalEnergyGoal => 'Günlük hedef';
+
+  @override
+  String get journalProteinRing => 'İç halka: protein';
+
+  @override
+  String get journalMeals => 'Öğün günlüğün';
+
+  @override
+  String get journalMealIdea => 'Öğün fikri · temsili görsel';
+
+  @override
+  String get journalSalmonSalad => 'Somonlu salata';
+
+  @override
+  String get journalMealPhoto =>
+      'Yeşillikler, avokado ve limonla ızgara somonun temsili görseli';
+
+  @override
+  String get journalActivity => 'Antrenman aktivitesi';
+
+  @override
+  String get journalActivityPeriod => 'Son 7 gün · tahmini kcal';
+
+  @override
+  String get journalActivityEmpty => 'Son 7 günde kayıtlı antrenman yok.';
+
+  @override
+  String get journalEstimateMissing =>
+      'Kalori tahmini için kilo ve süre bilgisi gerekli.';
+
+  @override
+  String get journalNoWorkout => 'Bu gün kayıtlı antrenman yok.';
+
+  @override
+  String journalActivitySessions(int count) {
+    return '$count kayıtlı antrenman';
+  }
 }

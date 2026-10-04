@@ -61,40 +61,62 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ay başlığı + gezinme
-            Row(
-              children: [
-                Text(AppL10n.of(context).actTitle,
-                    style: context.texts.titleMedium),
-                const Spacer(),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.chevron_left_rounded),
-                  onPressed: () => _shiftMonth(-1),
-                ),
-                Text(cap,
-                    style: context.texts.labelLarge
-                        ?.copyWith(fontWeight: FontWeight.w700)),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.chevron_right_rounded),
-                  // gelecek aya geçişi engelle
-                  onPressed: _isCurrentMonth ? null : () => _shiftMonth(1),
-                ),
-              ],
+            // Dar ekran / büyük metinde ay gezinmesi ayrı satıra geçer.
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final title = Text(
+                  AppL10n.of(context).actTitle,
+                  style: context.texts.titleMedium,
+                );
+                final navigation = Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.chevron_left_rounded),
+                      onPressed: () => _shiftMonth(-1),
+                    ),
+                    Flexible(
+                      child: Text(
+                        cap,
+                        textAlign: TextAlign.center,
+                        style: context.texts.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.chevron_right_rounded),
+                      onPressed: _isCurrentMonth ? null : () => _shiftMonth(1),
+                    ),
+                  ],
+                );
+                if (constraints.maxWidth < 300 ||
+                    MediaQuery.textScalerOf(context).scale(1) > 1.2) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [title, AppSpacing.vGapXs, navigation],
+                  );
+                }
+                return Row(children: [title, const Spacer(), navigation]);
+              },
             ),
             AppSpacing.vGapSm,
             _WeekdayLabels(weekStart: weekStart),
             AppSpacing.vGapXs,
             activityAsync.when(
               loading: () => const SizedBox(
-                  height: 240,
-                  child: Center(child: CircularProgressIndicator())),
+                height: 240,
+                child: Center(child: CircularProgressIndicator()),
+              ),
               error: (_, _) => SizedBox(
                 height: 120,
                 child: Center(
-                  child: Text(AppL10n.of(context).actLoadError,
-                      style: context.texts.bodySmall),
+                  child: Text(
+                    AppL10n.of(context).actLoadError,
+                    style: context.texts.bodySmall,
+                  ),
                 ),
               ),
               data: (activity) => _MonthGrid(
@@ -104,8 +126,7 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
                 kcalGoal: goals.kcal,
                 proteinGoal: goals.protein,
                 waterGoal: goals.water,
-                onTapDay: (day, act) =>
-                    _showDaySummary(context, day, act),
+                onTapDay: (day, act) => _showDaySummary(context, day, act),
               ),
             ),
             AppSpacing.vGapSm,
@@ -145,19 +166,25 @@ class _WeekdayLabels extends StatelessWidget {
     // Adlar locale'den (docs/14); sıra hafta başı tercihine göre (docs/16).
     final days = [
       for (var i = 0; i < 7; i++)
-        context.weekdayShort((weekStart - 1 + i) % 7 + 1)
+        context.weekdayShort((weekStart - 1 + i) % 7 + 1),
     ];
     return Row(
       children: days
-          .map((d) => Expanded(
-                child: Center(
-                  child: Text(d,
-                      style: context.texts.labelSmall?.copyWith(
-                          color: context.colors.onSurfaceVariant
-                              .withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w600)),
+          .map(
+            (d) => Expanded(
+              child: Center(
+                child: Text(
+                  d,
+                  style: context.texts.labelSmall?.copyWith(
+                    color: context.colors.onSurfaceVariant.withValues(
+                      alpha: 0.7,
+                    ),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ))
+              ),
+            ),
+          )
           .toList(),
     );
   }
@@ -199,16 +226,18 @@ class _MonthGrid extends StatelessWidget {
       final isFuture = date.isAfter(today);
       final isToday = date == today;
       final act = activity[day];
-      cells.add(_DayCell(
-        day: day,
-        activity: act,
-        kcalGoal: kcalGoal,
-        proteinGoal: proteinGoal,
-        waterGoal: waterGoal,
-        isToday: isToday,
-        isFuture: isFuture,
-        onTap: isFuture ? null : () => onTapDay(date, act),
-      ));
+      cells.add(
+        _DayCell(
+          day: day,
+          activity: act,
+          kcalGoal: kcalGoal,
+          proteinGoal: proteinGoal,
+          waterGoal: waterGoal,
+          isToday: isToday,
+          isFuture: isFuture,
+          onTap: isFuture ? null : () => onTapDay(date, act),
+        ),
+      );
     }
 
     return GridView.count(
@@ -267,7 +296,12 @@ class _DayCell extends StatelessWidget {
         child: CustomPaint(
           painter: _RingsPainter(
             progresses: progresses,
-            colors: [s.macroCalories, s.macroProtein, s.success, s.info],
+            colors: [
+              context.colors.secondary,
+              s.macroProtein,
+              context.colors.tertiary,
+              s.info,
+            ],
             track: c.onSurface.withValues(alpha: 0.08),
             show: !isFuture,
           ),
@@ -278,14 +312,17 @@ class _DayCell extends StatelessWidget {
               decoration: isToday
                   ? BoxDecoration(
                       color: c.primary.withValues(alpha: 0.14),
-                      shape: BoxShape.circle)
+                      shape: BoxShape.circle,
+                    )
                   : null,
               alignment: Alignment.center,
-              child: Text('$day',
-                  style: context.texts.labelSmall?.copyWith(
-                    color: isToday ? c.primary : c.onSurface,
-                    fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
-                  )),
+              child: Text(
+                '$day',
+                style: context.texts.labelSmall?.copyWith(
+                  color: isToday ? c.primary : c.onSurface,
+                  fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
+                ),
+              ),
             ),
           ),
         ),
@@ -342,9 +379,7 @@ class _RingsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RingsPainter old) =>
-      old.progresses != progresses ||
-      old.colors != colors ||
-      old.show != show;
+      old.progresses != progresses || old.colors != colors || old.show != show;
 }
 
 // ───────────────────────────────────────────── Halka açıklaması
@@ -356,26 +391,29 @@ class _RingLegend extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = context.semantic;
     Widget dot(Color color, String label) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-                width: 8,
-                height: 8,
-                decoration:
-                    BoxDecoration(color: color, shape: BoxShape.circle)),
-            const SizedBox(width: 4),
-            Text(label,
-                style: context.texts.labelSmall
-                    ?.copyWith(color: context.colors.onSurfaceVariant)),
-          ],
-        );
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: context.texts.labelSmall?.copyWith(
+            color: context.colors.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
     return Wrap(
       spacing: AppSpacing.md,
       runSpacing: AppSpacing.xs,
       children: [
-        dot(s.macroCalories, AppL10n.of(context).macroCalories),
+        dot(context.colors.secondary, AppL10n.of(context).macroCalories),
         dot(s.macroProtein, AppL10n.of(context).macroProtein),
-        dot(s.success, AppL10n.of(context).navWorkout),
+        dot(context.colors.tertiary, AppL10n.of(context).navWorkout),
         dot(s.info, AppL10n.of(context).homeWaterTitle),
       ],
     );
@@ -406,7 +444,11 @@ class _DaySummarySheet extends StatelessWidget {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xxl),
+          AppSpacing.xl,
+          0,
+          AppSpacing.xl,
+          AppSpacing.xxl,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,14 +458,17 @@ class _DaySummarySheet extends StatelessWidget {
             if (a == null || a.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                child: Text(l.actNoEntry,
-                    style: context.texts.bodyMedium
-                        ?.copyWith(color: context.colors.onSurfaceVariant)),
+                child: Text(
+                  l.actNoEntry,
+                  style: context.texts.bodyMedium?.copyWith(
+                    color: context.colors.onSurfaceVariant,
+                  ),
+                ),
               )
             else ...[
               // Beslenme
               _SummaryRow(
-                color: s.macroCalories,
+                color: context.colors.secondary,
                 label: l.macroCalories,
                 value: '${a.kcal.round()} / $kcalGoal kcal',
               ),
@@ -445,7 +490,7 @@ class _DaySummarySheet extends StatelessWidget {
               const Divider(height: AppSpacing.xl),
               // Antrenman
               _SummaryRow(
-                color: s.success,
+                color: context.colors.tertiary,
                 label: l.navWorkout,
                 value: a.hasWorkout
                     ? '${a.workoutName ?? l.navWorkout} · ${l.workoutSetCount(a.setCount)} · ${a.volumeKg} kg'
@@ -469,8 +514,11 @@ class _DaySummarySheet extends StatelessWidget {
 class _SummaryRow extends StatelessWidget {
   final Color color;
   final String label, value;
-  const _SummaryRow(
-      {required this.color, required this.label, required this.value});
+  const _SummaryRow({
+    required this.color,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -479,16 +527,19 @@ class _SummaryRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-              width: 9,
-              height: 9,
-              decoration:
-                  BoxDecoration(color: color, shape: BoxShape.circle)),
+            width: 9,
+            height: 9,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
           AppSpacing.hGapMd,
           Text(label, style: context.texts.bodyMedium),
           const Spacer(),
-          Text(value,
-              style: context.texts.bodyMedium
-                  ?.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            value,
+            style: context.texts.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );

@@ -1,5 +1,18 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## Performans Günlüğü — Neon (2026-10-04) · [docs/30](docs/30-performance-journal-neon.md)
+
+- [x] Ortak tema/yüzey/dört sekme + Ana Sayfa ve Beslenme kompozisyonu;
+      tüm mevcut kayıt ve işlem akışlarını koru. Şema değişmedi.
+- [x] Analiz 0 sorun; 696 test yeşil; koyu/açık, TR/EN, 320 pt ve büyük
+      metin render'ları. Android ayrı önizleme APK'sı derlendi.
+- [ ] **Cihazda görsel kontrol:** Android emülatörü ADB listesinde var ancak
+      shell/kurulum yanıt vermedi. iOS simulator erişimi otomatik incelemede
+      reddedildi. Gerçek iPhone'da dört sekme, canlı seans/RPE/sayaç, yemek
+      ekleme/geri alma, ölçüm ve fotoğraf akışını kontrol et; §7 kapanmadı.
+- [ ] **iPhone'a yerinde güncelleme:** `flutter install` kullanma;
+      README'deki `devicectl device install app` ile kayıtları koru.
+
 ## 🧭 Hevy incelemesi → antrenman yol haritası (2026-10-04) · [docs/27](docs/27-hevy-inceleme.md)
 
 - [x] **F4 RPE seçicisi (2026-10-04)** — klavye yerine 6–10 yarım adımlı

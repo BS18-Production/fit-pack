@@ -815,5 +815,28 @@
   "afAddSnack": "Ara öğüne ekle",
   "afQuickAddTip": "Hemen ekle: {portion}",
   "afChangeMeal": "Öğünü değiştir",
-  "afEditHint": "Miktarı değiştirmek için satıra dokun, hemen eklemek için +"
+  "afEditHint": "Miktarı değiştirmek için satıra dokun, hemen eklemek için +",
+  "journalTitle": "Bugün, bir adım ileri.",
+  "journalSubtitle": "Performans günlüğü",
+  "journalEnergyMacros": "Enerji ve makrolar",
+  "journalEnergyLogged": "Alınan enerji",
+  "journalEnergyGoal": "Günlük hedef",
+  "journalProteinRing": "İç halka: protein",
+  "journalMeals": "Öğün günlüğün",
+  "journalMealIdea": "Öğün fikri · temsili görsel",
+  "journalSalmonSalad": "Somonlu salata",
+  "journalMealPhoto": "Yeşillikler, avokado ve limonla ızgara somonun temsili görseli",
+  "journalActivity": "Antrenman aktivitesi",
+  "journalActivityPeriod": "Son 7 gün · tahmini kcal",
+  "journalActivityEmpty": "Son 7 günde kayıtlı antrenman yok.",
+  "journalEstimateMissing": "Kalori tahmini için kilo ve süre bilgisi gerekli.",
+  "journalNoWorkout": "Bu gün kayıtlı antrenman yok.",
+  "journalActivitySessions": "{count} kayıtlı antrenman",
+  "@journalActivitySessions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

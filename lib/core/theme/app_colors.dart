@@ -1,177 +1,127 @@
 import 'package:flutter/material.dart';
 
-/// Fit Pack renk sistemi — "Pro" kimliği (Indigo/Teal).
-///
-/// İki katman:
-/// 1. [ColorScheme] — Material 3'ün standart rolleri (primary, surface, ...).
-///    Widget'lar `Theme.of(context).colorScheme.X` ile okur.
-/// 2. [AppSemanticColors] — M3'te rolü olmayan ama uygulamaya özgü renkler
-///    (success, warning, info, makro renkleri). `ThemeExtension` ile taşınır;
-///    `Theme.of(context).extension<AppSemanticColors>()!` ile okunur.
-///
-/// KURAL: Ekranlarda `Colors.blue/grey/...` HARDCODE EDİLMEZ. Renk hep
-/// buradan gelir → dark/light tutarlılığı + tek noktadan kontrol.
+/// Performans Günlüğü: mat kömür, neon lime ve elektrik turuncusu.
+/// Material rolleri ve semantik renkler tüm ekranlar için tek kaynaktır.
 class AppColors {
   AppColors._();
 
-  // ─── Çekirdek palet (marka) ──────────────────────────────────────
-  static const indigo = Color(0xFF6366F1);
-  static const indigoBright = Color(0xFF818CF8);
-  static const indigoDeep = Color(0xFF4F46E5);
-  static const teal = Color(0xFF14B8A6);
-  static const tealBright = Color(0xFF2DD4BF);
+  static const lime = Color(0xFFCCFF00);
+  static const limeBright = Color(0xFFDDFF66);
+  static const limeDeep = Color(0xFFA7D400);
+  static const amber = Color(0xFFFF5E00);
+  static const amberBright = Color(0xFFFF905C);
+  static const onGradient = Color(0xFF171C03);
 
-  /// İndigo gradient yüzeylerin (CTA kartları, GradientButton) üstündeki
-  /// içerik rengi. Gradient tema-bağımsız sabit olduğundan bu da sabit beyaz —
-  /// `context.colors.onPrimary` DEĞİL (o light temada değişebilir). Tek yerden
-  /// yönetilir ki tüm gradient yüzeyler tutarlı kalsın (L-03).
-  static const onGradient = Color(0xFFFFFFFF);
-
-  // ─── DARK (öncelikli) ────────────────────────────────────────────
-  static const _dBg = Color(0xFF101218); // scaffold
-  static const _dSurface = Color(0xFF1B1E27); // kart
-  static const _dSurfaceHi = Color(0xFF232734); // yükseltilmiş yüzey
-  static const _dSurfaceInput = Color(0xFF262A38); // input dolgu
-  static const _dOutline = Color(0xFF2F3442);
-  static const _dOnSurface = Color(0xFFE7E9EE);
-  static const _dOnSurfaceVar = Color(0xFF9BA1B0); // ikincil metin
-
-  static const ColorScheme darkScheme = ColorScheme(
+  static const darkScheme = ColorScheme(
     brightness: Brightness.dark,
-    primary: indigo,
-    onPrimary: Color(0xFFFFFFFF),
-    primaryContainer: Color(0xFF3730A3),
-    onPrimaryContainer: Color(0xFFE0E1FF),
-    secondary: teal,
-    onSecondary: Color(0xFF03201D),
-    secondaryContainer: Color(0xFF0F5249),
-    onSecondaryContainer: Color(0xFFB8FFF3),
-    tertiary: indigoBright,
-    onTertiary: Color(0xFF1A1B4B),
-    error: Color(0xFFEF4444),
-    onError: Color(0xFFFFFFFF),
-    errorContainer: Color(0xFF7F1D1D),
-    onErrorContainer: Color(0xFFFFE2E2),
-    surface: _dSurface,
-    onSurface: _dOnSurface,
-    surfaceContainerLowest: _dBg,
-    surfaceContainerLow: _dSurface,
-    surfaceContainer: _dSurfaceHi,
-    surfaceContainerHigh: _dSurfaceInput,
-    surfaceContainerHighest: _dSurfaceInput,
-    onSurfaceVariant: _dOnSurfaceVar,
-    outline: _dOutline,
-    outlineVariant: Color(0xFF252A36),
+    primary: lime,
+    onPrimary: onGradient,
+    primaryContainer: Color(0xFF2C3515),
+    onPrimaryContainer: Color(0xFFD5EF95),
+    secondary: amber,
+    onSecondary: Color(0xFF190900),
+    secondaryContainer: Color(0xFF48291B),
+    onSecondaryContainer: Color(0xFFFFCCB0),
+    tertiary: Color(0xFFC7B58A),
+    onTertiary: Color(0xFF2D260F),
+    error: Color(0xFFFF7D88),
+    onError: Color(0xFF2B1013),
+    errorContainer: Color(0xFF52212A),
+    onErrorContainer: Color(0xFFFFDADE),
+    surface: Color(0xFF1B1B1B),
+    onSurface: Color(0xFFF5F5F1),
+    surfaceContainerLowest: Color(0xFF121212),
+    surfaceContainerLow: Color(0xFF1C1C1C),
+    surfaceContainer: Color(0xFF212121),
+    surfaceContainerHigh: Color(0xFF282827),
+    surfaceContainerHighest: Color(0xFF343431),
+    onSurfaceVariant: Color(0xFFA5A5A0),
+    outline: Color(0xFF444440),
+    outlineVariant: Color(0xFF30302F),
     shadow: Color(0xFF000000),
     scrim: Color(0xFF000000),
-    inverseSurface: _dOnSurface,
-    onInverseSurface: _dBg,
-    inversePrimary: indigoDeep,
+    inverseSurface: Color(0xFFF5F5F1),
+    onInverseSurface: Color(0xFF121212),
+    inversePrimary: Color(0xFF526900),
   );
 
-  // ─── LIGHT ───────────────────────────────────────────────────────
-  static const _lBg = Color(0xFFF6F7F9);
-  static const _lSurface = Color(0xFFFFFFFF);
-  static const _lSurfaceHi = Color(0xFFEEF0F4);
-  static const _lOutline = Color(0xFFD8DCE4);
-  static const _lOnSurface = Color(0xFF1A1C22);
-  static const _lOnSurfaceVar = Color(0xFF5A6072);
-
-  static const ColorScheme lightScheme = ColorScheme(
+  // Açık görünümde küçük lime/turuncu metinler için koyu karşılıklar.
+  static const lightScheme = ColorScheme(
     brightness: Brightness.light,
-    primary: indigoDeep,
+    primary: Color(0xFF526900),
     onPrimary: Color(0xFFFFFFFF),
-    primaryContainer: Color(0xFFE0E1FF),
-    onPrimaryContainer: Color(0xFF1A1B4B),
-    secondary: Color(0xFF0D9488),
+    primaryContainer: Color(0xFFE4F3AD),
+    onPrimaryContainer: Color(0xFF293400),
+    secondary: Color(0xFFB84300),
     onSecondary: Color(0xFFFFFFFF),
-    secondaryContainer: Color(0xFFB8FFF3),
-    onSecondaryContainer: Color(0xFF03201D),
-    tertiary: indigo,
+    secondaryContainer: Color(0xFFFFDBC6),
+    onSecondaryContainer: Color(0xFF52200A),
+    tertiary: Color(0xFF806436),
     onTertiary: Color(0xFFFFFFFF),
-    error: Color(0xFFDC2626),
+    error: Color(0xFFBC2937),
     onError: Color(0xFFFFFFFF),
-    errorContainer: Color(0xFFFFE2E2),
-    onErrorContainer: Color(0xFF7F1D1D),
-    surface: _lSurface,
-    onSurface: _lOnSurface,
-    surfaceContainerLowest: _lBg,
-    surfaceContainerLow: _lBg,
-    surfaceContainer: _lSurfaceHi,
-    surfaceContainerHigh: _lSurfaceHi,
-    surfaceContainerHighest: _lSurfaceHi,
-    onSurfaceVariant: _lOnSurfaceVar,
-    outline: _lOutline,
-    outlineVariant: Color(0xFFE7E9EE),
+    errorContainer: Color(0xFFFFDADE),
+    onErrorContainer: Color(0xFF52212A),
+    surface: Color(0xFFFFFFFF),
+    onSurface: Color(0xFF23251F),
+    surfaceContainerLowest: Color(0xFFF4F4EF),
+    surfaceContainerLow: Color(0xFFF8F8F3),
+    surfaceContainer: Color(0xFFEEEEE6),
+    surfaceContainerHigh: Color(0xFFE8E9DF),
+    surfaceContainerHighest: Color(0xFFDEDFD5),
+    onSurfaceVariant: Color(0xFF626459),
+    outline: Color(0xFFBFC2B5),
+    outlineVariant: Color(0xFFDDDFD4),
     shadow: Color(0xFF000000),
     scrim: Color(0xFF000000),
-    inverseSurface: _lOnSurface,
-    onInverseSurface: _lSurface,
-    inversePrimary: indigoBright,
+    inverseSurface: Color(0xFF23251F),
+    onInverseSurface: Color(0xFFF5F5F1),
+    inversePrimary: lime,
   );
 
-  // ─── Semantik ek renkler (ThemeExtension) ────────────────────────
-  static const AppSemanticColors darkSemantic = AppSemanticColors(
-    success: Color(0xFF22C55E),
-    onSuccess: Color(0xFF03210F),
-    warning: Color(0xFFF59E0B),
-    onWarning: Color(0xFF2A1A00),
-    info: Color(0xFF38BDF8),
-    onInfo: Color(0xFF04212E),
-    macroCalories: indigo,
-    macroProtein: teal,
-    macroCarbs: Color(0xFF38BDF8),
-    macroFat: Color(0xFFFBBF24),
+  static const darkSemantic = AppSemanticColors(
+    success: lime,
+    onSuccess: onGradient,
+    warning: Color(0xFFFFB381),
+    onWarning: Color(0xFF321700),
+    info: Color(0xFFC2D0D3),
+    onInfo: Color(0xFF172326),
+    macroCalories: lime,
+    macroProtein: lime,
+    macroCarbs: amber,
+    macroFat: Color(0xFFC7B58A),
   );
 
-  static const AppSemanticColors lightSemantic = AppSemanticColors(
-    success: Color(0xFF16A34A),
+  static const lightSemantic = AppSemanticColors(
+    success: Color(0xFF526900),
     onSuccess: Color(0xFFFFFFFF),
-    warning: Color(0xFFD97706),
+    warning: Color(0xFF9B4A0F),
     onWarning: Color(0xFFFFFFFF),
-    info: Color(0xFF0284C7),
+    info: Color(0xFF46636C),
     onInfo: Color(0xFFFFFFFF),
-    macroCalories: indigoDeep,
-    macroProtein: Color(0xFF0D9488),
-    macroCarbs: Color(0xFF0284C7),
-    macroFat: Color(0xFFD97706),
+    macroCalories: Color(0xFF526900),
+    macroProtein: Color(0xFF526900),
+    macroCarbs: Color(0xFFB84300),
+    macroFat: Color(0xFF806436),
   );
 }
 
-/// Liquid glass yüzey token'ları (premium reskin — 2026-07).
-///
-/// Tek doğruluk kaynağı: hem `shared/widgets/glass.dart` (GlassBackground /
-/// GlassCard) hem tema (`app_theme.dart` — Card/NavigationBar) buradan okur.
-/// Böylece "cam" görünümü uygulamanın her yerinde aynı kalır.
+/// Ortak opak kart ve gezinme yüzeyleri. Cam hissi üst ışık ve gradyanla
+/// verilir; liste kartları pahalı canlı blur gerektirmez.
 class AppGlass {
   AppGlass._();
-
-  // ── DARK ──
-  /// Kart dolgu gradyanı (%8 → %3 beyaz).
-  static const darkFill = [Color(0x14FFFFFF), Color(0x08FFFFFF)];
-
-  /// Gradyansız yüzeyler (tema `Card`ı) için tek renk dolgu — gradyanın
-  /// ortalaması (%6 beyaz). GlassCard ile yan yana dursa bile uyumlu.
-  static const darkFillSolid = Color(0x0FFFFFFF);
-  static const darkHairline = Color(0x1FFFFFFF); // kenarlık %12
-  static const darkHairlineTop = Color(0x3AFFFFFF); // üst parlama %23
-  static const darkShadow = Color(0x66000000);
-  static const darkBgBase = [Color(0xFF0C0E15), Color(0xFF0A0B12)];
-  static const darkGlowIndigo = Color(0x4D6366F1); // indigo %30 ışıma
-  static const darkGlowTeal = Color(0x2E14B8A6); // teal %18 ışıma
-  /// Alt gezinme çubuğu buzlu dolgusu (blur arkasında).
-  static const darkNavFill = Color(0xB80A0C12);
-
-  // ── LIGHT ──
-  static const lightFill = [Color(0xE6FFFFFF), Color(0xB3FFFFFF)];
-  static const lightFillSolid = Color(0xCCFFFFFF); // %80 beyaz (buzlu)
-  static const lightHairline = Color(0xCCFFFFFF);
-  static const lightHairlineTop = Color(0xF2FFFFFF);
-  static const lightShadow = Color(0x1A1E2240); // yumuşak lacivert gölge
-  static const lightBgBase = [Color(0xFFEFF1F6), Color(0xFFE6E9F1)];
-  static const lightGlowIndigo = Color(0x243B82F6);
-  static const lightGlowTeal = Color(0x1F14B8A6);
-  static const lightNavFill = Color(0xC2F4F5F9);
+  static const darkFill = [Color(0xFF242424), Color(0xFF1B1B1B)];
+  static const darkFillSolid = Color(0xFF212121);
+  static const darkHairline = Color(0xFF30302F);
+  static const darkHairlineTop = Color(0x28FFFFFF);
+  static const darkShadow = Color(0x44000000);
+  static const darkNavFill = Color(0xFF1C1C1C);
+  static const lightFill = [Color(0xFFFFFFFF), Color(0xFFF8F9F2)];
+  static const lightFillSolid = Color(0xFFFFFFFF);
+  static const lightHairline = Color(0xFFE0E2D7);
+  static const lightHairlineTop = Color(0xFFFFFFFF);
+  static const lightShadow = Color(0x0F23251F);
+  static const lightNavFill = Color(0xFFFCFCF7);
 }
 
 /// Material 3 [ColorScheme]'de karşılığı olmayan, uygulamaya özgü renkler.

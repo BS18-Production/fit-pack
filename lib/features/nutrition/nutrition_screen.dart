@@ -13,7 +13,7 @@ import '../../data/database/daos/nutrition_dao.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/progress_indicators.dart';
 import '../home/providers/home_providers.dart';
-import 'macro_goals.dart';
+import 'nutrition_summary_card.dart';
 import 'meal_copy_sheet.dart';
 import 'add_food_sheet.dart';
 import 'meal_types.dart';
@@ -32,15 +32,19 @@ final copyDayBusyProvider = StateProvider<bool>((ref) => false);
 final logsWithFoodProvider = StreamProvider<List<FoodLogWithFood>>((ref) {
   final db = ref.watch(databaseProvider);
   final date = ref.watch(selectedDateProvider);
-  return watchTables(db, [db.foodLogs, db.foods],
-      () => ref.read(nutritionDaoProvider).getLogsWithFoodForDate(date));
+  return watchTables(db, [
+    db.foodLogs,
+    db.foods,
+  ], () => ref.read(nutritionDaoProvider).getLogsWithFoodForDate(date));
 });
 
 final nutritionTotalsProvider = StreamProvider<DailyNutrition>((ref) {
   final db = ref.watch(databaseProvider);
   final date = ref.watch(selectedDateProvider);
-  return watchTables(db, [db.foodLogs, db.foods],
-      () => ref.read(nutritionDaoProvider).getDailyTotals(date));
+  return watchTables(db, [
+    db.foodLogs,
+    db.foods,
+  ], () => ref.read(nutritionDaoProvider).getDailyTotals(date));
 });
 
 class NutritionScreen extends ConsumerWidget {
@@ -53,7 +57,10 @@ class NutritionScreen extends ConsumerWidget {
   }
 
   Future<void> _delete(
-      BuildContext context, WidgetRef ref, FoodLogWithFood item) async {
+    BuildContext context,
+    WidgetRef ref,
+    FoodLogWithFood item,
+  ) async {
     // SnackBar ekrandan uzun yaşar (M-06): kullanıcı sekme değiştirdikten
     // sonra "Geri al"a basarsa ekranın ref'i ölmüş olabilir. DAO önceden
     // yakalanır — ekranın yaşam döngüsünden bağımsız; yazma sonrası tazeleme
@@ -65,30 +72,32 @@ class NutritionScreen extends ConsumerWidget {
     if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     messenger.clearSnackBars();
-    messenger.showSnackBar(SnackBar(
-      content: Text(l.foodsDeleted(item.food.name)),
-      // Flutter 3.41'de düğmeli SnackBar varsayılan olarak kapanmıyor
-      // (persist = action != null) — "silindi" şeridi ekranda kalıyordu.
-      persist: false,
-      action: SnackBarAction(
-        label: l.commonUndo,
-        onPressed: () async {
-          await dao.insertFoodLog(
-            FoodLogsCompanion(
-              date: Value(item.log.date),
-              mealType: Value(item.log.mealType),
-              foodId: Value(item.log.foodId),
-              grams: Value(item.log.grams),
-              computedKcal: Value(item.log.computedKcal),
-              computedProtein: Value(item.log.computedProtein),
-              computedCarb: Value(item.log.computedCarb),
-              computedFat: Value(item.log.computedFat),
-            ),
-          );
-          // Reaktif provider'lar (H-05) geri-al eklemesini kendiliğinden yansıtır.
-        },
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l.foodsDeleted(item.food.name)),
+        // Flutter 3.41'de düğmeli SnackBar varsayılan olarak kapanmıyor
+        // (persist = action != null) — "silindi" şeridi ekranda kalıyordu.
+        persist: false,
+        action: SnackBarAction(
+          label: l.commonUndo,
+          onPressed: () async {
+            await dao.insertFoodLog(
+              FoodLogsCompanion(
+                date: Value(item.log.date),
+                mealType: Value(item.log.mealType),
+                foodId: Value(item.log.foodId),
+                grams: Value(item.log.grams),
+                computedKcal: Value(item.log.computedKcal),
+                computedProtein: Value(item.log.computedProtein),
+                computedCarb: Value(item.log.computedCarb),
+                computedFat: Value(item.log.computedFat),
+              ),
+            );
+            // Reaktif provider'lar (H-05) geri-al eklemesini kendiliğinden yansıtır.
+          },
+        ),
       ),
-    ));
+    );
   }
 
   @override
@@ -126,8 +135,7 @@ class NutritionScreen extends ConsumerWidget {
       // Alt boşluk: içerik buzlu gezinme çubuğunun altından aktığı için
       // (extendBody) iç Scaffold FAB'ı çubuğun arkasına koyar — yukarı kaldır.
       floatingActionButton: Padding(
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+        padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
         child: CoachMark(
           hint: FirstRunHint.nutrition,
           message: (l) => l.hintNutrition,
@@ -147,18 +155,22 @@ class NutritionScreen extends ConsumerWidget {
         child: ListView(
           // Alt boşluk: içerik buzlu gezinme çubuğunun altından akar + FAB
           // payı (C-2) — son öğün kartı "Yemek Ekle"nin altında kalmasın.
-          padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg,
-              AppSpacing.lg, context.fabScrollInset),
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.lg,
+            AppSpacing.lg,
+            context.fabScrollInset,
+          ),
           children: [
             _DateBar(
               date: date,
               isToday: isToday,
-              onPrev: () => ref.read(selectedDateProvider.notifier).state =
-                  date.subtract(const Duration(days: 1)),
+              onPrev: () => ref.read(selectedDateProvider.notifier).state = date
+                  .subtract(const Duration(days: 1)),
               onNext: isToday
                   ? null
-                  : () => ref.read(selectedDateProvider.notifier).state =
-                      date.add(const Duration(days: 1)),
+                  : () => ref.read(selectedDateProvider.notifier).state = date
+                        .add(const Duration(days: 1)),
             ),
             AppSpacing.vGapLg,
             totalsAsync.when(
@@ -184,11 +196,13 @@ class NutritionScreen extends ConsumerWidget {
             ] else
               AppSpacing.vGapLg,
             logsAsync.when(
-              loading: () => Column(children: [
-                Skeleton.card(height: 96),
-                AppSpacing.vGapMd,
-                Skeleton.card(height: 96),
-              ]),
+              loading: () => Column(
+                children: [
+                  Skeleton.card(height: 96),
+                  AppSpacing.vGapMd,
+                  Skeleton.card(height: 96),
+                ],
+              ),
               error: (_, _) => ErrorState(
                 message: l.nutritionLoadError,
                 onRetry: () => _invalidateAll(ref),
@@ -197,40 +211,43 @@ class NutritionScreen extends ConsumerWidget {
                 children: [
                   if (logs.isEmpty)
                     Padding(
-                      padding:
-                          const EdgeInsets.only(bottom: AppSpacing.md),
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
                       child: OutlinedButton.icon(
                         onPressed: ref.watch(copyDayBusyProvider)
                             ? null
                             : () => _copyYesterday(context, ref),
-                        icon: const Icon(Icons.content_copy_rounded,
-                            size: AppIconSize.sm),
-                        label: Text(isToday
-                            ? l.nutritionCopyYesterday
-                            : l.nutritionCopyPrevDay),
+                        icon: const Icon(
+                          Icons.content_copy_rounded,
+                          size: AppIconSize.sm,
+                        ),
+                        label: Text(
+                          isToday
+                              ? l.nutritionCopyYesterday
+                              : l.nutritionCopyPrevDay,
+                        ),
                       ),
                     ),
-                  ...mealTypes.map((mealType) => Padding(
-                          padding:
-                              const EdgeInsets.only(bottom: AppSpacing.md),
-                          child: _MealSection(
-                            mealType: mealType,
-                            items: logs
-                                .where((l) => l.log.mealType == mealType)
-                                .toList(),
-                            onAddFood: () => _showAddFoodSheet(context, ref,
-                                mealType: mealType),
-                            onCopyFromDay: () => showMealCopySheet(
-                              context,
-                              mealType: mealType,
-                              // Gün başına normalize: panel hedef günü
-                              // listeden düşürmek için karşılaştırıyor.
-                              targetDay:
-                                  DateTime(date.year, date.month, date.day),
-                            ),
-                            onDelete: (item) => _delete(context, ref, item),
-                          ),
-                        )),
+                  ...mealTypes.map(
+                    (mealType) => Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: _MealSection(
+                        mealType: mealType,
+                        items: logs
+                            .where((l) => l.log.mealType == mealType)
+                            .toList(),
+                        onAddFood: () =>
+                            _showAddFoodSheet(context, ref, mealType: mealType),
+                        onCopyFromDay: () => showMealCopySheet(
+                          context,
+                          mealType: mealType,
+                          // Gün başına normalize: panel hedef günü
+                          // listeden düşürmek için karşılaştırıyor.
+                          targetDay: DateTime(date.year, date.month, date.day),
+                        ),
+                        onDelete: (item) => _delete(context, ref, item),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -251,28 +268,32 @@ class NutritionScreen extends ConsumerWidget {
     if (busy.state) return; // ikinci dokunuş
     busy.state = true;
     try {
-      final copied =
-          await ref.read(nutritionDaoProvider).copyDayLogs(from, date);
+      final copied = await ref
+          .read(nutritionDaoProvider)
+          .copyDayLogs(from, date);
       // Reaktif provider'lar (H-05) kopyalanan öğünleri kendiliğinden yansıtır.
       messenger.clearSnackBars();
-      messenger.showSnackBar(SnackBar(
-        content: Text(copied == 0
-            ? l.nutritionCopyEmpty
-            : l.nutritionCopied(copied)),
-      ));
-    } catch (_) {
       messenger.showSnackBar(
-          SnackBar(content: Text(l.nutritionCopyFailed)));
+        SnackBar(
+          content: Text(
+            copied == 0 ? l.nutritionCopyEmpty : l.nutritionCopied(copied),
+          ),
+        ),
+      );
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(l.nutritionCopyFailed)));
     } finally {
       busy.state = false;
     }
   }
 
-  void _showAddFoodSheet(BuildContext context, WidgetRef ref,
-      {String? mealType}) {
+  void _showAddFoodSheet(
+    BuildContext context,
+    WidgetRef ref, {
+    String? mealType,
+  }) {
     showAddFoodSheet(context, mealType: mealType);
   }
-
 }
 
 class _DateBar extends StatelessWidget {
@@ -301,11 +322,16 @@ class _DateBar extends StatelessWidget {
         ),
         Column(
           children: [
-            Text(isToday ? l.commonToday : context.dateFmt('EEEE').format(date),
-                style: context.texts.titleMedium),
-            Text(context.dateFmt('d MMMM').format(date),
-                style: context.texts.bodySmall
-                    ?.copyWith(color: context.colors.onSurfaceVariant)),
+            Text(
+              isToday ? l.commonToday : context.dateFmt('EEEE').format(date),
+              style: context.texts.titleMedium,
+            ),
+            Text(
+              context.dateFmt('d MMMM').format(date),
+              style: context.texts.bodySmall?.copyWith(
+                color: context.colors.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
         _DateNavButton(
@@ -381,51 +407,15 @@ class _SummaryHero extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // Karb/yağ hedefi kaloriden türetilir — "hedefsiz çıplak sayı" kalmasın.
-    final derived =
-        deriveMacroGoals(kcalGoal: kcalGoal, proteinGoal: proteinGoal);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          children: [
-            CalorieRing(consumed: totals.kcal, goal: kcalGoal),
-            AppSpacing.vGapSm,
-            Text('${totals.kcal.round()} / $kcalGoal kcal',
-                style: context.texts.bodySmall
-                    ?.copyWith(color: context.colors.onSurfaceVariant)),
-            AppSpacing.vGapXl,
-            MacroBar(
-              label: AppL10n.of(context).macroProtein,
-              current: totals.protein,
-              goal: proteinGoal,
-              unit: 'g',
-              color: context.semantic.macroProtein,
-            ),
-            AppSpacing.vGapMd,
-            MacroBar(
-              label: AppL10n.of(context).macroCarbs,
-              current: totals.carb,
-              goal: derived.carb,
-              unit: 'g',
-              color: context.semantic.macroCarbs,
-            ),
-            AppSpacing.vGapMd,
-            MacroBar(
-              label: AppL10n.of(context).macroFat,
-              current: totals.fat,
-              goal: derived.fat,
-              unit: 'g',
-              color: context.semantic.macroFat,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => NutritionSummaryCard(
+    kcal: totals.kcal,
+    protein: totals.protein,
+    carb: totals.carb,
+    fat: totals.fat,
+    kcalGoal: kcalGoal,
+    proteinGoal: proteinGoal,
+  );
 }
-
 
 class _MealSection extends StatelessWidget {
   final String mealType;
@@ -445,8 +435,10 @@ class _MealSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
-    final totalKcal =
-        items.fold<double>(0, (sum, i) => sum + i.log.computedKcal);
+    final totalKcal = items.fold<double>(
+      0,
+      (sum, i) => sum + i.log.computedKcal,
+    );
 
     return Card(
       child: Padding(
@@ -459,22 +451,29 @@ class _MealSection extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color:
-                        context.colors.secondary.withValues(alpha: 0.14),
+                    color: context.colors.secondary.withValues(alpha: 0.14),
                     borderRadius: AppRadius.brSm,
                   ),
-                  child: Icon(mealIcon(mealType),
-                      size: AppIconSize.sm,
-                      color: context.colors.secondary),
+                  child: Icon(
+                    mealIcon(mealType),
+                    size: AppIconSize.sm,
+                    color: context.colors.secondary,
+                  ),
                 ),
                 AppSpacing.hGapMd,
-                Text(mealName(l, mealType),
-                    style: context.texts.titleSmall),
-                const Spacer(),
+                Expanded(
+                  child: Text(
+                    mealName(l, mealType),
+                    style: context.texts.titleSmall,
+                  ),
+                ),
                 if (totalKcal > 0)
-                  Text('${totalKcal.round()} kcal',
-                      style: context.texts.labelMedium?.copyWith(
-                          color: context.colors.onSurfaceVariant)),
+                  Text(
+                    '${totalKcal.round()} kcal',
+                    style: context.texts.labelMedium?.copyWith(
+                      color: context.colors.onSurfaceVariant,
+                    ),
+                  ),
                 IconButton(
                   tooltip: l.nutritionAddTo(mealName(l, mealType)),
                   icon: const Icon(Icons.add_rounded),
@@ -492,8 +491,10 @@ class _MealSection extends StatelessWidget {
                       value: 'copy',
                       child: ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.copy_all_rounded,
-                            size: AppIconSize.sm),
+                        leading: const Icon(
+                          Icons.copy_all_rounded,
+                          size: AppIconSize.sm,
+                        ),
                         title: Text(l.nutritionCopyFromDay),
                       ),
                     ),
@@ -504,16 +505,21 @@ class _MealSection extends StatelessWidget {
             if (items.isEmpty)
               Padding(
                 padding: const EdgeInsets.only(
-                    left: AppSpacing.xs, bottom: AppSpacing.sm),
-                child: Text(l.nutritionNoEntries,
-                    style: context.texts.bodySmall?.copyWith(
-                        color: context.colors.onSurfaceVariant)),
+                  left: AppSpacing.xs,
+                  bottom: AppSpacing.sm,
+                ),
+                child: Text(
+                  l.nutritionNoEntries,
+                  style: context.texts.bodySmall?.copyWith(
+                    color: context.colors.onSurfaceVariant,
+                  ),
+                ),
               )
             else
-              ...items.map((item) => _FoodLogRow(
-                    item: item,
-                    onDelete: () => onDelete(item),
-                  )),
+              ...items.map(
+                (item) =>
+                    _FoodLogRow(item: item, onDelete: () => onDelete(item)),
+              ),
           ],
         ),
       ),
@@ -555,10 +561,12 @@ class _FoodLogRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item.food.name,
-                      style: context.texts.bodyLarge,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  Text(
+                    item.food.name,
+                    style: context.texts.bodyLarge,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   AppSpacing.vGapXs,
                   MacroInlineText(
                     protein: log.computedProtein,
@@ -573,8 +581,10 @@ class _FoodLogRow extends StatelessWidget {
               ),
             ),
             AppSpacing.hGapSm,
-            Text('${log.computedKcal.round()} kcal',
-                style: context.texts.titleSmall),
+            Text(
+              '${log.computedKcal.round()} kcal',
+              style: context.texts.titleSmall,
+            ),
             IconButton(
               tooltip: AppL10n.of(context).commonDelete,
               icon: const Icon(Icons.delete_outline_rounded),
@@ -594,18 +604,18 @@ class _FoodLogRow extends StatelessWidget {
 /// eski/karışık dilde kayıtlı etiketler için çağıran taraf, mevcut değeri
 /// listeye ekleyerek dropdown'ı korur ([unitOptionsWith]).
 List<String> unitOptions(AppL10n l) => [
-      l.unitPortion,
-      l.unitPiece,
-      l.unitSlice,
-      l.unitBowl,
-      l.unitWaterGlass,
-      l.unitCup,
-      l.unitTablespoon,
-      l.unitHandful,
-      l.unitClove,
-      l.unitScoop,
-      l.unitCan,
-    ];
+  l.unitPortion,
+  l.unitPiece,
+  l.unitSlice,
+  l.unitBowl,
+  l.unitWaterGlass,
+  l.unitCup,
+  l.unitTablespoon,
+  l.unitHandful,
+  l.unitClove,
+  l.unitScoop,
+  l.unitCan,
+];
 
 /// Seçenekler + (listede olmayan) mevcut kayıtlı birim — dropdown value'su
 /// items'ta yoksa Flutter assert atar; farklı dilde kaydedilmiş birimler

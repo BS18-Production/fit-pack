@@ -14,6 +14,22 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v13 · **Sahibi:** Samet Orhan (kişisel proje)
 
+## Performans Günlüğü — Neon tasarım kodlandı · cihaz kontrolü açık — 2026-10-04
+
+Samet'in onayladığı kömür/lime/turuncu dil tüm ortak tema, kart, düğme,
+form, panel ve dört sekmeye geçti; Ana Sayfa enerji/protein halkası,
+makrolar, bugünün planı, temsili somon öğün görseli ve gerçek seanslardan
+yedi günlük aktivite grafiğiyle yenilendi. Beslenme aynı enerji bileşenini
+kullanıyor. Rutin, set, yemek, ölçüm, hesap ve senkron akışları korunuyor;
+şema değişmedi. Yerel fontlar + lisans, TR/EN metinler eklendi.
+
+Analiz 0 sorun, **696 test yeşil**. Gerçek Flutter render'larında koyu/açık,
+320 pt ve %130/%160 metin ile sekmeler ve detaylar kontrol edildi; bulunan
+taşmalar giderildi. Android önizleme APK'sı ayrı pakette derlendi.
+**Emülatör shell/kurulum yanıt vermedi; iOS erişimi otomatik incelemede
+reddedildi. Cihaz kontrolü ve iPhone'a yerinde kurulum bekliyor.**
+Ayrıntı/Claude Code rehberi: [docs/30](docs/30-performance-journal-neon.md).
+
 ## 🧹 Hareket kütüphanesi: 13 tekrar birleştirildi + Neutral Grip Lat Pulldown ✅ — 2026-10-04
 
 Samet'in 3 günlük programı kontrol edilirken bulundu: "Hammer Curls",

@@ -1657,5 +1657,28 @@
     "placeholders": { "portion": { "type": "String" } }
   },
   "afChangeMeal": "Change meal",
-  "afEditHint": "Tap a row to change the amount, + to add right away"
+  "afEditHint": "Tap a row to change the amount, + to add right away",
+  "journalTitle": "One step further today.",
+  "journalSubtitle": "Performance journal",
+  "journalEnergyMacros": "Energy & macros",
+  "journalEnergyLogged": "Energy logged",
+  "journalEnergyGoal": "Daily goal",
+  "journalProteinRing": "Inner ring: protein",
+  "journalMeals": "Your meal journal",
+  "journalMealIdea": "Meal idea · illustrative photo",
+  "journalSalmonSalad": "Salmon salad",
+  "journalMealPhoto": "Illustrative photo of grilled salmon with greens, avocado and lemon",
+  "journalActivity": "Workout activity",
+  "journalActivityPeriod": "Last 7 days · estimated kcal",
+  "journalActivityEmpty": "No workouts logged in the last 7 days.",
+  "journalEstimateMissing": "Weight and duration are needed to estimate calories.",
+  "journalNoWorkout": "No workout logged on this day.",
+  "journalActivitySessions": "{count, plural, =1{1 logged workout} other{{count} logged workouts}}",
+  "@journalActivitySessions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

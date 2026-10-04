@@ -12,11 +12,13 @@ import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/glass.dart';
-import '../../shared/widgets/progress_indicators.dart';
 import '../calendar/week_strip.dart';
 import '../workout/routine_providers.dart';
 import '../workout/workout_draft.dart';
-import '../nutrition/macro_goals.dart';
+import '../nutrition/nutrition_summary_card.dart';
+import '../nutrition/meal_idea_card.dart';
+import '../nutrition/nutrition_screen.dart' show selectedDateProvider;
+import 'workout_activity_card.dart';
 import 'providers/dashboard_providers.dart';
 import 'providers/home_providers.dart';
 import '../../core/prefs/week_start_provider.dart';
@@ -49,6 +51,7 @@ class HomeScreen extends ConsumerWidget {
           ref.invalidate(todayRoutineProvider);
           ref.invalidate(activeDraftProvider);
           ref.invalidate(last30WorkoutStatsProvider);
+          ref.invalidate(recentWorkoutActivityProvider);
           ref.invalidate(topProgressProvider);
         },
         child: ListView(
@@ -62,17 +65,21 @@ class HomeScreen extends ConsumerWidget {
             _Header(),
             AppSpacing.vGapLg,
             WeekStrip(),
-            AppSpacing.vGapxl_,
+            AppSpacing.vGapXl,
+            _CompactNutrition(),
+            AppSpacing.vGapLg,
             _PrimaryActionCard(),
-            AppSpacing.vGapxl_,
-            _RhythmCard(),
-            AppSpacing.vGapxl_,
+            AppSpacing.vGapXl,
             _DayLogHeader(),
             AppSpacing.vGapMd,
-            // Tek dokunuş: saatine uygun "her zamanki öğün" (docs/26).
+            MealIdeaCard(),
+            AppSpacing.vGapMd,
             UsualMealCard(),
-            _CompactNutrition(),
-            AppSpacing.vGapxl_,
+            AppSpacing.vGapXl,
+            WorkoutActivityCard(),
+            AppSpacing.vGapXl,
+            _RhythmCard(),
+            AppSpacing.vGapXl,
             _InsightCard(),
             _CompactHealthRow(),
           ],
@@ -86,47 +93,69 @@ class HomeScreen extends ConsumerWidget {
 
 class _Header extends StatelessWidget {
   const _Header();
-
   @override
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
     final c = context.colors;
-    final kicker =
-        context.upper(context.dateFmt('EEEE · d MMMM').format(DateTime.now()));
     return SafeArea(
       bottom: false,
       child: Padding(
         padding: const EdgeInsets.only(top: AppSpacing.md),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    kicker,
-                    style: context.texts.labelSmall?.copyWith(
-                      color: c.onSurfaceVariant,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.4,
-                    ),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            const TextSpan(text: 'FIT'),
+                            TextSpan(
+                              text: 'PACK',
+                              style: TextStyle(color: c.primary),
+                            ),
+                          ],
+                        ),
+                        style: context.texts.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -.8,
+                        ),
+                      ),
+                      AppSpacing.vGapXs,
+                      Text(
+                        context.upper(l.journalSubtitle),
+                        style: context.texts.labelSmall?.copyWith(
+                          color: c.onSurfaceVariant,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(l.homeTitleToday, style: context.texts.displaySmall),
-                ],
-              ),
+                ),
+                IconButton(
+                  style: IconButton.styleFrom(
+                    backgroundColor: c.surfaceContainer,
+                    foregroundColor: c.onSurface,
+                    minimumSize: const Size.square(AppA11y.minTapTarget),
+                  ),
+                  tooltip: l.homeProfileTooltip,
+                  icon: const Icon(Icons.person_outline_rounded),
+                  onPressed: () => context.push(AppRoutes.profile),
+                ),
+              ],
             ),
-            // Profil: baş harf değil ikon — profilde ad alanı yok (docs/24 §4).
-            IconButton(
-              style: IconButton.styleFrom(
-                backgroundColor: c.surfaceContainerHighest,
-                foregroundColor: c.onSurface,
-                minimumSize: const Size.square(AppA11y.minTapTarget),
+            AppSpacing.vGapXl,
+            Text(l.journalTitle, style: context.texts.headlineMedium),
+            AppSpacing.vGapXs,
+            Text(
+              context.dateFmt('d MMMM, EEEE').format(DateTime.now()),
+              style: context.texts.bodySmall?.copyWith(
+                color: c.onSurfaceVariant,
               ),
-              tooltip: l.homeProfileTooltip,
-              icon: const Icon(Icons.person_outline_rounded),
-              onPressed: () => context.push(AppRoutes.profile),
             ),
           ],
         ),
@@ -165,13 +194,9 @@ class _PrimaryActionCard extends ConsumerWidget {
 /// Mor gradyanlı eylem kartı: üst etiket, başlık, alt satır, beyaz düğme.
 /// Antrenman günü ve devam eden seans aynı kalıbı kullanır.
 class _GradientActionCard extends StatelessWidget {
-  final String kicker;
-  final String title;
-  final String subtitle;
-  final String action;
+  final String kicker, title, subtitle, action;
   final IconData actionIcon;
   final VoidCallback onTap;
-
   const _GradientActionCard({
     required this.kicker,
     required this.title,
@@ -180,112 +205,72 @@ class _GradientActionCard extends StatelessWidget {
     required this.actionIcon,
     required this.onTap,
   });
-
   @override
   Widget build(BuildContext context) {
-    const on = AppColors.onGradient;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.brXl,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.indigo, AppColors.indigoDeep],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.indigoDeep.withValues(alpha: 0.24),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: AppRadius.brXl,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadius.brXl,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+    final c = context.colors;
+    return GlassCard(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
                   kicker,
                   style: context.texts.labelSmall?.copyWith(
-                    color: on.withValues(alpha: 0.82),
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.4,
+                    color: c.onSurfaceVariant,
+                    letterSpacing: 1,
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.texts.headlineSmall?.copyWith(
-                    color: on,
-                    fontWeight: FontWeight.w800,
-                  ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: c.primary.withValues(alpha: .09),
+                  borderRadius: AppRadius.brMd,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.texts.bodySmall?.copyWith(
-                    color: on.withValues(alpha: 0.82),
-                  ),
+                child: Icon(
+                  Icons.fitness_center_rounded,
+                  color: c.primary,
+                  size: AppIconSize.sm,
                 ),
-                AppSpacing.vGapLg,
-                Row(
-                  children: [
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                          vertical: AppSpacing.sm,
-                        ),
-                        decoration: const BoxDecoration(
-                          color: on,
-                          borderRadius: AppRadius.brPill,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              actionIcon,
-                              size: AppIconSize.sm,
-                              color: AppColors.indigoDeep,
-                            ),
-                            AppSpacing.hGapXs,
-                            Flexible(
-                              child: Text(
-                                action,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: context.texts.labelLarge?.copyWith(
-                                  color: AppColors.indigoDeep,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    AppSpacing.hGapMd,
-                    Icon(
-                      Icons.arrow_outward_rounded,
-                      color: on.withValues(alpha: 0.9),
-                    ),
-                  ],
-                ),
-              ],
+              ),
+            ],
+          ),
+          AppSpacing.vGapSm,
+          Text(
+            title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: context.texts.headlineMedium,
+          ),
+          if (subtitle.isNotEmpty) ...[
+            AppSpacing.vGapXs,
+            Text(
+              subtitle,
+              style: context.texts.bodySmall?.copyWith(
+                color: c.onSurfaceVariant,
+              ),
+            ),
+          ],
+          AppSpacing.vGapLg,
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: onTap,
+              child: Row(
+                children: [
+                  Icon(actionIcon, size: AppIconSize.sm),
+                  AppSpacing.hGapSm,
+                  Expanded(child: Text(action)),
+                  AppSpacing.hGapSm,
+                  const Icon(Icons.arrow_outward_rounded, size: AppIconSize.sm),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -353,7 +338,9 @@ class _StartWorkoutCard extends StatelessWidget {
         borderRadius: AppRadius.brLg,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.lg,
+          ),
           child: Row(
             children: [
               Container(
@@ -363,20 +350,27 @@ class _StartWorkoutCard extends StatelessWidget {
                   color: context.colors.primary.withValues(alpha: 0.12),
                   borderRadius: AppRadius.brMd,
                 ),
-                child: Icon(Icons.fitness_center_rounded,
-                    color: context.colors.primary),
+                child: Icon(
+                  Icons.fitness_center_rounded,
+                  color: context.colors.primary,
+                ),
               ),
               AppSpacing.hGapMd,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(AppL10n.of(context).homeStartTitle,
-                        style: context.texts.titleMedium),
+                    Text(
+                      AppL10n.of(context).homeStartTitle,
+                      style: context.texts.titleMedium,
+                    ),
                     const SizedBox(height: 2),
-                    Text(AppL10n.of(context).homeStartSubtitle,
-                        style: context.texts.bodySmall?.copyWith(
-                            color: context.colors.onSurfaceVariant)),
+                    Text(
+                      AppL10n.of(context).homeStartSubtitle,
+                      style: context.texts.bodySmall?.copyWith(
+                        color: context.colors.onSurfaceVariant,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -416,13 +410,13 @@ class _RestDayCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l.homeRestTitle,
-                        style: context.texts.titleMedium),
+                    Text(l.homeRestTitle, style: context.texts.titleMedium),
                     if (nextName != null) ...[
                       const SizedBox(height: 3),
-                      Text(l.homeRestNext(nextName!),
-                          style: context.texts.bodySmall
-                              ?.copyWith(color: muted)),
+                      Text(
+                        l.homeRestNext(nextName!),
+                        style: context.texts.bodySmall?.copyWith(color: muted),
+                      ),
                     ],
                   ],
                 ),
@@ -435,7 +429,9 @@ class _RestDayCard extends StatelessWidget {
             borderRadius: AppRadius.brMd,
             child: Container(
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md, vertical: AppSpacing.md),
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
               decoration: BoxDecoration(
                 color: muted.withValues(alpha: 0.07),
                 borderRadius: AppRadius.brMd,
@@ -445,12 +441,19 @@ class _RestDayCard extends StatelessWidget {
                   Icon(Icons.bolt_rounded, color: muted, size: AppIconSize.sm),
                   AppSpacing.hGapMd,
                   Expanded(
-                    child: Text(l.homeWorkoutAnyway,
-                        style: context.texts.labelLarge?.copyWith(
-                            color: muted, fontWeight: FontWeight.w600)),
+                    child: Text(
+                      l.homeWorkoutAnyway,
+                      style: context.texts.labelLarge?.copyWith(
+                        color: muted,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
-                  Icon(Icons.chevron_right_rounded,
-                      color: context.colors.outline, size: AppIconSize.sm),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: context.colors.outline,
+                    size: AppIconSize.sm,
+                  ),
                 ],
               ),
             ),
@@ -514,10 +517,13 @@ class _RhythmCard extends ConsumerWidget {
     // Haftanın sırası: seri 0 iken başlığın haftadan haftaya dönmesi için.
     final weekStart = startOfWeek(DateTime.now(), ref.watch(weekStartProvider));
     final weekIndex =
-        DateTime.utc(weekStart.year, weekStart.month, weekStart.day)
-                .millisecondsSinceEpoch ~/
-            Duration.millisecondsPerDay ~/
-            7;
+        DateTime.utc(
+          weekStart.year,
+          weekStart.month,
+          weekStart.day,
+        ).millisecondsSinceEpoch ~/
+        Duration.millisecondsPerDay ~/
+        7;
     final title = _rhythmTitle(l, rhythmHeadline(streak, weekIndex: weekIndex));
     final subtitle = switch (state) {
       RhythmState.empty => l.homeRhythmEmptySub(goal),
@@ -668,11 +674,11 @@ class _RhythmStat extends StatelessWidget {
 
 // ──────────────────────────────────────────────────── Günün kaydı başlığı
 
-class _DayLogHeader extends StatelessWidget {
+class _DayLogHeader extends ConsumerWidget {
   const _DayLogHeader();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -680,10 +686,20 @@ class _DayLogHeader extends StatelessWidget {
         Row(
           children: [
             Expanded(
-                child: Text(l.homeDayLog, style: context.texts.titleLarge)),
+              child: Text(l.journalMeals, style: context.texts.titleLarge),
+            ),
             TextButton(
-              onPressed: () => context.go(AppRoutes.nutrition),
-              child: Text('${l.navNutrition} ›'),
+              onPressed: () {
+                ref.read(selectedDateProvider.notifier).state = DateTime.now();
+                context.go(AppRoutes.nutrition);
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(l.navNutrition),
+                  const Icon(Icons.arrow_outward_rounded, size: AppIconSize.sm),
+                ],
+              ),
             ),
           ],
         ),
@@ -698,70 +714,30 @@ class _DayLogHeader extends StatelessWidget {
 
 class _CompactNutrition extends ConsumerWidget {
   const _CompactNutrition();
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppL10n.of(context);
-    final nutrition = ref.watch(todayNutritionProvider).valueOrNull;
     final profile = ref.watch(userProfileProvider).valueOrNull;
-    if (nutrition == null) return Skeleton.card(height: 190);
-
-    final kcalGoal = profile?.kcalGoal ?? 2200;
-    final proteinGoal = profile?.proteinGoal ?? 180;
-    final derived =
-        deriveMacroGoals(kcalGoal: kcalGoal, proteinGoal: proteinGoal);
-
-    return _Card(
-      padding: EdgeInsets.zero,
-      child: InkWell(
-        onTap: () => context.go(AppRoutes.nutrition),
-        borderRadius: AppRadius.brLg,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CalorieRing(
-                      consumed: nutrition.kcal, goal: kcalGoal, size: 118),
-                  AppSpacing.hGapLg,
-                  Expanded(
-                    child: Column(
-                      children: [
-                        MacroBar(
-                          label: l.macroProtein,
-                          current: nutrition.protein,
-                          goal: proteinGoal,
-                          unit: 'g',
-                          color: context.semantic.macroProtein,
-                        ),
-                        AppSpacing.vGapMd,
-                        MacroBar(
-                          label: l.macroCarbs,
-                          current: nutrition.carb,
-                          goal: derived.carb,
-                          unit: 'g',
-                          color: context.semantic.macroCarbs,
-                        ),
-                        AppSpacing.vGapMd,
-                        MacroBar(
-                          label: l.macroFat,
-                          current: nutrition.fat,
-                          goal: derived.fat,
-                          unit: 'g',
-                          color: context.semantic.macroFat,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+    return ref
+        .watch(todayNutritionProvider)
+        .when(
+          loading: () => Skeleton.card(height: 320),
+          error: (_, _) => ErrorState(
+            message: AppL10n.of(context).nutritionLoadError,
+            onRetry: () => ref.invalidate(todayNutritionProvider),
           ),
-        ),
-      ),
-    );
+          data: (nutrition) => NutritionSummaryCard(
+            kcal: nutrition.kcal,
+            protein: nutrition.protein,
+            carb: nutrition.carb,
+            fat: nutrition.fat,
+            kcalGoal: profile?.kcalGoal ?? 2200,
+            proteinGoal: profile?.proteinGoal ?? 180,
+            onTap: () {
+              ref.read(selectedDateProvider.notifier).state = DateTime.now();
+              context.go(AppRoutes.nutrition);
+            },
+          ),
+        );
   }
 }
 
@@ -799,28 +775,39 @@ class _InsightCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l.homeInsightLabel,
-                      style: context.texts.labelSmall?.copyWith(
-                        color: success,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.4,
-                      )),
+                  Text(
+                    l.homeInsightLabel,
+                    style: context.texts.labelSmall?.copyWith(
+                      color: success,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.4,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(l.homeInsightMostImproved(top.name),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.texts.titleSmall),
+                  Text(
+                    l.homeInsightMostImproved(top.name),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.texts.titleSmall,
+                  ),
                   const SizedBox(height: 2),
-                  Text(l.homeInsightSubtitle,
-                      style: context.texts.bodySmall
-                          ?.copyWith(color: c.onSurfaceVariant)),
+                  Text(
+                    l.homeInsightSubtitle,
+                    style: context.texts.bodySmall?.copyWith(
+                      color: c.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ),
             ),
             AppSpacing.hGapSm,
-            Text('+${units.weight(top.deltaE1rm)}',
-                style: context.texts.titleMedium?.copyWith(
-                    color: success, fontWeight: FontWeight.w800)),
+            Text(
+              '+${units.weight(top.deltaE1rm)}',
+              style: context.texts.titleMedium?.copyWith(
+                color: success,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
           ],
         ),
       ),
@@ -887,8 +874,11 @@ class _WaterMini extends ConsumerWidget {
                     color: accent.withValues(alpha: 0.16),
                     borderRadius: AppRadius.brSm,
                   ),
-                  child: Icon(Icons.water_drop_outlined,
-                      color: accent, size: AppIconSize.sm),
+                  child: Icon(
+                    Icons.water_drop_outlined,
+                    color: accent,
+                    size: AppIconSize.sm,
+                  ),
                 ),
                 AppSpacing.hGapSm,
                 Expanded(
@@ -896,9 +886,12 @@ class _WaterMini extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(l.homeWaterTitle, style: context.texts.titleSmall),
-                      Text(l.homeWaterAmount(liters, goalL),
-                          style: context.texts.bodySmall?.copyWith(
-                              color: context.colors.onSurfaceVariant)),
+                      Text(
+                        l.homeWaterAmount(liters, goalL),
+                        style: context.texts.bodySmall?.copyWith(
+                          color: context.colors.onSurfaceVariant,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -939,8 +932,11 @@ class _MiniAction extends StatelessWidget {
   final String label;
   final Color accent;
   final VoidCallback onTap;
-  const _MiniAction(
-      {required this.label, required this.accent, required this.onTap});
+  const _MiniAction({
+    required this.label,
+    required this.accent,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -953,9 +949,13 @@ class _MiniAction extends StatelessWidget {
         child: Container(
           height: 34,
           alignment: Alignment.center,
-          child: Text(label,
-              style: context.texts.labelMedium
-                  ?.copyWith(color: accent, fontWeight: FontWeight.w700)),
+          child: Text(
+            label,
+            style: context.texts.labelMedium?.copyWith(
+              color: accent,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ),
     );
@@ -993,32 +993,43 @@ class _WeightMini extends ConsumerWidget {
                       color: success.withValues(alpha: 0.16),
                       borderRadius: AppRadius.brSm,
                     ),
-                    child: Icon(Icons.monitor_weight_outlined,
-                        color: success, size: AppIconSize.sm),
+                    child: Icon(
+                      Icons.monitor_weight_outlined,
+                      color: success,
+                      size: AppIconSize.sm,
+                    ),
                   ),
                   AppSpacing.hGapSm,
                   Expanded(
-                    child:
-                        Text(l.homeWeightTitle, style: context.texts.titleSmall),
+                    child: Text(
+                      l.homeWeightTitle,
+                      style: context.texts.titleSmall,
+                    ),
                   ),
                 ],
               ),
               AppSpacing.vGapMd,
               if (trend?.latest == null)
-                Text(l.homeWeightEmpty,
-                    style:
-                        context.texts.titleSmall?.copyWith(color: c.primary))
+                Text(
+                  l.homeWeightEmpty,
+                  style: context.texts.titleSmall?.copyWith(color: c.primary),
+                )
               else ...[
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Text(units.weightValue(trend!.latest!),
-                        style: context.texts.headlineSmall),
+                    Text(
+                      units.weightValue(trend!.latest!),
+                      style: context.texts.headlineSmall,
+                    ),
                     AppSpacing.hGapXs,
-                    Text(units.weightUnit,
-                        style: context.texts.bodySmall
-                            ?.copyWith(color: c.onSurfaceVariant)),
+                    Text(
+                      units.weightUnit,
+                      style: context.texts.bodySmall?.copyWith(
+                        color: c.onSurfaceVariant,
+                      ),
+                    ),
                   ],
                 ),
                 if (trend.delta != null && trend.delta != 0) ...[
@@ -1046,8 +1057,11 @@ class _DeltaChip extends StatelessWidget {
   final double delta; // kg (DB kanonik)
   final Units units;
   final WeightChangeTone tone;
-  const _DeltaChip(
-      {required this.delta, required this.units, required this.tone});
+  const _DeltaChip({
+    required this.delta,
+    required this.units,
+    required this.tone,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1058,8 +1072,10 @@ class _DeltaChip extends StatelessWidget {
         ? context.semantic.success
         : context.colors.onSurfaceVariant;
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 2,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.16),
         borderRadius: AppRadius.brPill,
@@ -1068,17 +1084,17 @@ class _DeltaChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            down
-                ? Icons.arrow_downward_rounded
-                : Icons.arrow_upward_rounded,
+            down ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
             size: 12,
             color: color,
           ),
           const SizedBox(width: 2),
           Text(
             units.weight(delta.abs()),
-            style: context.texts.labelMedium
-                ?.copyWith(color: color, fontWeight: FontWeight.w700),
+            style: context.texts.labelMedium?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
@@ -1094,12 +1110,13 @@ class _DeltaChip extends StatelessWidget {
 class _Card extends StatelessWidget {
   final Widget child;
   final EdgeInsets padding;
-  const _Card(
-      {required this.child,
-      this.padding = const EdgeInsets.all(AppSpacing.lg)});
+  const _Card({
+    required this.child,
+    this.padding = const EdgeInsets.all(AppSpacing.lg),
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GlassCard(radius: AppRadius.lg, padding: padding, child: child);
+    return GlassCard(radius: AppRadius.xl, padding: padding, child: child);
   }
 }

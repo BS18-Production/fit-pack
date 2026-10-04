@@ -109,6 +109,8 @@ flutter:
   generate: true
 
   assets:
+    - assets/images/
+    - assets/fonts/
     - assets/data/
     - assets/maps/
     - assets/sounds/

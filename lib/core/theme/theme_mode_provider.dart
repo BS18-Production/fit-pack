@@ -4,16 +4,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Kullanıcının tema tercihi (Sistem / Açık / Koyu).
 ///
-/// Ayarlar'dan değişir, `shared_preferences`'te kalıcı. Varsayılan: **sistem**
-/// (cihazın açık/koyu ayarını takip eder). Kullanıcı isterse zorla açık ya da
-/// koyu seçer. `app.dart` bu değeri izler → `MaterialApp.themeMode`.
+/// Ayarlar'dan değişir, `shared_preferences`'te kalıcı. Yeni kurulumlarda
+/// varsayılan koyu; kayıtlı Açık / Koyu / Sistem tercihi korunur.
+/// `app.dart` bu değeri izler → `MaterialApp.themeMode`.
 class ThemeModeNotifier extends Notifier<ThemeMode> {
   static const _key = 'theme_mode';
 
   @override
   ThemeMode build() {
-    _load(); // kayıtlı tercih varsa asenkron uygular (yoksa sistem kalır)
-    return ThemeMode.system;
+    _load(); // kayıtlı tercih varsa asenkron uygular (yoksa koyu kalır)
+    return ThemeMode.dark;
   }
 
   Future<void> _load() async {
@@ -29,13 +29,14 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
   }
 
   static ThemeMode _parse(String s) => ThemeMode.values.firstWhere(
-        (m) => m.name == s,
-        orElse: () => ThemeMode.system,
-      );
+    (m) => m.name == s,
+    orElse: () => ThemeMode.system,
+  );
 }
 
-final themeModeProvider =
-    NotifierProvider<ThemeModeNotifier, ThemeMode>(ThemeModeNotifier.new);
+final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
+  ThemeModeNotifier.new,
+);
 
 // Görünen etiketler docs/14 ile lokalize edildi → `core/i18n/enum_labels.dart`
 // `themeModeLabel(l, mode)`.

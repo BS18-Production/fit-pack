@@ -32,8 +32,12 @@ class WorkoutListScreen extends ConsumerWidget {
         },
         child: ListView(
           // Alt boşluk: içerik buzlu gezinme çubuğunun altından akar.
-          padding: EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.sm,
-              AppSpacing.xl, context.bottomScrollInset),
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.sm,
+            AppSpacing.xl,
+            context.bottomScrollInset,
+          ),
           children: [
             const _Header(),
             AppSpacing.vGapLg,
@@ -49,13 +53,15 @@ class WorkoutListScreen extends ConsumerWidget {
             ),
             AppSpacing.vGapxl_,
             routinesAsync.when(
-              loading: () => Column(children: [
-                _routinesHeader(context, null),
-                AppSpacing.vGapSm,
-                Skeleton.card(height: 92),
-                AppSpacing.vGapMd,
-                Skeleton.card(height: 92),
-              ]),
+              loading: () => Column(
+                children: [
+                  _routinesHeader(context, null),
+                  AppSpacing.vGapSm,
+                  Skeleton.card(height: 92),
+                  AppSpacing.vGapMd,
+                  Skeleton.card(height: 92),
+                ],
+              ),
               error: (_, _) => ErrorState(
                 message: AppL10n.of(context).workoutLoadRoutinesError,
                 onRetry: () => ref.invalidate(activeRoutinesProvider),
@@ -74,11 +80,12 @@ class WorkoutListScreen extends ConsumerWidget {
                         onCreate: () => context.push(AppRoutes.routineNew),
                       )
                     else ...[
-                      ...routines.map((r) => Padding(
-                            padding:
-                                const EdgeInsets.only(bottom: AppSpacing.md),
-                            child: _RoutineCard(routine: r),
-                          )),
+                      ...routines.map(
+                        (r) => Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                          child: _RoutineCard(routine: r),
+                        ),
+                      ),
                       AppSpacing.vGapXs,
                       _NewRoutineButton(
                         onTap: () => context.push(AppRoutes.routineNew),
@@ -98,14 +105,18 @@ class WorkoutListScreen extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(AppL10n.of(context).workoutMyRoutines, style: context.texts.titleMedium),
+        Text(
+          AppL10n.of(context).workoutMyRoutines,
+          style: context.texts.titleMedium,
+        ),
         if (count != null && count > 0)
-          Text(AppL10n.of(context).workoutRoutineCount(count),
-              style: context.texts.bodySmall?.copyWith(
-                color: context.colors.onSurfaceVariant
-                    .withValues(alpha: 0.7),
-                fontWeight: FontWeight.w600,
-              )),
+          Text(
+            AppL10n.of(context).workoutRoutineCount(count),
+            style: context.texts.bodySmall?.copyWith(
+              color: context.colors.onSurfaceVariant.withValues(alpha: 0.7),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
       ],
     );
   }
@@ -132,12 +143,14 @@ class _Header extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(dateLabel,
-                      style: context.texts.labelSmall?.copyWith(
-                        color: context.colors.primary,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.4,
-                      )),
+                  Text(
+                    dateLabel,
+                    style: context.texts.labelSmall?.copyWith(
+                      color: context.colors.primary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.4,
+                    ),
+                  ),
                   const SizedBox(height: 5),
                   Text(l.navWorkout, style: context.texts.headlineMedium),
                 ],
@@ -184,7 +197,9 @@ class _WeekStatsCard extends ConsumerWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg, vertical: AppSpacing.lg),
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.lg,
+        ),
         child: IntrinsicHeight(
           child: Row(
             children: [
@@ -224,27 +239,34 @@ class _Stat extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: context.texts.labelSmall?.copyWith(
-              color: context.colors.onSurfaceVariant,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.0,
-            )),
+        Text(
+          label,
+          style: context.texts.labelSmall?.copyWith(
+            color: context.colors.onSurfaceVariant,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.0,
+          ),
+        ),
         AppSpacing.vGapSm,
         Row(
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
           children: [
             Flexible(
-              child: Text(value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.texts.headlineSmall),
+              child: Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.texts.headlineSmall,
+              ),
             ),
             AppSpacing.hGapXs,
-            Text(unit,
-                style: context.texts.bodySmall
-                    ?.copyWith(color: context.colors.onSurfaceVariant)),
+            Text(
+              unit,
+              style: context.texts.bodySmall?.copyWith(
+                color: context.colors.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
       ],
@@ -263,11 +285,11 @@ class _EmptyWorkoutButton extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.indigo, AppColors.indigoDeep],
+          colors: [AppColors.lime, AppColors.limeDeep],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.indigoDeep.withValues(alpha: 0.26),
+            color: AppColors.limeDeep.withValues(alpha: 0.14),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -280,17 +302,29 @@ class _EmptyWorkoutButton extends StatelessWidget {
           onTap: () => context.push(AppRoutes.workoutActive),
           borderRadius: AppRadius.brXl,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg + 2),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.lg + 2,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.add_rounded, color: AppColors.onGradient, size: 22),
+                const Icon(
+                  Icons.add_rounded,
+                  color: AppColors.onGradient,
+                  size: 22,
+                ),
                 AppSpacing.hGapSm,
-                Text(AppL10n.of(context).workoutStartEmpty,
+                Flexible(
+                  child: Text(
+                    AppL10n.of(context).workoutStartEmpty,
+                    textAlign: TextAlign.center,
                     style: context.texts.titleMedium?.copyWith(
                       color: AppColors.onGradient,
-                      fontWeight: FontWeight.w800,
-                    )),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -316,18 +350,29 @@ class _NewRoutineButton extends StatelessWidget {
         borderRadius: AppRadius.brLg,
         child: DottedBorderBox(
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.md + 2),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.md + 2,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.add_rounded,
-                    color: context.colors.primary, size: AppIconSize.sm),
+                Icon(
+                  Icons.add_rounded,
+                  color: context.colors.primary,
+                  size: AppIconSize.sm,
+                ),
                 AppSpacing.hGapSm,
-                Text(AppL10n.of(context).workoutNewRoutine,
+                Flexible(
+                  child: Text(
+                    AppL10n.of(context).workoutNewRoutine,
+                    textAlign: TextAlign.center,
                     style: context.texts.labelLarge?.copyWith(
                       color: context.colors.primary,
                       fontWeight: FontWeight.w700,
-                    )),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -384,7 +429,11 @@ class _RoutineCard extends ConsumerWidget {
         borderRadius: AppRadius.brLg,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg, AppSpacing.md + 3, AppSpacing.sm, AppSpacing.md + 3),
+            AppSpacing.lg,
+            AppSpacing.md + 3,
+            AppSpacing.sm,
+            AppSpacing.md + 3,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -397,8 +446,11 @@ class _RoutineCard extends ConsumerWidget {
                       color: context.colors.primary.withValues(alpha: 0.12),
                       borderRadius: AppRadius.brMd,
                     ),
-                    child: Icon(Icons.fitness_center_rounded,
-                        color: context.colors.primary, size: 21),
+                    child: Icon(
+                      Icons.fitness_center_rounded,
+                      color: context.colors.primary,
+                      size: 21,
+                    ),
                   ),
                   AppSpacing.hGapMd,
                   Expanded(
@@ -408,32 +460,45 @@ class _RoutineCard extends ConsumerWidget {
                         Row(
                           children: [
                             Flexible(
-                              child: Text(routine.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: context.texts.titleSmall),
+                              child: Text(
+                                routine.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.texts.titleSmall,
+                              ),
                             ),
                             if (dayShort != null) ...[
                               AppSpacing.hGapSm,
-                              WorkoutChip(dayShort,
-                                  color: context.colors.primary, soft: true),
+                              WorkoutChip(
+                                dayShort,
+                                color: context.colors.primary,
+                                soft: true,
+                              ),
                             ],
                           ],
                         ),
                         const SizedBox(height: 2),
-                        Text(AppL10n.of(context).workoutExerciseCount(exercises.length),
-                            style: context.texts.bodySmall?.copyWith(
-                                color: context.colors.onSurfaceVariant)),
+                        Text(
+                          AppL10n.of(
+                            context,
+                          ).workoutExerciseCount(exercises.length),
+                          style: context.texts.bodySmall?.copyWith(
+                            color: context.colors.onSurfaceVariant,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   IconButton(
                     tooltip: AppL10n.of(context).commonEdit,
                     visualDensity: VisualDensity.compact,
-                    icon: Icon(Icons.edit_outlined,
-                        size: AppIconSize.sm,
-                        color: context.colors.onSurfaceVariant
-                            .withValues(alpha: 0.7)),
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: AppIconSize.sm,
+                      color: context.colors.onSurfaceVariant.withValues(
+                        alpha: 0.7,
+                      ),
+                    ),
                     onPressed: () =>
                         context.push(AppRoutes.routineEdit(routine.id)),
                   ),
@@ -461,7 +526,6 @@ class _RoutineCard extends ConsumerWidget {
   }
 }
 
-
 /// "Devam eden antrenman" banner'ı (docs/12). Kaydedilmiş canlı seans taslağı
 /// varsa en üstte gösterilir; arka planda öldürülmüş seansa kaldığı yerden döner.
 class _ResumeBanner extends ConsumerWidget {
@@ -474,11 +538,14 @@ class _ResumeBanner extends ConsumerWidget {
     if (draft == null) return const SizedBox.shrink();
 
     final c = context.colors;
-    final setCount = draft.exercises
-        .fold<int>(0, (n, e) => n + e.sets.where((s) => s.done).length);
+    final setCount = draft.exercises.fold<int>(
+      0,
+      (n, e) => n + e.sets.where((s) => s.done).length,
+    );
     final mins = DateTime.now().difference(draft.startedAt).inMinutes;
     final l = AppL10n.of(context);
-    final sub = l.workoutResumeSub(draft.exercises.length, setCount) +
+    final sub =
+        l.workoutResumeSub(draft.exercises.length, setCount) +
         (mins > 0 && mins < 600 ? ' · $mins ${l.unitMinShort}' : '');
 
     return Padding(
@@ -502,32 +569,41 @@ class _ResumeBanner extends ConsumerWidget {
                     color: c.primary,
                     borderRadius: AppRadius.brMd,
                   ),
-                  child: Icon(Icons.play_arrow_rounded,
-                      color: c.onPrimary, size: 26),
+                  child: Icon(
+                    Icons.play_arrow_rounded,
+                    color: c.onPrimary,
+                    size: 26,
+                  ),
                 ),
                 AppSpacing.hGapMd,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l.workoutResumeTitle,
-                          style: context.texts.titleSmall?.copyWith(
-                              color: c.onPrimaryContainer,
-                              fontWeight: FontWeight.w800)),
-                      Text('${draft.title} · $sub',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: context.texts.bodySmall?.copyWith(
-                              color: c.onPrimaryContainer
-                                  .withValues(alpha: 0.75))),
+                      Text(
+                        l.workoutResumeTitle,
+                        style: context.texts.titleSmall?.copyWith(
+                          color: c.onPrimaryContainer,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        '${draft.title} · $sub',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.texts.bodySmall?.copyWith(
+                          color: c.onPrimaryContainer.withValues(alpha: 0.75),
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.close_rounded,
-                      color:
-                          c.onPrimaryContainer.withValues(alpha: 0.7),
-                      size: AppIconSize.md),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: c.onPrimaryContainer.withValues(alpha: 0.7),
+                    size: AppIconSize.md,
+                  ),
                   tooltip: l.workoutDraftDelete,
                   onPressed: () async {
                     final ok = await confirmAction(

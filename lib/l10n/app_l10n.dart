@@ -4932,6 +4932,102 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Tap a row to change the amount, + to add right away'**
   String get afEditHint;
+
+  /// No description provided for @journalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'One step further today.'**
+  String get journalTitle;
+
+  /// No description provided for @journalSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance journal'**
+  String get journalSubtitle;
+
+  /// No description provided for @journalEnergyMacros.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy & macros'**
+  String get journalEnergyMacros;
+
+  /// No description provided for @journalEnergyLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy logged'**
+  String get journalEnergyLogged;
+
+  /// No description provided for @journalEnergyGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal'**
+  String get journalEnergyGoal;
+
+  /// No description provided for @journalProteinRing.
+  ///
+  /// In en, this message translates to:
+  /// **'Inner ring: protein'**
+  String get journalProteinRing;
+
+  /// No description provided for @journalMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Your meal journal'**
+  String get journalMeals;
+
+  /// No description provided for @journalMealIdea.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal idea · illustrative photo'**
+  String get journalMealIdea;
+
+  /// No description provided for @journalSalmonSalad.
+  ///
+  /// In en, this message translates to:
+  /// **'Salmon salad'**
+  String get journalSalmonSalad;
+
+  /// No description provided for @journalMealPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Illustrative photo of grilled salmon with greens, avocado and lemon'**
+  String get journalMealPhoto;
+
+  /// No description provided for @journalActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout activity'**
+  String get journalActivity;
+
+  /// No description provided for @journalActivityPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days · estimated kcal'**
+  String get journalActivityPeriod;
+
+  /// No description provided for @journalActivityEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No workouts logged in the last 7 days.'**
+  String get journalActivityEmpty;
+
+  /// No description provided for @journalEstimateMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight and duration are needed to estimate calories.'**
+  String get journalEstimateMissing;
+
+  /// No description provided for @journalNoWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'No workout logged on this day.'**
+  String get journalNoWorkout;
+
+  /// No description provided for @journalActivitySessions.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 logged workout} other{{count} logged workouts}}'**
+  String journalActivitySessions(int count);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

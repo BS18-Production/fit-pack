@@ -17,6 +17,7 @@ import 'core/router/app_router.dart';
 import 'core/router/app_routes.dart';
 import 'l10n/app_l10n.dart';
 import 'features/home/providers/home_providers.dart';
+import 'features/home/providers/dashboard_providers.dart';
 import 'features/nutrition/nutrition_screen.dart' show selectedDateProvider;
 import 'features/workout/routine_providers.dart';
 import 'features/sync/sync_providers.dart';
@@ -35,11 +36,10 @@ class _FitPackAppState extends ConsumerState<FitPackApp> {
   // Router'ı bir kez kur — rebuild'lerde GoRouter state'i korunsun. Kapı
   // (oturum + onboarding) durumunu router'ın kendisi `redirect`te okur;
   // `main()` `bootstrap()`u çağırdığı için değerler burada hazırdır.
-  late final GoRouter _router =
-      createAppRouter(
-        gate: ref.read(authGateProvider),
-        updateGate: ref.read(updateGateProvider),
-      );
+  late final GoRouter _router = createAppRouter(
+    gate: ref.read(authGateProvider),
+    updateGate: ref.read(updateGateProvider),
+  );
 
   // ── Bildirime dokununca ilgili ekrana git (haftalık değerlendirme, docs/22
   // §5). İki yol: uygulama AÇIKKEN dokunma (`taps` akışı) ve uygulama
@@ -143,14 +143,15 @@ class _FitPackAppState extends ConsumerState<FitPackApp> {
       builder: (context, child) {
         final brightness = Theme.of(context).brightness;
         return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: (brightness == Brightness.dark
-                  ? SystemUiOverlayStyle.light
-                  : SystemUiOverlayStyle.dark)
-              .copyWith(
-            statusBarColor: Colors.transparent,
-            systemNavigationBarColor: Colors.transparent,
-            systemNavigationBarContrastEnforced: false,
-          ),
+          value:
+              (brightness == Brightness.dark
+                      ? SystemUiOverlayStyle.light
+                      : SystemUiOverlayStyle.dark)
+                  .copyWith(
+                    statusBarColor: Colors.transparent,
+                    systemNavigationBarColor: Colors.transparent,
+                    systemNavigationBarContrastEnforced: false,
+                  ),
           child: GlassBackground(
             child: _DayRolloverGuard(child: child ?? const SizedBox.shrink()),
           ),
@@ -242,6 +243,7 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     ref.invalidate(todayNutritionProvider);
     ref.invalidate(todayWaterProvider);
     ref.invalidate(todayRoutineProvider);
+    ref.invalidate(recentWorkoutActivityProvider);
     ref.invalidate(weeklyStreakProvider);
     ref.invalidate(weekWorkoutStatsProvider);
     ref.read(selectedDateProvider.notifier).state = DateTime.now();

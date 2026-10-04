@@ -30,11 +30,13 @@ class _BuilderItem {
   int repsMin;
   int repsMax;
   int restSec; // setler arası dinlenme (saniye) — kullanıcı belirler
-  _BuilderItem(this.exercise,
-      {this.sets = 3,
-      this.repsMin = 8,
-      this.repsMax = 12,
-      required this.restSec});
+  _BuilderItem(
+    this.exercise, {
+    this.sets = 3,
+    this.repsMin = 8,
+    this.repsMax = 12,
+    required this.restSec,
+  });
 }
 
 class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
@@ -69,14 +71,19 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
       _weekday = routine?.scheduledWeekday;
       _items
         ..clear()
-        ..addAll(exs.map((e) => _BuilderItem(
+        ..addAll(
+          exs.map(
+            (e) => _BuilderItem(
               e.exercise,
               sets: e.routineExercise.targetSets ?? 3,
               repsMin: e.routineExercise.targetRepsMin ?? 8,
               repsMax: e.routineExercise.targetRepsMax ?? 12,
-              restSec: e.routineExercise.targetRestSec ??
+              restSec:
+                  e.routineExercise.targetRestSec ??
                   WorkoutUi.defaultRestSec(e.exercise.category),
-            )));
+            ),
+          ),
+        );
       _loading = false;
     });
   }
@@ -85,10 +92,11 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
     final ex = await context.push<Exercise>(AppRoutes.exercisesSelect);
     if (ex == null) return;
     if (_items.any((i) => i.exercise.id == ex.id)) return; // tekrar ekleme
-    setState(() => _items.add(_BuilderItem(
-          ex,
-          restSec: WorkoutUi.defaultRestSec(ex.category),
-        )));
+    setState(
+      () => _items.add(
+        _BuilderItem(ex, restSec: WorkoutUi.defaultRestSec(ex.category)),
+      ),
+    );
   }
 
   bool get _hasWarmUp =>
@@ -103,7 +111,8 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
     if (!mounted) return;
     if (ex == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppL10n.of(context).rbWarmUpMissing)));
+        SnackBar(content: Text(AppL10n.of(context).rbWarmUpMissing)),
+      );
       return;
     }
     if (_hasWarmUp) return;
@@ -115,12 +124,14 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppL10n.of(context).rbNameRequired)));
+        SnackBar(content: Text(AppL10n.of(context).rbNameRequired)),
+      );
       return;
     }
     if (_items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppL10n.of(context).rbNeedExercise)));
+        SnackBar(content: Text(AppL10n.of(context).rbNeedExercise)),
+      );
       return;
     }
     setState(() => _saving = true);
@@ -153,8 +164,12 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
               orderIndex: Value(i),
               targetSets: Value(_items[i].sets),
               // Süreli harekette tekrar aralığı anlamsız — boş kalır.
-              targetRepsMin: Value(_timed(_items[i]) ? null : _items[i].repsMin),
-              targetRepsMax: Value(_timed(_items[i]) ? null : _items[i].repsMax),
+              targetRepsMin: Value(
+                _timed(_items[i]) ? null : _items[i].repsMin,
+              ),
+              targetRepsMax: Value(
+                _timed(_items[i]) ? null : _items[i].repsMax,
+              ),
               targetRestSec: Value(_items[i].restSec),
             ),
         ],
@@ -162,8 +177,9 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
     } catch (_) {
       if (mounted) {
         setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(AppL10n.of(context).rbSaveError)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppL10n.of(context).rbSaveError)),
+        );
       }
       return;
     }
@@ -176,35 +192,35 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEdit ? l.rbEditTitle : l.rbNewTitle),
-      ),
+      appBar: AppBar(title: Text(_isEdit ? l.rbEditTitle : l.rbNewTitle)),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.lg,
-                      AppSpacing.lg, AppSpacing.lg, AppSpacing.sm),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.sm,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l.rbNameCaps,
-                          style: context.texts.labelSmall?.copyWith(
-                            color: context.colors.onSurfaceVariant,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.2,
-                          )),
+                      Text(
+                        l.rbNameCaps,
+                        style: context.texts.labelSmall?.copyWith(
+                          color: context.colors.onSurfaceVariant,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                       AppSpacing.vGapSm,
                       TextField(
                         controller: _nameCtrl,
                         textCapitalization: TextCapitalization.sentences,
-                        inputFormatters: [
-                          LengthLimitingTextInputFormatter(40)
-                        ],
-                        decoration: InputDecoration(
-                          hintText: l.rbNameHint,
-                        ),
+                        inputFormatters: [LengthLimitingTextInputFormatter(40)],
+                        decoration: InputDecoration(hintText: l.rbNameHint),
                       ),
                       AppSpacing.vGapMd,
                       _WeekdayPicker(
@@ -215,12 +231,18 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(l.workoutExerciseCount(_items.length),
-                              style: context.texts.titleSmall),
-                          Text(l.rbTargetHint,
-                              style: context.texts.bodySmall?.copyWith(
-                                  color: context.colors.onSurfaceVariant
-                                      .withValues(alpha: 0.7))),
+                          Text(
+                            l.workoutExerciseCount(_items.length),
+                            style: context.texts.titleSmall,
+                          ),
+                          Text(
+                            l.rbTargetHint,
+                            style: context.texts.bodySmall?.copyWith(
+                              color: context.colors.onSurfaceVariant.withValues(
+                                alpha: 0.7,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -229,20 +251,27 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                 Expanded(
                   child: _items.isEmpty
                       ? ListView(
-                          padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0,
-                              AppSpacing.lg, AppSpacing.lg),
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.lg,
+                            0,
+                            AppSpacing.lg,
+                            AppSpacing.lg,
+                          ),
                           children: [
                             _AddWarmUpButton(onTap: _addWarmUp),
                             DottedBorderBox(
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    vertical: AppSpacing.xxl),
+                                  vertical: AppSpacing.xxl,
+                                ),
                                 child: Center(
-                                  child: Text(l.rbNoExercises,
-                                      style: context.texts.bodyMedium?.copyWith(
-                                          color: context
-                                              .colors.onSurfaceVariant
-                                              .withValues(alpha: 0.7))),
+                                  child: Text(
+                                    l.rbNoExercises,
+                                    style: context.texts.bodyMedium?.copyWith(
+                                      color: context.colors.onSurfaceVariant
+                                          .withValues(alpha: 0.7),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -252,7 +281,11 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                         )
                       : ReorderableListView.builder(
                           padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+                            AppSpacing.lg,
+                            0,
+                            AppSpacing.lg,
+                            AppSpacing.lg,
+                          ),
                           itemCount: _items.length,
                           header: _hasWarmUp
                               ? null
@@ -272,8 +305,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                             key: ValueKey(_items[i].exercise.id),
                             item: _items[i],
                             onChanged: () => setState(() {}),
-                            onRemove: () =>
-                                setState(() => _items.removeAt(i)),
+                            onRemove: () => setState(() => _items.removeAt(i)),
                           ),
                         ),
                 ),
@@ -283,7 +315,11 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
           ? null
           : SafeArea(
               minimum: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.md),
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                AppSpacing.md,
+              ),
               child: GradientButton(
                 label: l.rbSave,
                 busy: _saving,
@@ -309,8 +345,11 @@ class _AddWarmUpButton extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerLeft,
         child: ActionChip(
-          avatar: Icon(Icons.local_fire_department_rounded,
-              size: AppIconSize.sm, color: context.semantic.warning),
+          avatar: Icon(
+            Icons.local_fire_department_rounded,
+            size: AppIconSize.sm,
+            color: context.semantic.warning,
+          ),
           label: Text(l.rbAddWarmUp),
           tooltip: l.rbAddWarmUpHint,
           onPressed: onTap,
@@ -338,14 +377,19 @@ class _AddExerciseButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.add_rounded,
-                    color: context.colors.primary, size: AppIconSize.sm),
+                Icon(
+                  Icons.add_rounded,
+                  color: context.colors.primary,
+                  size: AppIconSize.sm,
+                ),
                 AppSpacing.hGapSm,
-                Text(AppL10n.of(context).workoutAddExercise,
-                    style: context.texts.labelLarge?.copyWith(
-                      color: context.colors.primary,
-                      fontWeight: FontWeight.w700,
-                    )),
+                Text(
+                  AppL10n.of(context).workoutAddExercise,
+                  style: context.texts.labelLarge?.copyWith(
+                    color: context.colors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
           ),
@@ -369,8 +413,7 @@ class _WeekdayPicker extends StatelessWidget {
         helperText: AppL10n.of(context).rbWeekdayHelper,
       ),
       items: [
-        DropdownMenuItem(
-            value: null, child: Text(AppL10n.of(context).rbNoDay)),
+        DropdownMenuItem(value: null, child: Text(AppL10n.of(context).rbNoDay)),
         for (var d = 1; d <= 7; d++)
           DropdownMenuItem(value: d, child: Text(context.weekdayName(d))),
       ],
@@ -383,11 +426,12 @@ class _ItemCard extends StatelessWidget {
   final _BuilderItem item;
   final VoidCallback onChanged;
   final VoidCallback onRemove;
-  const _ItemCard(
-      {super.key,
-      required this.item,
-      required this.onChanged,
-      required this.onRemove});
+  const _ItemCard({
+    super.key,
+    required this.item,
+    required this.onChanged,
+    required this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -400,37 +444,46 @@ class _ItemCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.drag_handle_rounded,
-                    color: context.colors.onSurfaceVariant
-                        .withValues(alpha: 0.6),
-                    size: AppIconSize.sm),
+                Icon(
+                  Icons.drag_handle_rounded,
+                  color: context.colors.onSurfaceVariant.withValues(alpha: 0.6),
+                  size: AppIconSize.sm,
+                ),
                 AppSpacing.hGapSm,
                 Container(
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
                     color: context.colors.onSurface.withValues(
-                        alpha: Theme.of(context).brightness == Brightness.dark
-                            ? 0.06
-                            : 0.05),
+                      alpha: Theme.of(context).brightness == Brightness.dark
+                          ? 0.06
+                          : 0.05,
+                    ),
                     borderRadius: AppRadius.brMd,
                   ),
-                  child: Icon(WorkoutUi.equipmentIcon(item.exercise.equipment),
-                      color: context.colors.onSurfaceVariant, size: 18),
+                  child: Icon(
+                    WorkoutUi.equipmentIcon(item.exercise.equipment),
+                    color: context.colors.onSurfaceVariant,
+                    size: 18,
+                  ),
                 ),
                 AppSpacing.hGapMd,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(item.exercise.name,
-                          style: context.texts.titleSmall,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis),
                       Text(
-                          WorkoutUi.muscleLabel(item.exercise.primaryMuscle),
-                          style: context.texts.bodySmall?.copyWith(
-                              color: context.colors.onSurfaceVariant)),
+                        item.exercise.name,
+                        style: context.texts.titleSmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        WorkoutUi.muscleLabel(item.exercise.primaryMuscle),
+                        style: context.texts.bodySmall?.copyWith(
+                          color: context.colors.onSurfaceVariant,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -442,9 +495,9 @@ class _ItemCard extends StatelessWidget {
                 ),
               ],
             ),
-            Row(
-              children: [
-                _Stepper(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final sets = _Stepper(
                   label: AppL10n.of(context).labelSets,
                   value: item.sets,
                   min: 1,
@@ -453,22 +506,32 @@ class _ItemCard extends StatelessWidget {
                     item.sets = v;
                     onChanged();
                   },
-                ),
-                if (!_timed(item)) ...[
-                AppSpacing.hGapLg,
-                Expanded(
-                  child: _RepRange(
-                    min: item.repsMin,
-                    max: item.repsMax,
-                    onChanged: (lo, hi) {
-                      item.repsMin = lo;
-                      item.repsMax = hi;
-                      onChanged();
-                    },
-                  ),
-                ),
-                ],
-              ],
+                );
+                if (_timed(item)) return sets;
+                final reps = _RepRange(
+                  min: item.repsMin,
+                  max: item.repsMax,
+                  onChanged: (lo, hi) {
+                    item.repsMin = lo;
+                    item.repsMax = hi;
+                    onChanged();
+                  },
+                );
+                if (constraints.maxWidth < 320 ||
+                    MediaQuery.textScalerOf(context).scale(1) > 1.1) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [sets, AppSpacing.vGapSm, reps],
+                  );
+                }
+                return Row(
+                  children: [
+                    sets,
+                    AppSpacing.hGapLg,
+                    Expanded(child: reps),
+                  ],
+                );
+              },
             ),
             AppSpacing.vGapSm,
             _RestRow(
@@ -502,14 +565,22 @@ class _RestRow extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.sm),
-              child: Text(AppL10n.of(ctx).rbRestBetweenSets,
-                  style: ctx.texts.titleMedium),
+                AppSpacing.xl,
+                0,
+                AppSpacing.xl,
+                AppSpacing.sm,
+              ),
+              child: Text(
+                AppL10n.of(ctx).rbRestBetweenSets,
+                style: ctx.texts.titleMedium,
+              ),
             ),
             ...WorkoutUi.restOptions.map((sec) {
               final selected = sec == restSec;
               return ListTile(
-                title: Text(WorkoutUi.restLabel(sec, none: AppL10n.of(ctx).commonNone)),
+                title: Text(
+                  WorkoutUi.restLabel(sec, none: AppL10n.of(ctx).commonNone),
+                ),
                 trailing: selected
                     ? Icon(Icons.check_rounded, color: ctx.colors.primary)
                     : null,
@@ -533,19 +604,34 @@ class _RestRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
         child: Row(
           children: [
-            Icon(Icons.timer_outlined,
-                size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
+            Icon(
+              Icons.timer_outlined,
+              size: AppIconSize.sm,
+              color: context.colors.onSurfaceVariant,
+            ),
             AppSpacing.hGapSm,
-            Text(AppL10n.of(context).labelRest,
-                style: context.texts.labelLarge?.copyWith(
-                    color: context.colors.onSurfaceVariant)),
+            Text(
+              AppL10n.of(context).labelRest,
+              style: context.texts.labelLarge?.copyWith(
+                color: context.colors.onSurfaceVariant,
+              ),
+            ),
             const Spacer(),
-            Text(WorkoutUi.restLabel(restSec, none: AppL10n.of(context).commonNone),
-                style: context.texts.labelLarge?.copyWith(
-                    color: context.colors.primary,
-                    fontWeight: FontWeight.w700)),
-            Icon(Icons.expand_more_rounded,
-                size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
+            Text(
+              WorkoutUi.restLabel(
+                restSec,
+                none: AppL10n.of(context).commonNone,
+              ),
+              style: context.texts.labelLarge?.copyWith(
+                color: context.colors.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Icon(
+              Icons.expand_more_rounded,
+              size: AppIconSize.sm,
+              color: context.colors.onSurfaceVariant,
+            ),
           ],
         ),
       ),
@@ -557,12 +643,13 @@ class _Stepper extends StatelessWidget {
   final String label;
   final int value, min, max;
   final ValueChanged<int> onChanged;
-  const _Stepper(
-      {required this.label,
-      required this.value,
-      required this.min,
-      required this.max,
-      required this.onChanged});
+  const _Stepper({
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -574,8 +661,12 @@ class _Stepper extends StatelessWidget {
           visualDensity: VisualDensity.compact,
           onPressed: value > min ? () => onChanged(value - 1) : null,
         ),
-        Text('$value $label',
-            style: context.texts.labelLarge?.copyWith(fontWeight: FontWeight.w700)),
+        Text(
+          '$value $label',
+          style: context.texts.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         IconButton(
           icon: const Icon(Icons.add_circle_outline_rounded),
           visualDensity: VisualDensity.compact,
@@ -589,17 +680,25 @@ class _Stepper extends StatelessWidget {
 class _RepRange extends StatelessWidget {
   final int min, max;
   final void Function(int lo, int hi) onChanged;
-  const _RepRange(
-      {required this.min, required this.max, required this.onChanged});
+  const _RepRange({
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(AppL10n.of(context).labelReps,
-            style: context.texts.labelMedium
-                ?.copyWith(color: context.colors.onSurfaceVariant)),
+        Flexible(
+          child: Text(
+            AppL10n.of(context).labelReps,
+            style: context.texts.labelMedium?.copyWith(
+              color: context.colors.onSurfaceVariant,
+            ),
+          ),
+        ),
         AppSpacing.hGapSm,
         _MiniField(
           value: min,
@@ -633,7 +732,9 @@ class _MiniField extends StatelessWidget {
           LengthLimitingTextInputFormatter(3),
         ],
         decoration: const InputDecoration(
-            isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 8)),
+          isDense: true,
+          contentPadding: EdgeInsets.symmetric(vertical: 8),
+        ),
         onChanged: (v) {
           final n = int.tryParse(v);
           if (n != null && n > 0) onChanged(n);

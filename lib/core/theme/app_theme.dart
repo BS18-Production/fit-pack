@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_dimens.dart';
 
-/// Fit Pack tema sistemi — Material 3, "Pro" (Indigo/Teal), Plus Jakarta Sans.
-/// Dark öncelikli; light de tam destekli (sistem takip eder).
+/// Fit Pack tema sistemi — Material 3, Performans Günlüğü (Lime/Amber).
+/// Koyu varsayılan; açık ve sistem seçimi de desteklenir.
 /// Font: Plus Jakarta Sans (premium/glass reskin fontu — geometrik-hümanist,
 /// modern, tam Türkçe glyph desteği). Geçiş: Inter → Manrope → Plus Jakarta
 /// Sans (2026-07, premium yön).
@@ -31,31 +31,66 @@ class AppTheme {
     );
 
     // Plus Jakarta Sans type scale — okunaklı, hiyerarşik. Başlıklar kalın
-    // (800); premium/glass yönüne uygun geometrik-hümanist karakter.
-    final text = GoogleFonts.plusJakartaSansTextTheme(base.textTheme).copyWith(
-      displaySmall: GoogleFonts.plusJakartaSans(
-          fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: -0.5),
-      headlineMedium: GoogleFonts.plusJakartaSans(
-          fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -0.5),
-      headlineSmall: GoogleFonts.plusJakartaSans(
-          fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.3),
-      titleLarge: GoogleFonts.plusJakartaSans(fontSize: 19, fontWeight: FontWeight.w700),
-      titleMedium: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w700),
-      titleSmall: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700),
-      bodyLarge: GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w500),
-      bodyMedium: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w500),
-      bodySmall: GoogleFonts.plusJakartaSans(fontSize: 12.5, fontWeight: FontWeight.w500),
-      labelLarge: GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w700),
-      labelMedium: GoogleFonts.plusJakartaSans(fontSize: 12.5, fontWeight: FontWeight.w600),
-      labelSmall: GoogleFonts.plusJakartaSans(fontSize: 11.5, fontWeight: FontWeight.w600),
-    ).apply(
-      bodyColor: scheme.onSurface,
-      displayColor: scheme.onSurface,
-    );
+    // (700); geometrik-hümanist karakter. Font dosyaları yerel asset'tir.
+    final text = GoogleFonts.plusJakartaSansTextTheme(base.textTheme)
+        .copyWith(
+          displaySmall: GoogleFonts.plusJakartaSans(
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -1,
+          ),
+          headlineMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.7,
+          ),
+          headlineSmall: GoogleFonts.plusJakartaSans(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.5,
+          ),
+          titleLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 19,
+            fontWeight: FontWeight.w700,
+          ),
+          titleMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+          titleSmall: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+          bodyLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+          ),
+          bodyMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+          ),
+          bodySmall: GoogleFonts.plusJakartaSans(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w400,
+          ),
+          labelLarge: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+          labelMedium: GoogleFonts.plusJakartaSans(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+          ),
+          labelSmall: GoogleFonts.plusJakartaSans(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+          ),
+        )
+        .apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface);
 
-    // Liquid glass zemin: GlassBackground TÜM ekranların arkasına
+    // Mat zemin: GlassBackground TÜM ekranların arkasına
     // MaterialApp.builder ile bir kez çizilir (app.dart). Scaffold ve AppBar
-    // bu yüzden transparan — ışıma her ekranda kesintisiz görünür.
+    // bu yüzden transparan — aynı yüzey her ekranda kesintisiz görünür.
     return base.copyWith(
       scaffoldBackgroundColor: Colors.transparent,
       textTheme: text,
@@ -84,34 +119,35 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        centerTitle: true,
+        centerTitle: false,
         titleTextStyle: text.titleLarge,
         iconTheme: IconThemeData(color: scheme.onSurface),
         // Hazır .light/.dark sabitleri gesture çubuğunu SİYAH boyar —
         // edge-to-edge glass zemin için ikisi de transparan kalmalı.
-        systemOverlayStyle: (brightness == Brightness.dark
-                ? SystemUiOverlayStyle.light
-                : SystemUiOverlayStyle.dark)
-            .copyWith(
-          statusBarColor: Colors.transparent,
-          systemNavigationBarColor: Colors.transparent,
-          systemNavigationBarContrastEnforced: false,
-        ),
+        systemOverlayStyle:
+            (brightness == Brightness.dark
+                    ? SystemUiOverlayStyle.light
+                    : SystemUiOverlayStyle.dark)
+                .copyWith(
+                  statusBarColor: Colors.transparent,
+                  systemNavigationBarColor: Colors.transparent,
+                  systemNavigationBarContrastEnforced: false,
+                ),
       ),
 
-      // Tema `Card`ı = ucuz cam yüzey (blur'suz GlassCard eşdeğeri): yarı
-      // saydam dolgu + ince hairline. GlassBackground'un ışıması altından
-      // sızar → GlassCard ile yan yana tutarlı. Blur gereken kahraman
-      // kartlarda GlassCard kullanılır (shared/widgets/glass.dart).
+      // Material Card ve GlassCard aynı opak yüzey/kenar dilini paylaşır.
       cardTheme: CardThemeData(
         color: brightness == Brightness.dark
             ? AppGlass.darkFillSolid
             : AppGlass.lightFillSolid,
         surfaceTintColor: Colors.transparent,
-        elevation: 0,
+        elevation: 2,
+        shadowColor: brightness == Brightness.dark
+            ? AppGlass.darkShadow
+            : AppGlass.lightShadow,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.brLg,
+          borderRadius: AppRadius.brXl,
           side: BorderSide(
             color: brightness == Brightness.dark
                 ? AppGlass.darkHairline
@@ -125,7 +161,9 @@ class AppTheme {
         style: FilledButton.styleFrom(
           minimumSize: const Size(0, AppA11y.minTapTarget),
           padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xxl, vertical: AppSpacing.md),
+            horizontal: AppSpacing.xxl,
+            vertical: AppSpacing.md,
+          ),
           textStyle: text.labelLarge,
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.brMd),
         ),
@@ -138,7 +176,9 @@ class AppTheme {
           elevation: 0,
           minimumSize: const Size(0, AppA11y.minTapTarget),
           padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xxl, vertical: AppSpacing.md),
+            horizontal: AppSpacing.xxl,
+            vertical: AppSpacing.md,
+          ),
           textStyle: text.labelLarge,
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.brMd),
         ),
@@ -149,7 +189,9 @@ class AppTheme {
           foregroundColor: scheme.primary,
           minimumSize: const Size(0, AppA11y.minTapTarget),
           padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xl, vertical: AppSpacing.md),
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.md,
+          ),
           side: BorderSide(color: scheme.outline),
           textStyle: text.labelLarge,
           shape: const RoundedRectangleBorder(borderRadius: AppRadius.brMd),
@@ -181,7 +223,9 @@ class AppTheme {
         filled: true,
         fillColor: scheme.surfaceContainerHigh,
         contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
         hintStyle: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
         labelStyle: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
         border: OutlineInputBorder(
@@ -206,12 +250,12 @@ class AppTheme {
         ),
       ),
 
-      // Arka plan transparan: buzlu dolgu + blur, AppShell'deki sarmalayıcıda
+      // Arka plan transparan: opak dolgu AppShell'deki sarmalayıcıda
       // (içerik çubuğun ALTINDAN akar — extendBody).
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
-        indicatorColor: scheme.primary.withValues(alpha: 0.16),
+        indicatorColor: scheme.primary.withValues(alpha: 0.10),
         elevation: 0,
         height: 68,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
@@ -236,7 +280,9 @@ class AppTheme {
         side: BorderSide(color: scheme.outlineVariant),
         labelStyle: text.labelMedium?.copyWith(color: scheme.onSurfaceVariant),
         padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.brSm),
       ),
 
@@ -244,29 +290,37 @@ class AppTheme {
         style: ButtonStyle(
           textStyle: WidgetStatePropertyAll(text.labelMedium),
           minimumSize: const WidgetStatePropertyAll(
-              Size(0, AppA11y.minTapTarget)),
-          backgroundColor: WidgetStateProperty.resolveWith((states) =>
-              states.contains(WidgetState.selected)
-                  ? scheme.primary
-                  : scheme.surfaceContainerHigh),
-          foregroundColor: WidgetStateProperty.resolveWith((states) =>
-              states.contains(WidgetState.selected)
-                  ? scheme.onPrimary
-                  : scheme.onSurfaceVariant),
+            Size(0, AppA11y.minTapTarget),
+          ),
+          backgroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.selected)
+                ? scheme.primary
+                : scheme.surfaceContainerHigh,
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.selected)
+                ? scheme.onPrimary
+                : scheme.onSurfaceVariant,
+          ),
           side: WidgetStatePropertyAll(
-              BorderSide(color: scheme.outlineVariant)),
+            BorderSide(color: scheme.outlineVariant),
+          ),
           shape: const WidgetStatePropertyAll(
-              RoundedRectangleBorder(borderRadius: AppRadius.brSm)),
+            RoundedRectangleBorder(borderRadius: AppRadius.brSm),
+          ),
         ),
       ),
 
       listTileTheme: ListTileThemeData(
         iconColor: scheme.onSurfaceVariant,
         contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.xs,
+        ),
         titleTextStyle: text.bodyLarge,
         subtitleTextStyle: text.bodySmall?.copyWith(
-            color: scheme.onSurfaceVariant),
+          color: scheme.onSurfaceVariant,
+        ),
       ),
 
       dialogTheme: DialogThemeData(
@@ -275,7 +329,8 @@ class AppTheme {
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.brLg),
         titleTextStyle: text.titleLarge,
         contentTextStyle: text.bodyMedium?.copyWith(
-            color: scheme.onSurfaceVariant),
+          color: scheme.onSurfaceVariant,
+        ),
       ),
 
       bottomSheetTheme: BottomSheetThemeData(
@@ -283,7 +338,8 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-              top: Radius.circular(AppRadius.xl)),
+            top: Radius.circular(AppRadius.xl),
+          ),
         ),
       ),
 
@@ -291,7 +347,8 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         backgroundColor: scheme.inverseSurface,
         contentTextStyle: text.bodyMedium?.copyWith(
-            color: scheme.onInverseSurface),
+          color: scheme.onInverseSurface,
+        ),
         actionTextColor: scheme.inversePrimary,
         shape: const RoundedRectangleBorder(borderRadius: AppRadius.brMd),
         insetPadding: const EdgeInsets.all(AppSpacing.lg),
@@ -318,14 +375,16 @@ class AppTheme {
       ),
 
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) =>
-            states.contains(WidgetState.selected)
-                ? scheme.onPrimary
-                : scheme.onSurfaceVariant),
-        trackColor: WidgetStateProperty.resolveWith((states) =>
-            states.contains(WidgetState.selected)
-                ? scheme.primary
-                : scheme.surfaceContainerHigh),
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? scheme.onPrimary
+              : scheme.onSurfaceVariant,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? scheme.primary
+              : scheme.surfaceContainerHigh,
+        ),
       ),
     );
   }

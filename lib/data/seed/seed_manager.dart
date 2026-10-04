@@ -20,7 +20,10 @@ class SeedManager {
   /// v4 (2026-09-30): genişletilmiş besin listesi (`foods_extended.json`,
   /// USDA + tarif hesabı — tools/build_food_list.py) mevcut kurulumlara da
   /// eklenir (`_backfillExtendedFoods`).
-  static const seedVersion = 4;
+  /// v5 (2026-10-04): tekil/çoğul ve "Tricep(s)" farkıyla iki kez listelenen
+  /// 13 hareket birleştirilir (`duplicateVariants`); "Neutral Grip Lat
+  /// Pulldown" eklenir.
+  static const seedVersion = 5;
   static const seedVersionKey = 'seed_version';
 
   Future<void> seedIfNeeded() async {
@@ -61,11 +64,12 @@ class SeedManager {
     await prefs.setInt(seedVersionKey, seedVersion);
   }
 
-  /// Küratörlü seed ile free-exercise-db'nin aynı hareketi farklı yazdığı 7
-  /// duplike (#1). Anahtar = silinecek extended varyant, değer = korunacak
+  /// Küratörlü seed ile free-exercise-db'nin aynı hareketi farklı yazdığı
+  /// duplikeler (#1: 7, v5: +13). Anahtar = silinecek extended varyant, değer = korunacak
   /// küratörlü ad. Referanslar korunana taşınıp varyant silinir (idempotent:
   /// varyant yoksa no-op). Yeni kurulumlarda zaten JSON'dan çıkarıldı.
-  static const _duplicateVariants = <String, String>{
+  @visibleForTesting
+  static const duplicateVariants = <String, String>{
     'Bent Over Barbell Row': 'Bent-Over Barbell Row',
     'Front Cable Raise': 'Cable Front Raise',
     'Upright Barbell Row': 'Barbell Upright Row',
@@ -73,6 +77,21 @@ class SeedManager {
     'Muscle Up': 'Muscle-Up',
     'Running, Treadmill': 'Treadmill Running',
     'Walking, Treadmill': 'Treadmill Walking',
+    // v5 (2026-10-04): tekil/çoğul ve "Tricep"/"Triceps" farkı — aramada
+    // aynı hareket iki kez çıkıyordu (Samet'in programı kontrol edilirken).
+    'Seated Cable Rows': 'Seated Cable Row',
+    'Hammer Curls': 'Hammer Curl',
+    'Concentration Curls': 'Concentration Curl',
+    'Triceps Pushdown': 'Tricep Pushdown',
+    'Machine Triceps Extension': 'Machine Tricep Extension',
+    'Cable Shrugs': 'Cable Shrug',
+    'Leg Extensions': 'Leg Extension',
+    'Lying Leg Curls': 'Lying Leg Curl',
+    'Standing Calf Raises': 'Standing Calf Raise',
+    'Donkey Calf Raises': 'Donkey Calf Raise',
+    'Parallel Bar Dip': 'Parallel Bar Dips',
+    'Bench Dips': 'Bench Dip',
+    'Crunches': 'Crunch',
   };
 
   Future<void> _dedupeExercises() async {
@@ -81,7 +100,7 @@ class SeedManager {
     for (final e in all) {
       if (!e.isCustom) byName[e.name] = e; // özel hareketlere dokunma
     }
-    for (final pair in _duplicateVariants.entries) {
+    for (final pair in duplicateVariants.entries) {
       final dup = byName[pair.key];
       final keep = byName[pair.value];
       if (dup == null || keep == null || dup.id == keep.id) continue;
@@ -148,7 +167,7 @@ class SeedManager {
   /// salonun en çok kullanılan hareketleriydi** — 1015 hareketin 814'ünde
   /// görsel varken temel lift'lerde yoktu.
   ///
-  /// `_duplicateVariants` bunu ayrıca büyütmüştü: dedupe, free-exercise-db'den
+  /// `duplicateVariants` bunu ayrıca büyütmüştü: dedupe, free-exercise-db'den
   /// gelen **görselli** satırı silip küratörlü **görselsiz** satırı koruyordu.
   ///
   /// **Çözüm:** elle onaylanmış eşleme tablosu (`exercise_image_map.json`).

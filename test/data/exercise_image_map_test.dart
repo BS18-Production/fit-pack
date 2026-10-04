@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:drift/native.dart';
 import 'package:fit_pack/data/database/app_database.dart';
+import 'package:fit_pack/data/seed/seed_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Form görseli eşleme tablosu (içerik turu 2 — docs/11 §12).
@@ -42,13 +43,18 @@ void main() {
   test('her görsel yolu ya kaynakta var ya da dedupe kurtarması', () {
     // Dedupe'ta silinen varyantların yolları JSON'dan çıkarıldığı için
     // kaynakta bulunmayabilir; onlar da geçerli free-exercise-db yollarıdır.
+    // Kaynakta karşılığı olmayan görsel yalnız birleştirilmiş tekrarın
+    // korunan hareketine ait olabilir (silinen varyantın klasörü CDN'de
+    // geçerli). Sayı sınırı yerine kural: v5'te 7 → 20 oldu.
+    final rescued = SeedManager.duplicateVariants.values.toSet();
     final unknown = <String>[];
     for (final e in map.entries) {
-      if (!sourceImagePaths.contains(e.value)) unknown.add('${e.key} → ${e.value}');
+      if (!sourceImagePaths.contains(e.value) && !rescued.contains(e.key)) {
+        unknown.add('${e.key} → ${e.value}');
+      }
     }
-    // Kurtarılan 7 dedupe girdisi dışında hepsi kaynakta olmalı.
-    expect(unknown.length, lessThanOrEqualTo(7),
-        reason: 'kaynakta karşılığı olmayan fazla girdi:\n${unknown.join('\n')}');
+    expect(unknown, isEmpty,
+        reason: 'kaynakta karşılığı olmayan girdi:\n${unknown.join('\n')}');
   });
 
   test('aynı hareket iki kez eşlenmemiş (anahtar tekilliği JSON garantisi)', () {

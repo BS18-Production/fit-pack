@@ -91,6 +91,7 @@ const exerciseSeedData = <ExerciseSeedData>[
   ExerciseSeedData('Wide-Grip Lat Pulldown', _c, 'back', 'cable', _wr, ['back', 'biceps']),
   ExerciseSeedData('Close-Grip Lat Pulldown', _c, 'back', 'cable', _wr, ['back', 'biceps']),
   ExerciseSeedData('Reverse-Grip Lat Pulldown', _c, 'back', 'cable', _wr, ['back', 'biceps']),
+  ExerciseSeedData('Neutral Grip Lat Pulldown', _c, 'back', 'cable', _wr, ['back', 'biceps']),
   ExerciseSeedData('Seated Cable Row', _c, 'back', 'cable', _wr, ['back', 'biceps']),
   ExerciseSeedData('Iso-Lateral Row', _c, 'back', 'machine', _wr, ['back', 'biceps']),
   ExerciseSeedData('Iso-Lateral Lat Pulldown', _c, 'back', 'machine', _wr, ['back', 'biceps']),

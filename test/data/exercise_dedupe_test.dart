@@ -81,16 +81,35 @@ void main() {
     // kaynak veriye bakar — yeni bir varyant eklenirse ("Bent Over Barbell
     // Row" ↔ "Bent-Over Barbell Row") burada yakalanır, kullanıcı iki ayrı
     // geçmişe bölünmeden önce.
+    // v5 (2026-10-04): tekil/çoğul ("Hammer Curls") ve "Tricep"/"Triceps"
+    // farkı da aynı hareket sayılır — 13 tekrar bu yüzden gözden kaçmıştı.
+    String singular(String w) {
+      if (w == 'tricep') return 'triceps';
+      if (const {'triceps', 'biceps', 'abs'}.contains(w)) return w;
+      if (w.length > 4 && w.endsWith('es') &&
+          (w.endsWith('shes') || w.endsWith('ches') || w.endsWith('xes'))) {
+        return w.substring(0, w.length - 2);
+      }
+      if (w.length > 3 && w.endsWith('s') && !w.endsWith('ss')) {
+        return w.substring(0, w.length - 1);
+      }
+      return w;
+    }
+
     String norm(String n) {
       final words = n
           .toLowerCase()
           .replaceAll(RegExp(r'[^a-z0-9 ]'), ' ')
           .split(' ')
           .where((w) => w.isNotEmpty)
+          .map(singular)
           .toList()
         ..sort();
       return words.join(' ');
     }
+
+    // Adı benzeyen ama farklı hareketler: halterli bant squat ↔ yalnız bant.
+    const differentMovements = {'band squat with'};
 
     final names = <String>[
       for (final e in exerciseSeedData) e.name,
@@ -106,7 +125,8 @@ void main() {
     }
     final collisions = {
       for (final e in byNorm.entries)
-        if (e.value.length > 1) e.key: e.value,
+        if (e.value.length > 1 && !differentMovements.contains(e.key))
+          e.key: e.value,
     };
     expect(collisions, isEmpty, reason: 'aynı hareketin iki yazımı var');
   });

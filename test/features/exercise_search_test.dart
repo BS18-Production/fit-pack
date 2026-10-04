@@ -111,6 +111,10 @@ void main() {
       'Incline Dumbbell Curl',
     ],
     'pazı': ['Dumbbell Bicep Curl', 'Barbell Curl', 'Hammer Curl'],
+    // 2026-10-04: Samet'in programında vardı, 0 sonuç veriyordu.
+    'neutral grip lat pulldown': ['Neutral Grip Lat Pulldown'],
+    'neutral grip pulldown': ['Neutral Grip Lat Pulldown'],
+    'nötr tutuş lat': ['Neutral Grip Lat Pulldown'],
   };
 
   group('altın liste — ilk 3', () {

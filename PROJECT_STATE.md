@@ -14,6 +14,16 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v13 · **Sahibi:** Samet Orhan (kişisel proje)
 
+## 🧹 Hareket kütüphanesi: 13 tekrar birleştirildi + Neutral Grip Lat Pulldown ✅ — 2026-10-04
+
+Samet'in 3 günlük programı kontrol edilirken bulundu: "Hammer Curls",
+"Leg Extensions" gibi tekil/çoğul ve "Tricep/Triceps" farkıyla 13 hareket iki
+kez listeleniyordu. Seed v5: mevcut kurulumlarda tekrara bağlı setler korunan
+harekete taşınıp tekrar siliniyor (senkronla buluta yayılır); yeni kurulumlar
+için JSON'dan çıkarıldı (814 → 801). "Neutral Grip Lat Pulldown" eklendi
+(aramada 0 sonuç veriyordu; "nötr tutuş" terimi + V-bar görseli). Bekçi test
+artık tekil/çoğul farkını da yakalıyor. 4 yeni test, toplam 687 yeşil.
+
 ## 🐞 "Silindi — Geri al" şeridi kapanmıyordu ✅ — 2026-10-04
 
 Flutter 3.41'de düğmeli SnackBar varsayılan olarak kendiliğinden kapanmıyor

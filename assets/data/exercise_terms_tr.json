@@ -156,6 +156,7 @@
     {"en": "close grip", "tr": ["dar tutuş"], "weak": true},
     {"en": "wide grip", "tr": ["geniş tutuş"], "weak": true},
     {"en": "reverse grip", "tr": ["ters tutuş"], "weak": true},
+    {"en": "neutral grip", "tr": ["nötr tutuş", "paralel tutuş", "v bar"], "weak": true},
     {"en": "alternating", "tr": ["dönüşümlü"], "weak": true},
     {"en": "alternate", "tr": ["dönüşümlü"], "weak": true},
     {"en": "ez bar", "tr": ["zigzag bar"], "weak": true},

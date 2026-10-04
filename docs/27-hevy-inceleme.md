@@ -13,11 +13,11 @@
 
 | # | Fikir | Öneri | Etki |
 |---|---|---|---|
-| F1 | Hazır program kataloğu (seviye × bölünme × ekipman) | **Al** | Büyük — içerik + şema |
-| F2 | Rutin içinde set bazlı plan (W ısınma setleri, set başına hedef) | **Al** | Orta — şema |
+| F1 | Hazır program kataloğu (seviye × bölünme × ekipman) | **Al** → [docs/28](28-program-catalog-set-plan.md) | Büyük — içerik + şema |
+| F2 | Rutin içinde set bazlı plan (W ısınma setleri, set başına hedef) | **Al** → [docs/28](28-program-catalog-set-plan.md) | Orta — şema |
 | F3 | Isınma = rutinin ilk hareketi (süreli "Isınma" + açıklama) | ✅ **Yapıldı (2026-10-04)** | Küçük |
 | F4 | RPE seçici: 6–10 yarım adım, her değerde etiket + "kaç tekrar kaldı" | ✅ **Yapıldı (2026-10-04)** | Küçük — yalnız arayüz |
-| F5 | RPE'yi işe yarar kılmak: bir sonraki seans önerisi | **Uyarla** (Hevy'de bunu Pro "Trainer" yapıyor) | Orta — tasarım dokümanı |
+| F5 | RPE'yi işe yarar kılmak: bir sonraki seans önerisi | **Uyarla** → [docs/29](29-rpe-progression.md) | Orta — şema yok |
 | F6 | "Isınma setleri istatistiğe dahil" ayarı | **Alma** — bizde ısınma hep hariç, doğru varsayılan | — |
 | F7 | Kardiyo: KM + SÜRE (mm:ss) sütunlu sıradan hareket | Zaten var; **sade tut** | — |
 | F8 | Rutin klasörleri | **Al**, F1 ile birlikte (program = klasör) | Küçük |

@@ -9,10 +9,12 @@
       "Isınma ekle"; süreli harekette tekrar aralığı gizli; canlı seansta
       ileri/geri sayan sayaç. Şema yok. 10 yeni test, toplam 682 yeşil;
       emülatörde (Dev) doğrulandı.
-- [ ] F1 Hazır program kataloğu (seviye × bölünme × ekipman) — tasarım dokümanı
-- [ ] F2 Rutinde set bazlı plan (ısınma setleri) — tasarım dokümanı
-- [ ] F5 RPE'yi mevcut çift ilerleme önerisine (`progression.dart`) katmak —
-      tasarım dokümanı
+- [ ] **F1 + F2 Hazır programlar + rutinde set planı** — tasarım dokümanı
+      yazıldı: [docs/28](docs/28-program-catalog-set-plan.md). **Samet'in 5
+      kararı bekleniyor**; şema v14 (iki nullable kolon) + sunucu göçü.
+- [ ] **F5 RPE'yi ilerleme önerisine katmak** — tasarım dokümanı yazıldı:
+      [docs/29](docs/29-rpe-progression.md). **Samet'in 4 kararı bekleniyor**;
+      şema yok.
 - [ ] **Satıştan önce katman kararı:** hangi özellikler ücretli (docs/27
       "Ücretli / ücretsiz ayrımı"). Prensip: hepsi şimdi ücretsiz, tek kontrol
       noktası, kullanıcı verisi asla kilitlenmez.

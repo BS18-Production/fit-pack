@@ -80,10 +80,13 @@ class RoutinePreviewScreen extends ConsumerWidget {
             itemBuilder: (_, i) {
               final it = items[i];
               final re = it.routineExercise;
-              final target = re.targetSets != null
-                  ? '${re.targetSets}×${re.targetRepsMin ?? ''}'
-                      '${re.targetRepsMax != null ? '-${re.targetRepsMax}' : ''}'
-                  : '';
+              // Süreli harekette (ısınma, kardiyo) tekrar yok: "1 set".
+              final target = re.targetSets == null
+                  ? ''
+                  : re.targetRepsMin == null
+                      ? l.rpSetCount(re.targetSets!)
+                      : '${re.targetSets}×${re.targetRepsMin}'
+                          '${re.targetRepsMax != null ? '-${re.targetRepsMax}' : ''}';
               return Card(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(

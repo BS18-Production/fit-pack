@@ -15,7 +15,7 @@
 |---|---|---|---|
 | F1 | Hazır program kataloğu (seviye × bölünme × ekipman) | **Al** | Büyük — içerik + şema |
 | F2 | Rutin içinde set bazlı plan (W ısınma setleri, set başına hedef) | **Al** | Orta — şema |
-| F3 | Isınma = rutinin ilk hareketi (süreli "Isınma" + açıklama) | **Al** (sayaçlı kart fikrinin yerine) | Küçük |
+| F3 | Isınma = rutinin ilk hareketi (süreli "Isınma" + açıklama) | ✅ **Yapıldı (2026-10-04)** | Küçük |
 | F4 | RPE seçici: 6–10 yarım adım, her değerde etiket + "kaç tekrar kaldı" | ✅ **Yapıldı (2026-10-04)** | Küçük — yalnız arayüz |
 | F5 | RPE'yi işe yarar kılmak: bir sonraki seans önerisi | **Uyarla** (Hevy'de bunu Pro "Trainer" yapıyor) | Orta — tasarım dokümanı |
 | F6 | "Isınma setleri istatistiğe dahil" ayarı | **Alma** — bizde ısınma hep hariç, doğru varsayılan | — |
@@ -122,6 +122,19 @@ Her madde: **Hevy ne yapıyor → Fit Pack'te bugün ne var → Öneri.**
     olarak elle giriliyor — `_TimeCell`).
   - İsteğe bağlı: yeni rutin oluştururken "Başa ısınma ekle" kutusu.
   Bu yol şema istemiyor, kardiyo sayacıyla aynı bileşeni paylaşır.
+- **F3 yapıldı (2026-10-04):**
+  - Rutin oluşturucuda **"Isınma ekle"** kısayolu: hazır "Dynamic Warm-Up"
+    hareketini 1 set, dinlenmesiz olarak başa koyar; rutinde ısınma varken
+    görünmez.
+  - Süreli/mesafeli harekette tekrar aralığı gizli ve kaydedilmiyor
+    (`targetRepsMin/Max` boş); önizleme "1 set" yazıyor.
+  - Canlı seansta süreli setlerde **sayaç** (`set_timer.dart`): hedef süre
+    varsa (girilen ya da geçen seansın değeri) geri sayar, sıfırda titreşip
+    süreyi yazar; yoksa ileri sayar, durdurunca geçen süreyi yazar. Seti
+    tamamlamaz. Süre saat farkından hesaplanır (arka planda da doğru).
+  - İlk seferde hedef olmadığı için ileri sayar; ikinci seferden itibaren
+    geçen seansın süresinden (ör. 5:00) geri sayar.
+  - **Rutinde hedef süre** (ör. "Isınma 5:00") şema ister → F2 dokümanına.
 
 ## 4. Canlı antrenman ekranı
 

@@ -126,6 +126,14 @@ class WorkoutUi {
   static String restLabel(int? sec, {required String none}) =>
       (sec == null || sec <= 0) ? none : fmtDuration(sec);
 
+  /// Isınma kısayolunun eklediği hazır hareket (docs/27 F3): süreli, tüm
+  /// vücut dinamik ısınma. Seed adıyla bulunur.
+  static const warmUpExerciseName = 'Dynamic Warm-Up';
+
+  /// Süre ölçülen hareket mi (tekrar aralığı anlamsız; sayaç gösterilir).
+  static bool isTimed(String measurementType) =>
+      measurementType == 'time' || measurementType == 'distance';
+
   /// Rutin oluştururken sunulan dinlenme süresi seçenekleri (saniye).
   static const restOptions = <int>[
     0, 30, 45, 60, 75, 90, 120, 150, 180, 210, 240, 300,

@@ -1603,6 +1603,42 @@ abstract class AppL10n {
   /// **'Could have done {count}+ more reps'**
   String rpeRir_atLeast(int count);
 
+  /// No description provided for @rbAddWarmUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Add warm-up'**
+  String get rbAddWarmUp;
+
+  /// No description provided for @rbAddWarmUpHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Puts a dynamic full-body warm-up at the start'**
+  String get rbAddWarmUpHint;
+
+  /// No description provided for @rbWarmUpMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm-up exercise not found in the library'**
+  String get rbWarmUpMissing;
+
+  /// No description provided for @rpSetCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 set} other{{count} sets}}'**
+  String rpSetCount(int count);
+
+  /// No description provided for @asTimerStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start timer'**
+  String get asTimerStart;
+
+  /// No description provided for @asTimerStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop timer'**
+  String get asTimerStop;
+
   /// No description provided for @elPickTitle.
   ///
   /// In en, this message translates to:

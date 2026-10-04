@@ -858,6 +858,31 @@ class AppL10nTr extends AppL10n {
   }
 
   @override
+  String get rbAddWarmUp => 'Isınma ekle';
+
+  @override
+  String get rbAddWarmUpHint => 'Başa tüm vücut dinamik ısınma koyar';
+
+  @override
+  String get rbWarmUpMissing => 'Isınma hareketi kütüphanede bulunamadı';
+
+  @override
+  String rpSetCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count set',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get asTimerStart => 'Sayacı başlat';
+
+  @override
+  String get asTimerStop => 'Sayacı durdur';
+
+  @override
   String get elPickTitle => 'Hareket Seç';
 
   @override

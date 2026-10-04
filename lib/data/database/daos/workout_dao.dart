@@ -201,6 +201,16 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
   Future<Exercise?> getExerciseById(int id) =>
       (select(exercises)..where((e) => e.id.equals(id))).getSingleOrNull();
 
+  /// Hazır (seed) hareketi adıyla bulur — kullanıcının aynı adla açtığı özel
+  /// hareket ya da arşivlenmiş kayıt dönmez. Isınma kısayolu (docs/27 F3).
+  Future<Exercise?> getSeedExerciseByName(String name) => (select(exercises)
+        ..where((e) =>
+            e.name.equals(name) &
+            e.isCustom.equals(false) &
+            e.isArchived.equals(false))
+        ..limit(1))
+      .getSingleOrNull();
+
   Future<void> insertExercise(ExercisesCompanion entry) =>
       into(exercises).insert(entry);
 

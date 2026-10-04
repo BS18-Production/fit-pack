@@ -866,6 +866,32 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String get rbAddWarmUp => 'Add warm-up';
+
+  @override
+  String get rbAddWarmUpHint => 'Puts a dynamic full-body warm-up at the start';
+
+  @override
+  String get rbWarmUpMissing => 'Warm-up exercise not found in the library';
+
+  @override
+  String rpSetCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets',
+      one: '1 set',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get asTimerStart => 'Start timer';
+
+  @override
+  String get asTimerStop => 'Stop timer';
+
+  @override
   String get elPickTitle => 'Pick Exercise';
 
   @override

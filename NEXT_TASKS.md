@@ -5,7 +5,10 @@
 - [x] **F4 RPE seçicisi (2026-10-04)** — klavye yerine 6–10 yarım adımlı
       panel, efor etiketi + kaç tekrar kaldığı. Şema yok. 9 yeni test, toplam
       672 yeşil; Android emülatöründe (Dev hesabı) görsel doğrulandı.
-- [ ] F3 Isınma = rutinin ilk hareketi + süreli harekete geri sayım sayacı
+- [x] **F3 Isınma + süreli set sayacı (2026-10-04)** — rutin oluşturucuda
+      "Isınma ekle"; süreli harekette tekrar aralığı gizli; canlı seansta
+      ileri/geri sayan sayaç. Şema yok. 10 yeni test, toplam 682 yeşil;
+      emülatörde (Dev) doğrulandı.
 - [ ] F1 Hazır program kataloğu (seviye × bölünme × ekipman) — tasarım dokümanı
 - [ ] F2 Rutinde set bazlı plan (ısınma setleri) — tasarım dokümanı
 - [ ] F5 RPE'yi mevcut çift ilerleme önerisine (`progression.dart`) katmak —

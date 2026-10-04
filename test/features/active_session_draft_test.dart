@@ -274,6 +274,47 @@ void main() {
       await close(tester);
     });
   });
+
+  // docs/27 F3: canlı süre saati ekranı her saniye yeniden çiziyor; sayaç
+  // satırla birlikte yeniden kurulursa (yanlış anahtar) çalışırken sıfırlanır.
+  testWidgets('süreli sette sayaç canlı saatin tıklarında sıfırlanmaz', (
+    tester,
+  ) async {
+    final exId = await db.workoutDao.insertCustomExercise(
+      ExercisesCompanion.insert(
+        name: 'Plank',
+        category: 'flexibility',
+        muscleGroups: 'core',
+        measurementType: const Value('time'),
+      ),
+    );
+    routineId = await db.workoutDao.createRoutine(
+      RoutinesCompanion.insert(name: 'Core', createdAt: DateTime(2026, 9, 1)),
+    );
+    await db.workoutDao.addRoutineExercise(
+      RoutineExercisesCompanion.insert(
+        routineId: routineId,
+        exerciseId: exId,
+        targetSets: const Value(1),
+        targetRestSec: const Value(0),
+      ),
+    );
+    await tester.pumpWidget(app());
+    for (var i = 0; i < 5; i++) {
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pump();
+    }
+    expect(find.text('Plank'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('set-timer-start')));
+    await tester.pump();
+    for (var i = 0; i < 3; i++) {
+      await tester.pump(const Duration(seconds: 1));
+    }
+    expect(find.byKey(const ValueKey('set-timer-stop')), findsOneWidget,
+        reason: 'sayaç 3 saat tıkından sonra hâlâ çalışıyor olmalı');
+    await close(tester);
+  });
 }
 
 /// Ses/titreşim yok; ses oynatıcısı test ortamında kurulmaz.

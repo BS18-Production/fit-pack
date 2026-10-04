@@ -14,6 +14,15 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v13 · **Sahibi:** Samet Orhan (kişisel proje)
 
+## 🔥 Isınma kısayolu + süreli set sayacı ✅ — 2026-10-04 · docs/27 F3
+
+Rutin oluşturucuda "Isınma ekle" hazır dinamik ısınma hareketini başa koyuyor.
+Süreli hareketlerde (ısınma, plank, kardiyo) tekrar aralığı artık gösterilmiyor;
+canlı seansta ▶ sayaç: hedef süre biliniyorsa geri sayıp süreyi yazıyor,
+bilinmiyorsa ileri sayıyor. Şema değişmedi. Doğrulamada bulunan hata:
+sayaç canlı saatin her tıkında sıfırlanıyordu (`ObjectKey` + record) →
+`ValueKey`; regresyon testi eklendi. 10 yeni test, toplam 682 yeşil.
+
 ## 🎚️ RPE seçicisi ✅ — 2026-10-04 · docs/27 F4
 
 Hevy incelemesinden (docs/27) ilk iş. RPE (Algılanan Zorluk) artık klavyeyle

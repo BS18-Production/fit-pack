@@ -26,6 +26,7 @@ import 'rpe_picker_sheet.dart';
 import 'rpe_scale.dart';
 import 'session_progress.dart';
 import 'set_prefill.dart';
+import 'set_timer.dart';
 import 'weight_step.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
@@ -1346,11 +1347,15 @@ class _ExerciseBlock extends ConsumerWidget {
           const SizedBox(width: 44, child: _RpeHeader()),
         ];
       case 'time':
-        return [Expanded(child: _H(l.hdrTime, center: true))];
+        return [
+          Expanded(child: _H(l.hdrTime, center: true)),
+          const SizedBox(width: _timerColWidth),
+        ];
       case 'distance':
         return [
           Expanded(child: _H(l.hdrDistance, center: true)),
           Expanded(child: _H(l.hdrTime, center: true)),
+          const SizedBox(width: _timerColWidth),
         ];
       default:
         return [
@@ -1964,6 +1969,9 @@ class _H extends StatelessWidget {
           letterSpacing: 0.3));
 }
 
+/// Süreli setlerde sayaç sütunu genişliği (başlık ve satır aynı).
+const double _timerColWidth = 48;
+
 /// "RPE" başlığı + dokunulabilir bilgi ipucu (ne olduğunu açıklar).
 class _RpeHeader extends StatelessWidget {
   const _RpeHeader();
@@ -2094,6 +2102,23 @@ class _SetRow extends StatelessWidget {
     final repsHint = sug?.reps?.toString();
     final timeHint =
         sug?.durationSec == null ? null : fmtDuration(sug!.durationSec!);
+    // Süreli sette sayaç (docs/27 F3): hedef = girilen süre, yoksa geçen
+    // seansın önerisi; sayaç süreyi yazar, seti tamamlamaz.
+    Widget timerCell() => SizedBox(
+        width: _timerColWidth,
+        child: set.done
+            ? null
+            : SetTimerButton(
+                // ValueKey: kayıt (record) her çizimde yeni nesne; ObjectKey
+                // kimlikle karşılaştırır ve canlı saatin her tıkında sayacın
+                // durumunu sıfırlardı. ValueKey alanları == ile karşılaştırır.
+                key: ValueKey((set, 'timer')),
+                targetSec: set.durationSec ?? sug?.durationSec,
+                onDone: (sec) {
+                  set.durationSec = sec;
+                  set.fillGen++; // süre alanı yeni değerle kurulsun
+                  onChanged();
+                }));
     Widget rpeCell() => SizedBox(
         width: 44,
         child: _RpeCell(
@@ -2134,6 +2159,7 @@ class _SetRow extends StatelessWidget {
                     set.durationSec = v;
                     onChanged();
                   })),
+          timerCell(),
         ];
       case 'distance':
         return [
@@ -2161,6 +2187,7 @@ class _SetRow extends StatelessWidget {
                     set.durationSec = v;
                     onChanged();
                   })),
+          timerCell(),
         ];
       default:
         return [

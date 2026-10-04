@@ -516,6 +516,19 @@
       }
     }
   },
+  "rbAddWarmUp": "Add warm-up",
+  "rbAddWarmUpHint": "Puts a dynamic full-body warm-up at the start",
+  "rbWarmUpMissing": "Warm-up exercise not found in the library",
+  "rpSetCount": "{count, plural, =1{1 set} other{{count} sets}}",
+  "@rpSetCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "asTimerStart": "Start timer",
+  "asTimerStop": "Stop timer",
   "elPickTitle": "Pick Exercise",
   "elSearchHint": "Search exercises…",
   "elRecent": "Recently used",

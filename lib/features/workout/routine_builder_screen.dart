@@ -91,6 +91,25 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
         )));
   }
 
+  bool get _hasWarmUp =>
+      _items.any((i) => i.exercise.name == WorkoutUi.warmUpExerciseName);
+
+  /// Isınma kısayolu (docs/27 F3): hazır "Dynamic Warm-Up" hareketini 1 set,
+  /// dinlenmesiz olarak listenin başına koyar. Süre seansta sayaçla girilir.
+  Future<void> _addWarmUp() async {
+    final ex = await ref
+        .read(workoutDaoProvider)
+        .getSeedExerciseByName(WorkoutUi.warmUpExerciseName);
+    if (!mounted) return;
+    if (ex == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppL10n.of(context).rbWarmUpMissing)));
+      return;
+    }
+    if (_hasWarmUp) return;
+    setState(() => _items.insert(0, _BuilderItem(ex, sets: 1, restSec: 0)));
+  }
+
   Future<void> _save() async {
     if (_saving) return;
     final name = _nameCtrl.text.trim();
@@ -133,8 +152,9 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
               exerciseId: Value(_items[i].exercise.id),
               orderIndex: Value(i),
               targetSets: Value(_items[i].sets),
-              targetRepsMin: Value(_items[i].repsMin),
-              targetRepsMax: Value(_items[i].repsMax),
+              // Süreli harekette tekrar aralığı anlamsız — boş kalır.
+              targetRepsMin: Value(_timed(_items[i]) ? null : _items[i].repsMin),
+              targetRepsMax: Value(_timed(_items[i]) ? null : _items[i].repsMax),
               targetRestSec: Value(_items[i].restSec),
             ),
         ],
@@ -212,6 +232,7 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                           padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0,
                               AppSpacing.lg, AppSpacing.lg),
                           children: [
+                            _AddWarmUpButton(onTap: _addWarmUp),
                             DottedBorderBox(
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -233,6 +254,9 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                           padding: const EdgeInsets.fromLTRB(
                               AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
                           itemCount: _items.length,
+                          header: _hasWarmUp
+                              ? null
+                              : _AddWarmUpButton(onTap: _addWarmUp),
                           footer: Padding(
                             padding: const EdgeInsets.only(top: AppSpacing.md),
                             child: _AddExerciseButton(onTap: _addExercise),
@@ -266,6 +290,32 @@ class _RoutineBuilderScreenState extends ConsumerState<RoutineBuilderScreen> {
                 onTap: _save,
               ),
             ),
+    );
+  }
+}
+
+bool _timed(_BuilderItem i) => WorkoutUi.isTimed(i.exercise.measurementType);
+
+/// "Isınma ekle" kısayolu — rutinde ısınma yoksa listenin üstünde görünür.
+class _AddWarmUpButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AddWarmUpButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: ActionChip(
+          avatar: Icon(Icons.local_fire_department_rounded,
+              size: AppIconSize.sm, color: context.semantic.warning),
+          label: Text(l.rbAddWarmUp),
+          tooltip: l.rbAddWarmUpHint,
+          onPressed: onTap,
+        ),
+      ),
     );
   }
 }
@@ -404,6 +454,7 @@ class _ItemCard extends StatelessWidget {
                     onChanged();
                   },
                 ),
+                if (!_timed(item)) ...[
                 AppSpacing.hGapLg,
                 Expanded(
                   child: _RepRange(
@@ -416,6 +467,7 @@ class _ItemCard extends StatelessWidget {
                     },
                   ),
                 ),
+                ],
               ],
             ),
             AppSpacing.vGapSm,

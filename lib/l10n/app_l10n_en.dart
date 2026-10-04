@@ -810,6 +810,62 @@ class AppL10nEn extends AppL10n {
   String get rpe6 => 'Easy / warm-up set';
 
   @override
+  String rpePick_title(int set) {
+    return 'Set $set RPE';
+  }
+
+  @override
+  String get rpePick_select => 'Select RPE';
+
+  @override
+  String get rpePick_done => 'Done';
+
+  @override
+  String get rpePick_clear => 'Clear';
+
+  @override
+  String get rpeEffort_light => 'Light effort';
+
+  @override
+  String get rpeEffort_moderate => 'Moderate effort';
+
+  @override
+  String get rpeEffort_vigorous => 'Vigorous effort';
+
+  @override
+  String get rpeEffort_veryHard => 'Very hard effort';
+
+  @override
+  String get rpeEffort_extremelyHard => 'Extremely hard effort';
+
+  @override
+  String get rpeEffort_max => 'Max effort';
+
+  @override
+  String get rpeRir_none => 'No more reps possible';
+
+  @override
+  String rpeRir_exact(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Could have done $count more reps',
+      one: 'Could have done 1 more rep',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rpeRir_range(int min, int max) {
+    return 'Could have done $min–$max more reps';
+  }
+
+  @override
+  String rpeRir_atLeast(int count) {
+    return 'Could have done $count+ more reps';
+  }
+
+  @override
   String get elPickTitle => 'Pick Exercise';
 
   @override

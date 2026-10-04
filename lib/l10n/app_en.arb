@@ -471,6 +471,51 @@
   "rpe8": "2 reps left in reserve",
   "rpe7": "3-4 reps in reserve",
   "rpe6": "Easy / warm-up set",
+  "rpePick_title": "Set {set} RPE",
+  "@rpePick_title": {
+    "placeholders": {
+      "set": {
+        "type": "int"
+      }
+    }
+  },
+  "rpePick_select": "Select RPE",
+  "rpePick_done": "Done",
+  "rpePick_clear": "Clear",
+  "rpeEffort_light": "Light effort",
+  "rpeEffort_moderate": "Moderate effort",
+  "rpeEffort_vigorous": "Vigorous effort",
+  "rpeEffort_veryHard": "Very hard effort",
+  "rpeEffort_extremelyHard": "Extremely hard effort",
+  "rpeEffort_max": "Max effort",
+  "rpeRir_none": "No more reps possible",
+  "rpeRir_exact": "{count, plural, =1{Could have done 1 more rep} other{Could have done {count} more reps}}",
+  "@rpeRir_exact": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rpeRir_range": "Could have done {min}–{max} more reps",
+  "@rpeRir_range": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "rpeRir_atLeast": "Could have done {count}+ more reps",
+  "@rpeRir_atLeast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "elPickTitle": "Pick Exercise",
   "elSearchHint": "Search exercises…",
   "elRecent": "Recently used",

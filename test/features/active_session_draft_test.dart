@@ -117,7 +117,8 @@ void main() {
     await tester.pump();
   }
 
-  Finder kgField(int set) => find.byType(TextField).at(set * 3);
+  // Set başına iki metin kutusu (kg, tekrar); RPE seçici panelle girilir.
+  Finder kgField(int set) => find.byType(TextField).at(set * 2);
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});

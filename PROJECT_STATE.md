@@ -14,6 +14,15 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v13 · **Sahibi:** Samet Orhan (kişisel proje)
 
+## 🎚️ RPE seçicisi ✅ — 2026-10-04 · docs/27 F4
+
+Hevy incelemesinden (docs/27) ilk iş. RPE (Algılanan Zorluk) artık klavyeyle
+yazılmıyor: hücreye dokununca 6–10 yarım adımlı şerit açılıyor, seçilen
+değerin efor etiketi ("Çok zor") ve kaç tekrar kaldığı ("2 tekrar daha
+yapabilirdin") canlı görünüyor. Şema değişmedi; eski değerler korunuyor.
+`rpe_scale.dart` + `rpe_picker_sheet.dart`, 9 yeni test, toplam 672 yeşil.
+Ücretli/ücretsiz ayrımı prensibi docs/27'ye yazıldı (karar satıştan önce).
+
 ## 📱 Ana cihaz iPhone 17 oldu ✅ — 2026-10-04
 
 Samet günlük telefon olarak iPhone 17'ye geçti; SM A075F test cihazı olarak

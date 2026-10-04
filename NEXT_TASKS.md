@@ -1,5 +1,19 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## 🧭 Hevy incelemesi → antrenman yol haritası (2026-10-04) · [docs/27](docs/27-hevy-inceleme.md)
+
+- [x] **F4 RPE seçicisi (2026-10-04)** — klavye yerine 6–10 yarım adımlı
+      panel, efor etiketi + kaç tekrar kaldığı. Şema yok. 9 yeni test, toplam
+      672 yeşil; Android emülatöründe (Dev hesabı) görsel doğrulandı.
+- [ ] F3 Isınma = rutinin ilk hareketi + süreli harekete geri sayım sayacı
+- [ ] F1 Hazır program kataloğu (seviye × bölünme × ekipman) — tasarım dokümanı
+- [ ] F2 Rutinde set bazlı plan (ısınma setleri) — tasarım dokümanı
+- [ ] F5 RPE'yi mevcut çift ilerleme önerisine (`progression.dart`) katmak —
+      tasarım dokümanı
+- [ ] **Satıştan önce katman kararı:** hangi özellikler ücretli (docs/27
+      "Ücretli / ücretsiz ayrımı"). Prensip: hepsi şimdi ücretsiz, tek kontrol
+      noktası, kullanıcı verisi asla kilitlenmez.
+
 ## 📱 iPhone ana cihaz (2026-10-04)
 
 - [x] Release derlemesi iPhone 17'ye kuruldu, açıldı; iOS hedefi 15.0.

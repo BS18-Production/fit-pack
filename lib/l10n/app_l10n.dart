@@ -1519,6 +1519,90 @@ abstract class AppL10n {
   /// **'Easy / warm-up set'**
   String get rpe6;
 
+  /// No description provided for @rpePick_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {set} RPE'**
+  String rpePick_title(int set);
+
+  /// No description provided for @rpePick_select.
+  ///
+  /// In en, this message translates to:
+  /// **'Select RPE'**
+  String get rpePick_select;
+
+  /// No description provided for @rpePick_done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get rpePick_done;
+
+  /// No description provided for @rpePick_clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get rpePick_clear;
+
+  /// No description provided for @rpeEffort_light.
+  ///
+  /// In en, this message translates to:
+  /// **'Light effort'**
+  String get rpeEffort_light;
+
+  /// No description provided for @rpeEffort_moderate.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate effort'**
+  String get rpeEffort_moderate;
+
+  /// No description provided for @rpeEffort_vigorous.
+  ///
+  /// In en, this message translates to:
+  /// **'Vigorous effort'**
+  String get rpeEffort_vigorous;
+
+  /// No description provided for @rpeEffort_veryHard.
+  ///
+  /// In en, this message translates to:
+  /// **'Very hard effort'**
+  String get rpeEffort_veryHard;
+
+  /// No description provided for @rpeEffort_extremelyHard.
+  ///
+  /// In en, this message translates to:
+  /// **'Extremely hard effort'**
+  String get rpeEffort_extremelyHard;
+
+  /// No description provided for @rpeEffort_max.
+  ///
+  /// In en, this message translates to:
+  /// **'Max effort'**
+  String get rpeEffort_max;
+
+  /// No description provided for @rpeRir_none.
+  ///
+  /// In en, this message translates to:
+  /// **'No more reps possible'**
+  String get rpeRir_none;
+
+  /// No description provided for @rpeRir_exact.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Could have done 1 more rep} other{Could have done {count} more reps}}'**
+  String rpeRir_exact(int count);
+
+  /// No description provided for @rpeRir_range.
+  ///
+  /// In en, this message translates to:
+  /// **'Could have done {min}–{max} more reps'**
+  String rpeRir_range(int min, int max);
+
+  /// No description provided for @rpeRir_atLeast.
+  ///
+  /// In en, this message translates to:
+  /// **'Could have done {count}+ more reps'**
+  String rpeRir_atLeast(int count);
+
   /// No description provided for @elPickTitle.
   ///
   /// In en, this message translates to:

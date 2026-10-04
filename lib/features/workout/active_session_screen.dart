@@ -22,6 +22,8 @@ import '../../shared/widgets/app_state_views.dart';
 import 'exercise_detail_screen.dart';
 import 'progression.dart';
 import 'record_calc.dart';
+import 'rpe_picker_sheet.dart';
+import 'rpe_scale.dart';
 import 'session_progress.dart';
 import 'set_prefill.dart';
 import 'weight_step.dart';
@@ -2076,7 +2078,16 @@ class _SetRow extends StatelessWidget {
 
   /// Ölçüm tipine göre orta giriş hücreleri (header ile aynı genişlik düzeni).
   /// Boş alanın ipucu = ✓ önerisi (G-2); öneri yoksa eski sabit ipucu.
-  List<Widget> _inputCols() {
+  /// Panel başlığının altı: "80 kg × 8" (yalnız girilmiş alanlar).
+  String? _setSummary() {
+    final parts = [
+      if (set.weight != null) units.lift(set.weight!),
+      if (set.reps != null) '${set.reps}',
+    ];
+    return parts.isEmpty ? null : parts.join(' × ');
+  }
+
+  List<Widget> _inputCols(BuildContext context) {
     final sug = suggestion;
     // Koddan doldurulunca alan yeni değerle yeniden kurulsun (fillGen).
     Key k(String field) => ValueKey('$field-${set.fillGen}');
@@ -2085,13 +2096,16 @@ class _SetRow extends StatelessWidget {
         sug?.durationSec == null ? null : fmtDuration(sug!.durationSec!);
     Widget rpeCell() => SizedBox(
         width: 44,
-        child: _NumCell(
+        child: _RpeCell(
             key: k('rpe'),
             value: set.rpe,
-            decimal: true,
-            hint: '–',
-            onChanged: (v) {
-              set.rpe = v;
+            onTap: () async {
+              final picked = await showRpePicker(context,
+                  setNumber: index + 1,
+                  initial: set.rpe,
+                  setSummary: _setSummary());
+              if (picked == null) return;
+              set.rpe = picked.rpe;
               onChanged();
             }));
     switch (measure) {
@@ -2244,7 +2258,7 @@ class _SetRow extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     fontFeatures: const [FontFeature.tabularFigures()])),
           ),
-          ..._inputCols(),
+          ..._inputCols(context),
           SizedBox(
             width: 42,
             child: Center(
@@ -2314,6 +2328,42 @@ class _NumCell extends StatelessWidget {
         ),
         onChanged: (v) =>
             onChanged(double.tryParse(v.replaceAll(',', '.'))),
+      ),
+    );
+  }
+}
+
+/// RPE hücresi — klavye açmaz, dokununca seçici paneli açılır (docs/27 F4).
+/// Görünüm diğer giriş hücreleriyle aynı (tema giriş dekorasyonu).
+class _RpeCell extends StatelessWidget {
+  final double? value;
+  final VoidCallback onTap;
+  const _RpeCell({super.key, required this.value, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final v = value;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.brSm,
+        child: InputDecorator(
+          decoration: const InputDecoration(
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          ),
+          textAlign: TextAlign.center,
+          child: Text(
+            v == null
+                ? '–'
+                : formatRpe(v, decimalSep: context.numFmt.symbols.DECIMAL_SEP),
+            textAlign: TextAlign.center,
+            style: v == null
+                ? _hintStyle(context)
+                : context.texts.bodyLarge,
+          ),
+        ),
       ),
     );
   }

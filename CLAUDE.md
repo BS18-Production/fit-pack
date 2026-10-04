@@ -15,6 +15,9 @@ Flutter · Drift (SQLite, lokal) · Riverpod · GoRouter · fl_chart · Supabase
 - **Yol:** `/Users/sametorhan/dev/fit_pack`
 - **GitHub:** `BS18-Production/fit-pack` (public)
 - **Package:** `com.sametorhan.fit_pack` · minSdk 24 · şema v13
+- **Ana cihaz:** iPhone 17 (gerçek, iOS 26.6, ID `00008150-000214C02E03C01C`)
+  — Samet'in günlük telefonu, üretim verisi. Ücretsiz Apple hesabı → imza
+  7 günde bir yenilenir (aynı komutla yeniden kur, veri silinmez).
 - **Test cihazı:** SM A075F (Android, ID `R96YB00XJPB`)
 
 ## Oturum Başında Oku (bu sırayla)
@@ -45,7 +48,8 @@ flutter pub get
 dart run build_runner build --delete-conflicting-outputs   # tablo/DAO değişince
 flutter analyze                                             # 0 uyarı hedefi
 flutter test
-flutter run -d R96YB00XJPB                                  # cihazda çalıştır
+flutter run -d R96YB00XJPB                                  # Android test cihazı
+flutter build ios --release && flutter install -d 00008150-000214C02E03C01C --release   # iPhone (ana)
 ```
 
 ## Kritik Hatırlatmalar

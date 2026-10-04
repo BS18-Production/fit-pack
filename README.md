@@ -34,6 +34,9 @@ dart run drift_dev schema generate drift_schemas/ test/migrations/schema/
 # Android emülatörde çalıştır
 flutter run -d R96YB00XJPB
 
+# iPhone 17 (ana telefon) — release kur (debug bilgisayarsız açılmaz)
+flutter build ios --release && flutter install -d 00008150-000214C02E03C01C --release
+
 # iOS simulator
 flutter run -d 92EFAB82-82C1-459D-A925-27DAA867E869
 ```
@@ -63,9 +66,10 @@ lib/
 └── shared/        # Birden fazla feature'da kullanılan widget'lar
 ```
 
-## Test Cihazı
+## Cihazlar
 
-- **Android (primary):** SM A075F (ID: `R96YB00XJPB`)
+- **iPhone 17 (ana, gerçek cihaz):** iOS 26.6 (ID: `00008150-000214C02E03C01C`) — günlük kullanım, üretim verisi. Ücretsiz Apple hesabıyla imzalı → 7 günde bir yeniden kurulmalı.
+- **Android (test):** SM A075F (ID: `R96YB00XJPB`)
 - **iOS sim:** iPhone 17 · iOS 26.2 (`9A4796B8-F70E-4FBC-8DCE-CB0AD328BC9C`) — Codex incelemesi burada yapılır
 - **AVD:** FitPack (`emulator-5554`)
 

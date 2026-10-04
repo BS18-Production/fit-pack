@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-09-30
+> **Son güncelleme:** 2026-10-04
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -13,6 +13,14 @@
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v13 · **Sahibi:** Samet Orhan (kişisel proje)
+
+## 📱 Ana cihaz iPhone 17 oldu ✅ — 2026-10-04
+
+Samet günlük telefon olarak iPhone 17'ye geçti; SM A075F test cihazı olarak
+kaldı. Fit Pack release derlemesi gerçek iPhone'a kuruldu ve açıldı (üretim
+Supabase'i). Xcode 27 iOS 15 altı hedefi kabul etmediği için Runner ve tüm
+pod'ların hedefi 15.0'a çekildi (`ios/Podfile` post_install). İmza ücretsiz
+Personal Team ile → profil 7 gün geçerli (ilki 2026-10-11'de biter).
 
 ## 🍽️ Yemek ekleme paneli yeniden tasarlandı ✅ — 2026-09-30
 
@@ -745,5 +753,5 @@ Değişiklik istenirse v1.x bump yapılır, yoksa final lock.
 
 - **Repo:** `/Users/sametorhan/dev/fit_pack`
 - **Docs:** `/Users/sametorhan/dev/fit_pack/docs/`
-- **Cihazlar:** Android SM A075F `R96YB00XJPB`, iOS sim `92EFAB82-82C1-459D-A925-27DAA867E869`
+- **Cihazlar:** iPhone 17 (ana) `00008150-000214C02E03C01C`, Android SM A075F (test) `R96YB00XJPB`, iOS sim `92EFAB82-82C1-459D-A925-27DAA867E869`
 - **Hafıza:** `~/.claude/projects/-Users-sametorhan/memory/project_fit_pack.md`

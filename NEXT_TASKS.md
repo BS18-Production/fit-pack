@@ -1,5 +1,12 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## 📱 iPhone ana cihaz (2026-10-04)
+
+- [x] Release derlemesi iPhone 17'ye kuruldu, açıldı; iOS hedefi 15.0.
+- [ ] **İmza süresi:** ücretsiz hesap → 2026-10-11'de dolar; o zamana kadar
+      yeniden kur. Kalıcı çözüm Apple Developer Program (yıllık 99 $, 1 yıllık
+      imza + TestFlight) — Samet'in kararı.
+
 ## 🍽️ Yemek ekleme paneli — yeniden tasarım ✅ (2026-09-30)
 
 **Problem:** bir besin eklemek ≥3 adım (satır → alttaki panel → Ekle);

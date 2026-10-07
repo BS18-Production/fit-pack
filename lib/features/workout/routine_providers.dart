@@ -14,6 +14,14 @@ final activeRoutinesProvider = StreamProvider<List<Routine>>((ref) {
       () => ref.read(workoutDaoProvider).getActiveRoutines());
 });
 
+/// Arşivdeki rutinler (Antrenman sekmesi → Arşiv). Reaktif: arşivleme /
+/// geri alma kendiliğinden yansır.
+final archivedRoutinesProvider = StreamProvider<List<Routine>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return watchTables(db, [db.routines],
+      () => ref.read(workoutDaoProvider).getArchivedRoutines());
+});
+
 final routineExercisesProvider =
     StreamProvider.family<List<RoutineExerciseWithExercise>, int>((ref, id) {
   final db = ref.watch(databaseProvider);

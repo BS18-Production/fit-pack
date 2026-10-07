@@ -414,7 +414,12 @@
   "wsUnknownExercise": "Exercise",
   "rpFallback": "Routine",
   "rpArchiveTitle": "Archive routine",
-  "rpArchiveMsg": "Remove this routine from the list? Past workouts are kept.",
+  "rpArchiveMsg": "It moves to Archive at the bottom of the Workout tab; you can restore it anytime. Past workouts are kept.",
+  "rpArchived": "Routine archived",
+  "workoutArchiveSection": "Archive ({count})",
+  "workoutArchiveRestore": "Restore",
+  "workoutArchiveRestored": "{name} is back in your routines",
+  "workoutArchiveHint": "Archived routines don't appear in your list or schedule. Past workouts stay in history.",
   "rpStart": "Start Workout",
   "rpLoadError": "Couldn't load routine",
   "rpEmptyTitle": "This routine is empty",
@@ -937,6 +942,20 @@
     }
   },
   "workoutRoutineCount": "{count, plural, =1{1 routine} other{{count} routines}}",
+  "@workoutArchiveSection": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@workoutArchiveRestored": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "@workoutRoutineCount": {
     "placeholders": {
       "count": {

@@ -45,9 +45,26 @@ class RoutinePreviewScreen extends ConsumerWidget {
                 message: l.rpArchiveMsg,
                 confirmLabel: l.commonArchive,
               );
-              if (!ok) return;
-              await ref.read(workoutDaoProvider).archiveRoutine(routineId);
+              if (!ok || !context.mounted) return;
+              // "Geri al" ekran kapandıktan sonra çalışır → DAO ve
+              // messenger şimdiden yakalanır (CONVENTIONS §2).
+              final dao = ref.read(workoutDaoProvider);
+              final messenger = ScaffoldMessenger.of(context);
+              try {
+                await dao.archiveRoutine(routineId);
+              } catch (_) {
+                messenger.showSnackBar(SnackBar(content: Text(l.rbSaveError)));
+                return;
+              }
               // Rutin provider'ları reaktif (H-05) → arşivleme kendiliğinden yansır.
+              messenger.showSnackBar(SnackBar(
+                content: Text(l.rpArchived),
+                persist: false,
+                action: SnackBarAction(
+                  label: l.commonUndo,
+                  onPressed: () => dao.unarchiveRoutine(routineId),
+                ),
+              ));
               if (context.mounted) context.pop();
             },
           ),

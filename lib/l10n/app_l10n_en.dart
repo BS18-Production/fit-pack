@@ -688,7 +688,27 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get rpArchiveMsg =>
-      'Remove this routine from the list? Past workouts are kept.';
+      'It moves to Archive at the bottom of the Workout tab; you can restore it anytime. Past workouts are kept.';
+
+  @override
+  String get rpArchived => 'Routine archived';
+
+  @override
+  String workoutArchiveSection(int count) {
+    return 'Archive ($count)';
+  }
+
+  @override
+  String get workoutArchiveRestore => 'Restore';
+
+  @override
+  String workoutArchiveRestored(String name) {
+    return '$name is back in your routines';
+  }
+
+  @override
+  String get workoutArchiveHint =>
+      'Archived routines don\'t appear in your list or schedule. Past workouts stay in history.';
 
   @override
   String get rpStart => 'Start Workout';

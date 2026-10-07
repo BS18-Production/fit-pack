@@ -1288,8 +1288,38 @@ abstract class AppL10n {
   /// No description provided for @rpArchiveMsg.
   ///
   /// In en, this message translates to:
-  /// **'Remove this routine from the list? Past workouts are kept.'**
+  /// **'It moves to Archive at the bottom of the Workout tab; you can restore it anytime. Past workouts are kept.'**
   String get rpArchiveMsg;
+
+  /// No description provided for @rpArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Routine archived'**
+  String get rpArchived;
+
+  /// No description provided for @workoutArchiveSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive ({count})'**
+  String workoutArchiveSection(int count);
+
+  /// No description provided for @workoutArchiveRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get workoutArchiveRestore;
+
+  /// No description provided for @workoutArchiveRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is back in your routines'**
+  String workoutArchiveRestored(String name);
+
+  /// No description provided for @workoutArchiveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived routines don\'t appear in your list or schedule. Past workouts stay in history.'**
+  String get workoutArchiveHint;
 
   /// No description provided for @rpStart.
   ///

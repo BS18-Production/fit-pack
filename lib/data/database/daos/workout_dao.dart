@@ -32,6 +32,18 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
       (update(routines)..where((r) => r.id.equals(id)))
           .write(const RoutinesCompanion(isArchived: Value(true)));
 
+  /// Arşivdeki rutinler — Antrenman sekmesinin "Arşiv" bölümü (ad sırası).
+  Future<List<Routine>> getArchivedRoutines() => (select(routines)
+        ..where((r) => r.isArchived.equals(true))
+        ..orderBy([(r) => OrderingTerm.asc(r.name), (r) => OrderingTerm.asc(r.id)]))
+      .get();
+
+  /// Arşivden çıkarır — rutin eski yerine (orderIndex) döner. Senkron
+  /// tetikleyicisi güncellemeyi kuyruğa alır (arşivleme gibi).
+  Future<void> unarchiveRoutine(int id) =>
+      (update(routines)..where((r) => r.id.equals(id)))
+          .write(const RoutinesCompanion(isArchived: Value(false)));
+
   /// Bir rutinin hareketleri (sıralı) + hareket bilgisiyle join.
   Future<List<RoutineExerciseWithExercise>> getRoutineExercises(
       int routineId) async {

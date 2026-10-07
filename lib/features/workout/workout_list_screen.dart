@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/units/units.dart';
 import '../../data/database/app_database.dart';
+import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'routine_providers.dart';
@@ -91,6 +92,7 @@ class WorkoutListScreen extends ConsumerWidget {
                         onTap: () => context.push(AppRoutes.routineNew),
                       ),
                     ],
+                    const _ArchivedRoutines(),
                   ],
                 );
               },
@@ -335,6 +337,77 @@ class _EmptyWorkoutButton extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────── Yeni Rutin (dashed)
+
+// ───────────────────────────────────────────────────────────────── Arşiv
+
+/// Arşivdeki rutinler — listenin altında kapalı duran bölüm. Arşivlenen rutin
+/// önceden uygulamada hiçbir yerde görünmüyordu (Samet, 2026-10-07); burada
+/// görülür ve tek dokunuşla geri alınır. Arşiv boşsa hiç çizilmez.
+class _ArchivedRoutines extends ConsumerWidget {
+  const _ArchivedRoutines();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final archived = ref.watch(archivedRoutinesProvider).valueOrNull ?? const [];
+    if (archived.isEmpty) return const SizedBox.shrink();
+    final l = AppL10n.of(context);
+    final muted = context.colors.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.lg),
+      child: Theme(
+        // ExpansionTile'ın açılınca çizdiği ayraç çizgileri olmasın.
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: const ValueKey('archived-routines'),
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: EdgeInsets.zero,
+          leading: Icon(Icons.archive_outlined, color: muted, size: AppIconSize.md),
+          title: Text(
+            l.workoutArchiveSection(archived.length),
+            style: context.texts.titleSmall?.copyWith(color: muted),
+          ),
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Text(
+                  l.workoutArchiveHint,
+                  style: context.texts.bodySmall?.copyWith(color: muted),
+                ),
+              ),
+            ),
+            for (final r in archived)
+              ListTile(
+                key: ValueKey('archived-${r.id}'),
+                contentPadding: EdgeInsets.zero,
+                title: Text(r.name, style: context.texts.bodyLarge),
+                trailing: TextButton.icon(
+                  onPressed: () => _restore(context, ref, r),
+                  icon: const Icon(Icons.unarchive_outlined, size: AppIconSize.sm),
+                  label: Text(l.workoutArchiveRestore),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _restore(BuildContext context, WidgetRef ref, Routine r) async {
+    final l = AppL10n.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(workoutDaoProvider).unarchiveRoutine(r.id);
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(l.rbSaveError)));
+      return;
+    }
+    // Rutin provider'ları reaktif (H-05) → liste ve arşiv kendiliğinden yenilenir.
+    messenger.showSnackBar(
+        SnackBar(content: Text(l.workoutArchiveRestored(r.name))));
+  }
+}
 
 class _NewRoutineButton extends StatelessWidget {
   final VoidCallback onTap;

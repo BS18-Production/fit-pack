@@ -681,7 +681,27 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get rpArchiveMsg =>
-      'Bu rutin listeden kaldırılsın mı? Geçmiş antrenmanlar korunur.';
+      'Antrenman sekmesinin altındaki Arşiv\'e taşınır; istediğin zaman geri alabilirsin. Geçmiş antrenmanlar korunur.';
+
+  @override
+  String get rpArchived => 'Rutin arşivlendi';
+
+  @override
+  String workoutArchiveSection(int count) {
+    return 'Arşiv ($count)';
+  }
+
+  @override
+  String get workoutArchiveRestore => 'Geri al';
+
+  @override
+  String workoutArchiveRestored(String name) {
+    return '$name rutinlerine geri döndü';
+  }
+
+  @override
+  String get workoutArchiveHint =>
+      'Arşivdeki rutinler listede ve haftalık planda görünmez. Geçmiş antrenmanlar geçmişte kalır.';
 
   @override
   String get rpStart => 'Antrenmana Başla';

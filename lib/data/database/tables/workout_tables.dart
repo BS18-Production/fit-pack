@@ -78,6 +78,10 @@ class Routines extends Table with SyncColumns {
   IntColumn get scheduledWeekday => integer().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   BoolColumn get isArchived => boolean().withDefault(const Constant(false))();
+  // v14 (docs/28): Keşfet'ten kopyalandığı hazır program (ör.
+  // `ppl_intermediate`) — Rutinlerim'de program adıyla gruplanır. Kullanıcının
+  // kendi rutininde NULL.
+  TextColumn get programKey => text().nullable()();
 }
 
 /// Bir rutindeki hareketler + hedef set×tekrar (sürükle-bırak sıralı).

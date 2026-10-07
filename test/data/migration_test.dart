@@ -28,8 +28,8 @@ void main() {
     'user_profile',
   };
 
-  group('Schema v12', () {
-    test('schemaVersion 12\'de (artırınca bu test bilinçli kırılır)',
+  group('Schema v14', () {
+    test('schemaVersion 14\'te (artırınca bu test bilinçli kırılır)',
         () async {
       // Bu assertion bir TRIPWIRE'dır: biri schemaVersion'ı artırınca
       // burası kırılır → onUpgrade adımı + yeni göç testi eklemeden
@@ -45,11 +45,12 @@ void main() {
       // (docs/20 §4.1) · v11→v12: haftalık değerlendirme — user_profile
       // +goalDirection/+goalDirectionSince (docs/22 §6) · v12→v13: sunucu
       // saati düzeltmesi — tetikleyiciler changed_at_ms'e clock_offset_ms
-      // terimini ekliyor, tabloya dokunulmuyor (docs/23 §2).
+      // terimini ekliyor, tabloya dokunulmuyor (docs/23 §2) · v13→v14:
+      // routines +programKey — hazır program kataloğu (docs/28).
       // Lossless göç testleri: migrations/migration_v*_to_v*_test.dart.
       final db = newTestDatabase();
       addTearDown(db.close);
-      expect(db.schemaVersion, 13);
+      expect(db.schemaVersion, 14);
     });
 
     test('temiz kurulum (onCreate) beklenen tabloları yaratır', () async {

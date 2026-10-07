@@ -98,8 +98,13 @@ class AppDatabase extends _$AppDatabase {
   /// garanti: atlanan bir yazma = sessizce senkron edilmeyen veri.
   /// Katalog satırları (seed hareket/besin) hariç — onlar kullanılınca elle
   /// kuyruğa alınır. Tablo/kolon değişmez, yalnız tetikleyici eklenir.
+  ///
+  /// v13 → v14 (2026-10-08, hazır program kataloğu — docs/28):
+  /// `routines.program_key` (nullable). Sunucuya aynı kolon ÖNCE eklendi
+  /// (`supabase/migrations/20261008120000_routines_program_key.sql`).
+  /// Geri dönüş: eski sürüm kolonu bilmez, göndermez; değer silinmez.
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   /// v5→v6 gibi ARA göç adımları `m.createTable()` ile GÜNCEL tanımı kullanır —
   /// yani o adımda doğan tablo (routines, routine_exercises, water_intake)
@@ -439,6 +444,11 @@ class AppDatabase extends _$AppDatabase {
             await m.database.customStatement(createUpdateTriggerSql(name));
             await m.database.customStatement(createDeleteTriggerSql(name));
           }
+        }
+        // v13 → v14: hazır program anahtarı (docs/28). ALTER TABLE tetikleyici
+        // çalıştırmaz → hiçbir satır kuyruğa girmez.
+        if (from < 14 && to >= 14) {
+          await _addColumnIfMissing(m, routines, routines.programKey);
         }
       },
 

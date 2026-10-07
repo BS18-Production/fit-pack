@@ -3755,6 +3755,17 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _programKeyMeta = const VerificationMeta(
+    'programKey',
+  );
+  @override
+  late final GeneratedColumn<String> programKey = GeneratedColumn<String>(
+    'program_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     uid,
@@ -3771,6 +3782,7 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
     scheduledWeekday,
     createdAt,
     isArchived,
+    programKey,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3875,6 +3887,12 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
         isArchived.isAcceptableOrUnknown(data['is_archived']!, _isArchivedMeta),
       );
     }
+    if (data.containsKey('program_key')) {
+      context.handle(
+        _programKeyMeta,
+        programKey.isAcceptableOrUnknown(data['program_key']!, _programKeyMeta),
+      );
+    }
     return context;
   }
 
@@ -3940,6 +3958,10 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_archived'],
       )!,
+      programKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}program_key'],
+      ),
     );
   }
 
@@ -3995,6 +4017,7 @@ class Routine extends DataClass implements Insertable<Routine> {
   final int? scheduledWeekday;
   final DateTime createdAt;
   final bool isArchived;
+  final String? programKey;
   const Routine({
     this.uid,
     this.userId,
@@ -4010,6 +4033,7 @@ class Routine extends DataClass implements Insertable<Routine> {
     this.scheduledWeekday,
     required this.createdAt,
     required this.isArchived,
+    this.programKey,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4046,6 +4070,9 @@ class Routine extends DataClass implements Insertable<Routine> {
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['is_archived'] = Variable<bool>(isArchived);
+    if (!nullToAbsent || programKey != null) {
+      map['program_key'] = Variable<String>(programKey);
+    }
     return map;
   }
 
@@ -4079,6 +4106,9 @@ class Routine extends DataClass implements Insertable<Routine> {
           : Value(scheduledWeekday),
       createdAt: Value(createdAt),
       isArchived: Value(isArchived),
+      programKey: programKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(programKey),
     );
   }
 
@@ -4102,6 +4132,7 @@ class Routine extends DataClass implements Insertable<Routine> {
       scheduledWeekday: serializer.fromJson<int?>(json['scheduledWeekday']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       isArchived: serializer.fromJson<bool>(json['isArchived']),
+      programKey: serializer.fromJson<String?>(json['programKey']),
     );
   }
   @override
@@ -4122,6 +4153,7 @@ class Routine extends DataClass implements Insertable<Routine> {
       'scheduledWeekday': serializer.toJson<int?>(scheduledWeekday),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'isArchived': serializer.toJson<bool>(isArchived),
+      'programKey': serializer.toJson<String?>(programKey),
     };
   }
 
@@ -4140,6 +4172,7 @@ class Routine extends DataClass implements Insertable<Routine> {
     Value<int?> scheduledWeekday = const Value.absent(),
     DateTime? createdAt,
     bool? isArchived,
+    Value<String?> programKey = const Value.absent(),
   }) => Routine(
     uid: uid.present ? uid.value : this.uid,
     userId: userId.present ? userId.value : this.userId,
@@ -4157,6 +4190,7 @@ class Routine extends DataClass implements Insertable<Routine> {
         : this.scheduledWeekday,
     createdAt: createdAt ?? this.createdAt,
     isArchived: isArchived ?? this.isArchived,
+    programKey: programKey.present ? programKey.value : this.programKey,
   );
   Routine copyWithCompanion(RoutinesCompanion data) {
     return Routine(
@@ -4182,6 +4216,9 @@ class Routine extends DataClass implements Insertable<Routine> {
       isArchived: data.isArchived.present
           ? data.isArchived.value
           : this.isArchived,
+      programKey: data.programKey.present
+          ? data.programKey.value
+          : this.programKey,
     );
   }
 
@@ -4201,7 +4238,8 @@ class Routine extends DataClass implements Insertable<Routine> {
           ..write('orderIndex: $orderIndex, ')
           ..write('scheduledWeekday: $scheduledWeekday, ')
           ..write('createdAt: $createdAt, ')
-          ..write('isArchived: $isArchived')
+          ..write('isArchived: $isArchived, ')
+          ..write('programKey: $programKey')
           ..write(')'))
         .toString();
   }
@@ -4222,6 +4260,7 @@ class Routine extends DataClass implements Insertable<Routine> {
     scheduledWeekday,
     createdAt,
     isArchived,
+    programKey,
   );
   @override
   bool operator ==(Object other) =>
@@ -4240,7 +4279,8 @@ class Routine extends DataClass implements Insertable<Routine> {
           other.orderIndex == this.orderIndex &&
           other.scheduledWeekday == this.scheduledWeekday &&
           other.createdAt == this.createdAt &&
-          other.isArchived == this.isArchived);
+          other.isArchived == this.isArchived &&
+          other.programKey == this.programKey);
 }
 
 class RoutinesCompanion extends UpdateCompanion<Routine> {
@@ -4258,6 +4298,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
   final Value<int?> scheduledWeekday;
   final Value<DateTime> createdAt;
   final Value<bool> isArchived;
+  final Value<String?> programKey;
   const RoutinesCompanion({
     this.uid = const Value.absent(),
     this.userId = const Value.absent(),
@@ -4273,6 +4314,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     this.scheduledWeekday = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.isArchived = const Value.absent(),
+    this.programKey = const Value.absent(),
   });
   RoutinesCompanion.insert({
     this.uid = const Value.absent(),
@@ -4289,6 +4331,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     this.scheduledWeekday = const Value.absent(),
     required DateTime createdAt,
     this.isArchived = const Value.absent(),
+    this.programKey = const Value.absent(),
   }) : name = Value(name),
        createdAt = Value(createdAt);
   static Insertable<Routine> custom({
@@ -4306,6 +4349,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     Expression<int>? scheduledWeekday,
     Expression<DateTime>? createdAt,
     Expression<bool>? isArchived,
+    Expression<String>? programKey,
   }) {
     return RawValuesInsertable({
       if (uid != null) 'uid': uid,
@@ -4322,6 +4366,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
       if (scheduledWeekday != null) 'scheduled_weekday': scheduledWeekday,
       if (createdAt != null) 'created_at': createdAt,
       if (isArchived != null) 'is_archived': isArchived,
+      if (programKey != null) 'program_key': programKey,
     });
   }
 
@@ -4340,6 +4385,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     Value<int?>? scheduledWeekday,
     Value<DateTime>? createdAt,
     Value<bool>? isArchived,
+    Value<String?>? programKey,
   }) {
     return RoutinesCompanion(
       uid: uid ?? this.uid,
@@ -4356,6 +4402,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
       scheduledWeekday: scheduledWeekday ?? this.scheduledWeekday,
       createdAt: createdAt ?? this.createdAt,
       isArchived: isArchived ?? this.isArchived,
+      programKey: programKey ?? this.programKey,
     );
   }
 
@@ -4404,6 +4451,9 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     if (isArchived.present) {
       map['is_archived'] = Variable<bool>(isArchived.value);
     }
+    if (programKey.present) {
+      map['program_key'] = Variable<String>(programKey.value);
+    }
     return map;
   }
 
@@ -4423,7 +4473,8 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
           ..write('orderIndex: $orderIndex, ')
           ..write('scheduledWeekday: $scheduledWeekday, ')
           ..write('createdAt: $createdAt, ')
-          ..write('isArchived: $isArchived')
+          ..write('isArchived: $isArchived, ')
+          ..write('programKey: $programKey')
           ..write(')'))
         .toString();
   }
@@ -14788,6 +14839,7 @@ typedef $$RoutinesTableCreateCompanionBuilder =
       Value<int?> scheduledWeekday,
       required DateTime createdAt,
       Value<bool> isArchived,
+      Value<String?> programKey,
     });
 typedef $$RoutinesTableUpdateCompanionBuilder =
     RoutinesCompanion Function({
@@ -14805,6 +14857,7 @@ typedef $$RoutinesTableUpdateCompanionBuilder =
       Value<int?> scheduledWeekday,
       Value<DateTime> createdAt,
       Value<bool> isArchived,
+      Value<String?> programKey,
     });
 
 final class $$RoutinesTableReferences
@@ -14914,6 +14967,11 @@ class $$RoutinesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get programKey => $composableBuilder(
+    column: $table.programKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
   Expression<bool> routineExercisesRefs(
     Expression<bool> Function($$RoutineExercisesTableFilterComposer f) f,
   ) {
@@ -15018,6 +15076,11 @@ class $$RoutinesTableOrderingComposer
     column: $table.isArchived,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get programKey => $composableBuilder(
+    column: $table.programKey,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$RoutinesTableAnnotationComposer
@@ -15076,6 +15139,11 @@ class $$RoutinesTableAnnotationComposer
 
   GeneratedColumn<bool> get isArchived => $composableBuilder(
     column: $table.isArchived,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get programKey => $composableBuilder(
+    column: $table.programKey,
     builder: (column) => column,
   );
 
@@ -15147,6 +15215,7 @@ class $$RoutinesTableTableManager
                 Value<int?> scheduledWeekday = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<bool> isArchived = const Value.absent(),
+                Value<String?> programKey = const Value.absent(),
               }) => RoutinesCompanion(
                 uid: uid,
                 userId: userId,
@@ -15162,6 +15231,7 @@ class $$RoutinesTableTableManager
                 scheduledWeekday: scheduledWeekday,
                 createdAt: createdAt,
                 isArchived: isArchived,
+                programKey: programKey,
               ),
           createCompanionCallback:
               ({
@@ -15179,6 +15249,7 @@ class $$RoutinesTableTableManager
                 Value<int?> scheduledWeekday = const Value.absent(),
                 required DateTime createdAt,
                 Value<bool> isArchived = const Value.absent(),
+                Value<String?> programKey = const Value.absent(),
               }) => RoutinesCompanion.insert(
                 uid: uid,
                 userId: userId,
@@ -15194,6 +15265,7 @@ class $$RoutinesTableTableManager
                 scheduledWeekday: scheduledWeekday,
                 createdAt: createdAt,
                 isArchived: isArchived,
+                programKey: programKey,
               ),
           withReferenceMapper: (p0) => p0
               .map(

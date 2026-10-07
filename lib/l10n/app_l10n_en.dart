@@ -2088,6 +2088,35 @@ class AppL10nEn extends AppL10n {
       'Change the increment in Settings → Weight increment.';
 
   @override
+  String progIncreaseHard(String sets, int max, String inc, String rpe) {
+    return 'Last time: $sets — every set reached $max, but the hardest was RPE $rpe. Try +$inc; reps may drop in the first set.';
+  }
+
+  @override
+  String progHoldFailure(String sets) {
+    return 'Last time: $sets — at least one set was to failure (RPE 10). Repeat the same target before adding reps.';
+  }
+
+  @override
+  String progDecrease(String sets, int min, String inc) {
+    return 'Stuck below $min reps two sessions in a row, last one to failure. Drop −$inc and build back from $min reps.';
+  }
+
+  @override
+  String progApplyDecrease(String inc) {
+    return '−$inc';
+  }
+
+  @override
+  String progAppliedDecrease(String inc, int reps) {
+    return 'Applied: −$inc per set, $reps reps';
+  }
+
+  @override
+  String get progInfoRpe =>
+      'RPE also counts: if a set was to failure (RPE 10) you won\'t be pushed for an extra rep; stuck two sessions in a row suggests dropping one step.';
+
+  @override
   String syncLastBackup(String when) {
     return 'Last backup: $when';
   }

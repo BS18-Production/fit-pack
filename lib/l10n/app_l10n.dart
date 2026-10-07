@@ -3703,6 +3703,42 @@ abstract class AppL10n {
   /// **'Change the increment in Settings → Weight increment.'**
   String get progInfoSettings;
 
+  /// No description provided for @progIncreaseHard.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time: {sets} — every set reached {max}, but the hardest was RPE {rpe}. Try +{inc}; reps may drop in the first set.'**
+  String progIncreaseHard(String sets, int max, String inc, String rpe);
+
+  /// No description provided for @progHoldFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time: {sets} — at least one set was to failure (RPE 10). Repeat the same target before adding reps.'**
+  String progHoldFailure(String sets);
+
+  /// No description provided for @progDecrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Stuck below {min} reps two sessions in a row, last one to failure. Drop −{inc} and build back from {min} reps.'**
+  String progDecrease(String sets, int min, String inc);
+
+  /// No description provided for @progApplyDecrease.
+  ///
+  /// In en, this message translates to:
+  /// **'−{inc}'**
+  String progApplyDecrease(String inc);
+
+  /// No description provided for @progAppliedDecrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied: −{inc} per set, {reps} reps'**
+  String progAppliedDecrease(String inc, int reps);
+
+  /// No description provided for @progInfoRpe.
+  ///
+  /// In en, this message translates to:
+  /// **'RPE also counts: if a set was to failure (RPE 10) you won\'t be pushed for an extra rep; stuck two sessions in a row suggests dropping one step.'**
+  String get progInfoRpe;
+
   /// Account screen: when data last reached the server.
   ///
   /// In en, this message translates to:

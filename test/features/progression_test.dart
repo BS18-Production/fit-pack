@@ -146,4 +146,58 @@ void main() {
       );
     });
   });
+
+  group('RPE (docs/29) — yalnız tükeniş tarafı', () {
+    ProgressionAdvice? rpe(List<SetValues> sets, List<double?> rpes,
+            {List<SetValues> prev = const []}) =>
+        progressionFor(
+            lastWorkingSets: sets,
+            lastRpe: rpes,
+            previousWorkingSets: prev,
+            repsMin: 8,
+            repsMax: 12);
+
+    test('RPE girilmemişse eski kuralla birebir aynı', () {
+      for (final sets in [
+        [s(60, 12), s(60, 12)],
+        [s(60, 10), s(60, 9)],
+        [s(60, 7), s(60, 9)],
+      ]) {
+        expect(rpe(sets, [null, null])!.kind, advise(sets)!.kind);
+      }
+    });
+
+    test('aralıkta ama bir set RPE 10 → +1 tekrar zorlanmaz, düğme yok', () {
+      final a = rpe([s(60, 10), s(60, 9)], [8, 10])!;
+      expect(a.kind, ProgressionKind.holdAtFailure);
+      expect(a.actionable, isFalse);
+      expect(a.topRpe, 10);
+    });
+
+    test('aralıkta ve hepsi rahat (RPE 6) → yine +1 tekrar (kilo artırma YOK)',
+        () {
+      expect(rpe([s(60, 10), s(60, 9)], [6, 6])!.kind, ProgressionKind.addRep);
+    });
+
+    test('hepsi üst sınırda, en zoru 9.5 → kilo artır + uyarı', () {
+      final a = rpe([s(60, 12), s(60, 12)], [9, 9.5])!;
+      expect(a.kind, ProgressionKind.increaseWeight);
+      expect(a.hardIncrease, isTrue);
+      expect(rpe([s(60, 12), s(60, 12)], [8, 8])!.hardIncrease, isFalse);
+    });
+
+    test('iki seans üst üste altında + son RPE 10 → kilo düşür (düğmeyle)', () {
+      final a = rpe([s(60, 7), s(60, 6)], [10, 10], prev: [s(60, 7), s(60, 8)])!;
+      expect(a.kind, ProgressionKind.decreaseWeight);
+      expect(a.actionable, isTrue);
+      final applied = a.apply(s(60, 7), incrementKg: 2.5);
+      expect((applied.weightKg, applied.reps), (57.5, 8));
+    });
+
+    test('tek seans takılma ya da RPE 10 yoksa → yalnız tekrar et', () {
+      expect(rpe([s(60, 7)], [10])!.kind, ProgressionKind.repeat);
+      expect(rpe([s(60, 7)], [9], prev: [s(60, 7)])!.kind,
+          ProgressionKind.repeat);
+    });
+  });
 }

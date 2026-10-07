@@ -503,6 +503,31 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
         .get();
   }
 
+  /// Hareketin yapıldığı SONDAN İKİNCİ seanstaki setler (set numarası
+  /// sırasıyla) — RPE'li ilerlemede "üst üste iki seans aralığın altında"
+  /// kuralı için (docs/29). Yoksa boş liste.
+  Future<List<WorkoutSet>> getPreviousSessionSetsForExercise(
+      int exerciseId) async {
+    final rows = await (selectOnly(workoutSets).join([
+      innerJoin(workoutSessions,
+          workoutSessions.id.equalsExp(workoutSets.sessionId)),
+    ])
+          ..addColumns([workoutSets.sessionId])
+          ..where(workoutSets.exerciseId.equals(exerciseId))
+          ..groupBy([workoutSets.sessionId])
+          ..orderBy([
+            OrderingTerm.desc(workoutSessions.date),
+            OrderingTerm.desc(workoutSessions.id),
+          ])
+          ..limit(1, offset: 1))
+        .get();
+    if (rows.isEmpty) return const [];
+    final sessionId = rows.first.read(workoutSets.sessionId)!;
+    return (select(workoutSets)
+          ..where((s) => s.sessionId.equals(sessionId) & s.exerciseId.equals(exerciseId))
+          ..orderBy([(s) => OrderingTerm.asc(s.setNumber)]))
+        .get();
+  }
 }
 
 /// Bir hareketin son dönemdeki kullanımı (hareket arama v2).

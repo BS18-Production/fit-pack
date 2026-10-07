@@ -1293,6 +1293,65 @@
     }
   },
   "progInfoSettings": "Change the increment in Settings → Weight increment.",
+  "progIncreaseHard": "Last time: {sets} — every set reached {max}, but the hardest was RPE {rpe}. Try +{inc}; reps may drop in the first set.",
+  "progHoldFailure": "Last time: {sets} — at least one set was to failure (RPE 10). Repeat the same target before adding reps.",
+  "progDecrease": "Stuck below {min} reps two sessions in a row, last one to failure. Drop −{inc} and build back from {min} reps.",
+  "progApplyDecrease": "−{inc}",
+  "progAppliedDecrease": "Applied: −{inc} per set, {reps} reps",
+  "progInfoRpe": "RPE also counts: if a set was to failure (RPE 10) you won't be pushed for an extra rep; stuck two sessions in a row suggests dropping one step.",
+  "@progIncreaseHard": {
+    "placeholders": {
+      "sets": {
+        "type": "String"
+      },
+      "max": {
+        "type": "int"
+      },
+      "inc": {
+        "type": "String"
+      },
+      "rpe": {
+        "type": "String"
+      }
+    }
+  },
+  "@progHoldFailure": {
+    "placeholders": {
+      "sets": {
+        "type": "String"
+      }
+    }
+  },
+  "@progDecrease": {
+    "placeholders": {
+      "sets": {
+        "type": "String"
+      },
+      "min": {
+        "type": "int"
+      },
+      "inc": {
+        "type": "String"
+      }
+    }
+  },
+  "@progApplyDecrease": {
+    "placeholders": {
+      "inc": {
+        "type": "String"
+      }
+    }
+  },
+  "@progAppliedDecrease": {
+    "placeholders": {
+      "inc": {
+        "type": "String"
+      },
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
   "syncLastBackup": "Last backup: {when}",
   "@syncLastBackup": {
     "description": "Account screen: when data last reached the server.",

@@ -2075,6 +2075,35 @@ class AppL10nTr extends AppL10n {
       'Artış miktarını Ayarlar → Kilo artışı\'ndan değiştirebilirsin.';
 
   @override
+  String progIncreaseHard(String sets, int max, String inc, String rpe) {
+    return 'Geçen sefer: $sets — her sette $max tekrara ulaştın; en zor set RPE $rpe. +$inc dene, ilk sette tekrar düşebilir.';
+  }
+
+  @override
+  String progHoldFailure(String sets) {
+    return 'Geçen sefer: $sets — en az bir set tükenişteydi (RPE 10). Tekrar eklemeden önce aynı hedefi tekrarla.';
+  }
+
+  @override
+  String progDecrease(String sets, int min, String inc) {
+    return 'İki seanstır $min tekrarın altında kaldın, sonuncusu tükenişte. −$inc düşür, $min tekrardan yeniden kur.';
+  }
+
+  @override
+  String progApplyDecrease(String inc) {
+    return '−$inc';
+  }
+
+  @override
+  String progAppliedDecrease(String inc, int reps) {
+    return 'Uygulandı: her sete −$inc, $reps tekrar';
+  }
+
+  @override
+  String get progInfoRpe =>
+      'RPE de hesaba girer: bir set tükenişteyse (RPE 10) fazladan tekrar istenmez; iki seans üst üste takılırsan bir adım kilo düşürmek önerilir.';
+
+  @override
   String syncLastBackup(String when) {
     return 'Son yedekleme: $when';
   }

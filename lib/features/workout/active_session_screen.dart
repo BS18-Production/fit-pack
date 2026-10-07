@@ -389,6 +389,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       final ex = await dao.getExerciseById(de.exerciseId);
       if (ex == null) continue; // silinmiş/arşivlenmiş hareketi atla
       final lastSets = await dao.getLastSessionSetsForExercise(ex.id);
+      final prevSets = await dao.getPreviousSessionSetsForExercise(ex.id);
       final se = _SessionExercise(
         ex,
         de.sets
@@ -407,7 +408,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         restSec: de.restSec,
         inRoutine: targets.containsKey(ex.id),
         units: ref.read(unitsProvider),
-        advice: _adviceFor(ex, lastSets, targets[ex.id]),
+        advice: _adviceFor(ex, lastSets, prevSets, targets[ex.id]),
         appliedIncrementKg: de.appliedIncrementKg,
       );
       await _loadBests(se);
@@ -417,14 +418,20 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   /// Sonraki hedef önerisi (docs/21 #3): yalnız canlı seansta, rutin hedefi
   /// olan kilo×tekrar harekette. Isınma setleri hesaba katılmaz.
-  ProgressionAdvice? _adviceFor(
-      Exercise ex, List<WorkoutSet> lastSets, RoutineExercise? target) {
+  /// RPE (docs/29): geçen seansın set RPE'leri ve sondan ikinci seans da
+  /// girer — tükenişte +1 tekrar zorlanmaz, iki seans üst üste takılınca
+  /// kilo düşürme önerilir.
+  ProgressionAdvice? _adviceFor(Exercise ex, List<WorkoutSet> lastSets,
+      List<WorkoutSet> prevSets, RoutineExercise? target) {
     if (_isManual || target == null || ex.measurementType != 'weight_reps') {
       return null;
     }
+    final working = [for (final s in lastSets) if (!s.isWarmup) s];
     return progressionFor(
-      lastWorkingSets: [
-        for (final s in lastSets)
+      lastWorkingSets: [for (final s in working) SetValues.fromSet(s)],
+      lastRpe: [for (final s in working) s.rpe],
+      previousWorkingSets: [
+        for (final s in prevSets)
           if (!s.isWarmup) SetValues.fromSet(s),
       ],
       repsMin: target.targetRepsMin,
@@ -500,6 +507,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         final count = isCardioLike ? 1 : (it.routineExercise.targetSets ?? 3);
         final lastSets =
             await dao.getLastSessionSetsForExercise(it.exercise.id);
+        final prevSets =
+            await dao.getPreviousSessionSetsForExercise(it.exercise.id);
         final se = _SessionExercise(
           it.exercise,
           List.generate(count, (_) => _SetEntry()),
@@ -508,7 +517,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
               WorkoutUi.defaultRestSec(it.exercise.category),
           inRoutine: true,
           units: ref.read(unitsProvider),
-          advice: _adviceFor(it.exercise, lastSets, it.routineExercise),
+          advice: _adviceFor(
+              it.exercise, lastSets, prevSets, it.routineExercise),
         );
         await _loadBests(se); // anlık rekor rozeti için seans öncesi en iyiler
         _exercises.add(se);
@@ -1881,6 +1891,7 @@ class _ProgressionLine extends ConsumerWidget {
           ].join(', ')} ${units.weightUnit}';
     final applied = ex.appliedIncrementKg;
     final increase = advice.kind == ProgressionKind.increaseWeight;
+    final decrease = advice.kind == ProgressionKind.decreaseWeight;
     // "+1.25 kg" satır sonunda "+1.25 / kg" diye bölünmesin: bölünmez boşluk.
     String amount(double kg) => units.lift(kg).replaceAll(' ', '\u00A0');
 
@@ -1888,14 +1899,21 @@ class _ProgressionLine extends ConsumerWidget {
     if (applied != null) {
       text = increase
           ? l.progAppliedWeight(amount(applied), advice.repsMin)
-          : l.progAppliedReps;
+          : decrease
+              ? l.progAppliedDecrease(amount(applied), advice.repsMin)
+              : l.progAppliedReps;
     } else {
+      final rpe = advice.topRpe == null ? '' : _rpeText(advice.topRpe!);
       text = switch (advice.kind) {
-        ProgressionKind.increaseWeight =>
-          l.progIncrease(sets, advice.repsMax, amount(inc)),
+        ProgressionKind.increaseWeight => advice.hardIncrease
+            ? l.progIncreaseHard(sets, advice.repsMax, amount(inc), rpe)
+            : l.progIncrease(sets, advice.repsMax, amount(inc)),
         ProgressionKind.addRep =>
           l.progAddRep(sets, advice.repsMin, advice.repsMax),
         ProgressionKind.repeat => l.progRepeat(sets, advice.repsMin),
+        ProgressionKind.holdAtFailure => l.progHoldFailure(sets),
+        ProgressionKind.decreaseWeight =>
+          l.progDecrease(sets, advice.repsMin, amount(inc)),
       };
     }
 
@@ -1911,7 +1929,9 @@ class _ProgressionLine extends ConsumerWidget {
           Icon(
               applied != null
                   ? Icons.check_circle_rounded
-                  : Icons.trending_up_rounded,
+                  : decrease
+                      ? Icons.trending_down_rounded
+                      : Icons.trending_up_rounded,
               size: AppIconSize.sm,
               color: c.primary),
           AppSpacing.hGapSm,
@@ -1939,7 +1959,9 @@ class _ProgressionLine extends ConsumerWidget {
                   ? l.commonUndo
                   : increase
                       ? l.progApplyWeight(amount(inc))
-                      : l.progApplyReps),
+                      : decrease
+                          ? l.progApplyDecrease(amount(inc))
+                          : l.progApplyReps),
             ),
           ],
         ],
@@ -1947,6 +1969,10 @@ class _ProgressionLine extends ConsumerWidget {
     );
   }
 }
+
+/// RPE 9.5 → "9,5" değil "9.5": seçicideki ve geçmişteki yazımla aynı.
+String _rpeText(double v) =>
+    v == v.roundToDouble() ? '${v.round()}' : v.toStringAsFixed(1);
 
 void _showProgressionInfo(BuildContext context, ProgressionAdvice advice,
     Units units, double incrementKg) {
@@ -1968,6 +1994,8 @@ void _showProgressionInfo(BuildContext context, ProgressionAdvice advice,
                 l.progInfoBody(advice.repsMin, advice.repsMax,
                     units.lift(incrementKg)),
                 style: ctx.texts.bodyMedium),
+            AppSpacing.vGapSm,
+            Text(l.progInfoRpe, style: ctx.texts.bodyMedium),
             AppSpacing.vGapMd,
             Text(l.progInfoSettings,
                 style: ctx.texts.bodySmall

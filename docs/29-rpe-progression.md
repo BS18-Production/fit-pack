@@ -1,6 +1,7 @@
 # 29 — RPE'yi İlerleme Önerisine Katmak (docs/27 F5)
 
-> **Durum:** Taslak — Samet'in kararları bekleniyor (§Kararlar).
+> **Durum:** ✅ Kodlandı (2026-10-08) — Samet'in kararlarıyla: yalnız tükeniş
+> tarafı ("çok rahat → kilo artır" YOK), kilo düşürme önerisi VAR.
 > **Katman:** akıllı (ücretli aday) — bu özellikle birlikte docs/27'deki
 > tek kontrol noktası (`featureEnabled`) eklenir; bugün hep açık.
 > **Bağlı:** `lib/features/workout/progression.dart` (çift ilerleme, docs/21
@@ -48,13 +49,14 @@ Mevcut kayıtlar okunur, hiçbir şey yazılmaz. Geri dönüş: kural kodu eski
 haline dönerse öneriler bugünkü gibi olur.
 
 **Kararlar (Samet):**
-1. [ ] Eşikler: "rahat" = RPE ≤ 7, "tükeniş" = RPE 10 (önerilen). Daha
-   temkinli istersen "rahat" ≤ 6,5.
-2. [ ] "Aralık içinde ama çok rahat → kilo artır" kuralı olsun mu? (Hızlı
-   ilerletir; yanlış RPE girişinde fazla agresif olabilir.)
-3. [ ] "2 seans üst üste başarısız → kilo düşür" önerisi olsun mu?
-4. [ ] Bu özellik "akıllı katman" adayı olarak işaretlensin mi (bugün açık,
-   karar satıştan önce)?
+1. [x] Eşikler: "tükeniş" = RPE 10; "zorlandın" uyarısı ≥ 9,5. "Rahat"
+   eşiği kullanılmıyor (karar 2).
+2. [x] **Hayır** (2026-10-08): "aralık içinde ama çok rahat → kilo artır"
+   kuralı eklenmedi; rahat RPE'de öneri bugünkü gibi +1 tekrar.
+3. [x] **Evet**: 2 seans üst üste aralığın altında + son seansta RPE 10 →
+   "−adım" önerisi, düğmeyle.
+4. [ ] Katman kararı satıştan önce (docs/27); `featureEnabled` kontrol
+   noktası o zaman eklenir — bugün herkes için açık.
 
 **Nasıl doğrulanacak.**
 - Birim test: tablodaki her satır için `progressionFor` beklenen öneriyi

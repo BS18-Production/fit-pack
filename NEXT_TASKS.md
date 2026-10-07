@@ -1,5 +1,34 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## Geri bildirim turu — 2026-10-07/08 (8 madde)
+
+- [x] **#2 Müzik kısık kalıyordu (iPhone)** — ses bitince/durunca iOS ses
+      oturumu bırakılıyor. **Samet: müzik açıkken molada kontrol et.**
+- [x] **#1 Alttayken mola bildirimi** — ilk molada izin bir kez sorulur,
+      verilirse bildirim açılır. **Samet: telefon kilitliyken mola bitişi.**
+- [x] **#8 Arşiv** — Antrenman sekmesi altında "Arşiv (n)" + Geri al;
+      arşivlerken "Geri al" şeridi. Emülatörde doğrulandı.
+- [x] **#4 Öğün bildirimleri çeşitli** — 3 başlık × öğün, 6 genel gövde,
+      günaşırı kişisel ("her zamanki kahvaltın", "bu hafta 2/5 gün").
+      **Samet: metinleri gerçek bildirimlerde gör, beğenmediğini söyle.**
+- [x] **#5 Geçmiş** — "Son antrenmanlar" + özet kart + seans detayı
+      ([docs/31](docs/31-workout-history.md)). Emülatörde doğrulandı.
+- [x] **#7 RPE** — geçmiş detayında set RPE'si + ort. RPE; ilerleme
+      önerisine katıldı ([docs/29](docs/29-rpe-progression.md), Samet'in
+      kararları: yalnız tükeniş tarafı + kilo düşürme önerisi).
+- [x] **#6 Keşfet** — 9 hazır program, Serbest antrenman ikinci planda,
+      Rutinlerim program adıyla gruplu. Şema v14 + sunucu kolonu (Dev +
+      üretim). Emülatörde ekleme + Dev senkronu doğrulandı.
+      ([docs/28](docs/28-program-catalog-set-plan.md) F1)
+- [x] **#3 Kilit ekranı, faz 1 (iOS)** — Canlı Etkinlik: hareket, set,
+      hedef, dinlenme geri sayımı ([docs/32](docs/32-lock-screen-live-activity.md)).
+      **Samet: rutin başlat → kilitle → kilit ekranı/Dynamic Island.**
+- [ ] **#3 faz 2** — kilit ekranından "Seti tamamla / +15 sn" düğmeleri
+      (iOS 17 LiveActivityIntent) + Android'de seans boyu bildirim + eylemler.
+- [ ] **docs/28 F2 — rutinde set planı** (ısınma/drop setleri planlama;
+      `set_plan` JSON kolonu, karar 1 açık).
+- [ ] Katman (ücretsiz/ücretli) kararı satıştan önce (docs/27).
+
 ## Android emülatör kontrolü — 2026-10-08
 
 - [x] Güncel `com.sametorhan.fit_pack` debug APK derlendi (arm64; APK imzası

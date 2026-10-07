@@ -23,6 +23,11 @@ Sayfa ve Antrenman ekranlarında yeni tema/kartlar/gezinme kontrol edildi;
 görünür taşma ve güncel süreçte Flutter/AndroidRuntime hatası yok. Tüm kayıt
 akışlarının uçtan uca cihaz QA kontrolü ayrıca açık.
 
+**2026-10-08 geri bildirim turu:** kilit ekranında antrenman (iOS Canlı
+Etkinlik), Keşfet'te 9 hazır program, yeni antrenman geçmişi (özet + detay),
+RPE'li ilerleme önerisi, arşiv görünür, çeşitli öğün bildirimleri, mola sesi
+ve bildirimi düzeltmeleri. Şema v14. Ayrıntı: NEXT_TASKS "Geri bildirim turu".
+
 ## Hızlı Bağlantılar
 
 - **⭐ Geliştirme kuralları (kod yazmadan önce oku):** [CONVENTIONS.md](CONVENTIONS.md)

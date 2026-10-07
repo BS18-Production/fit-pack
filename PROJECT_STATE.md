@@ -12,7 +12,19 @@
 > kodlandı)
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
-> **Şema:** v13 · **Sahibi:** Samet Orhan (kişisel proje)
+> **Şema:** v14 · **Sahibi:** Samet Orhan (kişisel proje)
+
+## Geri bildirim turu (8 madde) — 2026-10-08
+
+Samet'in 2026-10-07 listesi tek dalda (`feat/feedback-round-oct`) işlendi:
+iPhone'da müzik kısık kalma ve alttayken mola bildirimi düzeltildi; arşiv
+görünür; öğün bildirimleri çeşitli/kişisel; geçmiş yeniden tasarlandı
+(docs/31) ve RPE görünür + ilerleme önerisinde (docs/29); Keşfet'te 9 hazır
+program (docs/28 F1, **şema v14** `routines.program_key`, sunucu kolonu Dev ve
+üretimde); iOS kilit ekranında Canlı Etkinlik faz 1 (docs/32, widget
+eklentisi ücretsiz hesapla imzalı). 736 test, analiz temiz. iPhone'a
+`devicectl` ile yerinde kuruldu (v14 göçü cihazda çalışır). Cihaz kontrolü
+Samet'te: müzik + mola, kilit ekranı, bildirim metinleri.
 
 ## Android emülatörü güncellendi · görsel kontrol — 2026-10-08
 

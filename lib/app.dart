@@ -10,6 +10,7 @@ import 'shared/widgets/glass.dart';
 import 'core/i18n/locale_provider.dart';
 import 'package:drift/drift.dart' show TableUpdateQuery;
 import 'core/notifications/notification_prefs.dart';
+import 'core/prefs/week_start_provider.dart';
 import 'core/notifications/notification_service.dart';
 import 'data/providers.dart';
 import 'features/nutrition/meal_reminders.dart';
@@ -197,6 +198,7 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
         dao: ref.read(nutritionDaoProvider),
         l: AppL10n.of(context),
         enabled: ref.read(notificationPrefsProvider).mealEnabled,
+        weekStart: startOfWeek(DateTime.now(), ref.read(weekStartProvider)),
       );
     } catch (_) {
       // Bildirim eklentisi yok (test) ya da zamanlama reddedildi: hatırlatma

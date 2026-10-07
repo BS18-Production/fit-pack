@@ -4837,6 +4837,108 @@ abstract class AppL10n {
   /// **'It takes 10 seconds.'**
   String get notifMealBody;
 
+  /// No description provided for @notifMealBreakfastTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the day with one entry'**
+  String get notifMealBreakfastTitle2;
+
+  /// No description provided for @notifMealBreakfastTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'What fueled your morning?'**
+  String get notifMealBreakfastTitle3;
+
+  /// No description provided for @notifMealLunchTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'What was on your lunch plate?'**
+  String get notifMealLunchTitle2;
+
+  /// No description provided for @notifMealLunchTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunch break: a 10-second log'**
+  String get notifMealLunchTitle3;
+
+  /// No description provided for @notifMealDinnerTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'One last entry before the day ends'**
+  String get notifMealDinnerTitle2;
+
+  /// No description provided for @notifMealDinnerTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t forget your dinner plate'**
+  String get notifMealDinnerTitle3;
+
+  /// No description provided for @notifMealBody2.
+  ///
+  /// In en, this message translates to:
+  /// **'Log it while it\'s fresh and you won\'t forget the portion.'**
+  String get notifMealBody2;
+
+  /// No description provided for @notifMealBody3.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sure? A quick estimated calorie entry is enough.'**
+  String get notifMealBody3;
+
+  /// No description provided for @notifMealBody4.
+  ///
+  /// In en, this message translates to:
+  /// **'This meal completes today\'s picture.'**
+  String get notifMealBody4;
+
+  /// No description provided for @notifMealBody5.
+  ///
+  /// In en, this message translates to:
+  /// **'Seeing what you eat is half the way to your goal.'**
+  String get notifMealBody5;
+
+  /// No description provided for @notifMealBody6.
+  ///
+  /// In en, this message translates to:
+  /// **'Your protein goal is waiting on this meal.'**
+  String get notifMealBody6;
+
+  /// No description provided for @notifMealUsualBreakfast.
+  ///
+  /// In en, this message translates to:
+  /// **'Your usual breakfast: {foods}. Add it with one tap.'**
+  String notifMealUsualBreakfast(String foods);
+
+  /// No description provided for @notifMealUsualLunch.
+  ///
+  /// In en, this message translates to:
+  /// **'Your usual lunch: {foods}. Add it with one tap.'**
+  String notifMealUsualLunch(String foods);
+
+  /// No description provided for @notifMealUsualDinner.
+  ///
+  /// In en, this message translates to:
+  /// **'Your usual dinner: {foods}. Add it with one tap.'**
+  String notifMealUsualDinner(String foods);
+
+  /// No description provided for @notifMealWeekStart.
+  ///
+  /// In en, this message translates to:
+  /// **'This week\'s first log is waiting for you.'**
+  String get notifMealWeekStart;
+
+  /// No description provided for @notifMealWeekProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/{goal} days logged this week. Log today to make it {next}/{goal}.'**
+  String notifMealWeekProgress(int done, int goal, int next);
+
+  /// No description provided for @notifMealWeekMet.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly goal reached. Log today too and keep the picture complete.'**
+  String get notifMealWeekMet;
+
   /// No description provided for @nhPortion.
   ///
   /// In en, this message translates to:

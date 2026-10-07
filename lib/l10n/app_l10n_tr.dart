@@ -2776,6 +2776,67 @@ class AppL10nTr extends AppL10n {
   String get notifMealBody => 'Eklemek 10 saniye sürer.';
 
   @override
+  String get notifMealBreakfastTitle2 => 'Güne bir kayıtla başla';
+
+  @override
+  String get notifMealBreakfastTitle3 => 'Sabah yakıtın ne oldu?';
+
+  @override
+  String get notifMealLunchTitle2 => 'Öğlen tabağında ne vardı?';
+
+  @override
+  String get notifMealLunchTitle3 => 'Öğle arası: 10 saniyelik kayıt';
+
+  @override
+  String get notifMealDinnerTitle2 => 'Günü kapatmadan son bir kayıt';
+
+  @override
+  String get notifMealDinnerTitle3 => 'Akşam tabağını unutma';
+
+  @override
+  String get notifMealBody2 => 'Sıcağı sıcağına girersen porsiyonu unutmazsın.';
+
+  @override
+  String get notifMealBody3 =>
+      'Emin değilsen hızlı girişle tahmini kalori yaz, yeter.';
+
+  @override
+  String get notifMealBody4 => 'Bugünün tablosu bu öğünle tamamlanıyor.';
+
+  @override
+  String get notifMealBody5 => 'Ne yediğini görmek, hedefe giden yolun yarısı.';
+
+  @override
+  String get notifMealBody6 => 'Protein hedefin bu öğünü bekliyor.';
+
+  @override
+  String notifMealUsualBreakfast(String foods) {
+    return 'Her zamanki kahvaltın: $foods. Tek dokunuşla ekle.';
+  }
+
+  @override
+  String notifMealUsualLunch(String foods) {
+    return 'Her zamanki öğle yemeğin: $foods. Tek dokunuşla ekle.';
+  }
+
+  @override
+  String notifMealUsualDinner(String foods) {
+    return 'Her zamanki akşam yemeğin: $foods. Tek dokunuşla ekle.';
+  }
+
+  @override
+  String get notifMealWeekStart => 'Bu haftanın ilk kaydı seni bekliyor.';
+
+  @override
+  String notifMealWeekProgress(int done, int goal, int next) {
+    return 'Bu hafta $done/$goal gün kayıt. Bugünü eklersen $next/$goal.';
+  }
+
+  @override
+  String get notifMealWeekMet =>
+      'Haftalık hedefin tamam. Bugünü de eklersen tablo eksiksiz kalır.';
+
+  @override
   String get nhPortion => 'porsiyon';
 
   @override

@@ -12,6 +12,7 @@ import '../helpers/test_database.dart';
 /// Bildirim eklentisi testte yok: kurulan/iptal edilenleri kaydeder.
 class _FakeNotifications extends NotificationService {
   final scheduled = <int, DateTime>{};
+  final texts = <int, (String, String)>{};
   final cancelled = <int>[];
 
   @override
@@ -21,8 +22,10 @@ class _FakeNotifications extends NotificationService {
     required String title,
     required String body,
     String? payload,
-  }) async =>
-      scheduled[id] = when;
+  }) async {
+    scheduled[id] = when;
+    texts[id] = (title, body);
+  }
 
   @override
   Future<void> cancel(int id) async => cancelled.add(id);
@@ -232,19 +235,33 @@ void main() {
       await db.nutritionDao.quickAddLog(
           day: now, mealType: 'breakfast', name: 'X', kcal: 300);
       await syncMealReminders(
-          service: svc, dao: db.nutritionDao, l: l, enabled: true, now: now);
+          service: svc,
+          dao: db.nutritionDao,
+          l: l,
+          enabled: true,
+          weekStart: DateTime(2026, 9, 28),
+          now: now);
       expect(svc.cancelled, hasLength(NotificationService.mealReminderSlots));
       // Bugün: kahvaltı girildi → yalnız öğle + akşam; +2 gün × 3 öğün.
       expect(svc.scheduled, hasLength(2 + 6));
       final bugun = svc.scheduled.values.where((d) => d.day == 30);
       expect(bugun, hasLength(2));
+      // Hep aynı metin değil: 8 bildirimde en az 3 farklı başlık ve gövde.
+      expect(svc.texts.values.map((t) => t.$1).toSet().length,
+          greaterThanOrEqualTo(3));
+      expect(svc.texts.values.map((t) => t.$2).toSet().length,
+          greaterThanOrEqualTo(3));
     });
 
     test('kapalıysa yalnız iptal', () async {
       final l = await AppL10n.delegate.load(const Locale('tr'));
       final svc = _FakeNotifications();
       await syncMealReminders(
-          service: svc, dao: db.nutritionDao, l: l, enabled: false);
+          service: svc,
+          dao: db.nutritionDao,
+          l: l,
+          enabled: false,
+          weekStart: DateTime(2026, 9, 28));
       expect(svc.scheduled, isEmpty);
       expect(svc.cancelled, hasLength(NotificationService.mealReminderSlots));
     });

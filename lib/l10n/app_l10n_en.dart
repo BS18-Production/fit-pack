@@ -2801,6 +2801,69 @@ class AppL10nEn extends AppL10n {
   String get notifMealBody => 'It takes 10 seconds.';
 
   @override
+  String get notifMealBreakfastTitle2 => 'Start the day with one entry';
+
+  @override
+  String get notifMealBreakfastTitle3 => 'What fueled your morning?';
+
+  @override
+  String get notifMealLunchTitle2 => 'What was on your lunch plate?';
+
+  @override
+  String get notifMealLunchTitle3 => 'Lunch break: a 10-second log';
+
+  @override
+  String get notifMealDinnerTitle2 => 'One last entry before the day ends';
+
+  @override
+  String get notifMealDinnerTitle3 => 'Don\'t forget your dinner plate';
+
+  @override
+  String get notifMealBody2 =>
+      'Log it while it\'s fresh and you won\'t forget the portion.';
+
+  @override
+  String get notifMealBody3 =>
+      'Not sure? A quick estimated calorie entry is enough.';
+
+  @override
+  String get notifMealBody4 => 'This meal completes today\'s picture.';
+
+  @override
+  String get notifMealBody5 =>
+      'Seeing what you eat is half the way to your goal.';
+
+  @override
+  String get notifMealBody6 => 'Your protein goal is waiting on this meal.';
+
+  @override
+  String notifMealUsualBreakfast(String foods) {
+    return 'Your usual breakfast: $foods. Add it with one tap.';
+  }
+
+  @override
+  String notifMealUsualLunch(String foods) {
+    return 'Your usual lunch: $foods. Add it with one tap.';
+  }
+
+  @override
+  String notifMealUsualDinner(String foods) {
+    return 'Your usual dinner: $foods. Add it with one tap.';
+  }
+
+  @override
+  String get notifMealWeekStart => 'This week\'s first log is waiting for you.';
+
+  @override
+  String notifMealWeekProgress(int done, int goal, int next) {
+    return '$done/$goal days logged this week. Log today to make it $next/$goal.';
+  }
+
+  @override
+  String get notifMealWeekMet =>
+      'Weekly goal reached. Log today too and keep the picture complete.';
+
+  @override
   String get nhPortion => 'portion';
 
   @override

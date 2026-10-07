@@ -1641,6 +1641,57 @@
   "notifMealLunchTitle": "Logged your lunch?",
   "notifMealDinnerTitle": "Logged your dinner?",
   "notifMealBody": "It takes 10 seconds.",
+  "notifMealBreakfastTitle2": "Start the day with one entry",
+  "notifMealBreakfastTitle3": "What fueled your morning?",
+  "notifMealLunchTitle2": "What was on your lunch plate?",
+  "notifMealLunchTitle3": "Lunch break: a 10-second log",
+  "notifMealDinnerTitle2": "One last entry before the day ends",
+  "notifMealDinnerTitle3": "Don't forget your dinner plate",
+  "notifMealBody2": "Log it while it's fresh and you won't forget the portion.",
+  "notifMealBody3": "Not sure? A quick estimated calorie entry is enough.",
+  "notifMealBody4": "This meal completes today's picture.",
+  "notifMealBody5": "Seeing what you eat is half the way to your goal.",
+  "notifMealBody6": "Your protein goal is waiting on this meal.",
+  "notifMealUsualBreakfast": "Your usual breakfast: {foods}. Add it with one tap.",
+  "notifMealUsualLunch": "Your usual lunch: {foods}. Add it with one tap.",
+  "notifMealUsualDinner": "Your usual dinner: {foods}. Add it with one tap.",
+  "notifMealWeekStart": "This week's first log is waiting for you.",
+  "notifMealWeekProgress": "{done}/{goal} days logged this week. Log today to make it {next}/{goal}.",
+  "notifMealWeekMet": "Weekly goal reached. Log today too and keep the picture complete.",
+  "@notifMealUsualBreakfast": {
+    "placeholders": {
+      "foods": {
+        "type": "String"
+      }
+    }
+  },
+  "@notifMealUsualLunch": {
+    "placeholders": {
+      "foods": {
+        "type": "String"
+      }
+    }
+  },
+  "@notifMealUsualDinner": {
+    "placeholders": {
+      "foods": {
+        "type": "String"
+      }
+    }
+  },
+  "@notifMealWeekProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "goal": {
+        "type": "int"
+      },
+      "next": {
+        "type": "int"
+      }
+    }
+  },
   "nhPortion": "portion",
   "foodCatSweet": "Sweets & snacks",
   "foodCatDrink": "Drinks",

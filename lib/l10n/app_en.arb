@@ -367,6 +367,53 @@
     }
   },
   "workoutSetCount": "{count} sets",
+  "whRecentTitle": "Recent workouts",
+  "whSeeAll": "See all",
+  "whMoreExercises": "{count, plural, one{+1 more exercise} other{+{count} more exercises}}",
+  "whRecordCount": "{count, plural, one{1 record} other{{count} records}}",
+  "whVsLast": "vs last time: {value}",
+  "whDeltaReps": "{delta} reps",
+  "whDeltaSame": "same as last time",
+  "whMuscles": "Muscles worked",
+  "whAvgRpe": "Avg RPE",
+  "whNotes": "Note",
+  "whSetsWithRpe": "RPE {rpe}",
+  "whRpeLegend": "RPE = Rate of Perceived Exertion, 10 is all-out.",
+  "@whMoreExercises": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@whRecordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@whVsLast": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@whDeltaReps": {
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
+  "@whSetsWithRpe": {
+    "placeholders": {
+      "rpe": {
+        "type": "String"
+      }
+    }
+  },
   "@workoutSetCount": {
     "placeholders": {
       "count": {
@@ -395,7 +442,6 @@
   "whEditDate": "Edit date",
   "whDeleteTitle": "Delete workout",
   "whDeleteMsg": "This session and all its sets will be deleted. Can't be undone.",
-  "whSetsLoadError": "Couldn't load sets",
   "whNoSets": "No set records",
   "whCalorieNote": "Calories are an estimate — based on weight, duration and intensity (RPE).",
   "wsTitle": "Workout Summary",

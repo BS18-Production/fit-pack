@@ -577,6 +577,64 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String get whRecentTitle => 'Recent workouts';
+
+  @override
+  String get whSeeAll => 'See all';
+
+  @override
+  String whMoreExercises(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '+$count more exercises',
+      one: '+1 more exercise',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String whRecordCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count records',
+      one: '1 record',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String whVsLast(String value) {
+    return 'vs last time: $value';
+  }
+
+  @override
+  String whDeltaReps(String delta) {
+    return '$delta reps';
+  }
+
+  @override
+  String get whDeltaSame => 'same as last time';
+
+  @override
+  String get whMuscles => 'Muscles worked';
+
+  @override
+  String get whAvgRpe => 'Avg RPE';
+
+  @override
+  String get whNotes => 'Note';
+
+  @override
+  String whSetsWithRpe(String rpe) {
+    return 'RPE $rpe';
+  }
+
+  @override
+  String get whRpeLegend => 'RPE = Rate of Perceived Exertion, 10 is all-out.';
+
+  @override
   String get workoutAddExercise => 'Add Exercise';
 
   @override
@@ -640,9 +698,6 @@ class AppL10nEn extends AppL10n {
   @override
   String get whDeleteMsg =>
       'This session and all its sets will be deleted. Can\'t be undone.';
-
-  @override
-  String get whSetsLoadError => 'Couldn\'t load sets';
 
   @override
   String get whNoSets => 'No set records';

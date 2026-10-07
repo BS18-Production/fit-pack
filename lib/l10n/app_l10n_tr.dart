@@ -573,6 +573,63 @@ class AppL10nTr extends AppL10n {
   }
 
   @override
+  String get whRecentTitle => 'Son antrenmanlar';
+
+  @override
+  String get whSeeAll => 'Tümünü gör';
+
+  @override
+  String whMoreExercises(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '+$count hareket daha',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String whRecordCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rekor',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String whVsLast(String value) {
+    return 'Geçen sefere göre: $value';
+  }
+
+  @override
+  String whDeltaReps(String delta) {
+    return '$delta tekrar';
+  }
+
+  @override
+  String get whDeltaSame => 'geçen seferle aynı';
+
+  @override
+  String get whMuscles => 'Çalışan kaslar';
+
+  @override
+  String get whAvgRpe => 'Ort. RPE';
+
+  @override
+  String get whNotes => 'Not';
+
+  @override
+  String whSetsWithRpe(String rpe) {
+    return 'RPE $rpe';
+  }
+
+  @override
+  String get whRpeLegend =>
+      'RPE = Algılanan Zorluk Derecesi; 10 = son tekrar, daha fazlası yok.';
+
+  @override
   String get workoutAddExercise => 'Hareket Ekle';
 
   @override
@@ -634,9 +691,6 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get whDeleteMsg => 'Bu seans ve tüm setleri silinecek. Geri alınamaz.';
-
-  @override
-  String get whSetsLoadError => 'Setler yüklenemedi';
 
   @override
   String get whNoSets => 'Set kaydı yok';

@@ -10,6 +10,8 @@ import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
+import 'history_card.dart';
+import 'history_providers.dart';
 import 'routine_providers.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
@@ -92,11 +94,12 @@ class WorkoutListScreen extends ConsumerWidget {
                         onTap: () => context.push(AppRoutes.routineNew),
                       ),
                     ],
-                    const _ArchivedRoutines(),
                   ],
                 );
               },
             ),
+            const _RecentWorkouts(),
+            const _ArchivedRoutines(),
           ],
         ),
       ),
@@ -337,6 +340,53 @@ class _EmptyWorkoutButton extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────── Yeni Rutin (dashed)
+
+// ─────────────────────────────────────────────────────── Son antrenmanlar
+
+/// Son antrenmanlar (docs/31): geçmiş yalnız başlıktaki küçük ikondaydı,
+/// "belirgin değil" (Samet, 2026-10-07). Son [_recentCount] seans kartı +
+/// "Tümünü gör". Hiç seans yoksa çizilmez.
+class _RecentWorkouts extends ConsumerWidget {
+  const _RecentWorkouts();
+
+  static const _recentCount = 3;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final h = ref.watch(workoutHistoryProvider).valueOrNull;
+    if (h == null || h.entries.isEmpty) return const SizedBox.shrink();
+    final l = AppL10n.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(l.whRecentTitle, style: context.texts.titleMedium),
+              ),
+              TextButton(
+                onPressed: () => context.push(AppRoutes.workoutHistory),
+                child: Text(l.whSeeAll),
+              ),
+            ],
+          ),
+          AppSpacing.vGapXs,
+          for (final e in h.entries.take(_recentCount))
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: HistoryCard(
+                key: ValueKey('recent-${e.session.id}'),
+                entry: e,
+                exercisesById: h.exercisesById,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
 
 // ───────────────────────────────────────────────────────────────── Arşiv
 

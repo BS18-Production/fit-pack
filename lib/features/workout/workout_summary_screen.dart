@@ -83,7 +83,7 @@ class WorkoutSummaryScreen extends ConsumerWidget {
               ),
               if (s.records.isNotEmpty) ...[
                 AppSpacing.vGapxl_,
-                _RecordsCard(records: s.records, units: units),
+                WorkoutRecordsCard(records: s.records, units: units),
               ],
               AppSpacing.vGapxl_,
               Text(AppL10n.of(context).wsExercises,
@@ -172,10 +172,11 @@ class _StatsCard extends StatelessWidget {
 }
 
 /// Bu seansta kırılan kişisel rekorlar — kupa rozetli kutlama kartı.
-class _RecordsCard extends StatelessWidget {
+class WorkoutRecordsCard extends StatelessWidget {
   final List<NewRecord> records;
   final Units units;
-  const _RecordsCard({required this.records, required this.units});
+  const WorkoutRecordsCard(
+      {super.key, required this.records, required this.units});
 
   @override
   Widget build(BuildContext context) {

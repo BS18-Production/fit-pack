@@ -1087,6 +1087,78 @@ abstract class AppL10n {
   /// **'{count} sets'**
   String workoutSetCount(int count);
 
+  /// No description provided for @whRecentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent workouts'**
+  String get whRecentTitle;
+
+  /// No description provided for @whSeeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get whSeeAll;
+
+  /// No description provided for @whMoreExercises.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{+1 more exercise} other{+{count} more exercises}}'**
+  String whMoreExercises(int count);
+
+  /// No description provided for @whRecordCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 record} other{{count} records}}'**
+  String whRecordCount(int count);
+
+  /// No description provided for @whVsLast.
+  ///
+  /// In en, this message translates to:
+  /// **'vs last time: {value}'**
+  String whVsLast(String value);
+
+  /// No description provided for @whDeltaReps.
+  ///
+  /// In en, this message translates to:
+  /// **'{delta} reps'**
+  String whDeltaReps(String delta);
+
+  /// No description provided for @whDeltaSame.
+  ///
+  /// In en, this message translates to:
+  /// **'same as last time'**
+  String get whDeltaSame;
+
+  /// No description provided for @whMuscles.
+  ///
+  /// In en, this message translates to:
+  /// **'Muscles worked'**
+  String get whMuscles;
+
+  /// No description provided for @whAvgRpe.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg RPE'**
+  String get whAvgRpe;
+
+  /// No description provided for @whNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get whNotes;
+
+  /// No description provided for @whSetsWithRpe.
+  ///
+  /// In en, this message translates to:
+  /// **'RPE {rpe}'**
+  String whSetsWithRpe(String rpe);
+
+  /// No description provided for @whRpeLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'RPE = Rate of Perceived Exertion, 10 is all-out.'**
+  String get whRpeLegend;
+
   /// No description provided for @workoutAddExercise.
   ///
   /// In en, this message translates to:
@@ -1212,12 +1284,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'This session and all its sets will be deleted. Can\'t be undone.'**
   String get whDeleteMsg;
-
-  /// No description provided for @whSetsLoadError.
-  ///
-  /// In en, this message translates to:
-  /// **'Couldn\'t load sets'**
-  String get whSetsLoadError;
 
   /// No description provided for @whNoSets.
   ///

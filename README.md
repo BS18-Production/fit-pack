@@ -7,8 +7,14 @@ Sportif gelişimini tek yerde toplayan, AI destekli kişisel fitness asistanı u
 **2026-10-04 tasarım:** Performans Günlüğü — mat kömür, neon lime ve turuncu;
 tüm uygulamada ortak tema, yeni Ana Sayfa/enerji-makro kartı ve gerçek
 antrenman aktivitesi. Font ve görseller çevrimdışı paketlenir; kayıtlı tema
-tercihi korunur. Analiz temiz, 696 test geçti. Cihaz kontrolü ve iPhone
-güncellemesi açık: [uygulama rehberi ve doğrulama](docs/30-performance-journal-neon.md).
+tercihi korunur. Analiz temiz, 696 test geçti. 2026-10-07'de iPhone'a
+Release güncellemesi yüklendi; telefonda son görsel onay açık:
+[uygulama rehberi ve doğrulama](docs/30-performance-journal-neon.md).
+
+**2026-10-07 ikon:** Samet'in seçtiği neon lime zeminli siyah FP monogram
+iOS ve Android başlatıcı kaynaklarına uygulandı. Kaynak, katmanlar ve
+yeniden üretme komutları: [ikon rehberi](assets/icon/README.md). Yeni ikon
+iPhone'a yüklenen 2026-10-07 Release arşivinde bulunuyor.
 
 ## Hızlı Bağlantılar
 
@@ -47,6 +53,20 @@ flutter build ios --release && xcrun devicectl device install app --device 00008
 # iOS simulator
 flutter run -d 92EFAB82-82C1-459D-A925-27DAA867E869
 ```
+
+## Xcode 27 ile iPhone güncelleme
+
+1. `ios/Runner.xcworkspace` aç → **Product → Archive** (Release).
+2. **Xcode → Open Developer Tool → Device Hub** → iPhone → **Info → Apps**.
+3. **Add (+)** → arşivdeki `Products/Applications/Runner.app` dosyasını seç.
+   Aynı `com.sametorhan.fitPack` kimliğiyle mevcut kurulumun üzerine yüklenir.
+4. Uygulamanın sağ tık menüsündeki **Launch** ile açılabilir.
+
+Arşivler `~/Library/Developer/Xcode/Archives/` altında. **Uninstall** ve
+**App Container → Replace** kullanılmaz. Xcode 27 cihaz yönetimi artık
+Device Hub'da; eski Window → Devices and Simulators menüsü bulunmuyor.
+Mevcut eşleştirmeyle ağ üzerinden güncelleme yapılabilir. Device Hub'ın
+ekran paylaşımı iOS 27+ ister; iOS 26.6 telefonda görsel kontrol yapılır.
 
 ## Stack
 

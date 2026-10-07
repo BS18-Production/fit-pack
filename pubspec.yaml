@@ -87,12 +87,14 @@ dev_dependencies:
   custom_lint: ^0.7.5
   riverpod_lint: ^2.6.3
 
-  # Uygulama ikonu üretimi (P-15 — "Yükseliş" Işıyan ikon)
+  # Uygulama ikonu üretimi (FP monogram — 2026-10-07)
   flutter_launcher_icons: ^0.14.3
+  # Seçilen kaynak görselden Android katmanlarını hazırlayan yerel araç.
+  image: ^4.9.1
 
-# P-15: Marka ikonu. Kaynak 1024px PNG'ler assets/icon/ (Claude Design
-# "Yükseliş" varyant A — koyu radial zemin + ışıyan chevron + teal spark).
-# Değiştirmek için: assets/icon/* güncelle → dart run flutter_launcher_icons
+# Marka ikonu: seçilen neon lime zemin + siyah FP monogram.
+# Kaynak: assets/icon/icon_master.png; katmanları üret:
+# dart run tools/prepare_launcher_icon.dart → dart run flutter_launcher_icons
 flutter_launcher_icons:
   android: true
   ios: true
@@ -101,6 +103,8 @@ flutter_launcher_icons:
   min_sdk_android: 21
   adaptive_icon_background: "assets/icon/icon_bg.png"
   adaptive_icon_foreground: "assets/icon/icon_fg.png"
+  # 66 dp güvenli dairenin içinde kalır (108 dp katman); harfler kırpılmaz.
+  adaptive_icon_foreground_inset: 18
 
 flutter:
   uses-material-design: true

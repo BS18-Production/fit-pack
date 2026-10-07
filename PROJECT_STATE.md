@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-10-04
+> **Son güncelleme:** 2026-10-07
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -14,6 +14,26 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v13 · **Sahibi:** Samet Orhan (kişisel proje)
 
+## FP monogram uygulama ikonu — 2026-10-07
+
+Samet'in seçtiği görsel değişmeden kaynak olarak saklandı; 25 iOS ikonu,
+5 standart Android ikonu ve 10 uyarlanabilir katman üretildi. iOS ikonları
+opak; Android monogramı %18 inset ile 66 dp güvenli daire içinde kalıyor.
+Boyut/alfa ve yuvarlak/köşeli maske önizlemeleri doğrulandı. Yeniden üretim:
+[assets/icon/README.md](assets/icon/README.md).
+
+Analiz 0 sorun; **696 test geçti**. Katman hazırlama aracı için zaten
+kilitli olan `image 4.9.1` doğrudan geliştirme bağımlılığı olarak belirtildi.
+
+Xcode 27'de Release arşivi derlendi; `codesign --verify --deep --strict`
+başarılı. Arşivdeki iPhone ikonunun pikselleri native kaynakla aynı;
+Plus Jakarta Sans ve somon görseli paketli. 2026-10-07 23:42 arşivi,
+Device Hub / Apps / Add üzerinden iPhone 17'deki mevcut uygulamanın üzerine
+yüklendi; uygulama kaldırılmadı. Komut satırında `devicectl` servisi
+başlatılamadı ve `xcodebuild` çalışma alanını açamadı; Xcode arşivi başarılı.
+Device Hub ekran paylaşımı iOS 27+ istiyor; telefon iOS 26.6 olduğundan
+telefonda son görsel onay açık. Android bağlı cihaz listesi boş.
+
 ## Performans Günlüğü — Neon tasarım kodlandı · cihaz kontrolü açık — 2026-10-04
 
 Samet'in onayladığı kömür/lime/turuncu dil tüm ortak tema, kart, düğme,
@@ -26,8 +46,9 @@ kullanıyor. Rutin, set, yemek, ölçüm, hesap ve senkron akışları korunuyor
 Analiz 0 sorun, **696 test yeşil**. Gerçek Flutter render'larında koyu/açık,
 320 pt ve %130/%160 metin ile sekmeler ve detaylar kontrol edildi; bulunan
 taşmalar giderildi. Android önizleme APK'sı ayrı pakette derlendi.
-**Emülatör shell/kurulum yanıt vermedi; iOS erişimi otomatik incelemede
-reddedildi. Cihaz kontrolü ve iPhone'a yerinde kurulum bekliyor.**
+**Emülatör shell/kurulum yanıt vermedi; iOS simulator erişimi otomatik
+incelemede reddedildi. 2026-10-07'de gerçek iPhone'a Release güncellemesi
+Device Hub ile yüklendi. Telefonda son görsel onay bekliyor.**
 Ayrıntı/Claude Code rehberi: [docs/30](docs/30-performance-journal-neon.md).
 
 ## 🧹 Hareket kütüphanesi: 13 tekrar birleştirildi + Neutral Grip Lat Pulldown ✅ — 2026-10-04

@@ -1,5 +1,21 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## FP monogram uygulama ikonu — 2026-10-07
+
+Samet yeni neon lime zeminli siyah FP görselini seçti. Beklenen: iOS ve
+Android başlatıcı ikonları bu tasarıma geçsin; Android yuvarlak maskede
+harfler kesilmesin. Doğrulama: üretilen PNG boyutları/alfa, native kaynak
+bağlantıları ve platform maskeleri; cihaz kontrolü ayrıca kaydedilecek.
+
+- [x] Kaynak görsel + Android katmanları ve native ikonları güncelle.
+- [x] 25 iOS, 5 standart Android, 10 katman: boyut/alfa/maske doğrulaması.
+- [x] Analiz 0 sorun; 696 test geçti.
+- [x] Xcode 27 Release arşivi derlendi, imza doğrulandı; iPhone 17'ye
+      Device Hub / Apps / Add üzerinden mevcut kurulumun üzerine yüklendi.
+- [x] Derlenen iPhone ikonunun pikselleri seçilen native kaynakla aynı.
+- [ ] Telefonda son görsel onay: iOS 26.6, Device Hub ekran paylaşımını
+      desteklemiyor (iOS 27+ gerekiyor). Android cihaz listesi boş.
+
 ## Performans Günlüğü — Neon (2026-10-04) · [docs/30](docs/30-performance-journal-neon.md)
 
 - [x] Ortak tema/yüzey/dört sekme + Ana Sayfa ve Beslenme kompozisyonu;
@@ -10,8 +26,8 @@
       shell/kurulum yanıt vermedi. iOS simulator erişimi otomatik incelemede
       reddedildi. Gerçek iPhone'da dört sekme, canlı seans/RPE/sayaç, yemek
       ekleme/geri alma, ölçüm ve fotoğraf akışını kontrol et; §7 kapanmadı.
-- [ ] **iPhone'a yerinde güncelleme:** `flutter install` kullanma;
-      README'deki `devicectl device install app` ile kayıtları koru.
+- [x] **iPhone'a yerinde güncelleme (2026-10-07):** Release arşivi
+      Device Hub / Apps / Add ile mevcut kurulumun üzerine yüklendi.
 
 ## 🧭 Hevy incelemesi → antrenman yol haritası (2026-10-04) · [docs/27](docs/27-hevy-inceleme.md)
 

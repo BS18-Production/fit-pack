@@ -141,3 +141,18 @@ FITPACK_CAPTURE_DIR=/tmp/fitpack-neon-previews flutter test test/features/neon_d
 
 CONVENTIONS §7 cihazda görsel kontrol şartı henüz kapanmadı; kod ve otomatik
 kontroller hazır, fiziksel cihaz kontrolü ayrı açık madde olarak tutulur.
+
+### iPhone güncellemesi — 2026-10-07
+
+Neon tasarım ve seçilen FP ikonuyla Xcode 27 Release arşivi derlendi;
+imza doğrulaması başarılı. Arşivde Plus Jakarta Sans, somon görseli ve
+kaynakla piksel olarak aynı yeni iPhone ikonu bulunuyor. Device Hub / Apps /
+Add ile iPhone 17'deki mevcut uygulamanın üzerine yüklendi; kaldırma ve
+uygulama veri klasörü değiştirme yapılmadı. Önceki iPhone kurulum maddesi
+bu tarihte tamamlandı.
+
+Komut satırındaki Xcode/CoreDevice çağrıları bu oturumda çalışmadı; Xcode
+arayüzünde arşiv ve Device Hub'da yükleme tamamlandı. Telefon iOS 26.6
+kullanıyor; Device Hub ekran paylaşımı iOS 27+ gerektirdiğini bildirdi.
+Bu nedenle gerçek telefonda dört sekme ve işlem akışlarının son görsel
+kontrolü açık kalıyor. Kod analizi 0 sorun, 696 test yeşil.

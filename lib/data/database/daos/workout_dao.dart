@@ -32,6 +32,58 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
       (update(routines)..where((r) => r.id.equals(id)))
           .write(const RoutinesCompanion(isArchived: Value(true)));
 
+  /// Hazır programı kullanıcının rutinlerine kopyalar (docs/28) — tek
+  /// transaction: yarıda kesilirse yarım program kalmaz. Rutinler listenin
+  /// sonuna eklenir, `programKey` ile işaretlenir. Seed'de bulunmayan hareket
+  /// atlanır (katalog bekçi testi bunu önler). Oluşan rutin id'leri döner.
+  Future<List<int>> installProgram({
+    required String programKey,
+    required List<
+            ({
+              String name,
+              List<
+                  ({
+                    String exercise,
+                    int sets,
+                    int repsMin,
+                    int repsMax,
+                    int? restSec
+                  })> items
+            })>
+        routines,
+  }) =>
+      transaction(() async {
+        final existing = await getActiveRoutines();
+        var order = existing.isEmpty
+            ? 0
+            : existing.map((r) => r.orderIndex).reduce((a, b) => a > b ? a : b) +
+                1;
+        final ids = <int>[];
+        for (final r in routines) {
+          final id = await createRoutine(RoutinesCompanion(
+            name: Value(r.name),
+            orderIndex: Value(order++),
+            programKey: Value(programKey),
+          ));
+          var i = 0;
+          for (final it in r.items) {
+            final ex = await getSeedExerciseByName(it.exercise);
+            if (ex == null) continue;
+            await addRoutineExercise(RoutineExercisesCompanion(
+              routineId: Value(id),
+              exerciseId: Value(ex.id),
+              orderIndex: Value(i++),
+              targetSets: Value(it.sets),
+              targetRepsMin: Value(it.repsMin),
+              targetRepsMax: Value(it.repsMax),
+              targetRestSec: Value(it.restSec),
+            ));
+          }
+          ids.add(id);
+        }
+        return ids;
+      });
+
   /// Arşivdeki rutinler — Antrenman sekmesinin "Arşiv" bölümü (ad sırası).
   Future<List<Routine>> getArchivedRoutines() => (select(routines)
         ..where((r) => r.isArchived.equals(true))

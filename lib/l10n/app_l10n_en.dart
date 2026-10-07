@@ -577,6 +577,158 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String get exploreTitle => 'Explore';
+
+  @override
+  String get exSubtitle =>
+      'Ready-made programs — add one and its routines become yours to edit.';
+
+  @override
+  String get exLevelBeginner => 'Beginner';
+
+  @override
+  String get exLevelIntermediate => 'Intermediate';
+
+  @override
+  String get exLevelAdvanced => 'Advanced';
+
+  @override
+  String get exSplitFullBody => 'Full body';
+
+  @override
+  String get exSplitUpperLower => 'Upper / Lower';
+
+  @override
+  String get exSplitPpl => 'Push · Pull · Legs';
+
+  @override
+  String get exSplitFullBodyDesc =>
+      'Whole body every session. Short, efficient — ideal if you train 3 days a week.';
+
+  @override
+  String get exSplitUpperLowerDesc =>
+      'Upper and lower body on alternating days. More volume per muscle, 4 days a week.';
+
+  @override
+  String get exSplitPplDesc =>
+      'Pushing, pulling and legs on separate days. Classic bodybuilding split.';
+
+  @override
+  String get exLevelBeginnerDesc =>
+      'Mostly machines, moderate reps — learn the movements safely.';
+
+  @override
+  String get exLevelIntermediateDesc =>
+      'Barbell basics plus accessories, double progression.';
+
+  @override
+  String get exLevelAdvancedDesc =>
+      'Heavy low-rep main lifts and higher weekly volume.';
+
+  @override
+  String exDaysPerWeek(int count) {
+    return '$count days/week';
+  }
+
+  @override
+  String exRoutineCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count routines',
+      one: '1 routine',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exProgramTitle(String split, String level) {
+    return '$split · $level';
+  }
+
+  @override
+  String get exAddProgram => 'Add program';
+
+  @override
+  String get exAddAgainTitle => 'Already in your routines';
+
+  @override
+  String get exAddAgainMsg =>
+      'This program\'s routines are already in your list. Add another copy?';
+
+  @override
+  String get exAddAgain => 'Add again';
+
+  @override
+  String exAdded(String name) {
+    return '$name added to your routines';
+  }
+
+  @override
+  String get exAddError => 'Couldn\'t add the program — try again';
+
+  @override
+  String get exHowTo =>
+      'Rotate the routines in order, e.g. A → B → A. Targets are a starting point; the app suggests the next step from your sets.';
+
+  @override
+  String get exFreeWorkout => 'Free workout';
+
+  @override
+  String get exInList => 'In your routines';
+
+  @override
+  String get exRoutineFullBodyA => 'Full Body A';
+
+  @override
+  String get exRoutineFullBodyB => 'Full Body B';
+
+  @override
+  String get exRoutineFullBodyC => 'Full Body C';
+
+  @override
+  String get exRoutineUpper => 'Upper';
+
+  @override
+  String get exRoutineLower => 'Lower';
+
+  @override
+  String get exRoutineUpperA => 'Upper A';
+
+  @override
+  String get exRoutineLowerA => 'Lower A';
+
+  @override
+  String get exRoutineUpperB => 'Upper B';
+
+  @override
+  String get exRoutineLowerB => 'Lower B';
+
+  @override
+  String get exRoutineUpperPower => 'Upper · Strength';
+
+  @override
+  String get exRoutineLowerPower => 'Lower · Strength';
+
+  @override
+  String get exRoutineUpperHypertrophy => 'Upper · Volume';
+
+  @override
+  String get exRoutineLowerHypertrophy => 'Lower · Volume';
+
+  @override
+  String get exRoutinePush => 'Push';
+
+  @override
+  String get exRoutinePull => 'Pull';
+
+  @override
+  String get exRoutineLegs => 'Legs';
+
+  @override
+  String get workoutOwnRoutines => 'My own';
+
+  @override
   String get whRecentTitle => 'Recent workouts';
 
   @override
@@ -1831,7 +1983,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get hintWorkout =>
-      'Create your first routine here — or start an empty workout right away.';
+      'Start with a ready-made program, or build your own routine.';
 
   @override
   String get hintNutrition =>

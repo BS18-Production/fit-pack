@@ -83,6 +83,8 @@ class AppRoutes {
   static String workoutActiveRoutine(int routineId) =>
       '/workout/active/$routineId';
 
+  static const programPath = '/workout/explore/:programKey';
+  static String program(String key) => '/workout/explore/$key';
   static const workoutSessionPath = '/workout/history/:sessionId';
   static String workoutSession(int sessionId) => '/workout/history/$sessionId';
   static const summaryPath = '/workout/summary/:sessionId';

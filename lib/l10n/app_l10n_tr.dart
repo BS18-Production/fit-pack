@@ -573,6 +573,157 @@ class AppL10nTr extends AppL10n {
   }
 
   @override
+  String get exploreTitle => 'Keşfet';
+
+  @override
+  String get exSubtitle =>
+      'Hazır programlar — ekle, rutinleri senin olsun, istediğin gibi düzenle.';
+
+  @override
+  String get exLevelBeginner => 'Başlangıç';
+
+  @override
+  String get exLevelIntermediate => 'Orta';
+
+  @override
+  String get exLevelAdvanced => 'İleri';
+
+  @override
+  String get exSplitFullBody => 'Tüm vücut';
+
+  @override
+  String get exSplitUpperLower => 'Üst / Alt';
+
+  @override
+  String get exSplitPpl => 'İtme · Çekme · Bacak';
+
+  @override
+  String get exSplitFullBodyDesc =>
+      'Her seansta tüm vücut. Kısa ve verimli — haftada 3 gün çalışana ideal.';
+
+  @override
+  String get exSplitUpperLowerDesc =>
+      'Üst ve alt vücut sırayla. Kas başına daha çok hacim, haftada 4 gün.';
+
+  @override
+  String get exSplitPplDesc =>
+      'İtme, çekme ve bacak ayrı günlerde. Klasik vücut geliştirme bölünmesi.';
+
+  @override
+  String get exLevelBeginnerDesc =>
+      'Ağırlıklı makineler, orta tekrar — hareketleri güvenle öğren.';
+
+  @override
+  String get exLevelIntermediateDesc =>
+      'Barbell temelleri + yardımcı hareketler, çift ilerleme.';
+
+  @override
+  String get exLevelAdvancedDesc =>
+      'Ağır ve düşük tekrarlı ana hareketler, yüksek haftalık hacim.';
+
+  @override
+  String exDaysPerWeek(int count) {
+    return 'Haftada $count gün';
+  }
+
+  @override
+  String exRoutineCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rutin',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exProgramTitle(String split, String level) {
+    return '$split · $level';
+  }
+
+  @override
+  String get exAddProgram => 'Programı ekle';
+
+  @override
+  String get exAddAgainTitle => 'Zaten rutinlerinde';
+
+  @override
+  String get exAddAgainMsg =>
+      'Bu programın rutinleri listende var. Bir kopya daha eklensin mi?';
+
+  @override
+  String get exAddAgain => 'Yine de ekle';
+
+  @override
+  String exAdded(String name) {
+    return '$name rutinlerine eklendi';
+  }
+
+  @override
+  String get exAddError => 'Program eklenemedi — tekrar dene';
+
+  @override
+  String get exHowTo =>
+      'Rutinleri sırayla dönüştür, örn. A → B → A. Hedefler başlangıç noktası; uygulama setlerine göre sonraki adımı önerir.';
+
+  @override
+  String get exFreeWorkout => 'Serbest antrenman';
+
+  @override
+  String get exInList => 'Rutinlerinde';
+
+  @override
+  String get exRoutineFullBodyA => 'Tüm Vücut A';
+
+  @override
+  String get exRoutineFullBodyB => 'Tüm Vücut B';
+
+  @override
+  String get exRoutineFullBodyC => 'Tüm Vücut C';
+
+  @override
+  String get exRoutineUpper => 'Üst Vücut';
+
+  @override
+  String get exRoutineLower => 'Alt Vücut';
+
+  @override
+  String get exRoutineUpperA => 'Üst A';
+
+  @override
+  String get exRoutineLowerA => 'Alt A';
+
+  @override
+  String get exRoutineUpperB => 'Üst B';
+
+  @override
+  String get exRoutineLowerB => 'Alt B';
+
+  @override
+  String get exRoutineUpperPower => 'Üst · Güç';
+
+  @override
+  String get exRoutineLowerPower => 'Alt · Güç';
+
+  @override
+  String get exRoutineUpperHypertrophy => 'Üst · Hacim';
+
+  @override
+  String get exRoutineLowerHypertrophy => 'Alt · Hacim';
+
+  @override
+  String get exRoutinePush => 'İtme';
+
+  @override
+  String get exRoutinePull => 'Çekme';
+
+  @override
+  String get exRoutineLegs => 'Bacak';
+
+  @override
+  String get workoutOwnRoutines => 'Kendi rutinlerim';
+
+  @override
   String get whRecentTitle => 'Son antrenmanlar';
 
   @override
@@ -1820,7 +1971,7 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get hintWorkout =>
-      'İlk rutinini buradan kur — ya da hemen boş antrenman başlat.';
+      'Hazır bir programla başla ya da kendi rutinini kur.';
 
   @override
   String get hintNutrition =>

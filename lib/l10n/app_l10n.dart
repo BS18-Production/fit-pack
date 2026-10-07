@@ -1087,6 +1087,264 @@ abstract class AppL10n {
   /// **'{count} sets'**
   String workoutSetCount(int count);
 
+  /// No description provided for @exploreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore'**
+  String get exploreTitle;
+
+  /// No description provided for @exSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready-made programs — add one and its routines become yours to edit.'**
+  String get exSubtitle;
+
+  /// No description provided for @exLevelBeginner.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get exLevelBeginner;
+
+  /// No description provided for @exLevelIntermediate.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get exLevelIntermediate;
+
+  /// No description provided for @exLevelAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get exLevelAdvanced;
+
+  /// No description provided for @exSplitFullBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Full body'**
+  String get exSplitFullBody;
+
+  /// No description provided for @exSplitUpperLower.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper / Lower'**
+  String get exSplitUpperLower;
+
+  /// No description provided for @exSplitPpl.
+  ///
+  /// In en, this message translates to:
+  /// **'Push · Pull · Legs'**
+  String get exSplitPpl;
+
+  /// No description provided for @exSplitFullBodyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole body every session. Short, efficient — ideal if you train 3 days a week.'**
+  String get exSplitFullBodyDesc;
+
+  /// No description provided for @exSplitUpperLowerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper and lower body on alternating days. More volume per muscle, 4 days a week.'**
+  String get exSplitUpperLowerDesc;
+
+  /// No description provided for @exSplitPplDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Pushing, pulling and legs on separate days. Classic bodybuilding split.'**
+  String get exSplitPplDesc;
+
+  /// No description provided for @exLevelBeginnerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Mostly machines, moderate reps — learn the movements safely.'**
+  String get exLevelBeginnerDesc;
+
+  /// No description provided for @exLevelIntermediateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Barbell basics plus accessories, double progression.'**
+  String get exLevelIntermediateDesc;
+
+  /// No description provided for @exLevelAdvancedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Heavy low-rep main lifts and higher weekly volume.'**
+  String get exLevelAdvancedDesc;
+
+  /// No description provided for @exDaysPerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days/week'**
+  String exDaysPerWeek(int count);
+
+  /// No description provided for @exRoutineCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 routine} other{{count} routines}}'**
+  String exRoutineCount(int count);
+
+  /// No description provided for @exProgramTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{split} · {level}'**
+  String exProgramTitle(String split, String level);
+
+  /// No description provided for @exAddProgram.
+  ///
+  /// In en, this message translates to:
+  /// **'Add program'**
+  String get exAddProgram;
+
+  /// No description provided for @exAddAgainTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in your routines'**
+  String get exAddAgainTitle;
+
+  /// No description provided for @exAddAgainMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'This program\'s routines are already in your list. Add another copy?'**
+  String get exAddAgainMsg;
+
+  /// No description provided for @exAddAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Add again'**
+  String get exAddAgain;
+
+  /// No description provided for @exAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added to your routines'**
+  String exAdded(String name);
+
+  /// No description provided for @exAddError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t add the program — try again'**
+  String get exAddError;
+
+  /// No description provided for @exHowTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate the routines in order, e.g. A → B → A. Targets are a starting point; the app suggests the next step from your sets.'**
+  String get exHowTo;
+
+  /// No description provided for @exFreeWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Free workout'**
+  String get exFreeWorkout;
+
+  /// No description provided for @exInList.
+  ///
+  /// In en, this message translates to:
+  /// **'In your routines'**
+  String get exInList;
+
+  /// No description provided for @exRoutineFullBodyA.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Body A'**
+  String get exRoutineFullBodyA;
+
+  /// No description provided for @exRoutineFullBodyB.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Body B'**
+  String get exRoutineFullBodyB;
+
+  /// No description provided for @exRoutineFullBodyC.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Body C'**
+  String get exRoutineFullBodyC;
+
+  /// No description provided for @exRoutineUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper'**
+  String get exRoutineUpper;
+
+  /// No description provided for @exRoutineLower.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower'**
+  String get exRoutineLower;
+
+  /// No description provided for @exRoutineUpperA.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper A'**
+  String get exRoutineUpperA;
+
+  /// No description provided for @exRoutineLowerA.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower A'**
+  String get exRoutineLowerA;
+
+  /// No description provided for @exRoutineUpperB.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper B'**
+  String get exRoutineUpperB;
+
+  /// No description provided for @exRoutineLowerB.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower B'**
+  String get exRoutineLowerB;
+
+  /// No description provided for @exRoutineUpperPower.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper · Strength'**
+  String get exRoutineUpperPower;
+
+  /// No description provided for @exRoutineLowerPower.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower · Strength'**
+  String get exRoutineLowerPower;
+
+  /// No description provided for @exRoutineUpperHypertrophy.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper · Volume'**
+  String get exRoutineUpperHypertrophy;
+
+  /// No description provided for @exRoutineLowerHypertrophy.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower · Volume'**
+  String get exRoutineLowerHypertrophy;
+
+  /// No description provided for @exRoutinePush.
+  ///
+  /// In en, this message translates to:
+  /// **'Push'**
+  String get exRoutinePush;
+
+  /// No description provided for @exRoutinePull.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull'**
+  String get exRoutinePull;
+
+  /// No description provided for @exRoutineLegs.
+  ///
+  /// In en, this message translates to:
+  /// **'Legs'**
+  String get exRoutineLegs;
+
+  /// No description provided for @workoutOwnRoutines.
+  ///
+  /// In en, this message translates to:
+  /// **'My own'**
+  String get workoutOwnRoutines;
+
   /// No description provided for @whRecentTitle.
   ///
   /// In en, this message translates to:
@@ -3328,7 +3586,7 @@ abstract class AppL10n {
   /// No description provided for @hintWorkout.
   ///
   /// In en, this message translates to:
-  /// **'Create your first routine here — or start an empty workout right away.'**
+  /// **'Start with a ready-made program, or build your own routine.'**
   String get hintWorkout;
 
   /// No description provided for @hintNutrition.

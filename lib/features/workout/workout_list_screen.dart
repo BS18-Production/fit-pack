@@ -10,6 +10,9 @@ import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
+import '../explore/explore_section.dart';
+import '../explore/program_catalog.dart';
+import '../explore/program_labels.dart';
 import 'history_card.dart';
 import 'history_providers.dart';
 import 'routine_providers.dart';
@@ -46,14 +49,6 @@ class WorkoutListScreen extends ConsumerWidget {
             AppSpacing.vGapLg,
             const _ResumeBanner(),
             const _WeekStatsCard(),
-            AppSpacing.vGapLg,
-            // İlk-kullanım ipucu (docs/15 §B): sekmeye ilk girişte birincil
-            // aksiyonu işaret eder; bir kez gösterilir.
-            CoachMark(
-              hint: FirstRunHint.workout,
-              message: (l) => l.hintWorkout,
-              child: _EmptyWorkoutButton(),
-            ),
             AppSpacing.vGapxl_,
             routinesAsync.when(
               loading: () => Column(
@@ -75,28 +70,40 @@ class WorkoutListScreen extends ConsumerWidget {
                   children: [
                     _routinesHeader(context, routines.length),
                     AppSpacing.vGapSm,
-                    if (routines.isEmpty)
+                    if (routines.isEmpty) ...[
                       // Boş halde tek aksiyon yeter (EmptyState kendi
                       // butonunu içeriyor) — altına ayrıca "Yeni Rutin"
                       // eklemek aynı işi iki kez gösterirdi.
                       _NoRoutines(
                         onCreate: () => context.push(AppRoutes.routineNew),
-                      )
-                    else ...[
-                      ...routines.map(
-                        (r) => Padding(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                          child: _RoutineCard(routine: r),
-                        ),
                       ),
+                      AppSpacing.vGapSm,
+                      const Center(child: _FreeWorkoutButton()),
+                    ] else ...[
+                      ..._groupedRoutines(context, routines),
                       AppSpacing.vGapXs,
-                      _NewRoutineButton(
-                        onTap: () => context.push(AppRoutes.routineNew),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _NewRoutineButton(
+                              onTap: () => context.push(AppRoutes.routineNew),
+                            ),
+                          ),
+                          AppSpacing.hGapSm,
+                          const _FreeWorkoutButton(),
+                        ],
                       ),
                     ],
                   ],
                 );
               },
+            ),
+            // İlk-kullanım ipucu (docs/15 §B): sekmeye ilk girişte hazır
+            // programları işaret eder; bir kez gösterilir.
+            CoachMark(
+              hint: FirstRunHint.workout,
+              message: (l) => l.hintWorkout,
+              child: const ExploreSection(),
             ),
             const _RecentWorkouts(),
             const _ArchivedRoutines(),
@@ -104,6 +111,44 @@ class WorkoutListScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Rutinler program adıyla gruplanır (docs/28, Samet'in kararı): önce
+  /// kullanıcının kendi rutinleri, sonra her hazır program kendi başlığıyla.
+  /// Hiç program yoksa başlık çizilmez — liste eskisi gibi düz.
+  List<Widget> _groupedRoutines(BuildContext context, List<Routine> routines) {
+    final l = AppL10n.of(context);
+    final own = [for (final r in routines) if (r.programKey == null) r];
+    final byProgram = <String, List<Routine>>{};
+    for (final r in routines) {
+      final k = r.programKey;
+      if (k != null) byProgram.putIfAbsent(k, () => []).add(r);
+    }
+    Widget card(Routine r) => Padding(
+          key: ValueKey('routine-${r.id}'),
+          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: _RoutineCard(routine: r),
+        );
+    Widget header(String text) => Padding(
+          padding: const EdgeInsets.only(
+              top: AppSpacing.xs, bottom: AppSpacing.sm),
+          child: Text(context.upper(text),
+              style: context.texts.labelMedium?.copyWith(
+                  color: context.colors.onSurfaceVariant,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.8)),
+        );
+    return [
+      if (byProgram.isNotEmpty && own.isNotEmpty)
+        header(l.workoutOwnRoutines),
+      ...own.map(card),
+      for (final e in byProgram.entries) ...[
+        header(programByKey(e.key) == null
+            ? e.key
+            : l.programTitle(programByKey(e.key)!)),
+        ...e.value.map(card),
+      ],
+    ];
   }
 
   Widget _routinesHeader(BuildContext context, int? count) {
@@ -281,59 +326,23 @@ class _Stat extends StatelessWidget {
 
 // ──────────────────────────────────────────── Boş Antrenman Başlat (CTA)
 
-class _EmptyWorkoutButton extends StatelessWidget {
+/// Serbest (rutinsiz) antrenman — eskiden sekmenin en büyük düğmesiydi
+/// ("Boş Antrenman Başlat"). Samet sordu: gerekli mi? Kullanım senaryosu var
+/// (rutini olmayan yeni kullanıcı, plansız seans, yalnız kardiyo) ama birincil
+/// aksiyon değil → ikinci planda küçük düğme; yeri Keşfet'e verildi (docs/28).
+class _FreeWorkoutButton extends StatelessWidget {
+  const _FreeWorkoutButton();
+
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.brXl,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.lime, AppColors.limeDeep],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.limeDeep.withValues(alpha: 0.14),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: AppRadius.brXl,
-        child: InkWell(
-          onTap: () => context.push(AppRoutes.workoutActive),
-          borderRadius: AppRadius.brXl,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.lg + 2,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.add_rounded,
-                  color: AppColors.onGradient,
-                  size: 22,
-                ),
-                AppSpacing.hGapSm,
-                Flexible(
-                  child: Text(
-                    AppL10n.of(context).workoutStartEmpty,
-                    textAlign: TextAlign.center,
-                    style: context.texts.titleMedium?.copyWith(
-                      color: AppColors.onGradient,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+    return OutlinedButton.icon(
+      onPressed: () => context.push(AppRoutes.workoutActive),
+      icon: const Icon(Icons.bolt_rounded, size: AppIconSize.sm),
+      label: Text(AppL10n.of(context).exFreeWorkout),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md, vertical: AppSpacing.md + 2),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.brLg),
       ),
     );
   }

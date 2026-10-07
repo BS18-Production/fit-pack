@@ -1,6 +1,7 @@
 # 28 — Hazır Program Kataloğu + Rutinde Set Planı (docs/27 F1 + F2)
 
-> **Durum:** Taslak — Samet'in kararları bekleniyor (aşağıda §Kararlar).
+> **Durum:** F1 Katalog ✅ Kodlandı (2026-10-08, şema v14 + sunucu kolonu Dev
+> ve üretimde). F2 Set planı (`set_plan`) henüz yapılmadı — ayrı iş.
 > **Katman:** Set planı = temel (hep ücretsiz). Katalog = başlangıç
 > programları temel; tam katalog "akıllı" (ücretli aday) — docs/27 prensibi.
 > **Kaynak:** Hevy incelemesi (docs/27 §2–§3).
@@ -48,18 +49,18 @@ kaybolur.** Tek kullanıcı döneminde kabul edilebilir; mağaza öncesi asgari
 sürüm kapısıyla (docs/23 §3) kapatılır.
 
 **Kararlar (Samet):**
-1. [ ] Set planı JSON kolonu (önerilen) mı, ayrı tablo mu?
-2. [ ] İlk katalog kapsamı: önerilen **9 program** = 3 seviye
+1. [ ] Set planı JSON kolonu (önerilen) mı, ayrı tablo mu? — F2 ile birlikte.
+2. [x] (2026-10-08: 9 program, salon) İlk katalog kapsamı: önerilen **9 program** = 3 seviye
    (başlangıç/orta/ileri) × 3 bölünme (tüm vücut, üst/alt, itme/çekme/bacak),
    yalnız **salon** ekipmanı. Dambıl/ekipmansız sonraki tur.
-3. [ ] Program içeriği: yaygın, kamuya açık yapılardan (5x5, PPL, üst/alt)
+3. [x] (2026-10-08) Program içeriği: yaygın, kamuya açık yapılardan (5x5, PPL, üst/alt)
    **uyarlanır, metinler bizim** (set/tekrar şeması telifli değil; başkasının
    metni/markası kopyalanmaz). İçeriği ben taslaklarım, Samet salonda
    deneyip düzeltir.
-4. [ ] Ücretsiz/ücretli: başlangıç programları temel, orta/ileri "akıllı"
+4. [ ] Ücretsiz/ücretli (satıştan önce): başlangıç programları temel, orta/ileri "akıllı"
    aday — ama **satıştan önce** karar (docs/27). Şimdi hepsi açık.
-5. [ ] Programdan eklenen rutinler Rutinlerim'de program adıyla gruplansın
-   mı (önerilen), düz liste mi kalsın?
+5. [x] (2026-10-08: gruplansın) Programdan eklenen rutinler Rutinlerim'de
+   program adıyla gruplansın mı (önerilen), düz liste mi kalsın?
 
 **Nasıl doğrulanacak.**
 - Göç testi: v13 veritabanı v14'e kayıpsız geçer; mevcut rutinlerin planı boş.

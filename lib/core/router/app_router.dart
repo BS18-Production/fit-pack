@@ -14,6 +14,7 @@ import 'package:fit_pack/features/workout/routine_preview_screen.dart';
 import 'package:fit_pack/features/workout/active_session_screen.dart';
 import 'package:fit_pack/features/workout/workout_summary_screen.dart';
 import 'package:fit_pack/features/workout/workout_session_detail_screen.dart';
+import 'package:fit_pack/features/explore/program_detail_screen.dart';
 import 'package:fit_pack/features/nutrition/nutrition_screen.dart';
 import 'package:fit_pack/features/nutrition/foods_screen.dart';
 import 'package:fit_pack/features/body_metrics/body_metrics_screen.dart';
@@ -248,6 +249,12 @@ GoRouter createAppRouter({
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) =>
           _glass(ActiveSessionScreen(manualDate: DateTime.now())),
+    ),
+    GoRoute(
+      path: AppRoutes.programPath,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(ProgramDetailScreen(
+          programKey: state.pathParameters['programKey']!)),
     ),
     GoRoute(
       path: AppRoutes.workoutSessionPath,

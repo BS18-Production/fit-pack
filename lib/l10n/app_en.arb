@@ -367,6 +367,80 @@
     }
   },
   "workoutSetCount": "{count} sets",
+  "exploreTitle": "Explore",
+  "exSubtitle": "Ready-made programs — add one and its routines become yours to edit.",
+  "exLevelBeginner": "Beginner",
+  "exLevelIntermediate": "Intermediate",
+  "exLevelAdvanced": "Advanced",
+  "exSplitFullBody": "Full body",
+  "exSplitUpperLower": "Upper / Lower",
+  "exSplitPpl": "Push · Pull · Legs",
+  "exSplitFullBodyDesc": "Whole body every session. Short, efficient — ideal if you train 3 days a week.",
+  "exSplitUpperLowerDesc": "Upper and lower body on alternating days. More volume per muscle, 4 days a week.",
+  "exSplitPplDesc": "Pushing, pulling and legs on separate days. Classic bodybuilding split.",
+  "exLevelBeginnerDesc": "Mostly machines, moderate reps — learn the movements safely.",
+  "exLevelIntermediateDesc": "Barbell basics plus accessories, double progression.",
+  "exLevelAdvancedDesc": "Heavy low-rep main lifts and higher weekly volume.",
+  "exDaysPerWeek": "{count} days/week",
+  "exRoutineCount": "{count, plural, one{1 routine} other{{count} routines}}",
+  "exProgramTitle": "{split} · {level}",
+  "exAddProgram": "Add program",
+  "exAddAgainTitle": "Already in your routines",
+  "exAddAgainMsg": "This program's routines are already in your list. Add another copy?",
+  "exAddAgain": "Add again",
+  "exAdded": "{name} added to your routines",
+  "exAddError": "Couldn't add the program — try again",
+  "exHowTo": "Rotate the routines in order, e.g. A → B → A. Targets are a starting point; the app suggests the next step from your sets.",
+  "exFreeWorkout": "Free workout",
+  "exInList": "In your routines",
+  "exRoutineFullBodyA": "Full Body A",
+  "exRoutineFullBodyB": "Full Body B",
+  "exRoutineFullBodyC": "Full Body C",
+  "exRoutineUpper": "Upper",
+  "exRoutineLower": "Lower",
+  "exRoutineUpperA": "Upper A",
+  "exRoutineLowerA": "Lower A",
+  "exRoutineUpperB": "Upper B",
+  "exRoutineLowerB": "Lower B",
+  "exRoutineUpperPower": "Upper · Strength",
+  "exRoutineLowerPower": "Lower · Strength",
+  "exRoutineUpperHypertrophy": "Upper · Volume",
+  "exRoutineLowerHypertrophy": "Lower · Volume",
+  "exRoutinePush": "Push",
+  "exRoutinePull": "Pull",
+  "exRoutineLegs": "Legs",
+  "workoutOwnRoutines": "My own",
+  "@exDaysPerWeek": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@exRoutineCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@exAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@exProgramTitle": {
+    "placeholders": {
+      "split": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
   "whRecentTitle": "Recent workouts",
   "whSeeAll": "See all",
   "whMoreExercises": "{count, plural, one{+1 more exercise} other{+{count} more exercises}}",
@@ -974,7 +1048,7 @@
   "onbStart": "Let's go",
   "onbGoalsNumberError": "Enter your calorie and protein goals as numbers",
   "onbSaveError": "Couldn't save — try again",
-  "hintWorkout": "Create your first routine here — or start an empty workout right away.",
+  "hintWorkout": "Start with a ready-made program, or build your own routine.",
   "hintNutrition": "Add your first meal: search by typing or scan a barcode.",
   "hintProgress": "Log your first weight — your chart starts here.",
   "hintGotIt": "Got it",

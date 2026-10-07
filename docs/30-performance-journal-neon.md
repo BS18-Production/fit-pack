@@ -156,3 +156,16 @@ arayüzünde arşiv ve Device Hub'da yükleme tamamlandı. Telefon iOS 26.6
 kullanıyor; Device Hub ekran paylaşımı iOS 27+ gerektirdiğini bildirdi.
 Bu nedenle gerçek telefonda dört sekme ve işlem akışlarının son görsel
 kontrolü açık kalıyor. Kod analizi 0 sorun, 696 test yeşil.
+
+### Android güncellemesi ve görsel kontrol — 2026-10-08
+
+Güncel kaynaklardan arm64 debug APK derlendi; APK imzası, yeni FP ikonunun
+kaynakla piksel eşleşmesi, fontlar ve somon görselinin paketlenmesi
+doğrulandı. Çıktı: `build/app/outputs/apk/debug/app-debug.apk`.
+İlk başlatma hatasından sonra FitPack emülatörü ADB üzerinden bağlandı.
+APK `adb install -r` ile yerinde yüklendi ve açıldı; hesap/kayıtlar korunuyor.
+Ana Sayfa ve Antrenman ekran görüntülerinde koyu/lime tema, kartlar ve alt
+gezinme doğrulandı; görünür taşma yok. Güncel uygulama sürecinin hata
+kayıtlarında Flutter/AndroidRuntime hatası yok. Diğer sekmeler ve bütün
+kayıt işlem akışları için kapsamlı cihaz QA açık kalıyor.
+Samet gerçek iPhone'daki yeni görünümü onayladı.

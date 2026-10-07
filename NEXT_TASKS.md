@@ -1,5 +1,16 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## Android emülatör kontrolü — 2026-10-08
+
+- [x] Güncel `com.sametorhan.fit_pack` debug APK derlendi (arm64; APK imzası
+      doğrulandı). FP ikonunun pikselleri native kaynakla aynı; neon fontlar
+      ve somon görseli APK içinde. Android kaynakları güncel.
+- [x] FitPack emülatörüne `adb install -r` ile yerinde kurulum ve açılış.
+      Ana Sayfa ve Antrenman ekranları görsel olarak kontrol edildi;
+      görünür taşma ve güncel süreçte Flutter/AndroidRuntime hatası yok.
+- [ ] Dört sekmenin tüm panelleri ve kayıt işlem akışları: uçtan uca cihaz QA.
+- [x] Samet yeni tasarımı gerçek iPhone'da gördü ve onayladı (2026-10-07).
+
 ## FP monogram uygulama ikonu — 2026-10-07
 
 Samet yeni neon lime zeminli siyah FP görselini seçti. Beklenen: iOS ve
@@ -13,8 +24,8 @@ bağlantıları ve platform maskeleri; cihaz kontrolü ayrıca kaydedilecek.
 - [x] Xcode 27 Release arşivi derlendi, imza doğrulandı; iPhone 17'ye
       Device Hub / Apps / Add üzerinden mevcut kurulumun üzerine yüklendi.
 - [x] Derlenen iPhone ikonunun pikselleri seçilen native kaynakla aynı.
-- [ ] Telefonda son görsel onay: iOS 26.6, Device Hub ekran paylaşımını
-      desteklemiyor (iOS 27+ gerekiyor). Android cihaz listesi boş.
+- [x] Samet gerçek iPhone'daki yeni görünümü onayladı. Android emülatörü
+      güncellendi; Ana Sayfa ve Antrenman ekranları kontrol edildi.
 
 ## Performans Günlüğü — Neon (2026-10-04) · [docs/30](docs/30-performance-journal-neon.md)
 
@@ -22,10 +33,10 @@ bağlantıları ve platform maskeleri; cihaz kontrolü ayrıca kaydedilecek.
       tüm mevcut kayıt ve işlem akışlarını koru. Şema değişmedi.
 - [x] Analiz 0 sorun; 696 test yeşil; koyu/açık, TR/EN, 320 pt ve büyük
       metin render'ları. Android ayrı önizleme APK'sı derlendi.
-- [ ] **Cihazda görsel kontrol:** Android emülatörü ADB listesinde var ancak
-      shell/kurulum yanıt vermedi. iOS simulator erişimi otomatik incelemede
-      reddedildi. Gerçek iPhone'da dört sekme, canlı seans/RPE/sayaç, yemek
-      ekleme/geri alma, ölçüm ve fotoğraf akışını kontrol et; §7 kapanmadı.
+- [ ] **Kapsamlı cihaz QA:** Android emülatöründe Ana Sayfa ve Antrenman
+      ekranları 2026-10-08 tarihinde görsel olarak kontrol edildi. Samet
+      iPhone görünümünü onayladı. Dört sekmenin canlı seans/RPE/sayaç, yemek
+      ekleme/geri alma, ölçüm ve fotoğraf akışlarının tamamı açık; §7 kapanmadı.
 - [x] **iPhone'a yerinde güncelleme (2026-10-07):** Release arşivi
       Device Hub / Apps / Add ile mevcut kurulumun üzerine yüklendi.
 

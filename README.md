@@ -8,13 +8,20 @@ Sportif gelişimini tek yerde toplayan, AI destekli kişisel fitness asistanı u
 tüm uygulamada ortak tema, yeni Ana Sayfa/enerji-makro kartı ve gerçek
 antrenman aktivitesi. Font ve görseller çevrimdışı paketlenir; kayıtlı tema
 tercihi korunur. Analiz temiz, 696 test geçti. 2026-10-07'de iPhone'a
-Release güncellemesi yüklendi; telefonda son görsel onay açık:
+Release güncellemesi yüklendi; Samet yeni görünümü onayladı:
 [uygulama rehberi ve doğrulama](docs/30-performance-journal-neon.md).
 
 **2026-10-07 ikon:** Samet'in seçtiği neon lime zeminli siyah FP monogram
 iOS ve Android başlatıcı kaynaklarına uygulandı. Kaynak, katmanlar ve
 yeniden üretme komutları: [ikon rehberi](assets/icon/README.md). Yeni ikon
 iPhone'a yüklenen 2026-10-07 Release arşivinde bulunuyor.
+
+**2026-10-08 Android:** Güncel arm64 debug APK derlendi ve imzası/ikon
+kaynakları doğrulandı (`build/app/outputs/apk/debug/app-debug.apk`).
+FitPack emülatörüne mevcut uygulamanın üzerine yüklendi ve açıldı. Ana
+Sayfa ve Antrenman ekranlarında yeni tema/kartlar/gezinme kontrol edildi;
+görünür taşma ve güncel süreçte Flutter/AndroidRuntime hatası yok. Tüm kayıt
+akışlarının uçtan uca cihaz QA kontrolü ayrıca açık.
 
 ## Hızlı Bağlantılar
 

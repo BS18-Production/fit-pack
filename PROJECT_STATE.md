@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-10-07
+> **Son güncelleme:** 2026-10-08
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -13,6 +13,22 @@
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v13 · **Sahibi:** Samet Orhan (kişisel proje)
+
+## Android emülatörü güncellendi · görsel kontrol — 2026-10-08
+
+Güncel kaynaklardan `:app:assembleDebug` ile arm64 APK derlendi; APK imzası
+doğrulandı. APK içindeki FP ikonunun pikselleri native kaynakla aynı;
+Plus Jakarta Sans ve somon görseli paketli. Kaynak çıktı:
+`build/app/outputs/apk/debug/app-debug.apk`.
+
+Başlatıcıdaki Qt `neon` hatasının ardından FitPack emülatörü ADB ile
+bağlandı (`emulator-5554`). APK `adb install -r` ile mevcut uygulamanın
+üzerine yüklendi ve açıldı. Ana Sayfa ve Antrenman ekran görüntülerinde
+koyu/lime tema, kartlar ve alt gezinme kontrol edildi; görünür taşma yok.
+Hesap/kayıtlar korunuyor; güncel uygulama sürecinin hata kayıtlarında
+Flutter/AndroidRuntime hatası yok. Dört sekmenin tüm işlem akışları henüz
+uçtan uca kontrol edilmedi. Derlemede yerel SDK/Gradle kopyası kullanıldı.
+Samet gerçek iPhone'daki yeni görünümü onayladı.
 
 ## FP monogram uygulama ikonu — 2026-10-07
 
@@ -32,7 +48,8 @@ Device Hub / Apps / Add üzerinden iPhone 17'deki mevcut uygulamanın üzerine
 yüklendi; uygulama kaldırılmadı. Komut satırında `devicectl` servisi
 başlatılamadı ve `xcodebuild` çalışma alanını açamadı; Xcode arşivi başarılı.
 Device Hub ekran paylaşımı iOS 27+ istiyor; telefon iOS 26.6 olduğundan
-telefonda son görsel onay açık. Android bağlı cihaz listesi boş.
+Samet gerçek iPhone'daki yeni görünümü onayladı. Android emülatörü de
+2026-10-08 tarihinde güncellendi; ayrıntı yukarıda.
 
 ## Performans Günlüğü — Neon tasarım kodlandı · cihaz kontrolü açık — 2026-10-04
 
@@ -48,7 +65,8 @@ Analiz 0 sorun, **696 test yeşil**. Gerçek Flutter render'larında koyu/açık
 taşmalar giderildi. Android önizleme APK'sı ayrı pakette derlendi.
 **Emülatör shell/kurulum yanıt vermedi; iOS simulator erişimi otomatik
 incelemede reddedildi. 2026-10-07'de gerçek iPhone'a Release güncellemesi
-Device Hub ile yüklendi. Telefonda son görsel onay bekliyor.**
+Device Hub ile yüklendi. Samet telefondaki yeni görünümü onayladı; 2026-10-08 Android emülatöründe
+Ana Sayfa ve Antrenman görsel kontrolü yapıldı.**
 Ayrıntı/Claude Code rehberi: [docs/30](docs/30-performance-journal-neon.md).
 
 ## 🧹 Hareket kütüphanesi: 13 tekrar birleştirildi + Neutral Grip Lat Pulldown ✅ — 2026-10-04

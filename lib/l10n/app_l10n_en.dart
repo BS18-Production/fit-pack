@@ -936,6 +936,14 @@ class AppL10nEn extends AppL10n {
   String get asEmptyWorkout => 'Empty Workout';
 
   @override
+  String liveSetLabel(int n, int total) {
+    return 'Set $n/$total';
+  }
+
+  @override
+  String get liveAllDone => 'All sets done';
+
+  @override
   String get asPastEntry => 'Past entry';
 
   @override

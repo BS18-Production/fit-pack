@@ -8,6 +8,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../core/feedback/feedback_service.dart';
 import '../../core/feedback/rest_alarm.dart';
 import '../../core/i18n/formatting.dart';
+import '../../core/live_activity/workout_live_activity.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/notifications/notification_prefs.dart';
@@ -22,6 +23,7 @@ import '../../shared/widgets/app_state_views.dart';
 import 'exercise_detail_screen.dart';
 import 'progression.dart';
 import 'record_calc.dart';
+import 'live_position.dart';
 import 'rpe_picker_sheet.dart';
 import 'rpe_scale.dart';
 import 'session_progress.dart';
@@ -242,6 +244,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   // dispose'ta ref kullanılmaz — servisler baştan yakalanır.
   late final RestAlarm _restAlarm = ref.read(restAlarmProvider);
   late final FeedbackService _feedback = ref.read(feedbackServiceProvider);
+  late final WorkoutLiveActivity _live = ref.read(workoutLiveActivityProvider);
+  bool _disposing = false;
 
   @override
   void initState() {
@@ -343,11 +347,64 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
             .toList(),
       );
 
+  /// Kilit ekranı / Dynamic Island (docs/32): yalnız canlı seansta. Şu
+  /// anki hareket + set, sıradaki setin hedefi, dinlenme bitişi. Aynı durum
+  /// tekrar gönderilmez (servis karşılaştırır).
+  void _syncLive() {
+    if (_isManual || _loading || _draftCleared || _disposing || !mounted) {
+      return;
+    }
+    final l = AppL10n.of(context);
+    final units = ref.read(unitsProvider);
+    final pos = livePosition(
+        [for (final e in _exercises) [for (final s in e.sets) s.done]]);
+    final total = _exercises.fold<int>(0, (n, e) => n + e.sets.length);
+    final done = _exercises.fold<int>(
+        0, (n, e) => n + e.sets.where((s) => s.done).length);
+    final String exercise, setLabel, target;
+    if (pos == null) {
+      exercise = _exercises.isEmpty ? _title : _exercises.last.exercise.name;
+      setLabel = l.liveAllDone;
+      target = '';
+    } else {
+      final ex = _exercises[pos.exercise];
+      exercise = ex.exercise.name;
+      setLabel = l.liveSetLabel(pos.set + 1, ex.sets.length);
+      final v = ex.suggestionAt(pos.set) ?? ex.sets[pos.set].values;
+      target = switch (ex.measure) {
+        'reps' => v.reps == null ? '' : '× ${v.reps}',
+        'time' => v.durationSec == null ? '' : fmtDuration(v.durationSec!),
+        'distance' => v.distanceM == null
+            ? ''
+            : '${units.distanceValue(v.distanceM!)} ${units.distanceUnit}',
+        _ => [
+            if (v.weightKg != null) units.lift(v.weightKg!),
+            if (v.reps != null) '× ${v.reps}',
+          ].join(' '),
+      };
+    }
+    final deadline = _restDeadline;
+    _live.show(
+      title: _title,
+      startedAt: _startedAt,
+      state: WorkoutLiveState(
+        exercise: exercise,
+        setLabel: setLabel,
+        target: target,
+        restEndsAt:
+            deadline != null && deadline.isAfter(DateTime.now()) ? deadline : null,
+        doneSets: done,
+        totalSets: total,
+      ),
+    );
+  }
+
   /// Taslağı hemen yazar; bekleyen gecikmeli yazım varsa onu da karşılar
   /// (yazılan anlık durum, bekleyen değişikliği zaten içerir).
   Future<void> _saveDraft() async {
     _draftDebounce?.cancel();
     _draftDebounce = null;
+    _syncLive();
     if (!_draftable || _draftCleared || _loading) return;
     if (_drafts.clearCount != _draftClearCount) return;
     await _drafts.save(_buildDraft());
@@ -367,6 +424,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   void _clearDraft() {
     _draftCleared = true;
+    _live.end(); // seans bitti ya da atıldı — kilit ekranından kalksın
     _draftDebounce?.cancel();
     _drafts.clear();
     ref.invalidate(activeDraftProvider); // banner kalksın
@@ -467,6 +525,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   @override
   void dispose() {
+    _disposing = true; // _saveDraft → _syncLive context'e dokunmasın
     _ticker?.cancel();
     _restTimer?.cancel();
     _countdownTimer?.cancel();
@@ -479,6 +538,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     // ref kullanmaz; temizlenmiş/başka yerden silinmiş taslağı yazmaz.
     if (_draftDebounce?.isActive ?? false) _saveDraft();
     if (!_isManual) {
+      _live.end();
       WidgetsBinding.instance.removeObserver(this);
       WakelockPlus.disable();
     }
@@ -492,6 +552,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       final draft = await _drafts.load();
       if (draft != null) await _restoreFromDraft(draft);
       if (mounted) setState(() => _loading = false);
+      _syncLive();
       return;
     }
     if (widget.routineId != null) {
@@ -525,6 +586,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       }
     }
     if (mounted) setState(() => _loading = false);
+    _syncLive();
     _saveDraft(); // başlangıç taslağını yaz (boş bile olsa resume hedefi olur)
     // Geçmiş kayıt (C-18): akışın ilk sorusu "hangi gün?" — tarih seçici
     // kendiliğinden açılır; vazgeçilirse bugün kalır.
@@ -773,6 +835,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _scheduleRestTick();
     _armRestAlarm();
     _offerRestNotificationOnce();
+    _syncLive();
   }
 
   /// İlk molada bildirim iznini bir kez ister — izin yoksa uygulama alttayken
@@ -862,6 +925,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (left <= 0) {
       _restTimer?.cancel();
       _restDeadline = null;
+      _syncLive(); // kilit ekranındaki geri sayım kalksın
     }
   }
 
@@ -872,6 +936,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     // Hedef değişti → sıradaki tık ve ses yeni hedefe göre yeniden kurulur.
     _scheduleRestTick();
     _armRestAlarm();
+    _syncLive();
   }
 
   void _skipRest() {
@@ -882,6 +947,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _restAlarm.stop();
     ref.read(notificationServiceProvider).cancelRestDone();
     setState(() => _restRemaining = 0);
+    _syncLive();
   }
 
   // ───────── bitir / kaydet ─────────

@@ -264,6 +264,8 @@
   "rpEmptyMsg": "Düzenle ile hareket ekle",
   "asPastWorkout": "Geçmiş Antrenman",
   "asEmptyWorkout": "Boş Antrenman",
+  "liveSetLabel": "Set {n}/{total}",
+  "liveAllDone": "Tüm setler tamam",
   "asPastEntry": "Geçmiş kayıt",
   "asSetProgress": "{done}/{total} set",
   "asFinish": "Bitir",

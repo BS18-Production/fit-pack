@@ -1681,6 +1681,18 @@ abstract class AppL10n {
   /// **'Empty Workout'**
   String get asEmptyWorkout;
 
+  /// No description provided for @liveSetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {n}/{total}'**
+  String liveSetLabel(int n, int total);
+
+  /// No description provided for @liveAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All sets done'**
+  String get liveAllDone;
+
   /// No description provided for @asPastEntry.
   ///
   /// In en, this message translates to:

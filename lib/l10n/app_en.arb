@@ -546,6 +546,18 @@
   "rpEmptyMsg": "Add exercises via Edit",
   "asPastWorkout": "Past Workout",
   "asEmptyWorkout": "Empty Workout",
+  "liveSetLabel": "Set {n}/{total}",
+  "liveAllDone": "All sets done",
+  "@liveSetLabel": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "asPastEntry": "Past entry",
   "asSetProgress": "{done}/{total} sets",
   "@asSetProgress": {

@@ -5,6 +5,7 @@ import UIKit
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private var audioSessionChannel: FlutterMethodChannel?
+  private var liveActivityChannel: FlutterMethodChannel?
 
   override func application(
     _ application: UIApplication,
@@ -16,6 +17,39 @@ import UIKit
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
     registerAudioSessionChannel(engineBridge)
+    registerLiveActivityChannel(engineBridge)
+  }
+
+  /// Canlı antrenman kilit ekranı (docs/32): Dart seans durumunu gönderir,
+  /// burada ActivityKit etkinliği başlatılır / güncellenir / bitirilir.
+  /// iOS 16.2 altı ya da kullanıcı Canlı Etkinlikler'i kapattıysa sessizce
+  /// atlanır — seans normal çalışır.
+  private func registerLiveActivityChannel(_ engineBridge: FlutterImplicitEngineBridge) {
+    guard let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "FitPackLiveActivity")
+    else { return }
+    let channel = FlutterMethodChannel(
+      name: "fit_pack/live_activity", binaryMessenger: registrar.messenger())
+    channel.setMethodCallHandler { call, result in
+      guard #available(iOS 16.2, *) else {
+        result(false)
+        return
+      }
+      let args = call.arguments as? [String: Any] ?? [:]
+      switch call.method {
+      case "start":
+        WorkoutLiveActivityController.start(args: args)
+        result(true)
+      case "update":
+        WorkoutLiveActivityController.update(args: args)
+        result(true)
+      case "end":
+        WorkoutLiveActivityController.endAll()
+        result(true)
+      default:
+        result(FlutterMethodNotImplemented)
+      }
+    }
+    liveActivityChannel = channel
   }
 
   /// Mola geri sayım sesi müziği kısarak (duckOthers) çalar. audioplayers ses

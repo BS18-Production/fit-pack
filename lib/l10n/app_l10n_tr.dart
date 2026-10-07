@@ -927,6 +927,14 @@ class AppL10nTr extends AppL10n {
   String get asEmptyWorkout => 'Boş Antrenman';
 
   @override
+  String liveSetLabel(int n, int total) {
+    return 'Set $n/$total';
+  }
+
+  @override
+  String get liveAllDone => 'Tüm setler tamam';
+
+  @override
   String get asPastEntry => 'Geçmiş kayıt';
 
   @override

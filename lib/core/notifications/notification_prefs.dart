@@ -20,6 +20,10 @@ class NotificationPrefs {
   final bool mealEnabled;
   // Beslenme ekranındaki "hatırlatıcıyı aç" önerisi kapatıldı mı.
   final bool mealCtaDismissed;
+  // Dinlenme bildirimi izni ilk molada bir kez soruldu mu. Varsayılan kapalı
+  // ayar yüzünden iPhone'da alttayken mola sonu hiç bildirilmiyordu
+  // (Samet, 2026-10-07) — artık ilk mola başlarken bir kez sorulur.
+  final bool restPrompted;
 
   const NotificationPrefs({
     this.restEnabled = false,
@@ -33,7 +37,12 @@ class NotificationPrefs {
     this.weeklyReviewEnabled = false,
     this.mealEnabled = false,
     this.mealCtaDismissed = false,
+    this.restPrompted = false,
   });
+
+  /// İlk molada bildirim izni istenmeli mi: kullanıcı bildirimi hiç açmadı ve
+  /// daha önce sorulmadı. Bir kez sorulur; reddederse Ayarlar'dan açar.
+  bool get shouldOfferRest => !restEnabled && !restPrompted;
 
   NotificationPrefs copyWith({
     bool? restEnabled,
@@ -47,6 +56,7 @@ class NotificationPrefs {
     bool? weeklyReviewEnabled,
     bool? mealEnabled,
     bool? mealCtaDismissed,
+    bool? restPrompted,
   }) =>
       NotificationPrefs(
         restEnabled: restEnabled ?? this.restEnabled,
@@ -60,6 +70,7 @@ class NotificationPrefs {
         weeklyReviewEnabled: weeklyReviewEnabled ?? this.weeklyReviewEnabled,
         mealEnabled: mealEnabled ?? this.mealEnabled,
         mealCtaDismissed: mealCtaDismissed ?? this.mealCtaDismissed,
+        restPrompted: restPrompted ?? this.restPrompted,
       );
 }
 
@@ -75,6 +86,7 @@ class NotificationPrefsNotifier extends Notifier<NotificationPrefs> {
   static const _kWeekly = 'notif_weekly_review';
   static const _kMeal = 'notif_meal';
   static const _kMealCta = 'notif_meal_cta_dismissed';
+  static const _kRestPrompted = 'notif_rest_prompted';
 
   @override
   NotificationPrefs build() {
@@ -96,6 +108,7 @@ class NotificationPrefsNotifier extends Notifier<NotificationPrefs> {
       weeklyReviewEnabled: p.getBool(_kWeekly) ?? false,
       mealEnabled: p.getBool(_kMeal) ?? false,
       mealCtaDismissed: p.getBool(_kMealCta) ?? false,
+      restPrompted: p.getBool(_kRestPrompted) ?? false,
     );
   }
 
@@ -113,6 +126,7 @@ class NotificationPrefsNotifier extends Notifier<NotificationPrefs> {
     await p.setBool(_kWeekly, next.weeklyReviewEnabled);
     await p.setBool(_kMeal, next.mealEnabled);
     await p.setBool(_kMealCta, next.mealCtaDismissed);
+    await p.setBool(_kRestPrompted, next.restPrompted);
   }
 }
 

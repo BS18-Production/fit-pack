@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'audio_session_release.dart';
+
 /// Mola sayacının bir tikte vermesi gereken işaret (G-1).
 enum RestCue { none, tick, done }
 
@@ -103,8 +105,16 @@ class FeedbackService {
     ),
   );
 
+  final AudioSessionRelease _releaseSession;
+
+  FeedbackService({AudioSessionRelease release = const AudioSessionRelease()})
+      : _releaseSession = release;
+
   AudioPlayer? _countdown;
   Future<void>? _ready;
+  StreamSubscription<void>? _completeSub;
+  // Her çalışta artar: eski bir "bırak" isteği yeni başlayan sesi kesmesin.
+  int _playGen = 0;
 
   // Kurulum başarısızsa bir sonraki denemede yeniden kurulsun.
   Future<void> _ensureReady() => _ready ??= _init().catchError((Object e) {
@@ -122,6 +132,7 @@ class FeedbackService {
       await p.setAudioContext(_audioContext);
     }
     await p.setSource(AssetSource(_countdownAsset));
+    _completeSub = p.onPlayerComplete.listen((_) => _release(_playGen));
     _countdown = p;
   }
 
@@ -133,6 +144,7 @@ class FeedbackService {
   /// etkilenmez — eski "her saniye durdur/başlat" yolunda 2. ve 3. bip
   /// kayıyordu (Samet, 2026-09-30).
   void playCountdown({int offsetMs = 0}) {
+    _playGen++;
     unawaited(() async {
       try {
         await _ensureReady();
@@ -152,7 +164,14 @@ class FeedbackService {
   void stopCountdown() {
     final p = _countdown;
     if (p == null) return;
-    unawaited(p.stop().catchError((_) {}));
+    final gen = _playGen;
+    unawaited(p.stop().catchError((_) {}).then((_) => _release(gen)));
+  }
+
+  /// Ses bitti/durdu: müziği geri aç — arada yeni çalış başlamadıysa.
+  void _release(int gen) {
+    if (gen != _playGen) return;
+    unawaited(_releaseSession());
   }
 
   /// Mola bitti — cepteki telefon için belirgin titreşim (hafif "tık" değil).
@@ -165,7 +184,9 @@ class FeedbackService {
   void record() => HapticFeedback.heavyImpact();
 
   Future<void> dispose() async {
+    await _completeSub?.cancel();
     await _countdown?.dispose();
+    await _releaseSession();
   }
 }
 

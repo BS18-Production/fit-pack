@@ -762,6 +762,30 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _tickRest();
     _scheduleRestTick();
     _armRestAlarm();
+    _offerRestNotificationOnce();
+  }
+
+  /// İlk molada bildirim iznini bir kez ister — izin yoksa uygulama alttayken
+  /// mola sonu hiç bildirilmez (iPhone'da Dart sayacı arka planda durur).
+  /// Reddedilirse bir daha sormaz; Ayarlar → Bildirimler'den açılır.
+  Future<void> _offerRestNotificationOnce() async {
+    final notifier = ref.read(notificationPrefsProvider.notifier);
+    if (!ref.read(notificationPrefsProvider).shouldOfferRest) return;
+    await notifier.update(
+        ref.read(notificationPrefsProvider).copyWith(restPrompted: true));
+    bool ok;
+    try {
+      ok = await ref.read(notificationServiceProvider).requestPermission();
+    } catch (_) {
+      // İzin servisi yok (test/eklenti hatası): seans etkilenmesin, Ayarlar'dan
+      // yine açılabilir. Bilinçli sessiz — molanın ortasında hata mesajı olmaz.
+      return;
+    }
+    if (!ok || !mounted) return;
+    await notifier.update(
+        ref.read(notificationPrefsProvider).copyWith(restEnabled: true));
+    // İzin mola sürerken geldi: Android servisi "bitti" bildirimini bilsin.
+    if (mounted && _restDeadline != null) _armRestAlarm();
   }
 
   /// Mola sonu sesini/titreşimini kurar ya da yeniler (±15 sn) — docs/25.

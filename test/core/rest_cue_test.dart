@@ -55,6 +55,17 @@ void main() {
     expect(p.copyWith(restEnabled: true).restSoundEnabled, isTrue);
   });
 
+  test('dinlenme bildirimi izni ilk molada bir kez sorulur', () {
+    const p = NotificationPrefs();
+    expect(p.shouldOfferRest, isTrue);
+    expect(p.copyWith(restPrompted: true).shouldOfferRest, isFalse);
+    // Ayarlar'dan açılmışsa sormaya gerek yok.
+    expect(p.copyWith(restEnabled: true).shouldOfferRest, isFalse);
+    // copyWith diğer alanı korur.
+    expect(p.copyWith(restPrompted: true).copyWith(restEnabled: true).restPrompted,
+        isTrue);
+  });
+
   group('restTickDelayMs — geri sayım kayması', () {
     test('bir sonraki TAM saniye sınırına kadar bekler', () {
       expect(restTickDelayMs(3450), 450);

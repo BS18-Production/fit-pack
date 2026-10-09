@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import 'fitpack_icon.dart';
 
 /// Kapının "dur" ekranlarının ortak iskeleti (docs/20 §7.4-7.5, docs/23 §3).
 ///
@@ -31,7 +32,7 @@ class GateScaffold extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: AppIconSize.xxl, color: context.colors.primary),
+              FitPackIcon.material(icon, size: AppIconSize.xxl, color: context.colors.primary),
               AppSpacing.vGapLg,
               Text(title,
                   textAlign: TextAlign.center,

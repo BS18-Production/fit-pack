@@ -25,6 +25,7 @@ import '../../core/prefs/week_start_provider.dart';
 import '../nutrition/nutrition_habit_widgets.dart';
 import 'rhythm_state.dart';
 import 'streak_calc.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Ana Sayfa (docs/24). Sıra: başlık → haftalık şerit → bugünün eylemi →
 /// ritim (seri + bu hafta + son 30 gün) → günün kaydı → içgörü, su + kilo.
@@ -143,7 +144,7 @@ class _Header extends StatelessWidget {
                     minimumSize: const Size.square(AppA11y.minTapTarget),
                   ),
                   tooltip: l.homeProfileTooltip,
-                  icon: const Icon(Icons.person_outline_rounded),
+                  icon: const FitPackIcon.material(Icons.person_outline_rounded),
                   onPressed: () => context.push(AppRoutes.profile),
                 ),
               ],
@@ -230,7 +231,7 @@ class _GradientActionCard extends StatelessWidget {
                   color: c.primary.withValues(alpha: .09),
                   borderRadius: AppRadius.brMd,
                 ),
-                child: Icon(
+                child: FitPackIcon.material(
                   Icons.fitness_center_rounded,
                   color: c.primary,
                   size: AppIconSize.sm,
@@ -261,11 +262,11 @@ class _GradientActionCard extends StatelessWidget {
               onPressed: onTap,
               child: Row(
                 children: [
-                  Icon(actionIcon, size: AppIconSize.sm),
+                  FitPackIcon.material(actionIcon, size: AppIconSize.sm),
                   AppSpacing.hGapSm,
                   Expanded(child: Text(action)),
                   AppSpacing.hGapSm,
-                  const Icon(Icons.arrow_outward_rounded, size: AppIconSize.sm),
+                  const FitPackIcon.material(Icons.arrow_outward_rounded, size: AppIconSize.sm),
                 ],
               ),
             ),
@@ -350,7 +351,7 @@ class _StartWorkoutCard extends StatelessWidget {
                   color: context.colors.primary.withValues(alpha: 0.12),
                   borderRadius: AppRadius.brMd,
                 ),
-                child: Icon(
+                child: FitPackIcon.material(
                   Icons.fitness_center_rounded,
                   color: context.colors.primary,
                 ),
@@ -374,7 +375,7 @@ class _StartWorkoutCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right_rounded, color: context.colors.outline),
+              FitPackIcon.material(Icons.chevron_right_rounded, color: context.colors.outline),
             ],
           ),
         ),
@@ -403,7 +404,7 @@ class _RestDayCard extends StatelessWidget {
                   color: muted.withValues(alpha: 0.10),
                   borderRadius: AppRadius.brMd,
                 ),
-                child: Icon(Icons.bedtime_outlined, color: muted),
+                child: FitPackIcon.material(Icons.bedtime_outlined, color: muted),
               ),
               AppSpacing.hGapMd,
               Expanded(
@@ -438,7 +439,7 @@ class _RestDayCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.bolt_rounded, color: muted, size: AppIconSize.sm),
+                  FitPackIcon.material(Icons.bolt_rounded, color: muted, size: AppIconSize.sm),
                   AppSpacing.hGapMd,
                   Expanded(
                     child: Text(
@@ -449,7 +450,7 @@ class _RestDayCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Icon(
+                  FitPackIcon.material(
                     Icons.chevron_right_rounded,
                     color: context.colors.outline,
                     size: AppIconSize.sm,
@@ -559,7 +560,7 @@ class _RhythmCard extends ConsumerWidget {
                     alignment: PlaceholderAlignment.middle,
                     child: Padding(
                       padding: const EdgeInsets.only(left: 6),
-                      child: Icon(
+                      child: FitPackIcon.material(
                         Icons.local_fire_department_rounded,
                         size: 24,
                         color: context.semantic.warning,
@@ -628,7 +629,7 @@ class _RhythmCard extends ConsumerWidget {
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               onPressed: () => context.push(AppRoutes.weeklyReview),
-              icon: const Icon(Icons.insights_rounded, size: AppIconSize.sm),
+              icon: const FitPackIcon.material(Icons.insights_rounded, size: AppIconSize.sm),
               label: Text(l.wrOpen),
             ),
           ),
@@ -697,7 +698,7 @@ class _DayLogHeader extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(l.navNutrition),
-                  const Icon(Icons.arrow_outward_rounded, size: AppIconSize.sm),
+                  const FitPackIcon.material(Icons.arrow_outward_rounded, size: AppIconSize.sm),
                 ],
               ),
             ),
@@ -768,7 +769,7 @@ class _InsightCard extends ConsumerWidget {
                 color: success.withValues(alpha: 0.16),
                 borderRadius: AppRadius.brMd,
               ),
-              child: Icon(Icons.trending_up_rounded, color: success),
+              child: FitPackIcon.material(Icons.trending_up_rounded, color: success),
             ),
             AppSpacing.hGapMd,
             Expanded(
@@ -874,7 +875,7 @@ class _WaterMini extends ConsumerWidget {
                     color: accent.withValues(alpha: 0.16),
                     borderRadius: AppRadius.brSm,
                   ),
-                  child: Icon(
+                  child: FitPackIcon.material(
                     Icons.water_drop_outlined,
                     color: accent,
                     size: AppIconSize.sm,
@@ -993,7 +994,7 @@ class _WeightMini extends ConsumerWidget {
                       color: success.withValues(alpha: 0.16),
                       borderRadius: AppRadius.brSm,
                     ),
-                    child: Icon(
+                    child: FitPackIcon.material(
                       Icons.monitor_weight_outlined,
                       color: success,
                       size: AppIconSize.sm,
@@ -1083,7 +1084,7 @@ class _DeltaChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          FitPackIcon.material(
             down ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
             size: 12,
             color: color,

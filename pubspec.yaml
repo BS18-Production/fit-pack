@@ -113,6 +113,7 @@ flutter:
   generate: true
 
   assets:
+    - assets/icons/fitpack/
     - assets/images/
     - assets/fonts/
     - assets/data/

@@ -17,6 +17,7 @@ import '../body_metrics/body_metrics_screen.dart';
 import '../cloud/auth_service.dart';
 import '../home/providers/home_providers.dart';
 import '../workout/calorie_estimate.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Profil (docs/16) — kullanıcının "kim olduğu": hedefler, vücut, kimlik,
 /// tahmini günlük harcama. Sık düzenlenen kişisel veri burada; uygulama
@@ -35,7 +36,7 @@ class ProfileScreen extends ConsumerWidget {
         actions: [
           IconButton(
             tooltip: l.settingsTitle,
-            icon: const Icon(Icons.settings_outlined),
+            icon: const FitPackIcon.material(Icons.settings_outlined),
             onPressed: () => context.push(AppRoutes.settings),
           ),
         ],
@@ -326,7 +327,7 @@ class _AccountSection extends ConsumerWidget {
               ? l.settingsCloudSignedIn(
                   user.email ?? l.settingsCloudSignedInFallback)
               : l.settingsCloudSignedOut,
-          trailing: const Icon(Icons.chevron_right_rounded),
+          trailing: const FitPackIcon.material(Icons.chevron_right_rounded),
           onTap: () => context.push(AppRoutes.cloud),
         ),
       ],
@@ -372,7 +373,7 @@ class _DailyEnergyTile extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.local_fire_department_rounded,
+          FitPackIcon.material(Icons.local_fire_department_rounded,
               color: c.onPrimaryContainer, size: AppIconSize.lg),
           AppSpacing.hGapMd,
           Expanded(

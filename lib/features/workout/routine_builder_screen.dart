@@ -11,6 +11,7 @@ import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Rutin Oluşturucu (Antrenman V2 Faz B — docs/09-workout-v2.md).
 /// Ad + opsiyonel haftalık gün + hareketler (kütüphaneden) + hedef set×tekrar
@@ -345,7 +346,7 @@ class _AddWarmUpButton extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerLeft,
         child: ActionChip(
-          avatar: Icon(
+          avatar: FitPackIcon.material(
             Icons.local_fire_department_rounded,
             size: AppIconSize.sm,
             color: context.semantic.warning,
@@ -377,7 +378,7 @@ class _AddExerciseButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                FitPackIcon.material(
                   Icons.add_rounded,
                   color: context.colors.primary,
                   size: AppIconSize.sm,
@@ -444,7 +445,7 @@ class _ItemCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
+                FitPackIcon.material(
                   Icons.drag_handle_rounded,
                   color: context.colors.onSurfaceVariant.withValues(alpha: 0.6),
                   size: AppIconSize.sm,
@@ -461,7 +462,7 @@ class _ItemCard extends StatelessWidget {
                     ),
                     borderRadius: AppRadius.brMd,
                   ),
-                  child: Icon(
+                  child: FitPackIcon.material(
                     WorkoutUi.equipmentIcon(item.exercise.equipment),
                     color: context.colors.onSurfaceVariant,
                     size: 18,
@@ -488,7 +489,7 @@ class _ItemCard extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const FitPackIcon.material(Icons.close_rounded),
                   visualDensity: VisualDensity.compact,
                   color: context.colors.onSurfaceVariant,
                   onPressed: onRemove,
@@ -582,7 +583,7 @@ class _RestRow extends StatelessWidget {
                   WorkoutUi.restLabel(sec, none: AppL10n.of(ctx).commonNone),
                 ),
                 trailing: selected
-                    ? Icon(Icons.check_rounded, color: ctx.colors.primary)
+                    ? FitPackIcon.material(Icons.check_rounded, color: ctx.colors.primary)
                     : null,
                 onTap: () => Navigator.pop(ctx, sec),
               );
@@ -604,7 +605,7 @@ class _RestRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
         child: Row(
           children: [
-            Icon(
+            FitPackIcon.material(
               Icons.timer_outlined,
               size: AppIconSize.sm,
               color: context.colors.onSurfaceVariant,
@@ -627,7 +628,7 @@ class _RestRow extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            Icon(
+            FitPackIcon.material(
               Icons.expand_more_rounded,
               size: AppIconSize.sm,
               color: context.colors.onSurfaceVariant,
@@ -657,7 +658,7 @@ class _Stepper extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: const Icon(Icons.remove_circle_outline_rounded),
+          icon: const FitPackIcon.material(Icons.remove_circle_outline_rounded),
           visualDensity: VisualDensity.compact,
           onPressed: value > min ? () => onChanged(value - 1) : null,
         ),
@@ -668,7 +669,7 @@ class _Stepper extends StatelessWidget {
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.add_circle_outline_rounded),
+          icon: const FitPackIcon.material(Icons.add_circle_outline_rounded),
           visualDensity: VisualDensity.compact,
           onPressed: value < max ? () => onChanged(value + 1) : null,
         ),

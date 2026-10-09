@@ -18,6 +18,7 @@ import 'foods_screen.dart' show foodCategoryLabel, availableFoodCategories;
 import 'meal_types.dart';
 import 'nutrition_habits.dart' show mealForTime;
 import 'nutrition_screen.dart' show selectedDateProvider, unitOptionsWith;
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// **Yemek ekleme paneli** (2026-09-30 yeniden tasarım — NEXT_TASKS
 /// "Yemek ekleme paneli").
@@ -35,7 +36,11 @@ import 'nutrition_screen.dart' show selectedDateProvider, unitOptionsWith;
 ///
 /// Panel ekledikten sonra KAPANMAZ — bir öğüne arka arkaya birkaç şey
 /// girilir (1 avokado + 3 yumurta + 50 g peynir); "Bitti" ile kapanır.
-Future<void> showAddFoodSheet(BuildContext context, {String? mealType}) {
+Future<void> showAddFoodSheet(
+  BuildContext context, {
+  String? mealType,
+  bool startWithBarcode = false,
+}) {
   return showModalBottomSheet<void>(
     context: context,
     // Kök navigator (C-1): sekme navigator'ında açılan panel buzlu alt
@@ -44,7 +49,8 @@ Future<void> showAddFoodSheet(BuildContext context, {String? mealType}) {
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: context.colors.surface,
-    builder: (_) => AddFoodSheet(mealType: mealType),
+    builder: (_) =>
+        AddFoodSheet(mealType: mealType, startWithBarcode: startWithBarcode),
   );
 }
 
@@ -67,11 +73,11 @@ IconData foodIcon(Food f) {
 }
 
 String _addToMeal(AppL10n l, String meal) => switch (meal) {
-      'breakfast' => l.afAddBreakfast,
-      'lunch' => l.afAddLunch,
-      'dinner' => l.afAddDinner,
-      _ => l.afAddSnack,
-    };
+  'breakfast' => l.afAddBreakfast,
+  'lunch' => l.afAddLunch,
+  'dinner' => l.afAddDinner,
+  _ => l.afAddSnack,
+};
 
 /// "1 porsiyon · 200 g" / "150 g".
 String portionText(FoodPortion p) => p.unit != null && p.units > 0
@@ -81,7 +87,8 @@ String portionText(FoodPortion p) => p.unit != null && p.units > 0
 class AddFoodSheet extends ConsumerStatefulWidget {
   /// null → günün saatine göre öğün (bugünse), yoksa öğle.
   final String? mealType;
-  const AddFoodSheet({super.key, this.mealType});
+  final bool startWithBarcode;
+  const AddFoodSheet({super.key, this.mealType, this.startWithBarcode = false});
 
   @override
   ConsumerState<AddFoodSheet> createState() => _AddFoodSheetState();
@@ -111,11 +118,17 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   void initState() {
     super.initState();
     final d = ref.read(selectedDateProvider);
-    _meal = widget.mealType ??
+    _meal =
+        widget.mealType ??
         (DateUtils.isSameDay(d, DateTime.now())
             ? mealForTime(DateTime.now())
             : 'lunch');
     _load();
+    if (widget.startWithBarcode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _scan();
+      });
+    }
   }
 
   @override
@@ -132,9 +145,7 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
     setState(() {
       _all = foods;
       _recent = recent;
-      _recentRank = {
-        for (final (i, r) in recent.indexed) r.food.id: i,
-      };
+      _recentRank = {for (final (i, r) in recent.indexed) r.food.id: i};
       _lastGrams = {for (final r in recent) r.food.id: r.grams};
       _loading = false;
     });
@@ -145,10 +156,14 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   List<Food> get _results {
     final ranked = rankFoods(_all, _query, recentRank: _recentRank);
     if (_query.isNotEmpty || _category == null) return ranked;
-    return [for (final f in ranked) if (f.category == _category) f];
+    return [
+      for (final f in ranked)
+        if (f.category == _category) f,
+    ];
   }
 
-  FoodPortion _portion(Food f) => defaultPortion(f, lastGrams: _lastGrams[f.id]);
+  FoodPortion _portion(Food f) =>
+      defaultPortion(f, lastGrams: _lastGrams[f.id]);
 
   // ───────── ekleme ─────────
 
@@ -158,7 +173,9 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
     final l = AppL10n.of(context);
     final m = macrosFor(f, grams);
     try {
-      final id = await ref.read(nutritionDaoProvider).insertFoodLog(
+      final id = await ref
+          .read(nutritionDaoProvider)
+          .insertFoodLog(
             FoodLogsCompanion(
               date: Value(_day),
               mealType: Value(_meal),
@@ -182,10 +199,12 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(l.nutritionAddFailed),
-        backgroundColor: context.colors.error,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l.nutritionAddFailed),
+          backgroundColor: context.colors.error,
+        ),
+      );
     }
   }
 
@@ -236,7 +255,9 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
     final name = r.name.isEmpty ? l.nhQuickDefaultName : r.name;
     setState(() => _saving = true);
     try {
-      final id = await ref.read(nutritionDaoProvider).quickAddLog(
+      final id = await ref
+          .read(nutritionDaoProvider)
+          .quickAddLog(
             day: _day,
             mealType: _meal,
             name: name,
@@ -255,10 +276,12 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(l.nutritionAddFailed),
-        backgroundColor: context.colors.error,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l.nutritionAddFailed),
+          backgroundColor: context.colors.error,
+        ),
+      );
     }
   }
 
@@ -269,18 +292,20 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
     );
     if (result == null || !mounted) return;
     final dao = ref.read(nutritionDaoProvider);
-    final id = await dao.insertFood(FoodsCompanion(
-      name: Value(result.name),
-      kcalPer100g: Value(result.kcalPer100g),
-      proteinPer100g: Value(result.proteinPer100g),
-      carbPer100g: Value(result.carbPer100g),
-      fatPer100g: Value(result.fatPer100g),
-      source: const Value('custom'),
-      isCustom: const Value(true),
-      isRecipe: const Value(false),
-      defaultPortionGrams: Value(result.defaultGrams),
-      unitLabel: Value(result.unitLabel),
-    ));
+    final id = await dao.insertFood(
+      FoodsCompanion(
+        name: Value(result.name),
+        kcalPer100g: Value(result.kcalPer100g),
+        proteinPer100g: Value(result.proteinPer100g),
+        carbPer100g: Value(result.carbPer100g),
+        fatPer100g: Value(result.fatPer100g),
+        source: const Value('custom'),
+        isCustom: const Value(true),
+        isRecipe: const Value(false),
+        defaultPortionGrams: Value(result.defaultGrams),
+        unitLabel: Value(result.unitLabel),
+      ),
+    );
     final food = await dao.getFoodById(id);
     if (food == null || !mounted) return;
     setState(() {
@@ -295,8 +320,9 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
     if (q.length < 2 || _offSearching) return;
     FocusScope.of(context).unfocus();
     setState(() => _offSearching = true);
-    final results =
-        await ref.read(openFoodFactsServiceProvider).searchByName(q);
+    final results = await ref
+        .read(openFoodFactsServiceProvider)
+        .searchByName(q);
     if (!mounted) return;
     setState(() {
       _offSearching = false;
@@ -313,17 +339,21 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   Future<void> _pickOff(OffProduct p) async {
     final dao = ref.read(nutritionDaoProvider);
     var food = await dao.getFoodByBarcode(p.barcode);
-    food ??= await dao.getFoodById(await dao.insertFood(FoodsCompanion(
-      name: Value(p.name),
-      barcode: Value(p.barcode),
-      kcalPer100g: Value(p.kcalPer100g),
-      proteinPer100g: Value(p.proteinPer100g),
-      carbPer100g: Value(p.carbPer100g),
-      fatPer100g: Value(p.fatPer100g),
-      source: const Value('openfoodfacts'),
-      isCustom: const Value(false),
-      isRecipe: const Value(false),
-    )));
+    food ??= await dao.getFoodById(
+      await dao.insertFood(
+        FoodsCompanion(
+          name: Value(p.name),
+          barcode: Value(p.barcode),
+          kcalPer100g: Value(p.kcalPer100g),
+          proteinPer100g: Value(p.proteinPer100g),
+          carbPer100g: Value(p.carbPer100g),
+          fatPer100g: Value(p.fatPer100g),
+          source: const Value('openfoodfacts'),
+          isCustom: const Value(false),
+          isRecipe: const Value(false),
+        ),
+      ),
+    );
     if (food == null || !mounted) return;
     setState(() {
       _addToList(food!);
@@ -359,13 +389,14 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
               onDone: () => Navigator.of(context).pop(),
             ),
             if (_lastAdded != null)
-              _AddedBanner(
-                label: l.afAdded(_lastAdded!.label),
-                onUndo: _undo,
-              ),
+              _AddedBanner(label: l.afAdded(_lastAdded!.label), onUndo: _undo),
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                0,
+              ),
               child: _SearchField(
                 controller: _search,
                 onChanged: (_) => setState(() {
@@ -393,9 +424,9 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
                           ),
                           if (_recent.isNotEmpty) ...[
                             _SectionTitle(l.afRecent),
-                            SliverList.list(children: [
-                              for (final r in _recent) _row(r.food),
-                            ]),
+                            SliverList.list(
+                              children: [for (final r in _recent) _row(r.food)],
+                            ),
                           ],
                           _SectionTitle(l.afAllCount(_all.length)),
                           SliverToBoxAdapter(
@@ -426,34 +457,44 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
                           SliverToBoxAdapter(
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.md),
+                                horizontal: AppSpacing.md,
+                              ),
                               child: ListTile(
                                 leading: _offSearching
                                     ? const SizedBox(
                                         width: 20,
                                         height: 20,
                                         child: CircularProgressIndicator(
-                                            strokeWidth: 2))
-                                    : Icon(Icons.travel_explore_rounded,
-                                        color: c.secondary),
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : FitPackIcon.material(
+                                        Icons.travel_explore_rounded,
+                                        color: c.secondary,
+                                      ),
                                 title: Text(
-                                    _offSearching
-                                        ? l.nutritionOffSearching
-                                        : l.nutritionOffSearchFor(_query),
-                                    style: context.texts.bodyMedium
-                                        ?.copyWith(color: c.secondary)),
+                                  _offSearching
+                                      ? l.nutritionOffSearching
+                                      : l.nutritionOffSearchFor(_query),
+                                  style: context.texts.bodyMedium?.copyWith(
+                                    color: c.secondary,
+                                  ),
+                                ),
                                 onTap: _offSearching ? null : _searchOff,
                               ),
                             ),
                           ),
                           if (_offResults.isNotEmpty)
-                            SliverList.list(children: [
-                              for (final p in _offResults)
-                                _OffRow(product: p, onTap: () => _pickOff(p)),
-                            ]),
+                            SliverList.list(
+                              children: [
+                                for (final p in _offResults)
+                                  _OffRow(product: p, onTap: () => _pickOff(p)),
+                              ],
+                            ),
                         ],
                         const SliverToBoxAdapter(
-                            child: SizedBox(height: AppSpacing.xl)),
+                          child: SizedBox(height: AppSpacing.xl),
+                        ),
                       ],
                     ),
             ),
@@ -474,13 +515,13 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   }
 
   Widget _row(Food f) => _FoodRow(
-        key: ValueKey('food-${f.id}'),
-        food: f,
-        portion: _portion(f),
-        selected: _editing?.id == f.id,
-        onTap: () => setState(() => _editing = f),
-        onQuickAdd: _saving ? null : () => _add(f, _portion(f).grams),
-      );
+    key: ValueKey('food-${f.id}'),
+    food: f,
+    portion: _portion(f),
+    selected: _editing?.id == f.id,
+    onTap: () => setState(() => _editing = f),
+    onQuickAdd: _saving ? null : () => _add(f, _portion(f).grams),
+  );
 }
 
 // ───────────────────────────── Başlık ─────────────────────────────
@@ -506,7 +547,11 @@ class _Header extends StatelessWidget {
     final today = DateUtils.isSameDay(day, DateTime.now());
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg, AppSpacing.sm, AppSpacing.sm, 0),
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.sm,
+        0,
+      ),
       child: Column(
         children: [
           Container(
@@ -524,18 +569,24 @@ class _Header extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l.nutritionAddFood,
-                        style: context.texts.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.w800)),
+                    Text(
+                      l.nutritionAddFood,
+                      style: context.texts.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                     const SizedBox(height: 2),
                     Row(
                       children: [
                         _MealPicker(meal: meal, onSelect: onMeal),
                         if (!today) ...[
                           AppSpacing.hGapSm,
-                          Text(context.dateFmt('d MMM').format(day),
-                              style: context.texts.labelMedium?.copyWith(
-                                  color: c.onSurfaceVariant)),
+                          Text(
+                            context.dateFmt('d MMM').format(day),
+                            style: context.texts.labelMedium?.copyWith(
+                              color: c.onSurfaceVariant,
+                            ),
+                          ),
                         ],
                       ],
                     ),
@@ -543,15 +594,12 @@ class _Header extends StatelessWidget {
                 ),
               ),
               if (sessionCount > 0)
-                FilledButton.tonal(
-                  onPressed: onDone,
-                  child: Text(l.afDone),
-                )
+                FilledButton.tonal(onPressed: onDone, child: Text(l.afDone))
               else
                 IconButton(
                   tooltip: l.commonClose,
                   onPressed: onDone,
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const FitPackIcon.material(Icons.close_rounded),
                 ),
             ],
           ),
@@ -581,7 +629,11 @@ class _MealPicker extends StatelessWidget {
             value: m,
             child: Row(
               children: [
-                Icon(mealIcon(m), size: AppIconSize.sm, color: c.secondary),
+                FitPackIcon.material(
+                  mealIcon(m),
+                  size: AppIconSize.sm,
+                  color: c.secondary,
+                ),
                 AppSpacing.hGapSm,
                 Text(mealName(l, m)),
               ],
@@ -590,7 +642,11 @@ class _MealPicker extends StatelessWidget {
       ],
       child: Container(
         padding: const EdgeInsets.fromLTRB(
-            AppSpacing.sm, AppSpacing.xs, AppSpacing.xs, AppSpacing.xs),
+          AppSpacing.sm,
+          AppSpacing.xs,
+          AppSpacing.xs,
+          AppSpacing.xs,
+        ),
         decoration: BoxDecoration(
           color: c.secondary.withValues(alpha: 0.12),
           borderRadius: AppRadius.brPill,
@@ -598,12 +654,19 @@ class _MealPicker extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(mealIcon(meal), size: 16, color: c.secondary),
+            FitPackIcon.material(mealIcon(meal), size: 16, color: c.secondary),
             const SizedBox(width: 6),
-            Text(mealName(l, meal),
-                style: context.texts.labelLarge?.copyWith(
-                    color: c.secondary, fontWeight: FontWeight.w700)),
-            Icon(Icons.arrow_drop_down_rounded, color: c.secondary),
+            Text(
+              mealName(l, meal),
+              style: context.texts.labelLarge?.copyWith(
+                color: c.secondary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            FitPackIcon.material(
+              Icons.arrow_drop_down_rounded,
+              color: c.secondary,
+            ),
           ],
         ),
       ),
@@ -623,23 +686,38 @@ class _AddedBanner extends StatelessWidget {
     final ok = context.semantic.success;
     return Container(
       margin: const EdgeInsets.fromLTRB(
-          AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        0,
+      ),
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md, AppSpacing.xs, AppSpacing.xs, AppSpacing.xs),
+        AppSpacing.md,
+        AppSpacing.xs,
+        AppSpacing.xs,
+        AppSpacing.xs,
+      ),
       decoration: BoxDecoration(
         color: ok.withValues(alpha: 0.12),
         borderRadius: AppRadius.brMd,
       ),
       child: Row(
         children: [
-          Icon(Icons.check_circle_rounded, size: AppIconSize.sm, color: ok),
+          FitPackIcon.material(
+            Icons.check_circle_rounded,
+            size: AppIconSize.sm,
+            color: ok,
+          ),
           AppSpacing.hGapSm,
           Expanded(
-            child: Text(label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: context.texts.bodySmall
-                    ?.copyWith(fontWeight: FontWeight.w600)),
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.texts.bodySmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
           TextButton(onPressed: onUndo, child: Text(l.commonUndo)),
         ],
@@ -667,16 +745,16 @@ class _SearchField extends StatelessWidget {
       onChanged: onChanged,
       decoration: InputDecoration(
         hintText: l.nutritionSearchHint,
-        prefixIcon: const Icon(Icons.search_rounded),
+        prefixIcon: const FitPackIcon.material(Icons.search_rounded),
         suffixIcon: controller.text.isEmpty
             ? IconButton(
                 tooltip: l.nutritionScanBarcode,
-                icon: const Icon(Icons.qr_code_scanner_rounded),
+                icon: const FitPackIcon.material(Icons.qr_code_scanner_rounded),
                 onPressed: onScan,
               )
             : IconButton(
                 tooltip: MaterialLocalizations.of(context).deleteButtonTooltip,
-                icon: const Icon(Icons.close_rounded),
+                icon: const FitPackIcon.material(Icons.close_rounded),
                 onPressed: () {
                   controller.clear();
                   onChanged('');
@@ -703,24 +781,36 @@ class _Shortcuts extends StatelessWidget {
     final l = AppL10n.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xs),
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.xs,
+      ),
       child: Row(
         children: [
           Expanded(
-              child: _ShortcutTile(
-                  icon: Icons.qr_code_scanner_rounded,
-                  label: l.afScan,
-                  onTap: onScan)),
+            child: _ShortcutTile(
+              icon: Icons.qr_code_scanner_rounded,
+              label: l.afScan,
+              onTap: onScan,
+            ),
+          ),
           AppSpacing.hGapSm,
           Expanded(
-              child: _ShortcutTile(
-                  icon: Icons.bolt_rounded, label: l.afQuick, onTap: onQuick)),
+            child: _ShortcutTile(
+              icon: Icons.bolt_rounded,
+              label: l.afQuick,
+              onTap: onQuick,
+            ),
+          ),
           AppSpacing.hGapSm,
           Expanded(
-              child: _ShortcutTile(
-                  icon: Icons.edit_note_rounded,
-                  label: l.afCustom,
-                  onTap: onCustom)),
+            child: _ShortcutTile(
+              icon: Icons.edit_note_rounded,
+              label: l.afCustom,
+              onTap: onCustom,
+            ),
+          ),
         ],
       ),
     );
@@ -731,8 +821,11 @@ class _ShortcutTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
-  const _ShortcutTile(
-      {required this.icon, required this.label, required this.onTap});
+  const _ShortcutTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -745,16 +838,22 @@ class _ShortcutTile extends StatelessWidget {
         borderRadius: AppRadius.brMd,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-              vertical: AppSpacing.md, horizontal: AppSpacing.xs),
+            vertical: AppSpacing.md,
+            horizontal: AppSpacing.xs,
+          ),
           child: Column(
             children: [
-              Icon(icon, color: c.secondary),
+              FitPackIcon.material(icon, color: c.secondary),
               const SizedBox(height: 4),
-              Text(label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.texts.labelMedium?.copyWith(
-                      color: c.onSurface, fontWeight: FontWeight.w600)),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.texts.labelMedium?.copyWith(
+                  color: c.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),
@@ -769,17 +868,24 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.xs),
-          // Türkçede i → İ (toUpperCase "BESINLER" yazıyordu).
-          child: Text(upperForLanguage(text, Localizations.localeOf(context)),
-              style: context.texts.labelSmall?.copyWith(
-                  color: context.colors.onSurfaceVariant,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.8)),
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.xs,
+      ),
+      // Türkçede i → İ (toUpperCase "BESINLER" yazıyordu).
+      child: Text(
+        upperForLanguage(text, Localizations.localeOf(context)),
+        style: context.texts.labelSmall?.copyWith(
+          color: context.colors.onSurfaceVariant,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.8,
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class _CategoryChips extends StatelessWidget {
@@ -806,7 +912,9 @@ class _CategoryChips extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: AppSpacing.sm),
               child: ChoiceChip(
-                label: Text(cat == null ? l.afCatAll : foodCategoryLabel(l, cat)),
+                label: Text(
+                  cat == null ? l.afCatAll : foodCategoryLabel(l, cat),
+                ),
                 selected: selected == cat,
                 showCheckmark: false,
                 onSelected: (_) => onSelect(cat),
@@ -842,12 +950,18 @@ class _FoodRow extends StatelessWidget {
     final c = context.colors;
     final m = macrosFor(food, portion.grams);
     return Material(
-      color: selected ? c.secondary.withValues(alpha: 0.10) : Colors.transparent,
+      color: selected
+          ? c.secondary.withValues(alpha: 0.10)
+          : Colors.transparent,
       child: InkWell(
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
-              AppSpacing.lg, AppSpacing.sm, AppSpacing.sm, AppSpacing.sm),
+            AppSpacing.lg,
+            AppSpacing.sm,
+            AppSpacing.sm,
+            AppSpacing.sm,
+          ),
           child: Row(
             children: [
               Container(
@@ -857,18 +971,25 @@ class _FoodRow extends StatelessWidget {
                   color: c.secondary.withValues(alpha: 0.12),
                   borderRadius: AppRadius.brMd,
                 ),
-                child: Icon(foodIcon(food), size: 20, color: c.secondary),
+                child: FitPackIcon.material(
+                  foodIcon(food),
+                  size: 20,
+                  color: c.secondary,
+                ),
               ),
               AppSpacing.hGapMd,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(food.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: context.texts.bodyLarge
-                            ?.copyWith(fontWeight: FontWeight.w600)),
+                    Text(
+                      food.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.texts.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 2),
                     MacroInlineText(
                       protein: m.protein,
@@ -883,19 +1004,28 @@ class _FoodRow extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('${m.kcal.round()}',
-                      style: context.texts.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w800)),
-                  Text('kcal',
-                      style: context.texts.labelSmall
-                          ?.copyWith(color: c.onSurfaceVariant)),
+                  Text(
+                    '${m.kcal.round()}',
+                    style: context.texts.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    'kcal',
+                    style: context.texts.labelSmall?.copyWith(
+                      color: c.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ),
               IconButton(
                 tooltip: l.afQuickAddTip(portionText(portion)),
                 onPressed: onQuickAdd,
-                icon: Icon(Icons.add_circle_rounded,
-                    size: 30, color: c.secondary),
+                icon: FitPackIcon.material(
+                  Icons.add_circle_rounded,
+                  size: 30,
+                  color: c.secondary,
+                ),
               ),
             ],
           ),
@@ -915,7 +1045,7 @@ class _OffRow extends StatelessWidget {
     final c = context.colors;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      leading: Icon(Icons.public_rounded, color: c.secondary),
+      leading: FitPackIcon.material(Icons.public_rounded, color: c.secondary),
       title: Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: MacroInlineText(
         protein: product.proteinPer100g,
@@ -924,7 +1054,10 @@ class _OffRow extends StatelessWidget {
         prefix: '${product.kcalPer100g.round()} kcal · ',
         suffix: ' /100 g',
       ),
-      trailing: Icon(Icons.chevron_right_rounded, color: c.onSurfaceVariant),
+      trailing: FitPackIcon.material(
+        Icons.chevron_right_rounded,
+        color: c.onSurfaceVariant,
+      ),
       onTap: onTap,
     );
   }
@@ -947,16 +1080,25 @@ class _NoResults extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         children: [
-          Icon(Icons.no_food_rounded,
-              size: AppIconSize.xl, color: context.colors.onSurfaceVariant),
+          FitPackIcon.material(
+            Icons.no_food_rounded,
+            size: AppIconSize.xl,
+            color: context.colors.onSurfaceVariant,
+          ),
           AppSpacing.vGapSm,
-          Text(query.isEmpty ? l.nutritionNoFoods : l.nutritionNotFound(query),
-              textAlign: TextAlign.center, style: context.texts.titleSmall),
+          Text(
+            query.isEmpty ? l.nutritionNoFoods : l.nutritionNotFound(query),
+            textAlign: TextAlign.center,
+            style: context.texts.titleSmall,
+          ),
           AppSpacing.vGapXs,
-          Text(l.nutritionNotInListHint,
-              textAlign: TextAlign.center,
-              style: context.texts.bodySmall
-                  ?.copyWith(color: context.colors.onSurfaceVariant)),
+          Text(
+            l.nutritionNotInListHint,
+            textAlign: TextAlign.center,
+            style: context.texts.bodySmall?.copyWith(
+              color: context.colors.onSurfaceVariant,
+            ),
+          ),
           AppSpacing.vGapMd,
           Wrap(
             spacing: AppSpacing.sm,
@@ -964,12 +1106,18 @@ class _NoResults extends StatelessWidget {
             children: [
               OutlinedButton.icon(
                 onPressed: onQuick,
-                icon: const Icon(Icons.bolt_rounded, size: AppIconSize.sm),
+                icon: const FitPackIcon.material(
+                  Icons.bolt_rounded,
+                  size: AppIconSize.sm,
+                ),
                 label: Text(l.afQuick),
               ),
               OutlinedButton.icon(
                 onPressed: onCustom,
-                icon: const Icon(Icons.edit_note_rounded, size: AppIconSize.sm),
+                icon: const FitPackIcon.material(
+                  Icons.edit_note_rounded,
+                  size: AppIconSize.sm,
+                ),
                 label: Text(l.afCustom),
               ),
             ],
@@ -1008,13 +1156,15 @@ class _AmountPanel extends StatefulWidget {
 class _AmountPanelState extends State<_AmountPanel> {
   late bool _unitMode = hasUnit(widget.food);
   late double _grams = widget.initial.grams;
-  late final TextEditingController _field =
-      TextEditingController(text: _fieldText());
+  late final TextEditingController _field = TextEditingController(
+    text: _fieldText(),
+  );
 
   double get _portionG => widget.food.defaultPortionGrams ?? 100;
   double get _units => _grams / _portionG;
 
-  String _fieldText() => _unitMode ? fmtNum(_round(_units)) : '${_grams.round()}';
+  String _fieldText() =>
+      _unitMode ? fmtNum(_round(_units)) : '${_grams.round()}';
 
   double _round(double v) => (v * 100).round() / 100;
 
@@ -1034,9 +1184,11 @@ class _AmountPanelState extends State<_AmountPanel> {
     _field.text = _fieldText();
   }
 
-  void _step(int dir) => _setGrams(_unitMode
-      ? (_units + dir * 0.5).clamp(0.25, 99) * _portionG
-      : _grams + dir * 10);
+  void _step(int dir) => _setGrams(
+    _unitMode
+        ? (_units + dir * 0.5).clamp(0.25, 99) * _portionG
+        : _grams + dir * 10,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -1050,31 +1202,41 @@ class _AmountPanelState extends State<_AmountPanel> {
         : const [50.0, 100.0, 150.0, 200.0];
 
     Widget macro(String label, double g, Color color) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-            const SizedBox(width: 4),
-            Text('$label ${g.round()} g',
-                style: context.texts.labelMedium
-                    ?.copyWith(fontWeight: FontWeight.w600)),
-          ],
-        );
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '$label ${g.round()} g',
+          style: context.texts.labelMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
 
     return Container(
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg),
+        AppSpacing.lg,
+        AppSpacing.md,
+        AppSpacing.lg,
+        AppSpacing.lg,
+      ),
       decoration: BoxDecoration(
         color: c.surfaceContainerHigh,
-        borderRadius:
-            const BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xl),
+        ),
         boxShadow: [
           BoxShadow(
-              color: c.shadow.withValues(alpha: 0.10),
-              blurRadius: 16,
-              offset: const Offset(0, -4)),
+            color: c.shadow.withValues(alpha: 0.10),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
         ],
       ),
       child: Column(
@@ -1083,39 +1245,49 @@ class _AmountPanelState extends State<_AmountPanel> {
           Row(
             children: [
               Expanded(
-                child: Text(f.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.texts.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w800)),
+                child: Text(
+                  f.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.texts.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ),
               IconButton(
                 tooltip: l.commonClose,
                 visualDensity: VisualDensity.compact,
                 onPressed: widget.onClose,
-                icon: const Icon(Icons.close_rounded),
+                icon: const FitPackIcon.material(Icons.close_rounded),
               ),
             ],
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('${m.kcal.round()}',
-                  style: context.texts.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: context.semantic.macroCalories,
-                      height: 1)),
+              Text(
+                '${m.kcal.round()}',
+                style: context.texts.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: context.semantic.macroCalories,
+                  height: 1,
+                ),
+              ),
               const SizedBox(width: 4),
-              Text('kcal',
-                  style: context.texts.labelLarge
-                      ?.copyWith(color: c.onSurfaceVariant)),
+              Text(
+                'kcal',
+                style: context.texts.labelLarge?.copyWith(
+                  color: c.onSurfaceVariant,
+                ),
+              ),
               const Spacer(),
               if (hasUnit(f))
                 SegmentedButton<bool>(
                   showSelectedIcon: false,
                   style: const ButtonStyle(
-                      visualDensity: VisualDensity.compact,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                    visualDensity: VisualDensity.compact,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   segments: [
                     ButtonSegment(value: true, label: Text(unitLabel)),
                     const ButtonSegment(value: false, label: Text('g')),
@@ -1139,17 +1311,19 @@ class _AmountPanelState extends State<_AmountPanel> {
             children: [
               IconButton.filledTonal(
                 onPressed: () => _step(-1),
-                icon: const Icon(Icons.remove_rounded),
+                icon: const FitPackIcon.material(Icons.remove_rounded),
               ),
               Expanded(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                  ),
                   child: TextField(
                     controller: _field,
                     textAlign: TextAlign.center,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                     ],
@@ -1163,15 +1337,17 @@ class _AmountPanelState extends State<_AmountPanel> {
                     onChanged: (v) {
                       final n = double.tryParse(v.replaceAll(',', '.'));
                       if (n == null || n <= 0) return;
-                      _setGrams(_unitMode ? n * _portionG : n,
-                          syncField: false);
+                      _setGrams(
+                        _unitMode ? n * _portionG : n,
+                        syncField: false,
+                      );
                     },
                   ),
                 ),
               ),
               IconButton.filledTonal(
                 onPressed: () => _step(1),
-                icon: const Icon(Icons.add_rounded),
+                icon: const FitPackIcon.material(Icons.add_rounded),
               ),
             ],
           ),
@@ -1186,8 +1362,9 @@ class _AmountPanelState extends State<_AmountPanel> {
                       label: SizedBox(
                         width: double.infinity,
                         child: Text(
-                            _unitMode ? fmtNum(p) : '${p.round()} g',
-                            textAlign: TextAlign.center),
+                          _unitMode ? fmtNum(p) : '${p.round()} g',
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                       showCheckmark: false,
                       selected: _unitMode
@@ -1204,17 +1381,20 @@ class _AmountPanelState extends State<_AmountPanel> {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed:
-                  widget.saving ? null : () => widget.onAdd(_grams),
+              onPressed: widget.saving ? null : () => widget.onAdd(_grams),
               style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
               icon: widget.saving
                   ? SizedBox(
                       width: AppIconSize.sm,
                       height: AppIconSize.sm,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: c.onPrimary))
-                  : const Icon(Icons.check_rounded),
+                        strokeWidth: 2,
+                        color: c.onPrimary,
+                      ),
+                    )
+                  : const FitPackIcon.material(Icons.check_rounded),
               label: Text('${widget.addLabel} · ${m.kcal.round()} kcal'),
             ),
           ),
@@ -1264,9 +1444,7 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
   @override
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
-    final numeric = [
-      FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-    ];
+    final numeric = [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))];
     return AlertDialog(
       title: Text(l.nhQuickTitle),
       content: Form(
@@ -1276,9 +1454,12 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l.nhQuickHint,
-                  style: context.texts.bodySmall
-                      ?.copyWith(color: context.colors.onSurfaceVariant)),
+              Text(
+                l.nhQuickHint,
+                style: context.texts.bodySmall?.copyWith(
+                  color: context.colors.onSurfaceVariant,
+                ),
+              ),
               AppSpacing.vGapMd,
               TextFormField(
                 controller: _name,
@@ -1289,8 +1470,9 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
               TextFormField(
                 controller: _kcal,
                 autofocus: true,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 inputFormatters: numeric,
                 decoration: InputDecoration(labelText: l.nhQuickKcal),
                 validator: (v) {
@@ -1301,8 +1483,9 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
               AppSpacing.vGapSm,
               TextFormField(
                 controller: _protein,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 inputFormatters: numeric,
                 decoration: InputDecoration(labelText: l.nhQuickProtein),
                 onFieldSubmitted: (_) => _save(),
@@ -1313,14 +1496,14 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l.commonCancel)),
+          onPressed: () => Navigator.pop(context),
+          child: Text(l.commonCancel),
+        ),
         FilledButton(onPressed: _save, child: Text(l.nhUsualAdd)),
       ],
     );
   }
 }
-
 
 /// Custom food creator sonucu — porsiyon değerleri /100g'a çevrilir.
 class _CustomFood {
@@ -1342,7 +1525,6 @@ class _CustomFood {
     required this.unitLabel,
   });
 }
-
 
 /// Kullanıcı kendi yemeğini girer. "Yediğin porsiyon" mantığı: toplam
 /// gram + o porsiyonun toplam kcal/P/K/Y'si → /100g'a çevrilip kaydedilir
@@ -1419,17 +1601,16 @@ class _CustomFoodDialogState extends State<_CustomFoodDialog> {
               Text(
                 l.nutritionCustomHelp,
                 style: context.texts.bodySmall?.copyWith(
-                    color: context.colors.onSurfaceVariant),
+                  color: context.colors.onSurfaceVariant,
+                ),
               ),
               AppSpacing.vGapMd,
               TextFormField(
                 controller: _name,
                 textCapitalization: TextCapitalization.sentences,
-                decoration:
-                    InputDecoration(labelText: l.nutritionFoodName),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? l.commonEnterName
-                    : null,
+                decoration: InputDecoration(labelText: l.nutritionFoodName),
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? l.commonEnterName : null,
               ),
               AppSpacing.vGapMd,
               DropdownButtonFormField<String?>(
@@ -1437,30 +1618,39 @@ class _CustomFoodDialogState extends State<_CustomFoodDialog> {
                 decoration: InputDecoration(labelText: l.nutritionUnit),
                 items: [
                   DropdownMenuItem(
-                      value: null, child: Text(l.nutritionNoUnitOption)),
-                  ...unitOptionsWith(l, _unit).map((u) => DropdownMenuItem(
-                      value: u, child: Text(l.nutritionOneUnit(u)))),
+                    value: null,
+                    child: Text(l.nutritionNoUnitOption),
+                  ),
+                  ...unitOptionsWith(l, _unit).map(
+                    (u) => DropdownMenuItem(
+                      value: u,
+                      child: Text(l.nutritionOneUnit(u)),
+                    ),
+                  ),
                 ],
                 onChanged: (v) => setState(() => _unit = v),
               ),
               AppSpacing.vGapMd,
               _NumberField(
-                  controller: _grams,
-                  label: _unit == null
-                      ? l.nutritionPortionGrams
-                      : l.nutritionUnitGramsQuestion(_unit!),
-                  requiredField: true),
+                controller: _grams,
+                label: _unit == null
+                    ? l.nutritionPortionGrams
+                    : l.nutritionUnitGramsQuestion(_unit!),
+                requiredField: true,
+              ),
               AppSpacing.vGapMd,
               _NumberField(
-                  controller: _kcal,
-                  label: l.nutritionTotalKcal,
-                  requiredField: true),
+                controller: _kcal,
+                label: l.nutritionTotalKcal,
+                requiredField: true,
+              ),
               AppSpacing.vGapMd,
               _NumberField(
-                  controller: _protein, label: '${l.macroProtein} (g)'),
+                controller: _protein,
+                label: '${l.macroProtein} (g)',
+              ),
               AppSpacing.vGapMd,
-              _NumberField(
-                  controller: _carb, label: '${l.macroCarbs} (g)'),
+              _NumberField(controller: _carb, label: '${l.macroCarbs} (g)'),
               AppSpacing.vGapMd,
               _NumberField(controller: _fat, label: '${l.macroFat} (g)'),
             ],
@@ -1493,11 +1683,8 @@ class _NumberField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      keyboardType:
-          const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-      ],
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
       decoration: InputDecoration(labelText: label),
       validator: (raw) {
         final l = AppL10n.of(context);
@@ -1512,4 +1699,3 @@ class _NumberField extends StatelessWidget {
     );
   }
 }
-

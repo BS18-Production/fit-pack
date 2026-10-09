@@ -43,6 +43,11 @@ class AppSpacing {
 class AppRadius {
   AppRadius._();
 
+  static const double control = 12;
+  static const BorderRadius brControl = BorderRadius.all(
+    Radius.circular(control),
+  );
+
   static const double sm = 10;
   static const double md = 16;
   static const double lg = 20;
@@ -60,6 +65,7 @@ class AppIconSize {
   AppIconSize._();
 
   static const double sm = 18;
+  static const double navigation = 26;
   static const double md = 24;
   static const double lg = 32;
   static const double xl = 48;
@@ -69,6 +75,7 @@ class AppIconSize {
 class AppDuration {
   AppDuration._();
 
+  static const Duration control = Duration(milliseconds: 160);
   static const Duration fast = Duration(milliseconds: 150);
   static const Duration normal = Duration(milliseconds: 250);
   static const Duration slow = Duration(milliseconds: 400);
@@ -108,4 +115,12 @@ extension AppInsetsX on BuildContext {
 class AppFab {
   AppFab._();
   static const double clearance = 80;
+}
+
+/// Velocity gezinme ve ana eylem ölçüleri.
+class AppNavigation {
+  AppNavigation._();
+  static const double headerInlineWidth = 340;
+  static const double itemHeight = 56;
+  static const double primaryButtonHeight = 54;
 }

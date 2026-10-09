@@ -13,6 +13,7 @@ import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/glass.dart';
 import 'providers/dashboard_providers.dart';
 import 'workout_activity.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Gerçek seanslara dayanan günlük yakım. Grafik boş günleri kayıtlı
 /// yakım 0, eksik tahmini boşluk olarak gösterir; canlı sensör verisi değildir.
@@ -83,7 +84,7 @@ class _WorkoutActivityCardState extends ConsumerState<WorkoutActivityCard> {
                   ],
                 ),
               ),
-              Icon(
+              FitPackIcon.material(
                 Icons.local_fire_department_rounded,
                 color: c.secondary,
                 size: AppIconSize.sm,
@@ -252,7 +253,7 @@ class _WorkoutActivityCardState extends ConsumerState<WorkoutActivityCard> {
                           style: context.texts.labelMedium,
                         ),
                       ),
-                      Icon(
+                      FitPackIcon.material(
                         Icons.expand_more_rounded,
                         color: c.onSurfaceVariant,
                         size: AppIconSize.sm,

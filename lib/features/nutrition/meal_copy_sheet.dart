@@ -11,6 +11,7 @@ import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'meal_types.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// "Başka günden kopyala" (docs/21 #2 küçük sürüm): geçmiş bir günün AYNI
 /// öğünü, miktarları düzenlenebilir bir listeyle bugünkü öğüne eklenir.
@@ -384,7 +385,7 @@ class _CopyItemRow extends StatelessWidget {
           ),
           IconButton(
             tooltip: l.nutritionCopyRemove,
-            icon: const Icon(Icons.close_rounded),
+            icon: const FitPackIcon.material(Icons.close_rounded),
             color: context.colors.onSurfaceVariant,
             visualDensity: VisualDensity.compact,
             onPressed: onRemove,

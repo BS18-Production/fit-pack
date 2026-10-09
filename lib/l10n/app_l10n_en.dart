@@ -3251,4 +3251,37 @@ class AppL10nEn extends AppL10n {
     );
     return '$_temp0';
   }
+
+  @override
+  String get nutritionDailyEnergy => 'Daily energy';
+
+  @override
+  String get nutritionKcalRemaining => 'kcal remaining';
+
+  @override
+  String get nutritionKcalAboveGoal => 'kcal above goal';
+
+  @override
+  String get nutritionKcalAtGoal => 'kcal to goal';
+
+  @override
+  String get nutritionDiary => 'Meal journal';
+
+  @override
+  String get nutritionShowMacros => 'Show macros';
+
+  @override
+  String get nutritionHideMacros => 'Simple view';
+
+  @override
+  String nutritionFoodCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count foods',
+      one: '1 food',
+      zero: 'No entries',
+    );
+    return '$_temp0';
+  }
 }

@@ -6,6 +6,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../core/theme/app_colors.dart';
 import '../../l10n/app_l10n.dart';
 import 'rpe_scale.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// RPE seçici paneli (docs/27 F4). Klavye yerine 6–10 yarım adımlı şerit;
 /// seçilen değerin efor etiketi ve kaç tekrar kaldığı canlı gösterilir.
@@ -124,7 +125,7 @@ class _RpePickerSheetState extends State<_RpePickerSheet> {
                   child: FilledButton.icon(
                     onPressed:
                         v == null ? null : () => Navigator.pop(context, (rpe: v)),
-                    icon: const Icon(Icons.check_rounded),
+                    icon: const FitPackIcon.material(Icons.check_rounded),
                     label: Text(l.rpePick_done),
                   ),
                 ),

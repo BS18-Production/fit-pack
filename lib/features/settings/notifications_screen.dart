@@ -9,6 +9,7 @@ import '../insights/weekly_review_reminder.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/setting_tiles.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Öğün hatırlatıcısını aç/kapat (docs/26). Ayarlar ve Beslenme ekranındaki
 /// öneri kartı aynı yolu kullanır. Açarken izin ister; zamanlamanın kendisi
@@ -189,7 +190,7 @@ class NotificationsScreen extends ConsumerWidget {
           SettingsSection(
             children: [
               SwitchListTile(
-                secondary: const Icon(Icons.timer_outlined),
+                secondary: const FitPackIcon.material(Icons.timer_outlined),
                 title: Text(l.notifRestTimer),
                 subtitle: Text(l.notifRestTimerSub),
                 value: prefs.restEnabled,
@@ -197,7 +198,7 @@ class NotificationsScreen extends ConsumerWidget {
               ),
               // G-1: ekran açıkken sesli geri sayım — bildirim izni istemez.
               SwitchListTile(
-                secondary: const Icon(Icons.volume_up_outlined),
+                secondary: const FitPackIcon.material(Icons.volume_up_outlined),
                 title: Text(l.notifRestSound),
                 subtitle: Text(l.notifRestSoundSub),
                 value: prefs.restSoundEnabled,
@@ -211,7 +212,7 @@ class NotificationsScreen extends ConsumerWidget {
           SettingsSection(
             children: [
               SwitchListTile(
-                secondary: const Icon(Icons.fitness_center_rounded),
+                secondary: const FitPackIcon.material(Icons.fitness_center_rounded),
                 title: Text(l.notifWorkout),
                 value: prefs.workoutEnabled,
                 onChanged: (v) => _setWorkout(context, ref, v),
@@ -229,7 +230,7 @@ class NotificationsScreen extends ConsumerWidget {
           SettingsSection(
             children: [
               SwitchListTile(
-                secondary: const Icon(Icons.water_drop_outlined),
+                secondary: const FitPackIcon.material(Icons.water_drop_outlined),
                 title: Text(l.notifWater),
                 value: prefs.waterEnabled,
                 onChanged: (v) => _setWater(context, ref, v),
@@ -247,7 +248,7 @@ class NotificationsScreen extends ConsumerWidget {
           SettingsSection(
             children: [
               SwitchListTile(
-                secondary: const Icon(Icons.restaurant_rounded),
+                secondary: const FitPackIcon.material(Icons.restaurant_rounded),
                 title: Text(l.notifMealLabel),
                 subtitle: Text(l.notifMealSub),
                 value: prefs.mealEnabled,
@@ -259,7 +260,7 @@ class NotificationsScreen extends ConsumerWidget {
           SettingsSection(
             children: [
               SwitchListTile(
-                secondary: const Icon(Icons.insights_rounded),
+                secondary: const FitPackIcon.material(Icons.insights_rounded),
                 title: Text(l.notifWeeklyReview),
                 subtitle: Text(l.notifWeeklyReviewSub(context.weekdayName(
                     weekClosingDay(ref.watch(weekStartProvider))))),

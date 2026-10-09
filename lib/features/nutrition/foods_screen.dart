@@ -13,6 +13,7 @@ import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/progress_indicators.dart';
 import 'barcode_flow.dart';
 import 'nutrition_screen.dart' show unitOptionsWith;
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Besin veritabanı (P-1 + P-2, docs/07-nutrition-v2.md).
 /// "Yemekler frontend'de değil" → buradan görünür/yönetilir: lokal SQLite
@@ -253,14 +254,14 @@ class _FoodsScreenState extends ConsumerState<FoodsScreen> {
         actions: [
           IconButton(
             tooltip: l.nutritionScanBarcode,
-            icon: const Icon(Icons.qr_code_scanner_rounded),
+            icon: const FitPackIcon.material(Icons.qr_code_scanner_rounded),
             onPressed: _scan,
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _create,
-        icon: const Icon(Icons.add_rounded),
+        icon: const FitPackIcon.material(Icons.add_rounded),
         label: Text(l.foodsNew),
       ),
       body: Column(
@@ -272,11 +273,11 @@ class _FoodsScreenState extends ConsumerState<FoodsScreen> {
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: l.nutritionSearchHint,
-                prefixIcon: const Icon(Icons.search_rounded),
+                prefixIcon: const FitPackIcon.material(Icons.search_rounded),
                 suffixIcon: _query.isEmpty
                     ? null
                     : IconButton(
-                        icon: const Icon(Icons.clear_rounded),
+                        icon: const FitPackIcon.material(Icons.clear_rounded),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _query = '');
@@ -410,11 +411,11 @@ class _FoodRow extends StatelessWidget {
                   maxLines: 1, overflow: TextOverflow.ellipsis)),
           if (food.isCustom) ...[
             AppSpacing.hGapSm,
-            Icon(Icons.person_rounded,
+            FitPackIcon.material(Icons.person_rounded,
                 size: AppIconSize.sm, color: context.colors.secondary),
           ] else if (food.source == 'openfoodfacts') ...[
             AppSpacing.hGapSm,
-            Icon(Icons.qr_code_rounded,
+            FitPackIcon.material(Icons.qr_code_rounded,
                 size: AppIconSize.sm, color: context.colors.tertiary),
           ],
         ],
@@ -439,11 +440,11 @@ class _FoodRow extends StatelessWidget {
         ],
       ),
       trailing: onDelete == null
-          ? Icon(Icons.chevron_right_rounded,
+          ? FitPackIcon.material(Icons.chevron_right_rounded,
               color: context.colors.onSurfaceVariant)
           : IconButton(
               tooltip: AppL10n.of(context).commonDelete,
-              icon: const Icon(Icons.delete_outline_rounded),
+              icon: const FitPackIcon.material(Icons.delete_outline_rounded),
               color: context.colors.onSurfaceVariant,
               onPressed: onDelete,
             ),

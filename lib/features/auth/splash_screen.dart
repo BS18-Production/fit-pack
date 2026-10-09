@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Nötr açılış ekranı (docs/20 §7.1 madde 4).
 ///
@@ -18,7 +19,7 @@ class SplashScreen extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.bolt_rounded,
+          FitPackIcon.material(Icons.bolt_rounded,
               size: AppIconSize.xxl, color: context.colors.primary),
           AppSpacing.vGapLg,
           SizedBox(

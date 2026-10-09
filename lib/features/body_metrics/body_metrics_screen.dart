@@ -20,6 +20,7 @@ import '../../shared/widgets/glass.dart';
 import '../activity/activity_calendar.dart';
 import '../home/providers/home_providers.dart';
 import '../progress_photos/progress_photos_providers.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// **Reaktif** (H-05): ölçüm eklenince/silinince kendiliğinden tazelenir.
 final allMeasurementsProvider = StreamProvider<List<BodyMeasurement>>((ref) {
@@ -54,7 +55,7 @@ class BodyMetricsScreen extends ConsumerWidget {
             // "multiple heroes share the same tag" hatası veriyordu.
             heroTag: null,
             onPressed: () => _showAddMeasurementDialog(context, ref),
-            icon: const Icon(Icons.add_rounded),
+            icon: const FitPackIcon.material(Icons.add_rounded),
             label: Text(l.bmAddMeasurement),
           ),
         ),
@@ -176,7 +177,7 @@ class _PhotosEntryCard extends ConsumerWidget {
       onTap: () => context.push(AppRoutes.progressPhotos),
       child: Row(
         children: [
-          Icon(Icons.photo_library_rounded, color: context.colors.primary),
+          FitPackIcon.material(Icons.photo_library_rounded, color: context.colors.primary),
           AppSpacing.hGapMd,
           Expanded(
             child: Column(
@@ -191,7 +192,7 @@ class _PhotosEntryCard extends ConsumerWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded),
+          const FitPackIcon.material(Icons.chevron_right_rounded),
         ],
       ),
     );
@@ -510,7 +511,7 @@ class _MetricTile extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              FitPackIcon.material(
                   down
                       ? Icons.arrow_downward_rounded
                       : Icons.arrow_upward_rounded,
@@ -559,7 +560,7 @@ class _MeasurementCard extends StatelessWidget {
         ),
         trailing: IconButton(
           tooltip: AppL10n.of(context).commonDelete,
-          icon: const Icon(Icons.delete_outline_rounded),
+          icon: const FitPackIcon.material(Icons.delete_outline_rounded),
           onPressed: onDelete,
         ),
       ),
@@ -824,7 +825,7 @@ class _DateRow extends StatelessWidget {
               horizontal: AppSpacing.md, vertical: AppSpacing.md),
           child: Row(
             children: [
-              Icon(Icons.event_rounded,
+              FitPackIcon.material(Icons.event_rounded,
                   size: AppIconSize.md, color: context.colors.primary),
               AppSpacing.gapMd,
               Text(AppL10n.of(context).commonDate,
@@ -836,7 +837,7 @@ class _DateRow extends StatelessWidget {
                         color: context.colors.primary,
                       )),
               AppSpacing.gapXs,
-              Icon(Icons.expand_more_rounded,
+              FitPackIcon.material(Icons.expand_more_rounded,
                   size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
             ],
           ),

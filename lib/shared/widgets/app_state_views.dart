@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
+import 'fitpack_icon.dart';
 
 /// Tutarlı boş/hata/yükleniyor durumları + onay diyaloğu.
 /// Tüm ekranlar bunları kullanır — durum gösterimi tek elden.
@@ -43,7 +44,7 @@ class EmptyState extends StatelessWidget {
                 color: context.colors.surfaceContainerHigh,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon,
+              child: FitPackIcon.material(icon,
                   size: compact ? AppIconSize.lg : AppIconSize.xl,
                   color: context.colors.onSurfaceVariant),
             ),
@@ -96,7 +97,7 @@ class ErrorState extends StatelessWidget {
                 color: context.colors.errorContainer.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.error_outline_rounded,
+              child: FitPackIcon.material(Icons.error_outline_rounded,
                   size: AppIconSize.lg, color: context.colors.error),
             ),
             AppSpacing.vGapLg,
@@ -107,7 +108,7 @@ class ErrorState extends StatelessWidget {
               AppSpacing.vGapLg,
               OutlinedButton.icon(
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded,
+                icon: const FitPackIcon.material(Icons.refresh_rounded,
                     size: AppIconSize.sm),
                 label: Text(AppL10n.of(context).commonRetry),
               ),
@@ -242,7 +243,7 @@ class SheetHeader extends StatelessWidget {
             ),
             IconButton(
               tooltip: AppL10n.of(context).commonClose,
-              icon: const Icon(Icons.close_rounded),
+              icon: const FitPackIcon.material(Icons.close_rounded),
               onPressed: () => Navigator.of(context).maybePop(),
               style: IconButton.styleFrom(
                 backgroundColor: context.colors.surfaceContainerHigh,

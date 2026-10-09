@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import 'fitpack_icon.dart';
 
 /// Hareketin form gösterimi — **iki kareli canlandırma** (docs/11 + içerik
 /// zenginleştirme turu, 2026-07-25).
@@ -118,7 +119,7 @@ class _ExerciseDemoImageState extends State<ExerciseDemoImage> {
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(strokeWidth: 2))
-              : Icon(widget.fallbackIcon,
+              : FitPackIcon.material(widget.fallbackIcon,
                   size: AppIconSize.xxl, color: context.colors.onSurfaceVariant),
         ),
       );

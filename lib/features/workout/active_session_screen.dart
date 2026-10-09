@@ -33,6 +33,7 @@ import 'weight_step.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Aktif Antrenman Seansı (Antrenman V2 Faz C — docs/09-workout-v2.md).
 /// Set tablosu (KG/tekrar/RPE/✓), set tipleri, dinlenme sayacı, canlı süre,
@@ -1078,7 +1079,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                   overflow: TextOverflow.ellipsis),
               Row(
                 children: [
-                  Icon(_isManual ? Icons.history_rounded : Icons.schedule_rounded,
+                  FitPackIcon.material(_isManual ? Icons.history_rounded : Icons.schedule_rounded,
                       size: 13, color: context.colors.primary),
                   const SizedBox(width: 4),
                   Text(_isManual ? AppL10n.of(context).asPastEntry : fmtDuration(_elapsed.inSeconds),
@@ -1194,7 +1195,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                               AppSpacing.vGapMd,
                               OutlinedButton.icon(
                                 onPressed: _addExercise,
-                                icon: const Icon(Icons.add_rounded,
+                                icon: const FitPackIcon.material(Icons.add_rounded,
                                     size: AppIconSize.sm),
                                 label: Text(AppL10n.of(context).workoutAddExercise),
                               ),
@@ -1264,7 +1265,7 @@ class _SessionDateBar extends StatelessWidget {
               horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
           child: Row(
             children: [
-              Icon(Icons.event_rounded, size: AppIconSize.sm, color: fg),
+              FitPackIcon.material(Icons.event_rounded, size: AppIconSize.sm, color: fg),
               AppSpacing.gapSm,
               Text(highlight ? l.nutritionPickDate : l.commonDate,
                   style: context.texts.labelLarge
@@ -1274,7 +1275,7 @@ class _SessionDateBar extends StatelessWidget {
                   style: context.texts.labelLarge
                       ?.copyWith(color: fg, fontWeight: FontWeight.w700)),
               AppSpacing.gapXs,
-              Icon(Icons.expand_more_rounded, size: AppIconSize.sm, color: fg),
+              FitPackIcon.material(Icons.expand_more_rounded, size: AppIconSize.sm, color: fg),
             ],
           ),
         ),
@@ -1292,7 +1293,7 @@ class _EmptyActive extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.bolt_rounded,
+          FitPackIcon.material(Icons.bolt_rounded,
               size: AppIconSize.xxl, color: context.colors.primary),
           AppSpacing.vGapMd,
           Text(AppL10n.of(context).asEmptyWorkout,
@@ -1308,7 +1309,7 @@ class _EmptyActive extends StatelessWidget {
           AppSpacing.vGapLg,
           FilledButton.icon(
             onPressed: onAdd,
-            icon: const Icon(Icons.add_rounded),
+            icon: const FitPackIcon.material(Icons.add_rounded),
             label: Text(AppL10n.of(context).workoutAddExercise),
           ),
         ],
@@ -1351,7 +1352,7 @@ class _RestBanner extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.timer_rounded, color: c.onPrimary, size: AppIconSize.md),
+            FitPackIcon.material(Icons.timer_rounded, color: c.onPrimary, size: AppIconSize.md),
             AppSpacing.hGapMd,
             Expanded(
               child: Column(
@@ -1517,7 +1518,7 @@ class _ExerciseBlock extends ConsumerWidget {
                     color: c.primary.withValues(alpha: dark ? 0.18 : 0.12),
                     borderRadius: AppRadius.brMd,
                   ),
-                  child: Icon(WorkoutUi.equipmentIcon(ex.exercise.equipment),
+                  child: FitPackIcon.material(WorkoutUi.equipmentIcon(ex.exercise.equipment),
                       color: c.primary, size: 18),
                 ),
                 AppSpacing.hGapMd,
@@ -1552,7 +1553,7 @@ class _ExerciseBlock extends ConsumerWidget {
                 // Nasıl yapılır (#2): talimat + kas haritası + demo görseli,
                 // seanstan çıkmadan modal sheet'te.
                 IconButton(
-                  icon: Icon(Icons.help_outline_rounded,
+                  icon: FitPackIcon.material(Icons.help_outline_rounded,
                       color: c.onSurfaceVariant, size: AppIconSize.md),
                   tooltip: AppL10n.of(context).asHowTo,
                   visualDensity: VisualDensity.compact,
@@ -1560,7 +1561,7 @@ class _ExerciseBlock extends ConsumerWidget {
                       showExerciseHowToSheet(context, ex.exercise),
                 ),
                 PopupMenuButton<String>(
-                  icon: Icon(Icons.more_vert_rounded,
+                  icon: FitPackIcon.material(Icons.more_vert_rounded,
                       color: c.onSurfaceVariant, size: AppIconSize.md),
                   tooltip: AppL10n.of(context).asExerciseOptions,
                   onSelected: (v) {
@@ -1590,7 +1591,7 @@ class _ExerciseBlock extends ConsumerWidget {
                       value: 'remove',
                       child: Row(
                         children: [
-                          Icon(Icons.delete_outline_rounded,
+                          FitPackIcon.material(Icons.delete_outline_rounded,
                               color: c.error, size: AppIconSize.sm),
                           AppSpacing.hGapSm,
                           Text(AppL10n.of(context).asRemoveExercise,
@@ -1657,13 +1658,13 @@ class _ExerciseBlock extends ConsumerWidget {
               children: [
                 TextButton.icon(
                   onPressed: onAddSet,
-                  icon: const Icon(Icons.add_rounded, size: AppIconSize.sm),
+                  icon: const FitPackIcon.material(Icons.add_rounded, size: AppIconSize.sm),
                   label: Text(AppL10n.of(context).asAddSet),
                 ),
                 if (ex.sets.length > 1)
                   TextButton.icon(
                     onPressed: onRemoveSet,
-                    icon: const Icon(Icons.remove_rounded, size: AppIconSize.sm),
+                    icon: const FitPackIcon.material(Icons.remove_rounded, size: AppIconSize.sm),
                     label: Text(AppL10n.of(context).asRemoveSet),
                   ),
               ],
@@ -1684,7 +1685,7 @@ class _MenuRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          Icon(icon,
+          FitPackIcon.material(icon,
               color: context.colors.onSurfaceVariant, size: AppIconSize.sm),
           AppSpacing.hGapSm,
           Text(label),
@@ -1718,7 +1719,7 @@ class _RestChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.timer_outlined, size: 13, color: c.primary),
+              FitPackIcon.material(Icons.timer_outlined, size: 13, color: c.primary),
               const SizedBox(width: 3),
               Text(label,
                   style: context.texts.labelSmall?.copyWith(
@@ -1766,7 +1767,7 @@ class _ActiveSetAssist extends StatelessWidget {
                 ? const SizedBox.shrink()
                 : Row(
                     children: [
-                      Icon(Icons.subdirectory_arrow_right_rounded,
+                      FitPackIcon.material(Icons.subdirectory_arrow_right_rounded,
                           size: 14, color: c.primary),
                       const SizedBox(width: 3),
                       Flexible(
@@ -1835,7 +1836,7 @@ class _StepButton extends StatelessWidget {
           child: SizedBox(
             width: 36,
             height: 30,
-            child: Icon(icon, size: AppIconSize.sm, color: c.primary),
+            child: FitPackIcon.material(icon, size: AppIconSize.sm, color: c.primary),
           ),
         ),
       ),
@@ -1992,7 +1993,7 @@ class _ProgressionLine extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          Icon(
+          FitPackIcon.material(
               applied != null
                   ? Icons.check_circle_rounded
                   : decrease
@@ -2110,7 +2111,7 @@ class _RpeHeader extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.3)),
           const SizedBox(width: 2),
-          Icon(Icons.help_outline_rounded, size: 12, color: color),
+          FitPackIcon.material(Icons.help_outline_rounded, size: 12, color: color),
         ],
       ),
     );
@@ -2381,7 +2382,7 @@ class _SetRow extends StatelessWidget {
                   borderRadius: AppRadius.brSm,
                 ),
                 child: showTrophy
-                    ? Icon(Icons.emoji_events_rounded,
+                    ? FitPackIcon.material(Icons.emoji_events_rounded,
                         size: 16,
                         color: context.semantic.warning,
                         semanticLabel: AppL10n.of(context).asNewRecord)
@@ -2413,12 +2414,13 @@ class _SetRow extends StatelessWidget {
                     : c.onSurface.withValues(alpha: 0.08),
                 borderRadius: AppRadius.brSm,
                 child: InkWell(
+                  key: ValueKey('set.complete.$index'),
                   onTap: onToggle,
                   borderRadius: AppRadius.brSm,
                   child: SizedBox(
                     width: 38,
                     height: 34,
-                    child: Icon(Icons.check_rounded,
+                    child: FitPackIcon.material(Icons.check_rounded,
                         size: 18,
                         color: set.done
                             ? context.semantic.onSuccess

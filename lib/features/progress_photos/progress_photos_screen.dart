@@ -14,6 +14,7 @@ import '../../data/services/photo_storage.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import 'progress_photos_providers.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Açı anahtarının cihaz dilindeki adı.
 String photoAngleLabel(AppL10n l, String angle) => switch (angle) {
@@ -74,7 +75,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen> {
           IconButton(
             tooltip: l.ppCompare,
             isSelected: _selecting,
-            icon: const Icon(Icons.compare_rounded),
+            icon: const FitPackIcon.material(Icons.compare_rounded),
             onPressed: () => setState(() {
               _selecting = !_selecting;
               _selected.clear();
@@ -88,14 +89,14 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen> {
                   heroTag: null,
                   onPressed: () => context.push(
                       AppRoutes.photoCompare(_selected[0], _selected[1])),
-                  icon: const Icon(Icons.compare_rounded),
+                  icon: const FitPackIcon.material(Icons.compare_rounded),
                   label: Text(l.ppCompare),
                 )
               : null)
           : FloatingActionButton.extended(
               heroTag: null,
               onPressed: () => showAddPhotoSheet(context),
-              icon: const Icon(Icons.add_a_photo_rounded),
+              icon: const FitPackIcon.material(Icons.add_a_photo_rounded),
               label: Text(l.ppAdd),
             ),
       body: photosAsync.when(
@@ -218,7 +219,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen> {
                   IconButton(
                     color: Colors.white,
                     tooltip: l.commonClose,
-                    icon: const Icon(Icons.close_rounded),
+                    icon: const FitPackIcon.material(Icons.close_rounded),
                     onPressed: () => Navigator.pop(ctx),
                   ),
                   Expanded(
@@ -231,7 +232,7 @@ class _ProgressPhotosScreenState extends ConsumerState<ProgressPhotosScreen> {
                   IconButton(
                     color: Colors.white,
                     tooltip: l.commonDelete,
-                    icon: const Icon(Icons.delete_outline_rounded),
+                    icon: const FitPackIcon.material(Icons.delete_outline_rounded),
                     onPressed: () async {
                       final ok = await confirmAction(ctx,
                           title: l.ppDeleteTitle, message: l.ppDeleteMsg);
@@ -271,7 +272,7 @@ class _DeviceOnlyNote extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.lock_outline_rounded,
+        FitPackIcon.material(Icons.lock_outline_rounded,
             size: AppIconSize.sm, color: c.onSurfaceVariant),
         AppSpacing.hGapSm,
         Expanded(
@@ -344,7 +345,7 @@ class _PhotoTile extends StatelessWidget {
                 ),
                 alignment: Alignment.topRight,
                 padding: const EdgeInsets.all(AppSpacing.xs),
-                child: Icon(Icons.check_circle_rounded, color: c.primary),
+                child: FitPackIcon.material(Icons.check_circle_rounded, color: c.primary),
               ),
           ],
         ),
@@ -458,7 +459,7 @@ class _AddPhotoSheetState extends ConsumerState<_AddPhotoSheet> {
             AppSpacing.vGapMd,
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.event_rounded),
+              leading: const FitPackIcon.material(Icons.event_rounded),
               title: Text(l.commonDate),
               trailing: Text(context.dateFmt('d MMM yyyy').format(_date)),
               onTap: _busy ? null : _pickDate,
@@ -466,13 +467,13 @@ class _AddPhotoSheetState extends ConsumerState<_AddPhotoSheet> {
             AppSpacing.vGapMd,
             FilledButton.icon(
               onPressed: _busy ? null : () => _pick(ImageSource.camera),
-              icon: const Icon(Icons.photo_camera_rounded),
+              icon: const FitPackIcon.material(Icons.photo_camera_rounded),
               label: Text(l.ppCamera),
             ),
             AppSpacing.vGapSm,
             OutlinedButton.icon(
               onPressed: _busy ? null : () => _pick(ImageSource.gallery),
-              icon: const Icon(Icons.photo_library_rounded),
+              icon: const FitPackIcon.material(Icons.photo_library_rounded),
               label: Text(l.ppGallery),
             ),
           ],

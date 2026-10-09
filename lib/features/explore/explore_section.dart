@@ -9,6 +9,7 @@ import '../../l10n/app_l10n.dart';
 import 'program_catalog.dart';
 import 'program_install.dart';
 import 'program_labels.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Keşfet (docs/28): Antrenman sekmesinde hazır programlar — seviye çipiyle
 /// süzülen yatay kart şeridi. Karta dokununca program detayı açılır.
@@ -37,7 +38,7 @@ class _ExploreSectionState extends ConsumerState<ExploreSection> {
         children: [
           Row(
             children: [
-              Icon(Icons.explore_rounded,
+              FitPackIcon.material(Icons.explore_rounded,
                   size: AppIconSize.md, color: context.colors.primary),
               AppSpacing.hGapSm,
               Text(l.exploreTitle, style: context.texts.titleMedium),
@@ -118,14 +119,14 @@ class _ProgramCard extends StatelessWidget {
                         color: c.primary.withValues(alpha: 0.14),
                         borderRadius: AppRadius.brMd,
                       ),
-                      child: Icon(_icon,
+                      child: FitPackIcon.material(_icon,
                           color: c.primary, size: AppIconSize.md),
                     ),
                     const Spacer(),
                     if (installed)
                       Tooltip(
                         message: l.exInList,
-                        child: Icon(Icons.check_circle_rounded,
+                        child: FitPackIcon.material(Icons.check_circle_rounded,
                             size: AppIconSize.sm,
                             color: context.semantic.success),
                       ),

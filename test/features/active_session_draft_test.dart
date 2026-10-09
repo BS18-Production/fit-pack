@@ -217,7 +217,7 @@ void main() {
       await open(tester, resume: true);
       expect(find.text('+1 tekrar'), findsOneWidget);
       expect(find.textContaining('Uygulandı'), findsNothing);
-      await tester.tap(find.byIcon(Icons.check_rounded).first);
+      await tester.tap(find.byKey(const ValueKey('set.complete.0')).first);
       await tester.pump();
       await close(tester);
       d = await tester.runAsync(reloadDraft);
@@ -234,7 +234,7 @@ void main() {
 
       await open(tester, resume: true);
       expect(find.text('Uygulandı: her sete +1 tekrar'), findsOneWidget);
-      await tester.tap(find.byIcon(Icons.check_rounded).first);
+      await tester.tap(find.byKey(const ValueKey('set.complete.0')).first);
       await tester.pump();
       await close(tester);
       final first = (await tester.runAsync(

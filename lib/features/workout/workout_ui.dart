@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/utils/format.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Antrenman ekranları için paylaşılan görsel yardımcılar (Claude Design
 /// `Fit Pack Antrenman.dc.html` reskin'i — docs/08-design-brief.md).
@@ -237,68 +238,35 @@ class GradientButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null && !busy;
-    return Opacity(
-      opacity: enabled ? 1 : 0.6,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: AppRadius.brLg,
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.lime, AppColors.limeDeep],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.limeDeep.withValues(alpha: 0.14),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: AppRadius.brLg,
-          child: InkWell(
-            onTap: enabled ? onTap : null,
-            borderRadius: AppRadius.brLg,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.lg + 1,
-              ),
-              child: Row(
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton(
+        onPressed: enabled ? onTap : null,
+        child: busy
+            ? SizedBox(
+                width: AppIconSize.md,
+                height: AppIconSize.md,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.4,
+                  color: context.colors.onPrimary,
+                  semanticsLabel: label,
+                ),
+              )
+            : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (busy)
-                    const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.4,
-                        color: AppColors.onGradient,
-                      ),
-                    )
-                  else ...[
-                    if (icon != null) ...[
-                      Icon(icon, color: AppColors.onGradient, size: 20),
-                      AppSpacing.hGapSm,
-                    ],
-                    Flexible(
-                      child: Text(
-                        label,
-                        textAlign: TextAlign.center,
-                        style: context.texts.titleMedium?.copyWith(
-                          color: AppColors.onGradient,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
+                  if (icon != null) ...[
+                    FitPackIcon.material(icon, size: AppIconSize.md),
+                    AppSpacing.hGapMd,
                   ],
+                  Flexible(child: Text(label, textAlign: TextAlign.center)),
+                  AppSpacing.hGapMd,
+                  const FitPackIcon(
+                    FitPackGlyph.arrowRight,
+                    size: AppIconSize.sm,
+                  ),
                 ],
               ),
-            ),
-          ),
-        ),
       ),
     );
   }

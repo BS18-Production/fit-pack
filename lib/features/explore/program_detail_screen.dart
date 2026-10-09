@@ -11,6 +11,7 @@ import '../../shared/widgets/app_state_views.dart';
 import 'program_catalog.dart';
 import 'program_install.dart';
 import 'program_labels.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Hazır program detayı (docs/28): ne olduğu, kime uygun, rutinler ve
 /// hareketler (set × tekrar). "Programı ekle" rutinleri kullanıcının
@@ -82,7 +83,7 @@ class _ProgramDetailScreenState extends ConsumerState<ProgramDetailScreen> {
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(strokeWidth: 2))
-                : Icon(installed
+                : FitPackIcon.material(installed
                     ? Icons.check_circle_rounded
                     : Icons.add_rounded),
             label: Text(installed ? l.exInList : l.exAddProgram),
@@ -121,7 +122,7 @@ class _ProgramDetailScreenState extends ConsumerState<ProgramDetailScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.lightbulb_outline_rounded,
+                FitPackIcon.material(Icons.lightbulb_outline_rounded,
                     size: AppIconSize.sm, color: c.primary),
                 AppSpacing.hGapSm,
                 Expanded(
@@ -192,7 +193,7 @@ class _Pill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: AppIconSize.sm, color: context.colors.primary),
+          FitPackIcon.material(icon, size: AppIconSize.sm, color: context.colors.primary),
           AppSpacing.hGapXs,
           Text(text,
               style: context.texts.labelMedium

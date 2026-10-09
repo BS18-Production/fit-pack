@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../cloud/auth_service.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Hangi giriş yolu çalışıyor — doğru butonda yükleniyor göstergesi için.
 enum _Busy { none, email, google }
@@ -149,7 +150,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.g_mobiledata_rounded, size: 28),
+                  : const FitPackIcon.material(Icons.g_mobiledata_rounded, size: 28),
               label: Text(l.cloudGoogle),
             ),
             if (_error != null) ...[
@@ -182,7 +183,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 labelText: l.cloudEmail,
-                prefixIcon: const Icon(Icons.mail_outline_rounded),
+                prefixIcon: const FitPackIcon.material(Icons.mail_outline_rounded),
                 border: const OutlineInputBorder(borderRadius: AppRadius.brMd),
               ),
             ),
@@ -193,7 +194,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 labelText: l.cloudPassword,
-                prefixIcon: const Icon(Icons.lock_outline_rounded),
+                prefixIcon: const FitPackIcon.material(Icons.lock_outline_rounded),
                 border: const OutlineInputBorder(borderRadius: AppRadius.brMd),
               ),
             ),
@@ -201,7 +202,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               AppSpacing.vGapMd,
               Row(
                 children: [
-                  Icon(Icons.mark_email_read_outlined,
+                  FitPackIcon.material(Icons.mark_email_read_outlined,
                       size: AppIconSize.sm, color: context.colors.primary),
                   AppSpacing.hGapSm,
                   Expanded(
@@ -320,7 +321,7 @@ class _ForgotPasswordDialogState extends ConsumerState<_ForgotPasswordDialog> {
             onChanged: (_) => setState(() => _error = null),
             decoration: InputDecoration(
               labelText: l.cloudEmail,
-              prefixIcon: const Icon(Icons.mail_outline_rounded),
+              prefixIcon: const FitPackIcon.material(Icons.mail_outline_rounded),
               border: const OutlineInputBorder(borderRadius: AppRadius.brMd),
             ),
           ),

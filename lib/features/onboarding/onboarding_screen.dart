@@ -14,6 +14,7 @@ import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/glass.dart';
 import '../auth/auth_gate.dart';
 import 'onboarding_calc.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// İlk açılış akışı V2 (docs/15 — glass tema + değer + öğretme).
 ///
@@ -376,7 +377,7 @@ class _AboutYouPage extends ConsumerWidget {
                     labelText: l.onbBirthDateOptional,
                     border:
                         const OutlineInputBorder(borderRadius: AppRadius.brMd),
-                    suffixIcon: const Icon(Icons.calendar_today_rounded),
+                    suffixIcon: const FitPackIcon.material(Icons.calendar_today_rounded),
                   ),
                   child: Text(
                     birthDate == null
@@ -441,7 +442,7 @@ class _PhaseTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
+            FitPackIcon.material(
               selected
                   ? Icons.radio_button_checked_rounded
                   : Icons.radio_button_unchecked_rounded,
@@ -523,7 +524,7 @@ class _PlanPage extends ConsumerWidget {
               alignment: PlaceholderAlignment.middle,
               child: Padding(
                 padding: const EdgeInsets.only(left: 6),
-                child: Icon(Icons.auto_awesome_rounded,
+                child: FitPackIcon.material(Icons.auto_awesome_rounded,
                     size: 22, color: context.colors.secondary),
               ),
             ),
@@ -568,7 +569,7 @@ class _PlanPage extends ConsumerWidget {
                     color: context.semantic.success.withValues(alpha: 0.16),
                     borderRadius: AppRadius.brMd,
                   ),
-                  child: Icon(Icons.trending_up_rounded,
+                  child: FitPackIcon.material(Icons.trending_up_rounded,
                       color: context.semantic.success),
                 ),
                 AppSpacing.hGapMd,
@@ -671,7 +672,7 @@ class _TourRow extends StatelessWidget {
               color: tint.withValues(alpha: 0.16),
               borderRadius: AppRadius.brMd,
             ),
-            child: Icon(icon, color: tint),
+            child: FitPackIcon.material(icon, color: tint),
           ),
           AppSpacing.hGapMd,
           Expanded(

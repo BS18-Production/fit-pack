@@ -8,6 +8,7 @@ import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/progress_indicators.dart';
 import 'macro_goals.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Ana Sayfa ve Beslenme aynı enerji/makro kompozisyonunu kullanır.
 /// Sayılar mevcut sağlayıcılardan gelir; widget veri yazmaz.
@@ -49,7 +50,7 @@ class NutritionSummaryCard extends StatelessWidget {
                 ),
               ),
               if (onTap != null)
-                Icon(
+                FitPackIcon.material(
                   Icons.arrow_outward_rounded,
                   size: AppIconSize.sm,
                   color: context.colors.onSurfaceVariant,

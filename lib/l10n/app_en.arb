@@ -1941,5 +1941,20 @@
         "type": "int"
       }
     }
+  },
+  "nutritionDailyEnergy": "Daily energy",
+  "nutritionKcalRemaining": "kcal remaining",
+  "nutritionKcalAboveGoal": "kcal above goal",
+  "nutritionKcalAtGoal": "kcal to goal",
+  "nutritionDiary": "Meal journal",
+  "nutritionShowMacros": "Show macros",
+  "nutritionHideMacros": "Simple view",
+  "nutritionFoodCount": "{count, plural, =0{No entries} =1{1 food} other{{count} foods}}",
+  "@nutritionFoodCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

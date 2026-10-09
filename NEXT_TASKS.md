@@ -1,5 +1,42 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## Beslenme — Sıcak Günlük · 2026-10-09
+
+Problem: ikili halka ve büyük öğün kartları bilgi hiyerarşisini zayıflatıyor,
+FAB kayıtların üzerine biniyor. Beklenen: sıcak/rafine palet, net kalan kcal,
+isteğe bağlı ayrıntılar ve günlük kaydına hızlı erişim. Samet tasarımı onayladı.
+
+- [x] Beslenmeye özgü tema/tek halka, makrolar, aç/kapa günlük, sabit eylemler.
+- [x] Kopyalama, silme/geri alma, art arda ekleme, öneri/hatırlatıcı korunur.
+- [x] Analiz temiz; 742 test. TR/EN, koyu/açık, 320 pt/büyük metin render’ları.
+- [x] iPhone 17 simülatöründe gerçek ekran ve panel görsel kontrolü.
+- [x] Android arm64 debug APK derlemesi.
+- [ ] Android cihaz görsel QA: emülatör Qt `neon`/başlatıcı hatasıyla açılamadı.
+- [x] Gerçek iPhone’a yerinde Release yükleme: 9 Ekim 09:50, imza kontrolü
+      başarılı; `devicectl` kurulum/açılış ve çalışan süreç doğrulandı.
+- [ ] Gerçek iPhone’da yeni Beslenme görünümünün son kontrolü Samet’te.
+
+Ayrıntı: [docs/34](docs/34-nutrition-warm-diary.md).
+
+## Velocity + FitPack özel ikon ailesi — 2026-10-08
+
+Samet tasarım çalışmasını onayladı ve iPhone'a güncellemeyi istedi.
+Problem: hazır çizgi ikonları marka karakterini taşımıyor, seçili sekme
+vurgusu zayıf. Beklenen: aynı dolu/eğimli vektörler seçili ve pasif durumda;
+seçili sekmenin tamamı lime, ikon/yazı koyu; ortak butonlar 12 px köşe ve
+net hiyerarşi. Mevcut sekme durumu, işlemler ve kayıtlar korunur.
+Doğrulama: analiz, testler, dar ekran/büyük metin ve tema render'ları,
+cihazda görsel kontrol; iPhone'a uygulamayı kaldırmadan yerinde kurulum.
+
+- [x] Vektör ikonlar, Velocity gezinme ve ortak buton teması.
+- [x] Analiz temiz, 740 test yeşil; gerçek sayfa render'ları.
+- [ ] Gerçek iPhone görünümü: iOS 26.6'da Device Hub ekran paylaşımı yok;
+      yeni ikonlar/sekme vurgusu ve mevcut kayıtların görünmesi Samet'te.
+- [x] iPhone'a yerinde güncelleme: 8 Ekim 07:41 Xcode Release arşivi;
+      23 SVG kaynaklarla aynı, Canlı Etkinlik eklentisi paketli.
+      Device Hub kurulum tamamlandı; Launch gönderildi, hata yok.
+      CLI sertifika güven kontrolü sınırlaması: [docs/33](docs/33-velocity-signature-icons.md).
+
 ## Geri bildirim turu — 2026-10-07/08 (8 madde)
 
 - [x] **#2 Müzik kısık kalıyordu (iPhone)** — ses bitince/durunca iOS ses

@@ -12,6 +12,7 @@ import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
 import 'history_providers.dart';
 import 'history_summary.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Kartta gösterilen en fazla hareket satırı; fazlası "+N hareket daha".
 const historyCardExercises = 3;
@@ -81,7 +82,7 @@ class HistoryCard extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right_rounded, color: muted),
+                  FitPackIcon.material(Icons.chevron_right_rounded, color: muted),
                 ],
               ),
               AppSpacing.vGapMd,
@@ -163,7 +164,7 @@ class _Stat extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: AppIconSize.sm, color: c),
+        FitPackIcon.material(icon, size: AppIconSize.sm, color: c),
         AppSpacing.hGapXs,
         Text(text,
             style: context.texts.labelLarge

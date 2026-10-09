@@ -15,6 +15,7 @@ import '../../shared/widgets/app_state_views.dart';
 import 'exercise_search.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Antrenman V2 — Hareket Kütüphanesi (Claude Design reskin).
 /// Hareket/ekipman/kas adları İngilizce (salon standardı), arayüz Türkçe.
@@ -183,11 +184,11 @@ class _ExerciseLibraryScreenState
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
                 hintText: l.elSearchHint,
-                prefixIcon: const Icon(Icons.search_rounded),
+                prefixIcon: const FitPackIcon.material(Icons.search_rounded),
                 suffixIcon: _query.isEmpty
                     ? null
                     : IconButton(
-                        icon: const Icon(Icons.clear_rounded),
+                        icon: const FitPackIcon.material(Icons.clear_rounded),
                         onPressed: () {
                           _searchCtrl.clear();
                           setState(() => _query = '');
@@ -306,7 +307,7 @@ class _CountRow extends StatelessWidget {
               )),
           TextButton.icon(
             onPressed: onNew,
-            icon: const Icon(Icons.add_rounded, size: AppIconSize.sm),
+            icon: const FitPackIcon.material(Icons.add_rounded, size: AppIconSize.sm),
             label: Text(AppL10n.of(context).elNew),
           ),
         ],
@@ -477,7 +478,7 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.xs),
       child: Row(
         children: [
-          Icon(icon, size: AppIconSize.sm, color: context.colors.primary),
+          FitPackIcon.material(icon, size: AppIconSize.sm, color: context.colors.primary),
           AppSpacing.hGapSm,
           Text(label,
               style: context.texts.titleSmall
@@ -559,7 +560,7 @@ class _ExerciseRow extends StatelessWidget {
                 color: c.onSurface.withValues(alpha: dark ? 0.06 : 0.05),
                 borderRadius: AppRadius.brMd,
               ),
-              child: Icon(WorkoutUi.equipmentIcon(exercise.equipment),
+              child: FitPackIcon.material(WorkoutUi.equipmentIcon(exercise.equipment),
                   color: c.onSurfaceVariant, size: 20),
             ),
             AppSpacing.hGapMd,
@@ -581,7 +582,7 @@ class _ExerciseRow extends StatelessWidget {
                           color: catColor),
                       if (exercise.isCustom) ...[
                         AppSpacing.hGapXs,
-                        Icon(Icons.person_rounded,
+                        FitPackIcon.material(Icons.person_rounded,
                             size: 14, color: c.secondary),
                       ],
                       if (sub.isNotEmpty) ...[
@@ -608,10 +609,10 @@ class _ExerciseRow extends StatelessWidget {
                   color: c.primary,
                   borderRadius: AppRadius.brMd,
                 ),
-                child: Icon(Icons.add_rounded, color: c.onPrimary, size: 18),
+                child: FitPackIcon.material(Icons.add_rounded, color: c.onPrimary, size: 18),
               )
             else
-              Icon(Icons.chevron_right_rounded, color: c.outline),
+              FitPackIcon.material(Icons.chevron_right_rounded, color: c.outline),
           ],
         ),
       ),

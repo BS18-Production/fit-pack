@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-10-08
+> **Son güncelleme:** 2026-10-09
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -13,6 +13,45 @@
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v14 · **Sahibi:** Samet Orhan (kişisel proje)
+
+## Beslenme — Sıcak Günlük · 2026-10-09
+
+Samet’in onayladığı rafine tasarım Beslenme dalına uygulandı: sıcak kömür/krem
+paleti, tek animasyonlu enerji halkası, kompakt makrolar, aç/kapa öğün günlüğü,
+isteğe bağlı yiyecek makroları ve sabit yemek ekle/barkod eylemleri. Mevcut
+hedef formülleri, kayıt/kopyalama/geri alma, hatırlatıcı ve senkron akışları;
+Ana Sayfa özeti, Velocity gezinme ve şema v14 korunuyor. Öğün fotoğrafı alanı
+bulunmadığı için öneri gerçek ad/değer ve tutarlı ikonla gösteriliyor.
+
+Analiz temiz; **742 test geçti**. TR/EN, koyu/açık, 320 pt ve %130/%160
+metin render’ları doğrulandı. iPhone 17 simülatöründe yeni sürüm açıldı;
+geçmiş kayıtlar, halka, öğün aç/kapa, makro ayrıntıları, yemek ekleme paneli
+ve sabit eylemler kontrol edildi. Yazma QA’sı yalnız izole test DB’sinde.
+Android arm64 APK derlendi; emülatörün Qt `neon`/başlatıcı hatası nedeniyle
+Android cihaz görsel QA açık. 9 Ekim 09:50’de güncel Release sürümü
+gerçek iPhone 17’ye `devicectl device install app` ile mevcut uygulamanın
+üzerine yüklendi; uygulama kaldırılmadı. İmza kontrolü başarılı, açılış ve
+çalışan süreç (PID 8436) doğrulandı. Telefon görsel kontrolü Samet’te.
+Ayrıntı: [docs/34](docs/34-nutrition-warm-diary.md).
+
+## Velocity + Signature Icons — 2026-10-08
+
+Samet'in onayladığı dört dolu/eğimli ana ikon + 19 yardımcı SVG çizildi;
+Velocity dolu lime sekme seçimi ve 12 px ortak buton dili uygulandı.
+İkonlar tüm ilgili eylem/kartlarda tema adaptörüyle bağlandı. Mevcut
+sekme durumu, rotalar, hesap/kayıt akışları ve şema v14 korunuyor.
+Analiz temiz; 740 test geçti. TR/EN, koyu/açık, 320 pt ve büyük metinde
+sekme/detay render'ları kontrol edildi. Son dar ekran başlık düzeni de
+8 odaklı testle yeniden doğrulandı. Ayrıntı: [docs/33](docs/33-velocity-signature-icons.md).
+
+Xcode arayüzünde 2026-10-08 07:41 Release arşivi başarıyla üretildi.
+23 SVG kaynaklarla birebir aynı; Canlı Etkinlik eklentisi paketli.
+Device Hub / Apps / Add ile iPhone 17'de mevcut uygulamanın üzerine
+kurulum tamamlandı, ardından Launch gönderildi; hata gösterilmedi.
+Uygulama kaldırılmadı. CLI sertifika güven kontrolü bu oturumda yeni ve
+eski arşivde aynı `CSSMERR_TP_NOT_TRUSTED` hatasını verdi; bağımsız imza
+kontrolü tamamlanmış sayılmıyor. Telefon iOS 26.6 olduğu için Mac'ten
+canlı ekran paylaşımı yok; son telefon görsel kontrolü Samet'te.
 
 ## Geri bildirim turu (8 madde) — 2026-10-08
 

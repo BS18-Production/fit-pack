@@ -15,6 +15,7 @@ import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/exercise_demo.dart';
 import 'muscle_map.dart';
 import 'workout_ui.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Hareket Detayı (Antrenman V2 Faz D). Geçmiş / Grafik (e1RM) / Rekorlar.
 
@@ -43,7 +44,7 @@ class ExerciseDetailScreen extends ConsumerWidget {
             if (ex?.isCustom == true)
               IconButton(
                 tooltip: l.commonArchive,
-                icon: const Icon(Icons.archive_outlined),
+                icon: const FitPackIcon.material(Icons.archive_outlined),
                 onPressed: () async {
                   final ok = await confirmAction(
                     context,
@@ -353,7 +354,7 @@ class _InfoCard extends StatelessWidget {
                 color: catColor.withValues(alpha: 0.13),
                 borderRadius: AppRadius.brLg,
               ),
-              child: Icon(WorkoutUi.equipmentIcon(ex.equipment),
+              child: FitPackIcon.material(WorkoutUi.equipmentIcon(ex.equipment),
                   color: catColor, size: 26),
             ),
             AppSpacing.hGapMd,
@@ -550,7 +551,7 @@ class _Record extends StatelessWidget {
                 color: tint.withValues(alpha: 0.16),
                 borderRadius: AppRadius.brMd,
               ),
-              child: Icon(icon, color: tint),
+              child: FitPackIcon.material(icon, color: tint),
             ),
             AppSpacing.hGapLg,
             Expanded(

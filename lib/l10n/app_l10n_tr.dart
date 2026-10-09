@@ -3204,4 +3204,37 @@ class AppL10nTr extends AppL10n {
   String journalActivitySessions(int count) {
     return '$count kayıtlı antrenman';
   }
+
+  @override
+  String get nutritionDailyEnergy => 'Günlük enerji';
+
+  @override
+  String get nutritionKcalRemaining => 'kcal kaldı';
+
+  @override
+  String get nutritionKcalAboveGoal => 'kcal hedef üzerinde';
+
+  @override
+  String get nutritionKcalAtGoal => 'kcal · hedefte';
+
+  @override
+  String get nutritionDiary => 'Öğün günlüğü';
+
+  @override
+  String get nutritionShowMacros => 'Makroları göster';
+
+  @override
+  String get nutritionHideMacros => 'Sade görünüm';
+
+  @override
+  String nutritionFoodCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count besin',
+      one: '1 besin',
+      zero: 'Kayıt yok',
+    );
+    return '$_temp0';
+  }
 }

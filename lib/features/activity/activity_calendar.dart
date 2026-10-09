@@ -8,6 +8,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../home/providers/home_providers.dart';
 import 'activity_providers.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Aktivite Takvimi (docs/10-activity-calendar.md) — İlerleme sekmesi.
 /// Aylık takvim; her günde 4 eş-merkezli halka (Kalori/Protein/Antrenman/Su).
@@ -73,7 +74,7 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
                   children: [
                     IconButton(
                       visualDensity: VisualDensity.compact,
-                      icon: const Icon(Icons.chevron_left_rounded),
+                      icon: const FitPackIcon.material(Icons.chevron_left_rounded),
                       onPressed: () => _shiftMonth(-1),
                     ),
                     Flexible(
@@ -87,7 +88,7 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
                     ),
                     IconButton(
                       visualDensity: VisualDensity.compact,
-                      icon: const Icon(Icons.chevron_right_rounded),
+                      icon: const FitPackIcon.material(Icons.chevron_right_rounded),
                       onPressed: _isCurrentMonth ? null : () => _shiftMonth(1),
                     ),
                   ],

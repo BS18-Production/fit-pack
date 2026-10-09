@@ -922,5 +922,20 @@
         "type": "int"
       }
     }
+  },
+  "nutritionDailyEnergy": "Günlük enerji",
+  "nutritionKcalRemaining": "kcal kaldı",
+  "nutritionKcalAboveGoal": "kcal hedef üzerinde",
+  "nutritionKcalAtGoal": "kcal · hedefte",
+  "nutritionDiary": "Öğün günlüğü",
+  "nutritionShowMacros": "Makroları göster",
+  "nutritionHideMacros": "Sade görünüm",
+  "nutritionFoodCount": "{count, plural, =0{Kayıt yok} =1{1 besin} other{{count} besin}}",
+  "@nutritionFoodCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

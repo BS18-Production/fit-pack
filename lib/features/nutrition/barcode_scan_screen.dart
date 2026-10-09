@@ -6,6 +6,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Barkod tarama ekranı (docs/07-nutrition-v2.md §6.3).
 /// İlk geçerli barkodu okuyunca `String` ile pop eder. "Elle gir" → null pop;
@@ -70,7 +71,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
               final on = state.torchState == TorchState.on;
               return IconButton(
                 tooltip: on ? l.scanTorchOff : l.scanTorchOn,
-                icon: Icon(on
+                icon: FitPackIcon.material(on
                     ? Icons.flash_on_rounded
                     : Icons.flash_off_rounded),
                 onPressed: () => _controller.toggleTorch(),
@@ -123,7 +124,7 @@ class _BarcodeScanScreenState extends State<BarcodeScanScreen> {
                 AppSpacing.vGapMd,
                 FilledButton.icon(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.edit_note_rounded),
+                  icon: const FitPackIcon.material(Icons.edit_note_rounded),
                   label: Text(l.scanManualAdd),
                 ),
               ],
@@ -148,7 +149,7 @@ class _ScanError extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.no_photography_rounded,
+          const FitPackIcon.material(Icons.no_photography_rounded,
               color: Colors.white70, size: AppIconSize.xl),
           AppSpacing.vGapLg,
           Text(message,

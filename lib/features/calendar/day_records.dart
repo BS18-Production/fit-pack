@@ -9,6 +9,7 @@ import '../../core/units/units.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/glass.dart';
 import '../activity/activity_providers.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Bir günün kayıtları (docs/24): antrenman · beslenme · su. Ay görünümünün
 /// altında ve haftalık şeritten açılan panelde aynı bileşen kullanılır.
@@ -201,7 +202,7 @@ class _Badge extends StatelessWidget {
         color: tint.withValues(alpha: 0.16),
         borderRadius: AppRadius.brSm,
       ),
-      child: Icon(icon, color: tint, size: AppIconSize.sm),
+      child: FitPackIcon.material(icon, color: tint, size: AppIconSize.sm),
     );
   }
 }

@@ -5532,6 +5532,54 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 logged workout} other{{count} logged workouts}}'**
   String journalActivitySessions(int count);
+
+  /// No description provided for @nutritionDailyEnergy.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily energy'**
+  String get nutritionDailyEnergy;
+
+  /// No description provided for @nutritionKcalRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal remaining'**
+  String get nutritionKcalRemaining;
+
+  /// No description provided for @nutritionKcalAboveGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal above goal'**
+  String get nutritionKcalAboveGoal;
+
+  /// No description provided for @nutritionKcalAtGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal to goal'**
+  String get nutritionKcalAtGoal;
+
+  /// No description provided for @nutritionDiary.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal journal'**
+  String get nutritionDiary;
+
+  /// No description provided for @nutritionShowMacros.
+  ///
+  /// In en, this message translates to:
+  /// **'Show macros'**
+  String get nutritionShowMacros;
+
+  /// No description provided for @nutritionHideMacros.
+  ///
+  /// In en, this message translates to:
+  /// **'Simple view'**
+  String get nutritionHideMacros;
+
+  /// No description provided for @nutritionFoodCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No entries} =1{1 food} other{{count} foods}}'**
+  String nutritionFoodCount(int count);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -9,6 +9,7 @@ import '../../shared/widgets/app_state_views.dart';
 import 'routine_providers.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Rutin Önizleme (Claude Design reskin). Hareketler + hedef set×tekrar +
 /// "Antrenmana Başla" + Düzenle/Arşivle. Hareket adları İngilizce.
@@ -32,12 +33,12 @@ class RoutinePreviewScreen extends ConsumerWidget {
         actions: [
           IconButton(
             tooltip: l.commonEdit,
-            icon: const Icon(Icons.edit_outlined),
+            icon: const FitPackIcon.material(Icons.edit_outlined),
             onPressed: () => context.push(AppRoutes.routineEdit(routineId)),
           ),
           IconButton(
             tooltip: l.commonArchive,
-            icon: const Icon(Icons.archive_outlined),
+            icon: const FitPackIcon.material(Icons.archive_outlined),
             onPressed: () async {
               final ok = await confirmAction(
                 context,
@@ -72,7 +73,7 @@ class RoutinePreviewScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.workoutActiveRoutine(routineId)),
-        icon: const Icon(Icons.play_arrow_rounded),
+        icon: const FitPackIcon.material(Icons.play_arrow_rounded),
         label: Text(l.rpStart),
       ),
       body: exAsync.when(
@@ -184,7 +185,7 @@ class _EquipBadge extends StatelessWidget {
         color: context.colors.onSurface.withValues(alpha: dark ? 0.06 : 0.05),
         borderRadius: AppRadius.brMd,
       ),
-      child: Icon(WorkoutUi.equipmentIcon(equipment),
+      child: FitPackIcon.material(WorkoutUi.equipmentIcon(equipment),
           color: context.colors.onSurfaceVariant, size: 19),
     );
   }

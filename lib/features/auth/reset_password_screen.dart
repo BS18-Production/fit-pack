@@ -7,6 +7,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../cloud/auth_service.dart';
 import 'auth_gate.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Şifre kurtarma — maildeki bağlantıdan gelen kullanıcı yeni şifresini burada
 /// belirler (docs/18 §14).
@@ -112,7 +113,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               onChanged: (_) => setState(() => _error = null),
               decoration: InputDecoration(
                 labelText: l.cloudResetNew,
-                prefixIcon: const Icon(Icons.lock_outline_rounded),
+                prefixIcon: const FitPackIcon.material(Icons.lock_outline_rounded),
                 border: const OutlineInputBorder(borderRadius: AppRadius.brMd),
               ),
             ),
@@ -124,7 +125,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
               onChanged: (_) => setState(() => _error = null),
               decoration: InputDecoration(
                 labelText: l.cloudResetRepeat,
-                prefixIcon: const Icon(Icons.lock_reset_rounded),
+                prefixIcon: const FitPackIcon.material(Icons.lock_reset_rounded),
                 border: const OutlineInputBorder(borderRadius: AppRadius.brMd),
               ),
             ),

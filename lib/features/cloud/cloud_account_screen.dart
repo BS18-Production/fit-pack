@@ -8,6 +8,7 @@ import '../sync/sync_providers.dart';
 import '../sync/sync_refresh.dart';
 import '../sync/sync_status_tile.dart';
 import 'auth_service.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Hesap paneli (docs/18-auth-and-sync.md) — Profil'den açılır.
 ///
@@ -192,7 +193,7 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
             CircleAvatar(
               radius: 24,
               backgroundColor: c.primaryContainer,
-              child: Icon(Icons.person_rounded, color: c.onPrimaryContainer),
+              child: FitPackIcon.material(Icons.person_rounded, color: c.onPrimaryContainer),
             ),
             AppSpacing.hGapMd,
             Expanded(
@@ -216,7 +217,7 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
         AppSpacing.vGapMd,
         OutlinedButton.icon(
           onPressed: _busy ? null : _syncNow,
-          icon: const Icon(Icons.sync_rounded),
+          icon: const FitPackIcon.material(Icons.sync_rounded),
           label: Text(l.cloudSyncNow),
         ),
         AppSpacing.vGapxl_,
@@ -224,7 +225,7 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
         // kalıcı → ayrı, kırmızı ve ne yaptığını söyleyen bir alt bölümde.
         OutlinedButton.icon(
           onPressed: _busy ? null : _signOut,
-          icon: const Icon(Icons.logout_rounded),
+          icon: const FitPackIcon.material(Icons.logout_rounded),
           label: Text(l.cloudSignOut),
         ),
         AppSpacing.vGapxl_,
@@ -234,7 +235,7 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
           alignment: AlignmentDirectional.centerStart,
           child: TextButton.icon(
             onPressed: _busy ? null : _deleteAccount,
-            icon: Icon(Icons.delete_forever_rounded, color: c.error),
+            icon: FitPackIcon.material(Icons.delete_forever_rounded, color: c.error),
             label:
                 Text(l.cloudDeleteAccount, style: TextStyle(color: c.error)),
           ),

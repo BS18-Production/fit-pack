@@ -8,6 +8,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/utils/format.dart';
 import '../../l10n/app_l10n.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Süreli set sayacı (docs/27 F3) — ısınma, plank, kardiyo.
 ///
@@ -106,7 +107,7 @@ class _SetTimerButtonState extends ConsumerState<SetTimerButton> {
         key: const ValueKey('set-timer-start'),
         tooltip: l.asTimerStart,
         visualDensity: VisualDensity.compact,
-        icon: Icon(Icons.play_arrow_rounded, color: c.primary),
+        icon: FitPackIcon.material(Icons.play_arrow_rounded, color: c.primary),
         onPressed: _start,
       );
     }
@@ -125,7 +126,7 @@ class _SetTimerButtonState extends ConsumerState<SetTimerButton> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.stop_rounded, size: 16, color: c.primary),
+                FitPackIcon.material(Icons.stop_rounded, size: 16, color: c.primary),
                 Text(fmtDuration(r.shown),
                     style: context.texts.labelSmall?.copyWith(
                         color: c.primary,

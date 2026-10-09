@@ -17,6 +17,7 @@ import '../../l10n/app_l10n.dart';
 import '../insights/weekly_review_reminder.dart';
 import '../../shared/widgets/setting_tiles.dart';
 import '../../core/router/app_routes.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Ayarlar (docs/16) — yalnız uygulama konfigürasyonu + veri araçları +
 /// yasal/hakkında. Kişisel veri (hedefler/vücut/kimlik/TDEE) Profil'de.
@@ -201,7 +202,7 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.notifications_outlined,
                 title: l.settingsNotifications,
                 subtitle: l.settingsNotificationsSubtitle,
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const FitPackIcon.material(Icons.chevron_right_rounded),
                 onTap: () => context.push(AppRoutes.notifications),
               ),
             ],
@@ -213,7 +214,7 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.restaurant_menu_rounded,
                 title: l.settingsFoods,
                 subtitle: l.settingsFoodsSubtitle,
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const FitPackIcon.material(Icons.chevron_right_rounded),
                 onTap: () => context.push(AppRoutes.foods),
               ),
             ],
@@ -229,7 +230,7 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.info_outline_rounded,
                 title: AppConstants.appName,
                 subtitle: l.settingsAboutSubtitle(AppConstants.appVersion),
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const FitPackIcon.material(Icons.chevron_right_rounded),
                 // Flutter'ın hazır lisans sayfası — tüm paket lisansları (B2).
                 onTap: () => showLicensePage(
                   context: context,
@@ -241,14 +242,14 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.public_rounded,
                 title: l.settingsAttribution,
                 subtitle: l.settingsAttributionSubtitle,
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const FitPackIcon.material(Icons.chevron_right_rounded),
                 onTap: () => context.push(AppRoutes.attribution),
               ),
               SettingTile(
                 icon: Icons.chat_bubble_outline_rounded,
                 title: l.settingsFeedback,
                 subtitle: l.settingsFeedbackSubtitle,
-                trailing: const Icon(Icons.chevron_right_rounded),
+                trailing: const FitPackIcon.material(Icons.chevron_right_rounded),
                 onTap: () => _sendFeedback(context),
               ),
             ],

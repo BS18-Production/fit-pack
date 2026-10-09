@@ -12,6 +12,7 @@ import '../activity/activity_providers.dart';
 import 'calendar_day_cell.dart';
 import 'calendar_logic.dart';
 import 'day_records.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Ana sayfanın haftalık şeridi (docs/24 §2).
 ///
@@ -65,7 +66,7 @@ class _WeekStripState extends ConsumerState<WeekStrip> {
               IconButton(
                 key: const ValueKey('weekStrip.prev'),
                 tooltip: l.calPrevWeek,
-                icon: const Icon(Icons.chevron_left_rounded),
+                icon: const FitPackIcon.material(Icons.chevron_left_rounded),
                 onPressed: () => setState(() => _offset--),
               ),
               Expanded(
@@ -92,7 +93,7 @@ class _WeekStripState extends ConsumerState<WeekStrip> {
               IconButton(
                 key: const ValueKey('weekStrip.next'),
                 tooltip: l.calNextWeek,
-                icon: const Icon(Icons.chevron_right_rounded),
+                icon: const FitPackIcon.material(Icons.chevron_right_rounded),
                 onPressed:
                     isCurrentWeek ? null : () => setState(() => _offset++),
               ),
@@ -119,7 +120,7 @@ class _WeekStripState extends ConsumerState<WeekStrip> {
             TextButton.icon(
               key: const ValueKey('weekStrip.today'),
               onPressed: () => setState(() => _offset = 0),
-              icon: const Icon(Icons.today_rounded, size: AppIconSize.sm),
+              icon: const FitPackIcon.material(Icons.today_rounded, size: AppIconSize.sm),
               label: Text(l.calBackToToday),
             ),
         ],

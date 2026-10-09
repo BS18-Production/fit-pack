@@ -1,6 +1,9 @@
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/router/app_routes.dart';
+import '../../core/theme/nutrition_theme.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/onboarding/first_run_hints.dart';
 import '../../core/theme/app_colors.dart';
@@ -13,11 +16,12 @@ import '../../data/database/daos/nutrition_dao.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/progress_indicators.dart';
 import '../home/providers/home_providers.dart';
-import 'nutrition_summary_card.dart';
+import 'warm_nutrition_summary.dart';
 import 'meal_copy_sheet.dart';
 import 'add_food_sheet.dart';
 import 'meal_types.dart';
 import 'nutrition_habit_widgets.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
 
@@ -47,8 +51,14 @@ final nutritionTotalsProvider = StreamProvider<DailyNutrition>((ref) {
   ], () => ref.read(nutritionDaoProvider).getDailyTotals(date));
 });
 
-class NutritionScreen extends ConsumerWidget {
+class NutritionScreen extends ConsumerStatefulWidget {
   const NutritionScreen({super.key});
+  @override
+  ConsumerState<NutritionScreen> createState() => _NutritionScreenState();
+}
+
+class _NutritionScreenState extends ConsumerState<NutritionScreen> {
+  bool _showMacros = false;
 
   void _invalidateAll(WidgetRef ref) {
     ref.invalidate(logsWithFoodProvider);
@@ -101,7 +111,12 @@ class NutritionScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) => Theme(
+    data: NutritionTheme.of(Theme.of(context)),
+    child: Builder(builder: _buildPage),
+  );
+
+  Widget _buildPage(BuildContext context) {
     final date = ref.watch(selectedDateProvider);
     final totalsAsync = ref.watch(nutritionTotalsProvider);
     final logsAsync = ref.watch(logsWithFoodProvider);
@@ -111,11 +126,34 @@ class NutritionScreen extends ConsumerWidget {
     final l = AppL10n.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(l.navNutrition),
+        actionsPadding: const EdgeInsets.only(right: AppSpacing.lg),
+        toolbarHeight:
+            76 * MediaQuery.textScalerOf(context).scale(1).clamp(1, 1.6),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'FIT PACK',
+              style: context.texts.labelSmall?.copyWith(
+                color: context.colors.secondary,
+                letterSpacing: 2,
+              ),
+            ),
+            AppSpacing.vGapXs,
+            Text(l.navNutrition, style: context.texts.headlineMedium),
+          ],
+        ),
         actions: [
           IconButton(
             tooltip: l.nutritionPickDate,
-            icon: const Icon(Icons.calendar_today_rounded),
+            style: IconButton.styleFrom(
+              shape: const RoundedRectangleBorder(
+                borderRadius: AppRadius.brControl,
+              ),
+              backgroundColor: context.colors.secondaryContainer,
+              foregroundColor: context.colors.secondary,
+            ),
+            icon: const FitPackIcon.material(Icons.calendar_today_rounded),
             onPressed: () async {
               final picked = await showDatePicker(
                 context: context,
@@ -130,24 +168,47 @@ class NutritionScreen extends ConsumerWidget {
           ),
         ],
       ),
-      // İlk-kullanım ipucu (docs/15 §B): sekmeye ilk girişte öğün eklemeyi
-      // işaret eder; bir kez gösterilir.
-      // Alt boşluk: içerik buzlu gezinme çubuğunun altından aktığı için
-      // (extendBody) iç Scaffold FAB'ı çubuğun arkasına koyar — yukarı kaldır.
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
-        child: CoachMark(
-          hint: FirstRunHint.nutrition,
-          message: (l) => l.hintNutrition,
-          child: FloatingActionButton.extended(
-            // Beslenme + İlerleme FAB'ları sekme yığınında birlikte canlı
-            // (IndexedStack) — varsayılan ortak hero etiketi sayfa geçişinde
-            // "multiple heroes share the same tag" hatası veriyordu.
-            heroTag: null,
-            onPressed: () => _showAddFoodSheet(context, ref),
-            icon: const Icon(Icons.add_rounded),
-            label: Text(l.nutritionAddFood),
-          ),
+      // extendBody ile gelen gezinme payı ayrılır; eylemler listeye binmez.
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.sm,
+          AppSpacing.lg,
+          MediaQuery.paddingOf(context).bottom + AppSpacing.sm,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: CoachMark(
+                hint: FirstRunHint.nutrition,
+                message: (l) => l.hintNutrition,
+                child: FilledButton.icon(
+                  key: const ValueKey('nutrition.addFood'),
+                  onPressed: () => _showAddFoodSheet(context, ref),
+                  icon: const FitPackIcon.material(Icons.add_rounded),
+                  label: Text(l.nutritionAddFood),
+                ),
+              ),
+            ),
+            AppSpacing.hGapSm,
+            SizedBox.square(
+              dimension: AppNavigation.primaryButtonHeight,
+              child: IconButton.filledTonal(
+                key: const ValueKey('nutrition.scan'),
+                tooltip: l.nutritionScanBarcode,
+                style: IconButton.styleFrom(
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: AppRadius.brControl,
+                  ),
+                  backgroundColor: context.colors.surfaceContainerHigh,
+                  foregroundColor: context.colors.secondary,
+                ),
+                onPressed: () =>
+                    showAddFoodSheet(context, startWithBarcode: true),
+                icon: const FitPackIcon.material(Icons.qr_code_scanner_rounded),
+              ),
+            ),
+          ],
         ),
       ),
       body: RefreshIndicator(
@@ -159,7 +220,7 @@ class NutritionScreen extends ConsumerWidget {
             AppSpacing.lg,
             AppSpacing.lg,
             AppSpacing.lg,
-            context.fabScrollInset,
+            AppSpacing.xxl,
           ),
           children: [
             _DateBar(
@@ -175,26 +236,47 @@ class NutritionScreen extends ConsumerWidget {
             AppSpacing.vGapLg,
             totalsAsync.when(
               data: (totals) => profileAsync.maybeWhen(
-                data: (profile) => _SummaryHero(
+                data: (profile) => WarmNutritionSummary(
                   totals: totals,
                   kcalGoal: profile?.kcalGoal ?? 2200,
                   proteinGoal: profile?.proteinGoal ?? 180,
+                  onGoals: () => context.push(AppRoutes.settings),
                 ),
                 orElse: () => Skeleton.card(height: 280),
               ),
               loading: () => Skeleton.card(height: 280),
               error: (_, _) => const SizedBox.shrink(),
             ),
-            // Kayıt alışkanlığı (docs/26) — yalnız bugün: haftalık hedef,
-            // "her zamanki öğün" tek dokunuş, hatırlatıcı önerisi.
-            if (isToday) ...[
-              AppSpacing.vGapMd,
-              const LogWeekLineText(),
-              AppSpacing.vGapMd,
-              const UsualMealCard(),
-              const MealReminderCta(),
-            ] else
-              AppSpacing.vGapLg,
+            AppSpacing.vGapXl,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final toggle = TextButton(
+                  key: const ValueKey('nutrition.macros'),
+                  onPressed: () => setState(() => _showMacros = !_showMacros),
+                  child: Text(
+                    _showMacros ? l.nutritionHideMacros : l.nutritionShowMacros,
+                  ),
+                );
+                final title = Text(
+                  l.nutritionDiary,
+                  style: context.texts.titleMedium,
+                );
+                if (constraints.maxWidth < 330 ||
+                    MediaQuery.textScalerOf(context).scale(1) > 1.15) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [title, toggle],
+                  );
+                }
+                return Row(
+                  children: [
+                    Expanded(child: title),
+                    toggle,
+                  ],
+                );
+              },
+            ),
+            AppSpacing.vGapSm,
             logsAsync.when(
               loading: () => Column(
                 children: [
@@ -207,51 +289,77 @@ class NutritionScreen extends ConsumerWidget {
                 message: l.nutritionLoadError,
                 onRetry: () => _invalidateAll(ref),
               ),
-              data: (logs) => Column(
-                children: [
-                  if (logs.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                      child: OutlinedButton.icon(
-                        onPressed: ref.watch(copyDayBusyProvider)
-                            ? null
-                            : () => _copyYesterday(context, ref),
-                        icon: const Icon(
-                          Icons.content_copy_rounded,
-                          size: AppIconSize.sm,
-                        ),
-                        label: Text(
-                          isToday
-                              ? l.nutritionCopyYesterday
-                              : l.nutritionCopyPrevDay,
+              data: (logs) {
+                final latest = logs.isEmpty
+                    ? null
+                    : logs
+                          .reduce((a, b) => a.log.id > b.log.id ? a : b)
+                          .log
+                          .mealType;
+                return Column(
+                  children: [
+                    if (logs.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                        child: OutlinedButton.icon(
+                          onPressed: ref.watch(copyDayBusyProvider)
+                              ? null
+                              : () => _copyYesterday(context, ref),
+                          icon: const FitPackIcon.material(
+                            Icons.content_copy_rounded,
+                            size: AppIconSize.sm,
+                          ),
+                          label: Text(
+                            isToday
+                                ? l.nutritionCopyYesterday
+                                : l.nutritionCopyPrevDay,
+                          ),
                         ),
                       ),
-                    ),
-                  ...mealTypes.map(
-                    (mealType) => Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                      child: _MealSection(
-                        mealType: mealType,
-                        items: logs
-                            .where((l) => l.log.mealType == mealType)
-                            .toList(),
-                        onAddFood: () =>
-                            _showAddFoodSheet(context, ref, mealType: mealType),
-                        onCopyFromDay: () => showMealCopySheet(
-                          context,
+                    ...mealTypes.map(
+                      (mealType) => Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                        child: _MealSection(
+                          key: ValueKey(
+                            '${date.year}-${date.month}-${date.day}-$mealType',
+                          ),
+                          initiallyExpanded: latest == mealType,
+                          showMacros: _showMacros,
+                          showUsual: isToday,
                           mealType: mealType,
-                          // Gün başına normalize: panel hedef günü
-                          // listeden düşürmek için karşılaştırıyor.
-                          targetDay: DateTime(date.year, date.month, date.day),
+                          items: logs
+                              .where((l) => l.log.mealType == mealType)
+                              .toList(),
+                          onAddFood: () => _showAddFoodSheet(
+                            context,
+                            ref,
+                            mealType: mealType,
+                          ),
+                          onCopyFromDay: () => showMealCopySheet(
+                            context,
+                            mealType: mealType,
+                            // Gün başına normalize: panel hedef günü
+                            // listeden düşürmek için karşılaştırıyor.
+                            targetDay: DateTime(
+                              date.year,
+                              date.month,
+                              date.day,
+                            ),
+                          ),
+                          onDelete: (item) => _delete(context, ref, item),
                         ),
-                        onDelete: (item) => _delete(context, ref, item),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                );
+              },
             ),
-            const SizedBox(height: 88),
+            if (isToday) ...[
+              AppSpacing.vGapMd,
+              const LogWeekLineText(),
+              AppSpacing.vGapMd,
+              const MealReminderCta(),
+            ],
           ],
         ),
       ),
@@ -360,169 +468,162 @@ class _DateNavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final enabled = onPressed != null;
-    final tint = enabled ? context.colors.primary : context.colors.outline;
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: Colors.transparent,
-        shape: const CircleBorder(),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onPressed,
-          child: Ink(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  tint.withValues(alpha: enabled ? 0.20 : 0.08),
-                  tint.withValues(alpha: enabled ? 0.10 : 0.04),
-                ],
-              ),
-              border: Border.all(color: tint.withValues(alpha: 0.14)),
-            ),
-            child: SizedBox(
-              width: 44,
-              height: 44,
-              child: Center(child: Icon(icon, color: tint, size: 22)),
-            ),
-          ),
-        ),
-      ),
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      icon: FitPackIcon.material(icon),
+      color: context.colors.secondary,
     );
   }
 }
 
-class _SummaryHero extends StatelessWidget {
-  final DailyNutrition totals;
-  final int kcalGoal;
-  final int proteinGoal;
-
-  const _SummaryHero({
-    required this.totals,
-    required this.kcalGoal,
-    required this.proteinGoal,
-  });
-
-  @override
-  Widget build(BuildContext context) => NutritionSummaryCard(
-    kcal: totals.kcal,
-    protein: totals.protein,
-    carb: totals.carb,
-    fat: totals.fat,
-    kcalGoal: kcalGoal,
-    proteinGoal: proteinGoal,
-  );
-}
-
-class _MealSection extends StatelessWidget {
+/// Yerel aç/kapa durumu DB'ye yazılmaz. Yeni kayıt eklenen öğün açılır;
+/// başka öğündeki güncelleme kullanıcının daraltma seçimini değiştirmez.
+class _MealSection extends StatefulWidget {
   final String mealType;
   final List<FoodLogWithFood> items;
-  final VoidCallback onAddFood;
-  final VoidCallback onCopyFromDay;
+  final bool initiallyExpanded, showMacros, showUsual;
+  final VoidCallback onAddFood, onCopyFromDay;
   final void Function(FoodLogWithFood) onDelete;
-
   const _MealSection({
+    super.key,
     required this.mealType,
     required this.items,
+    required this.initiallyExpanded,
+    required this.showMacros,
+    required this.showUsual,
     required this.onAddFood,
     required this.onCopyFromDay,
     required this.onDelete,
   });
+  @override
+  State<_MealSection> createState() => _MealSectionState();
+}
+
+class _MealSectionState extends State<_MealSection> {
+  late bool _expanded;
+  @override
+  void initState() {
+    super.initState();
+    _expanded = widget.initiallyExpanded;
+  }
+
+  @override
+  void didUpdateWidget(covariant _MealSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final previous = oldWidget.items.map((i) => i.log.id).toSet();
+    if (widget.items.any((i) => !previous.contains(i.log.id))) _expanded = true;
+  }
 
   @override
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
-    final totalKcal = items.fold<double>(
+    final total = widget.items.fold<double>(
       0,
-      (sum, i) => sum + i.log.computedKcal,
+      (s, i) => s + i.log.computedKcal,
     );
-
-    return Card(
-      child: Padding(
-        padding: AppSpacing.cardCompact,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final large = MediaQuery.textScalerOf(context).scale(1) > 1.15;
+    final reading = Text(
+      '${context.numFmt.format(total.round())} kcal',
+      style: context.texts.labelMedium?.copyWith(
+        color: context.colors.onSurfaceVariant,
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(height: AppSpacing.lg),
+        Row(
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: context.colors.secondary.withValues(alpha: 0.14),
-                    borderRadius: AppRadius.brSm,
-                  ),
-                  child: Icon(
-                    mealIcon(mealType),
-                    size: AppIconSize.sm,
-                    color: context.colors.secondary,
-                  ),
-                ),
-                AppSpacing.hGapMd,
-                Expanded(
-                  child: Text(
-                    mealName(l, mealType),
-                    style: context.texts.titleSmall,
-                  ),
-                ),
-                if (totalKcal > 0)
-                  Text(
-                    '${totalKcal.round()} kcal',
-                    style: context.texts.labelMedium?.copyWith(
-                      color: context.colors.onSurfaceVariant,
+            Expanded(
+              child: Semantics(
+                button: widget.items.isNotEmpty,
+                expanded: widget.items.isNotEmpty ? _expanded : null,
+                child: InkWell(
+                  key: ValueKey('nutrition.meal.${widget.mealType}'),
+                  borderRadius: AppRadius.brControl,
+                  onTap: widget.items.isEmpty
+                      ? null
+                      : () => setState(() => _expanded = !_expanded),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: AppA11y.minTapTarget,
                     ),
-                  ),
-                IconButton(
-                  tooltip: l.nutritionAddTo(mealName(l, mealType)),
-                  icon: const Icon(Icons.add_rounded),
-                  onPressed: onAddFood,
-                  visualDensity: VisualDensity.compact,
-                ),
-                // Öğün düzeyinde kopyalama (docs/21 #2): gün boş olmasa da
-                // çalışır — mevcut öğüne EKLER.
-                PopupMenuButton<String>(
-                  tooltip: l.nutritionMealMenu,
-                  icon: const Icon(Icons.more_horiz_rounded),
-                  onSelected: (_) => onCopyFromDay(),
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'copy',
-                      child: ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(
-                          Icons.copy_all_rounded,
-                          size: AppIconSize.sm,
-                        ),
-                        title: Text(l.nutritionCopyFromDay),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.sm,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            mealName(l, widget.mealType),
+                            style: context.texts.titleMedium,
+                          ),
+                          AppSpacing.vGapXs,
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  l.nutritionFoodCount(widget.items.length),
+                                  style: context.texts.bodySmall?.copyWith(
+                                    color: context.colors.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                              if (widget.items.isNotEmpty) ...[
+                                AppSpacing.hGapXs,
+                                FitPackIcon.material(
+                                  _expanded
+                                      ? Icons.expand_less_rounded
+                                      : Icons.expand_more_rounded,
+                                  size: AppIconSize.sm,
+                                ),
+                              ],
+                            ],
+                          ),
+                          if (large) ...[AppSpacing.vGapXs, reading],
+                        ],
                       ),
                     ),
-                  ],
+                  ),
+                ),
+              ),
+            ),
+            if (!large) ...[AppSpacing.hGapSm, reading],
+            IconButton(
+              tooltip: l.nutritionAddTo(mealName(l, widget.mealType)),
+              style: IconButton.styleFrom(
+                foregroundColor: context.colors.secondary,
+              ),
+              icon: const FitPackIcon.material(Icons.add_rounded),
+              onPressed: widget.onAddFood,
+            ),
+            PopupMenuButton<String>(
+              tooltip: l.nutritionMealMenu,
+              icon: const FitPackIcon.material(Icons.more_horiz_rounded),
+              onSelected: (_) => widget.onCopyFromDay(),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'copy',
+                  child: Text(l.nutritionCopyFromDay),
                 ),
               ],
             ),
-            if (items.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: AppSpacing.xs,
-                  bottom: AppSpacing.sm,
-                ),
-                child: Text(
-                  l.nutritionNoEntries,
-                  style: context.texts.bodySmall?.copyWith(
-                    color: context.colors.onSurfaceVariant,
-                  ),
-                ),
-              )
-            else
-              ...items.map(
-                (item) =>
-                    _FoodLogRow(item: item, onDelete: () => onDelete(item)),
-              ),
           ],
         ),
-      ),
+        if (_expanded)
+          ...widget.items.map(
+            (item) => _FoodLogRow(
+              key: ValueKey(item.log.id),
+              item: item,
+              showMacros: widget.showMacros,
+              onDelete: () => widget.onDelete(item),
+            ),
+          ),
+        if (widget.showUsual)
+          UsualMealCard(mealType: widget.mealType, compact: true),
+      ],
     );
   }
 }
@@ -533,8 +634,14 @@ class _MealSection extends StatelessWidget {
 class _FoodLogRow extends StatelessWidget {
   final FoodLogWithFood item;
   final VoidCallback onDelete;
+  final bool showMacros;
 
-  const _FoodLogRow({required this.item, required this.onDelete});
+  const _FoodLogRow({
+    super.key,
+    required this.item,
+    required this.onDelete,
+    required this.showMacros,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -550,7 +657,10 @@ class _FoodLogRow extends StatelessWidget {
           color: context.colors.error,
           borderRadius: AppRadius.brMd,
         ),
-        child: Icon(Icons.delete_rounded, color: context.colors.onError),
+        child: FitPackIcon.material(
+          Icons.delete_rounded,
+          color: context.colors.onError,
+        ),
       ),
       onDismissed: (_) => onDelete(),
       child: Padding(
@@ -564,30 +674,38 @@ class _FoodLogRow extends StatelessWidget {
                   Text(
                     item.food.name,
                     style: context.texts.bodyLarge,
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   AppSpacing.vGapXs,
-                  MacroInlineText(
-                    protein: log.computedProtein,
-                    carb: log.computedCarb,
-                    fat: log.computedFat,
-                    // Hızlı girişte gram anlamsız (100 g = girilen değer).
-                    prefix: item.food.source == quickFoodSource
-                        ? '${AppL10n.of(context).nhQuickEntry}  ·  '
-                        : '${log.grams.round()} g  ·  ',
+                  Text(
+                    item.food.source == quickFoodSource
+                        ? AppL10n.of(context).nhQuickEntry
+                        : '${context.numFmt.format(log.grams.round())} g',
+                    style: context.texts.bodySmall?.copyWith(
+                      color: context.colors.onSurfaceVariant,
+                    ),
                   ),
+                  if (showMacros) ...[
+                    AppSpacing.vGapXs,
+                    MacroInlineText(
+                      protein: log.computedProtein,
+                      carb: log.computedCarb,
+                      fat: log.computedFat,
+                    ),
+                  ],
                 ],
               ),
             ),
             AppSpacing.hGapSm,
             Text(
-              '${log.computedKcal.round()} kcal',
-              style: context.texts.titleSmall,
+              '${context.numFmt.format(log.computedKcal.round())}\nkcal',
+              textAlign: TextAlign.end,
+              style: context.texts.labelMedium,
             ),
             IconButton(
               tooltip: AppL10n.of(context).commonDelete,
-              icon: const Icon(Icons.delete_outline_rounded),
+              icon: const FitPackIcon.material(Icons.delete_outline_rounded),
               color: context.colors.onSurfaceVariant,
               visualDensity: VisualDensity.compact,
               onPressed: onDelete,

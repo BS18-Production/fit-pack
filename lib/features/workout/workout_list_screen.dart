@@ -19,6 +19,7 @@ import 'routine_providers.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Antrenman ana ekranı (Antrenman V2 — Claude Design reskin).
 /// Özel header (tarih + başlık + geçmiş/kütüphane), Bu Hafta istatistik kartı,
@@ -82,14 +83,13 @@ class WorkoutListScreen extends ConsumerWidget {
                     ] else ...[
                       ..._groupedRoutines(context, routines),
                       AppSpacing.vGapXs,
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Expanded(
-                            child: _NewRoutineButton(
-                              onTap: () => context.push(AppRoutes.routineNew),
-                            ),
+                          _NewRoutineButton(
+                            onTap: () => context.push(AppRoutes.routineNew),
                           ),
-                          AppSpacing.hGapSm,
+                          AppSpacing.vGapSm,
                           const _FreeWorkoutButton(),
                         ],
                       ),
@@ -118,34 +118,40 @@ class WorkoutListScreen extends ConsumerWidget {
   /// Hiç program yoksa başlık çizilmez — liste eskisi gibi düz.
   List<Widget> _groupedRoutines(BuildContext context, List<Routine> routines) {
     final l = AppL10n.of(context);
-    final own = [for (final r in routines) if (r.programKey == null) r];
+    final own = [
+      for (final r in routines)
+        if (r.programKey == null) r,
+    ];
     final byProgram = <String, List<Routine>>{};
     for (final r in routines) {
       final k = r.programKey;
       if (k != null) byProgram.putIfAbsent(k, () => []).add(r);
     }
     Widget card(Routine r) => Padding(
-          key: ValueKey('routine-${r.id}'),
-          padding: const EdgeInsets.only(bottom: AppSpacing.md),
-          child: _RoutineCard(routine: r),
-        );
+      key: ValueKey('routine-${r.id}'),
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: _RoutineCard(routine: r),
+    );
     Widget header(String text) => Padding(
-          padding: const EdgeInsets.only(
-              top: AppSpacing.xs, bottom: AppSpacing.sm),
-          child: Text(context.upper(text),
-              style: context.texts.labelMedium?.copyWith(
-                  color: context.colors.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.8)),
-        );
+      padding: const EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.sm),
+      child: Text(
+        context.upper(text),
+        style: context.texts.labelMedium?.copyWith(
+          color: context.colors.onSurfaceVariant,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
     return [
-      if (byProgram.isNotEmpty && own.isNotEmpty)
-        header(l.workoutOwnRoutines),
+      if (byProgram.isNotEmpty && own.isNotEmpty) header(l.workoutOwnRoutines),
       ...own.map(card),
       for (final e in byProgram.entries) ...[
-        header(programByKey(e.key) == null
-            ? e.key
-            : l.programTitle(programByKey(e.key)!)),
+        header(
+          programByKey(e.key) == null
+              ? e.key
+              : l.programTitle(programByKey(e.key)!),
+        ),
         ...e.value.map(card),
       ],
     ];
@@ -182,49 +188,66 @@ class _Header extends StatelessWidget {
     final l = AppL10n.of(context);
     final today = context.dateFmt('EEEE, d MMMM').format(DateTime.now());
     final dateLabel = context.upper(today);
+    final heading = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          dateLabel,
+          style: context.texts.labelSmall?.copyWith(
+            color: context.colors.primary,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.4,
+          ),
+        ),
+        AppSpacing.vGapXs,
+        Text(l.navWorkout, maxLines: 1, style: context.texts.headlineMedium),
+      ],
+    );
+    final actions = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          tooltip: l.workoutLibrary,
+          icon: const FitPackIcon.material(Icons.menu_book_rounded),
+          onPressed: () => context.push(AppRoutes.exercises),
+        ),
+        AppSpacing.hGapXs,
+        IconButton(
+          tooltip: l.workoutAddPast,
+          icon: const FitPackIcon.material(Icons.edit_calendar_rounded),
+          onPressed: () => context.push(AppRoutes.workoutLogPast),
+        ),
+        AppSpacing.hGapXs,
+        IconButton(
+          tooltip: l.workoutHistory,
+          icon: const FitPackIcon.material(Icons.history_rounded),
+          onPressed: () => context.push(AppRoutes.workoutHistory),
+        ),
+      ],
+    );
     return SafeArea(
       bottom: false,
       child: Padding(
         padding: const EdgeInsets.only(top: AppSpacing.md),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Büyük metinde başlık kesilmez; üç eylem ayrı satıra geçer.
+            if (constraints.maxWidth < AppNavigation.headerInlineWidth ||
+                MediaQuery.textScalerOf(context).scale(1) > 1.15) {
+              return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    dateLabel,
-                    style: context.texts.labelSmall?.copyWith(
-                      color: context.colors.primary,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(l.navWorkout, style: context.texts.headlineMedium),
-                ],
-              ),
-            ),
-            IconButton(
-              tooltip: l.workoutLibrary,
-              icon: const Icon(Icons.menu_book_rounded),
-              color: context.colors.onSurfaceVariant,
-              onPressed: () => context.push(AppRoutes.exercises),
-            ),
-            IconButton(
-              tooltip: l.workoutAddPast,
-              icon: const Icon(Icons.edit_calendar_rounded),
-              color: context.colors.onSurfaceVariant,
-              onPressed: () => context.push(AppRoutes.workoutLogPast),
-            ),
-            IconButton(
-              tooltip: l.workoutHistory,
-              icon: const Icon(Icons.history_rounded),
-              color: context.colors.onSurfaceVariant,
-              onPressed: () => context.push(AppRoutes.workoutHistory),
-            ),
-          ],
+                children: [heading, AppSpacing.vGapMd, actions],
+              );
+            }
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: heading),
+                AppSpacing.hGapSm,
+                actions,
+              ],
+            );
+          },
         ),
       ),
     );
@@ -337,12 +360,17 @@ class _FreeWorkoutButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return OutlinedButton.icon(
       onPressed: () => context.push(AppRoutes.workoutActive),
-      icon: const Icon(Icons.bolt_rounded, size: AppIconSize.sm),
+      icon: const FitPackIcon.material(
+        Icons.bolt_rounded,
+        size: AppIconSize.sm,
+      ),
       label: Text(AppL10n.of(context).exFreeWorkout),
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md, vertical: AppSpacing.md + 2),
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.brLg),
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.md + 2,
+        ),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.brControl),
       ),
     );
   }
@@ -407,7 +435,8 @@ class _ArchivedRoutines extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final archived = ref.watch(archivedRoutinesProvider).valueOrNull ?? const [];
+    final archived =
+        ref.watch(archivedRoutinesProvider).valueOrNull ?? const [];
     if (archived.isEmpty) return const SizedBox.shrink();
     final l = AppL10n.of(context);
     final muted = context.colors.onSurfaceVariant;
@@ -420,7 +449,11 @@ class _ArchivedRoutines extends ConsumerWidget {
           key: const ValueKey('archived-routines'),
           tilePadding: EdgeInsets.zero,
           childrenPadding: EdgeInsets.zero,
-          leading: Icon(Icons.archive_outlined, color: muted, size: AppIconSize.md),
+          leading: FitPackIcon.material(
+            Icons.archive_outlined,
+            color: muted,
+            size: AppIconSize.md,
+          ),
           title: Text(
             l.workoutArchiveSection(archived.length),
             style: context.texts.titleSmall?.copyWith(color: muted),
@@ -443,7 +476,10 @@ class _ArchivedRoutines extends ConsumerWidget {
                 title: Text(r.name, style: context.texts.bodyLarge),
                 trailing: TextButton.icon(
                   onPressed: () => _restore(context, ref, r),
-                  icon: const Icon(Icons.unarchive_outlined, size: AppIconSize.sm),
+                  icon: const FitPackIcon.material(
+                    Icons.unarchive_outlined,
+                    size: AppIconSize.sm,
+                  ),
                   label: Text(l.workoutArchiveRestore),
                 ),
               ),
@@ -464,7 +500,8 @@ class _ArchivedRoutines extends ConsumerWidget {
     }
     // Rutin provider'ları reaktif (H-05) → liste ve arşiv kendiliğinden yenilenir.
     messenger.showSnackBar(
-        SnackBar(content: Text(l.workoutArchiveRestored(r.name))));
+      SnackBar(content: Text(l.workoutArchiveRestored(r.name))),
+    );
   }
 }
 
@@ -474,42 +511,10 @@ class _NewRoutineButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      borderRadius: AppRadius.brLg,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.brLg,
-        child: DottedBorderBox(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.md + 2,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.add_rounded,
-                  color: context.colors.primary,
-                  size: AppIconSize.sm,
-                ),
-                AppSpacing.hGapSm,
-                Flexible(
-                  child: Text(
-                    AppL10n.of(context).workoutNewRoutine,
-                    textAlign: TextAlign.center,
-                    style: context.texts.labelLarge?.copyWith(
-                      color: context.colors.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return OutlinedButton.icon(
+      onPressed: onTap,
+      icon: const FitPackIcon(FitPackGlyph.plus, size: AppIconSize.sm),
+      label: Text(AppL10n.of(context).workoutNewRoutine),
     );
   }
 }
@@ -578,7 +583,7 @@ class _RoutineCard extends ConsumerWidget {
                       color: context.colors.primary.withValues(alpha: 0.12),
                       borderRadius: AppRadius.brMd,
                     ),
-                    child: Icon(
+                    child: FitPackIcon.material(
                       Icons.fitness_center_rounded,
                       color: context.colors.primary,
                       size: 21,
@@ -624,7 +629,7 @@ class _RoutineCard extends ConsumerWidget {
                   IconButton(
                     tooltip: AppL10n.of(context).commonEdit,
                     visualDensity: VisualDensity.compact,
-                    icon: Icon(
+                    icon: FitPackIcon.material(
                       Icons.edit_outlined,
                       size: AppIconSize.sm,
                       color: context.colors.onSurfaceVariant.withValues(
@@ -701,7 +706,7 @@ class _ResumeBanner extends ConsumerWidget {
                     color: c.primary,
                     borderRadius: AppRadius.brMd,
                   ),
-                  child: Icon(
+                  child: FitPackIcon.material(
                     Icons.play_arrow_rounded,
                     color: c.onPrimary,
                     size: 26,
@@ -731,7 +736,7 @@ class _ResumeBanner extends ConsumerWidget {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(
+                  icon: FitPackIcon.material(
                     Icons.close_rounded,
                     color: c.onPrimaryContainer.withValues(alpha: 0.7),
                     size: AppIconSize.md,

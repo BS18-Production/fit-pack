@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
+import 'fitpack_icon.dart';
 
 /// Profil + Ayarlar ekranlarının ortak yapı taşları (docs/16).
 /// Ayarlar'daki özel widget'lar buraya çıkarıldı ki iki ekran da aynı
@@ -43,7 +44,7 @@ class SettingTile extends StatelessWidget {
           color: accent.withValues(alpha: 0.14),
           borderRadius: AppRadius.brSm,
         ),
-        child: Icon(icon, color: accent, size: AppIconSize.sm + 2),
+        child: FitPackIcon.material(icon, color: accent, size: AppIconSize.sm + 2),
       ),
       title: Text(title,
           style: destructive
@@ -139,7 +140,7 @@ Future<String?> pickOptionDialog(
           ListTile(
             title: Text(label),
             trailing: value == current
-                ? Icon(Icons.check_rounded, color: ctx.colors.primary)
+                ? FitPackIcon.material(Icons.check_rounded, color: ctx.colors.primary)
                 : null,
             onTap: () => Navigator.pop(ctx, value),
           ),

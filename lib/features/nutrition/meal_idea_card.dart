@@ -6,6 +6,7 @@ import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/glass.dart';
 import 'add_food_sheet.dart';
 import 'nutrition_screen.dart' show selectedDateProvider;
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Temsili fotoğraf bir yemek kaydı değildir; CTA mevcut giriş panelini açar.
 class MealIdeaCard extends ConsumerWidget {
@@ -54,7 +55,7 @@ class MealIdeaCard extends ConsumerWidget {
                           DateTime.now();
                       showAddFoodSheet(context);
                     },
-                    icon: const Icon(Icons.add_rounded, size: AppIconSize.sm),
+                    icon: const FitPackIcon.material(Icons.add_rounded, size: AppIconSize.sm),
                     label: Text(l.nutritionAddFood),
                   );
                   if (constraints.maxWidth < 280 ||

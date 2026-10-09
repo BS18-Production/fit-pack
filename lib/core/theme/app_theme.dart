@@ -159,13 +159,15 @@ class AppTheme {
 
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size(0, AppA11y.minTapTarget),
+          minimumSize: const Size(0, AppNavigation.primaryButtonHeight),
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.xxl,
             vertical: AppSpacing.md,
           ),
           textStyle: text.labelLarge,
-          shape: const RoundedRectangleBorder(borderRadius: AppRadius.brMd),
+          shape: const RoundedRectangleBorder(
+            borderRadius: AppRadius.brControl,
+          ),
         ),
       ),
 
@@ -174,27 +176,32 @@ class AppTheme {
           backgroundColor: scheme.primary,
           foregroundColor: scheme.onPrimary,
           elevation: 0,
-          minimumSize: const Size(0, AppA11y.minTapTarget),
+          minimumSize: const Size(0, AppNavigation.primaryButtonHeight),
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.xxl,
             vertical: AppSpacing.md,
           ),
           textStyle: text.labelLarge,
-          shape: const RoundedRectangleBorder(borderRadius: AppRadius.brMd),
+          shape: const RoundedRectangleBorder(
+            borderRadius: AppRadius.brControl,
+          ),
         ),
       ),
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: scheme.primary,
+          foregroundColor: scheme.onSurface,
+          backgroundColor: scheme.surfaceContainerLow,
           minimumSize: const Size(0, AppA11y.minTapTarget),
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.xl,
             vertical: AppSpacing.md,
           ),
-          side: BorderSide(color: scheme.outline),
+          side: BorderSide(color: scheme.outlineVariant),
           textStyle: text.labelLarge,
-          shape: const RoundedRectangleBorder(borderRadius: AppRadius.brMd),
+          shape: const RoundedRectangleBorder(
+            borderRadius: AppRadius.brControl,
+          ),
         ),
       ),
 
@@ -208,6 +215,11 @@ class AppTheme {
 
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
+          backgroundColor: scheme.surfaceContainerLow,
+          foregroundColor: scheme.onSurfaceVariant,
+          shape: const RoundedRectangleBorder(
+            borderRadius: AppRadius.brControl,
+          ),
           minimumSize: const Size(AppA11y.minTapTarget, AppA11y.minTapTarget),
         ),
       ),

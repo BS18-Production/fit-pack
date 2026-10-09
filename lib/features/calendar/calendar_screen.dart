@@ -11,6 +11,7 @@ import '../activity/activity_providers.dart';
 import 'calendar_day_cell.dart';
 import 'calendar_logic.dart';
 import 'day_records.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Takvim — ay görünümü (docs/24 §2). Ana sayfa şeridinin başlığından açılır.
 ///
@@ -106,7 +107,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 ),
                 IconButton(
                   tooltip: l.commonClose,
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const FitPackIcon.material(Icons.close_rounded),
                   onPressed: () => context.pop(),
                 ),
               ],
@@ -123,7 +124,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       IconButton(
                         key: const ValueKey('calendar.prev'),
                         tooltip: l.calPrevMonth,
-                        icon: const Icon(Icons.chevron_left_rounded),
+                        icon: const FitPackIcon.material(Icons.chevron_left_rounded),
                         onPressed: () => _shiftMonth(-1),
                       ),
                       Expanded(
@@ -135,7 +136,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       IconButton(
                         key: const ValueKey('calendar.next'),
                         tooltip: l.calNextMonth,
-                        icon: const Icon(Icons.chevron_right_rounded),
+                        icon: const FitPackIcon.material(Icons.chevron_right_rounded),
                         onPressed: _isCurrentMonth ? null : () => _shiftMonth(1),
                       ),
                     ],
@@ -203,7 +204,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   minimumSize: const Size.fromHeight(AppA11y.minTapTarget),
                 ),
                 onPressed: _backToToday,
-                icon: const Icon(Icons.today_rounded, size: AppIconSize.sm),
+                icon: const FitPackIcon.material(Icons.today_rounded, size: AppIconSize.sm),
                 label: Text(l.calBackToToday),
               ),
             ],

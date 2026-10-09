@@ -5,19 +5,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/notifications/notification_prefs.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/theme/nutrition_theme.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import '../settings/notifications_screen.dart' show setMealReminders;
 import 'meal_types.dart';
 import 'nutrition_habit_providers.dart';
 import 'nutrition_habits.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 String _usualTitle(AppL10n l, String meal) => switch (meal) {
-      'breakfast' => l.nhUsualBreakfast,
-      'lunch' => l.nhUsualLunch,
-      'dinner' => l.nhUsualDinner,
-      _ => l.nhUsualSnack,
-    };
+  'breakfast' => l.nhUsualBreakfast,
+  'lunch' => l.nhUsualLunch,
+  'dinner' => l.nhUsualDinner,
+  _ => l.nhUsualSnack,
+};
 
 /// **"Her zamanki öğün" — tek dokunuş** (docs/26). Son 14 günde en az 2 kez
 /// aynı içerikle girilmiş öğünü, saatine uygun olarak önerir. Öneri yoksa
@@ -26,7 +28,9 @@ String _usualTitle(AppL10n l, String meal) => switch (meal) {
 /// Eklemek bir kullanıcı eylemi (onay) — kendiliğinden kayıt YOK. "Geri al"
 /// tam eklenen satırları siler.
 class UsualMealCard extends ConsumerStatefulWidget {
-  const UsualMealCard({super.key});
+  final String? mealType;
+  final bool compact;
+  const UsualMealCard({super.key, this.mealType, this.compact = false});
 
   @override
   ConsumerState<UsualMealCard> createState() => _UsualMealCardState();
@@ -44,17 +48,22 @@ class _UsualMealCardState extends ConsumerState<UsualMealCard> {
     final l = AppL10n.of(context);
     try {
       final ids = await dao.addFoodsToMealIds(
-          DateTime.now(), u.mealType, u.copyItems);
+        DateTime.now(),
+        u.mealType,
+        u.copyItems,
+      );
       HapticFeedback.lightImpact();
       messenger.clearSnackBars();
-      messenger.showSnackBar(SnackBar(
-        content: Text(l.nhUsualAdded(mealName(l, u.mealType))),
-        persist: false, // düğmeli SnackBar varsayılanda kapanmıyor (3.41)
-        action: SnackBarAction(
-          label: l.commonUndo,
-          onPressed: () => dao.deleteFoodLogs(ids),
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l.nhUsualAdded(mealName(l, u.mealType))),
+          persist: false, // düğmeli SnackBar varsayılanda kapanmıyor (3.41)
+          action: SnackBarAction(
+            label: l.commonUndo,
+            onPressed: () => dao.deleteFoodLogs(ids),
+          ),
         ),
-      ));
+      );
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(l.nutritionAddFailed)));
     } finally {
@@ -65,21 +74,105 @@ class _UsualMealCardState extends ConsumerState<UsualMealCard> {
   void _later(UsualMeal u) {
     final now = DateTime.now();
     final key = usualMealDismissKey(
-        DateTime(now.year, now.month, now.day), u.mealType);
+      DateTime(now.year, now.month, now.day),
+      u.mealType,
+    );
     ref.read(usualMealDismissedProvider.notifier).update((s) => {...s, key});
+  }
+
+  Widget _compact(BuildContext context, UsualMeal u, String names) {
+    final l = AppL10n.of(context);
+    final c = context.colors;
+    // Kayıtlı öğünlerin fotoğraf alanı yok. Yanıltıcı stok fotoğraf yerine
+    // aynı Signature aileden öğün simgesi; gerçek ad ve değerler korunur.
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      padding: AppSpacing.cardCompact,
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: NutritionTheme.suggestionRadius,
+        border: Border.all(color: c.outlineVariant),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: AppIconSize.xxl,
+            height: AppIconSize.xxl,
+            decoration: BoxDecoration(
+              color: c.secondaryContainer,
+              borderRadius: AppRadius.brControl,
+            ),
+            child: FitPackIcon.material(
+              Icons.restaurant_rounded,
+              color: c.secondary,
+              size: AppIconSize.lg,
+            ),
+          ),
+          AppSpacing.hGapMd,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _usualTitle(l, u.mealType),
+                  style: context.texts.labelSmall?.copyWith(color: c.secondary),
+                ),
+                AppSpacing.vGapXs,
+                Text(
+                  names,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.texts.titleSmall,
+                ),
+                AppSpacing.vGapXs,
+                Text(
+                  l.nhUsualSub(
+                    u.items.length,
+                    u.kcal.round(),
+                    u.protein.round(),
+                  ),
+                  style: context.texts.bodySmall?.copyWith(
+                    color: c.onSurfaceVariant,
+                  ),
+                ),
+                TextButton(
+                  onPressed: _busy ? null : () => _later(u),
+                  child: Text(l.nhUsualLater),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: l.nhUsualAdd,
+            onPressed: _busy ? null : () => _add(u),
+            icon: const FitPackIcon.material(Icons.add_rounded),
+            color: c.primary,
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final u = ref.watch(usualMealProvider).valueOrNull;
-    if (u == null) return const SizedBox.shrink();
+    if (u == null ||
+        (widget.mealType != null && u.mealType != widget.mealType)) {
+      return const SizedBox.shrink();
+    }
     final l = AppL10n.of(context);
     final c = context.colors;
     final names = u.items.map((i) => i.food.name).join(', ');
+    if (widget.compact) return _compact(context, u, names);
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md, AppSpacing.md, AppSpacing.sm, AppSpacing.sm),
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: c.secondary.withValues(alpha: 0.10),
         borderRadius: AppRadius.brLg,
@@ -97,27 +190,40 @@ class _UsualMealCardState extends ConsumerState<UsualMealCard> {
                   color: c.secondary.withValues(alpha: 0.16),
                   borderRadius: AppRadius.brSm,
                 ),
-                child: Icon(mealIcon(u.mealType),
-                    size: AppIconSize.sm, color: c.secondary),
+                child: FitPackIcon.material(
+                  mealIcon(u.mealType),
+                  size: AppIconSize.sm,
+                  color: c.secondary,
+                ),
               ),
               AppSpacing.hGapMd,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_usualTitle(l, u.mealType),
-                        style: context.texts.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 2),
-                    Text(names,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: context.texts.bodySmall),
                     Text(
-                        l.nhUsualSub(u.items.length, u.kcal.round(),
-                            u.protein.round()),
-                        style: context.texts.bodySmall
-                            ?.copyWith(color: c.onSurfaceVariant)),
+                      _usualTitle(l, u.mealType),
+                      style: context.texts.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      names,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.texts.bodySmall,
+                    ),
+                    Text(
+                      l.nhUsualSub(
+                        u.items.length,
+                        u.kcal.round(),
+                        u.protein.round(),
+                      ),
+                      style: context.texts.bodySmall?.copyWith(
+                        color: c.onSurfaceVariant,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -138,7 +244,10 @@ class _UsualMealCardState extends ConsumerState<UsualMealCard> {
                   foregroundColor: c.onSecondary,
                   visualDensity: VisualDensity.compact,
                 ),
-                icon: const Icon(Icons.add_rounded, size: AppIconSize.sm),
+                icon: const FitPackIcon.material(
+                  Icons.add_rounded,
+                  size: AppIconSize.sm,
+                ),
                 label: Text(l.nhUsualAdd),
               ),
             ],
@@ -185,11 +294,14 @@ class LogWeekLineText extends ConsumerWidget {
           ),
         AppSpacing.hGapSm,
         Expanded(
-          child: Text(text,
-              maxLines: 2,
-              style: context.texts.bodySmall?.copyWith(
-                  color: color,
-                  fontWeight: done ? FontWeight.w700 : FontWeight.w500)),
+          child: Text(
+            text,
+            maxLines: 2,
+            style: context.texts.bodySmall?.copyWith(
+              color: color,
+              fontWeight: done ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
         ),
       ],
     );
@@ -212,15 +324,22 @@ class MealReminderCta extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md, AppSpacing.sm, AppSpacing.xs, AppSpacing.sm),
+        AppSpacing.md,
+        AppSpacing.sm,
+        AppSpacing.xs,
+        AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
         color: c.surfaceContainerHighest.withValues(alpha: 0.6),
         borderRadius: AppRadius.brLg,
       ),
       child: Row(
         children: [
-          Icon(Icons.notifications_active_outlined,
-              size: AppIconSize.sm, color: c.primary),
+          FitPackIcon.material(
+            Icons.notifications_active_outlined,
+            size: AppIconSize.sm,
+            color: c.primary,
+          ),
           AppSpacing.hGapSm,
           Expanded(
             child: Text(l.nhReminderCta, style: context.texts.bodySmall),
@@ -231,7 +350,8 @@ class MealReminderCta extends ConsumerWidget {
               final on = await setMealReminders(context, ref, true);
               if (on) {
                 messenger.showSnackBar(
-                    SnackBar(content: Text(l.nhReminderEnabled)));
+                  SnackBar(content: Text(l.nhReminderEnabled)),
+                );
               }
             },
             child: Text(l.nhReminderEnable),
@@ -239,8 +359,11 @@ class MealReminderCta extends ConsumerWidget {
           IconButton(
             tooltip: l.commonClose,
             visualDensity: VisualDensity.compact,
-            icon: Icon(Icons.close_rounded,
-                size: AppIconSize.sm, color: c.onSurfaceVariant),
+            icon: FitPackIcon.material(
+              Icons.close_rounded,
+              size: AppIconSize.sm,
+              color: c.onSurfaceVariant,
+            ),
             onPressed: () => ref
                 .read(notificationPrefsProvider.notifier)
                 .update(prefs.copyWith(mealCtaDismissed: true)),

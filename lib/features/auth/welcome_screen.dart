@@ -5,6 +5,7 @@ import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// ① Karşılama — zorunlu giriş kapısının ilk ekranı (docs/18 §5.1).
 ///
@@ -54,7 +55,7 @@ class WelcomeScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.fitness_center_rounded,
+                        child: const FitPackIcon.material(Icons.fitness_center_rounded,
                             size: 40, color: AppColors.onGradient),
                       ),
                       AppSpacing.vGapXl,
@@ -130,7 +131,7 @@ class _ValueRow extends StatelessWidget {
             color: tint.withValues(alpha: 0.16),
             borderRadius: AppRadius.brMd,
           ),
-          child: Icon(icon, color: tint, size: AppIconSize.md),
+          child: FitPackIcon.material(icon, color: tint, size: AppIconSize.md),
         ),
         AppSpacing.hGapMd,
         Expanded(

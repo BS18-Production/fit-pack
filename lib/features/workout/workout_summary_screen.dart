@@ -12,6 +12,7 @@ import '../../l10n/app_l10n.dart';
 import 'record_calc.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Antrenman Özeti (Antrenman V2 Faz C). Süre, toplam hacim, set sayısı,
 /// hareket bazlı döküm. Seans zaten kaydedildi; bu ekran recap.
@@ -50,7 +51,7 @@ class WorkoutSummaryScreen extends ConsumerWidget {
                     color: context.semantic.success.withValues(alpha: 0.14),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.check_rounded,
+                  child: FitPackIcon.material(Icons.check_rounded,
                       size: 38, color: context.semantic.success),
                 ),
               ),
@@ -198,7 +199,7 @@ class WorkoutRecordsCard extends StatelessWidget {
                     borderRadius: AppRadius.brMd,
                   ),
                   child:
-                      Icon(Icons.emoji_events_rounded, size: 19, color: warn),
+                      FitPackIcon.material(Icons.emoji_events_rounded, size: 19, color: warn),
                 ),
                 AppSpacing.hGapSm,
                 Text(l.wsNewRecords(records.length),

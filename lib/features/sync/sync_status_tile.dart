@@ -9,6 +9,7 @@ import '../../l10n/app_l10n.dart';
 import 'sync_health.dart';
 import 'sync_providers.dart';
 import 'sync_status.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Senkron durumu satırı (docs/18 §9, docs/20 §9). "Korkutma yok, durum
 /// bilgisi var" — mesaj daima "kaydedildi" güvencesiyle başlar.
@@ -78,7 +79,7 @@ class SyncStatusTile extends ConsumerWidget {
                 height: AppIconSize.md,
                 child: spin
                     ? CircularProgressIndicator(strokeWidth: 2, color: tint)
-                    : Icon(icon, color: tint, size: AppIconSize.md),
+                    : FitPackIcon.material(icon, color: tint, size: AppIconSize.md),
               ),
               AppSpacing.hGapMd,
               Expanded(
@@ -167,7 +168,7 @@ class _SyncNotice extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Row(
             children: [
-              Icon(icon, color: warn, size: AppIconSize.md),
+              FitPackIcon.material(icon, color: warn, size: AppIconSize.md),
               AppSpacing.hGapMd,
               Expanded(
                 child: Text(text,

@@ -20,6 +20,7 @@ import 'history_summary.dart';
 import 'record_calc.dart';
 import 'workout_summary_screen.dart' show WorkoutRecordsCard;
 import 'workout_ui.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Detaydaki tek hareket: setler, en iyi set, geçen sefere göre fark.
 class _ExerciseDetail {
@@ -108,14 +109,14 @@ class WorkoutSessionDetailScreen extends ConsumerWidget {
                 PopupMenuItem(
                   value: 'date',
                   child: ListTile(
-                      leading: const Icon(Icons.event_rounded),
+                      leading: const FitPackIcon.material(Icons.event_rounded),
                       title: Text(l.whEditDate),
                       contentPadding: EdgeInsets.zero),
                 ),
                 PopupMenuItem(
                   value: 'delete',
                   child: ListTile(
-                      leading: const Icon(Icons.delete_outline_rounded),
+                      leading: const FitPackIcon.material(Icons.delete_outline_rounded),
                       title: Text(l.commonDelete),
                       contentPadding: EdgeInsets.zero),
                 ),
@@ -310,7 +311,7 @@ class _StatCol extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, size: AppIconSize.sm, color: context.colors.primary),
+          FitPackIcon.material(icon, size: AppIconSize.sm, color: context.colors.primary),
           const SizedBox(height: 4),
           FittedBox(
             fit: BoxFit.scaleDown,
@@ -421,7 +422,7 @@ class _ExerciseBlock extends StatelessWidget {
                               ])),
                     ),
                     if (s.id == recordSetId) ...[
-                      Icon(Icons.emoji_events_rounded,
+                      FitPackIcon.material(Icons.emoji_events_rounded,
                           size: AppIconSize.sm,
                           color: context.semantic.warning),
                       AppSpacing.hGapSm,

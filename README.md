@@ -28,6 +28,21 @@ Etkinlik), Keşfet'te 9 hazır program, yeni antrenman geçmişi (özet + detay)
 RPE'li ilerleme önerisi, arşiv görünür, çeşitli öğün bildirimleri, mola sesi
 ve bildirimi düzeltmeleri. Şema v14. Ayrıntı: NEXT_TASKS "Geri bildirim turu".
 
+**2026-10-08 Velocity:** FitPack özel vektör ikonları, dolu lime seçili
+sekme ve ortak buton görünümü uygulandı. Analiz temiz, 740 test geçti.
+Yeni Release arşivi iPhone 17'ye mevcut uygulamanın üzerine yüklendi
+(8 Ekim 07:41 arşivi, Device Hub). Telefon görsel kontrolü Samet'te:
+[uygulama ve doğrulama](docs/33-velocity-signature-icons.md).
+
+## Beslenme — Sıcak Günlük (2026-10-09)
+
+Tek enerji halkası, sıcak koyu/açık palet, kompakt makrolar ve aç/kapa öğün
+günlüğü; mevcut besin kayıt akışları korunur. 742 test, analiz temiz; iPhone 17
+simülatöründe kontrol edildi. 9 Ekim 09:50’de Release sürümü gerçek iPhone
+17’ye uygulama kaldırılmadan yüklendi; imza, kurulum ve çalışan süreç
+doğrulandı. Android APK derlendi; cihaz görsel kontrolünün sınırları
+[docs/34](docs/34-nutrition-warm-diary.md) içinde.
+
 ## Hızlı Bağlantılar
 
 - **⭐ Geliştirme kuralları (kod yazmadan önce oku):** [CONVENTIONS.md](CONVENTIONS.md)

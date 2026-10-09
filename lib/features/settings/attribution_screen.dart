@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// Açık Veri Kaynakları / Atıf (C-6, docs/11 + docs/16 §6).
 /// OFF ODbL atfı yasal zorunluluk; diğerleri teşekkür + şeffaflık.
@@ -86,7 +87,7 @@ class _SourceCard extends StatelessWidget {
                   Expanded(
                     child: Text(name, style: context.texts.titleSmall),
                   ),
-                  Icon(Icons.open_in_new_rounded,
+                  FitPackIcon.material(Icons.open_in_new_rounded,
                       size: AppIconSize.sm, color: c.onSurfaceVariant),
                 ],
               ),

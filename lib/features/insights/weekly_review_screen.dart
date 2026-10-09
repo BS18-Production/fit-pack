@@ -16,6 +16,7 @@ import '../home/providers/home_providers.dart';
 import '../workout/workout_ui.dart';
 import 'weekly_review.dart';
 import 'weekly_review_providers.dart';
+import '../../shared/widgets/fitpack_icon.dart';
 
 /// **Haftalık değerlendirme ekranı** (docs/22 §4, görsel yenileme §10).
 ///
@@ -124,7 +125,7 @@ class _WeekHeader extends StatelessWidget {
       children: [
         IconButton(
           tooltip: l.wrPrevWeek,
-          icon: const Icon(Icons.chevron_left_rounded),
+          icon: const FitPackIcon.material(Icons.chevron_left_rounded),
           onPressed: onPrev,
         ),
         Expanded(
@@ -143,7 +144,7 @@ class _WeekHeader extends StatelessWidget {
         ),
         IconButton(
           tooltip: l.wrNextWeek,
-          icon: const Icon(Icons.chevron_right_rounded),
+          icon: const FitPackIcon.material(Icons.chevron_right_rounded),
           onPressed: onNext,
         ),
       ],
@@ -175,7 +176,7 @@ class _SectionTitle extends StatelessWidget {
           IconButton(
             tooltip: l.wrHowCalculated,
             visualDensity: VisualDensity.compact,
-            icon: Icon(Icons.info_outline_rounded,
+            icon: FitPackIcon.material(Icons.info_outline_rounded,
                 size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
             onPressed: () => showModalBottomSheet<void>(
               context: context,
@@ -257,7 +258,7 @@ class _KpiTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: c.primary),
+              FitPackIcon.material(icon, size: 16, color: c.primary),
               const SizedBox(width: 6),
               Flexible(
                 child: Text(label,
@@ -292,7 +293,7 @@ class _KpiTile extends StatelessWidget {
             AppSpacing.vGapXs,
             Row(
               children: [
-                Icon(
+                FitPackIcon.material(
                     d.sign > 0
                         ? Icons.arrow_upward_rounded
                         : d.sign < 0
@@ -465,7 +466,7 @@ class _FocusCard extends StatelessWidget {
               color: c.primary.withValues(alpha: 0.16),
               borderRadius: AppRadius.brMd,
             ),
-            child: Icon(Icons.flag_rounded, color: c.primary, size: 20),
+            child: FitPackIcon.material(Icons.flag_rounded, color: c.primary, size: 20),
           ),
           AppSpacing.hGapMd,
           Expanded(
@@ -525,7 +526,7 @@ class _InfoButton extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xs),
-        child: Icon(Icons.info_outline_rounded,
+        child: FitPackIcon.material(Icons.info_outline_rounded,
             size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
       ),
     );
@@ -582,7 +583,7 @@ class _ProgressCard extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      Icon(Icons.arrow_upward_rounded,
+                      FitPackIcon.material(Icons.arrow_upward_rounded,
                           size: 14, color: context.semantic.success),
                       const SizedBox(width: 2),
                       Text(l.wrProgressDelta(u.lift(p.deltaE1rm)),

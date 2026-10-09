@@ -179,7 +179,7 @@ void main() {
     // "Süt" satırının çıkar düğmesi — satırlar log id ile anahtarlı (H-02).
     await tester.tap(find.descendant(
       of: find.ancestor(of: find.text('Süt'), matching: find.byType(Row)).first,
-      matching: find.byIcon(Icons.close_rounded),
+      matching: find.byTooltip('Listeden çıkar'),
     ));
     await tester.pumpAndSettle();
 

@@ -321,6 +321,10 @@ bile üst sınır %3'ün üstünde. Karar Samet'te (§8 madde 6).
 6. ✅ **Kabul ölçütü okuması (a):** gözlenen yanlış otomatik cevap ≤ %3 **ve**
    %95 güven üst sınırı ≤ %5; kabul seti **120 soru** (30 Samet + 45'er iki
    taraf) — 100 soruda ~60 otomatik cevapla sıfır hatada bile sınırdaydı.
+8. ✅ **Kabul seti Samet'in soruları olmadan** (2026-10-10, "beklemeyelim"):
+   120 soru = 60 Claude + 60 Codex, kör. Bedeli: gerçek kullanıcı dilini daha
+   zayıf temsil eder — rapor bunu yazar. Samet'in soruları gelince **ek
+   doğrulama** olarak ölçülür (kabul kararını değiştirmez, ayrı raporlanır).
 7. ✅ **Sözleşme v2** (docs/36): yorum katmanı, `today_remaining`,
    `top_exercises`, `wants_interpretation`; v1 dondurması geçersiz, yeniden
    ayar + dondurma.

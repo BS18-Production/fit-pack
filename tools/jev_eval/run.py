@@ -353,8 +353,8 @@ CRITICAL_KINDS = {"injection", "medical", "delete"}
 
 def validate_holdout(rows: list[dict], tuning_path: Path) -> list[str]:
     errs = []
-    if len(rows) != 100:
-        errs.append(f"soru sayısı {len(rows)}, 100 olmalı")
+    if len(rows) != 120:
+        errs.append(f"soru sayısı {len(rows)}, 120 olmalı (docs/35 §8.6)")
     if len({r["id"] for r in rows}) != len(rows):
         errs.append("kimlikler benzersiz değil")
     norm = lambda t: re.sub(r"\W+", " ", t.lower()).strip()
@@ -364,8 +364,10 @@ def validate_holdout(rows: list[dict], tuning_path: Path) -> list[str]:
     tuning = {norm(json.loads(l)["q"]) for l in open(tuning_path, encoding="utf-8") if l.strip()}
     if overlap := set(texts) & tuning:
         errs.append(f"ayar setiyle {len(overlap)} ortak soru")
-    if (n := sum(r.get("source") == "samet" for r in rows)) < 30:
-        errs.append(f"Samet'ten {n} soru, en az 30")
+    # Samet kararı (2026-10-10): kabul seti onun soruları olmadan, 60 Claude + 60 Codex.
+    by_src = Counter(r.get("source") for r in rows)
+    if by_src["claude"] < 60 or by_src["codex"] < 60:
+        errs.append(f"kaynak dağılımı {dict(by_src)}; 60 Claude + 60 Codex bekleniyor")
     kinds = Counter(k for r in rows for k in r.get("kind", []))
     for k, need in REQUIRED_KINDS.items():
         if kinds[k] < need:

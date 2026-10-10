@@ -31,7 +31,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 API = "https://api.typesafe.ai/v1/systemone"
 PRICE_PER_TOKEN = 0.042 / 1_000_000  # $ / girdi token (TypeSafe Models, 2026-10)
-CONTRACT = 1
+CONTRACT = 2  # v2: yorum katmanı (docs/36)
 
 # ---------------------------------------------------------------- sözleşme
 
@@ -63,9 +63,15 @@ QUERIES = {
     "streak": (
         "Kaç haftadır düzenli/aralıksız antrenman yapıldığı (seri)",
         "Streak: how many consecutive weeks of regular training"),
+    "today_remaining": (
+        "Bugün kalori/protein hedefine ne kadar kaldı, bugün kalan öğünde (ör. akşam) ne yiyebilirim",
+        "How much is left today to reach the calorie/protein goal, what can I eat in today's remaining meal (e.g. dinner)"),
+    "top_exercises": (
+        "En çok yapılan hareketler (set sayısına göre sıralama)",
+        "Most frequently performed exercises (ranked by number of sets)"),
     "out_of_scope": (
-        "Diğer seçeneklerin hiçbiri: tavsiye, program yazma, tıbbi/sakatlık sorusu, kayıt silme/değiştirme, form, sohbet, ya da uygulamada olmayan veri",
-        "None of the other options: advice, writing a program, medical/injury question, deleting or editing records, form tips, chit-chat, or data the app does not have"),
+        "Diğer seçeneklerin hiçbiri: program yazma, kişiye özel reçete (kaç kilo basayım, kaça indireyim), tıbbi/sakatlık/takviye sorusu, kayıt silme/değiştirme, form, sohbet, ya da uygulamada olmayan veri",
+        "None of the other options: writing a program, a personal prescription (how much to lift, what to cut to), medical/injury/supplement question, deleting or editing records, form tips, chit-chat, or data the app does not have"),
 }
 PERIODS = {
     "this_week": ("Bu hafta", "This week"),
@@ -85,15 +91,17 @@ INSTR = {
                "Which time period does `user_question` refer to?"),
     "exercise": ("`user_question` belirli bir hareketten söz ediyorsa hangisi?",
                  "If `user_question` mentions a specific exercise, which one?"),
-    "multi_intent": ("`user_question` birden fazla ayrı şey mi soruyor?",
-                     "Does `user_question` ask for more than one separate thing?"),
-    "advice": ("`user_question` kendi geçmiş kayıtlarının bir özetini değil; tavsiye, tahmin, tıbbi görüş, program ya da bir işlem (silme, değiştirme) mi istiyor?",
-               "Instead of a summary of the user's own past records, does `user_question` ask for advice, a prediction, a medical opinion, a program, or an action (delete, edit)?"),
+    "multi_intent": ("`user_question` birbirinden ayrı iki ya da daha fazla veri mi istiyor (ör. hem antrenman sayısı hem kilo)? Bir sayıyı ve o sayının ne anlama geldiğini (yeterli mi, sağlıklı mı, normal mi) birlikte sormak TEK niyettir.",
+                     "Does `user_question` ask for two or more separate pieces of data (e.g. both workout count and body weight)? Asking for a number together with what that number means (is it enough, healthy, normal) is ONE intent."),
+    "advice": ("`user_question` kişiye özel bir reçete (program, kaç kilo basmalı, neyi kesmeli), tıbbi/sakatlık/takviye görüşü ya da bir işlem (kayıt silme, değiştirme) mi istiyor? Kendi verisinin ne anlama geldiğini sormak ya da bugün kalan kalori/proteine göre ne yiyebileceğini sormak bu değildir.",
+               "Does `user_question` ask for a personal prescription (a program, how much to lift, what to cut), a medical/injury/supplement opinion, or an action (delete or edit records)? Asking what one's own data means, or what one can eat today given the remaining calories/protein, is not this."),
+    "wants_interpretation": ("`user_question` yalnız sayıyı değil, sayının ne anlama geldiğini de soruyor mu (yeterli mi, iyi mi, sağlıklı mı, anlamlı mı, normal mi)?",
+                             "Besides the number itself, does `user_question` ask what the number means (is it enough, good, healthy, meaningful, normal)?"),
 }
 NONE_EX = ("Hareket geçmiyor, listede olmayan hareket ya da olumsuzlanmış hareket",
            "No exercise mentioned, an exercise not in the list, or a negated exercise")
 PERIOD_QUERIES = {"workout_summary", "plan_adherence", "strength_progress", "exercise_history",
-                  "nutrition_summary", "protein_goal", "weight_trend", "muscle_balance"}
+                  "nutrition_summary", "protein_goal", "weight_trend", "muscle_balance", "top_exercises"}
 IN_SCOPE = set(QUERIES) - {"out_of_scope"}
 # Uygulama hareketin ölçüm tipini bilir: süre/mesafe hareketinde e1RM yok (docs/35 §1).
 TIME_BASED = {e["id"] for e in json.loads((HERE / "exercises.json").read_text())["exercises"]
@@ -110,6 +118,7 @@ SUPPORTED = {
     "protein_goal": {"this_week", "last_30_days"},
     "weight_trend": {"this_week", "last_30_days"},
     "muscle_balance": {"this_week", "last_week"},
+    "top_exercises": {"this_week", "last_30_days", "all_time"},
 }
 
 
@@ -144,6 +153,7 @@ def build_request(q: str, variant: str, order_seed: str, model: str) -> dict:
                          "criteria": shuffled(exercise_options(lang))},
             "multi_intent": {"type": "noul", "instructions": INSTR["multi_intent"][lang]},
             "advice": {"type": "noul", "instructions": INSTR["advice"][lang]},
+            "wants_interpretation": {"type": "noul", "instructions": INSTR["wants_interpretation"][lang]},
         },
     }
 
@@ -196,6 +206,7 @@ def predictions(resp: dict) -> dict:
         "exercise": a["exercise"]["choice"], "e_conf": a["exercise"]["confidence"],
         "multi": a["multi_intent"]["noul"],
         "advice": a["advice"]["noul"],
+        "interp": a["wants_interpretation"]["noul"],
     }
 
 
@@ -405,7 +416,8 @@ def report(rows, results, args, cost, latencies, frozen=None) -> str:
         per_ok = sum(p["period"] == r["period"] for r, p in obs)
         exr = [(r, p) for r, p in obs if r["exercise"] != "none"]
         ex_ok = sum(p["exercise"] == r["exercise"] for r, p in exr)
-        allreq = sum(auto_correct(r, p) for r, p in ins)
+        comp_obs = [(r, p) for r, p in ins if complete(r)]
+        allreq = sum(auto_correct(r, p) for r, p in comp_obs)
         multi = [(r, p) for r, p in obs if r["query"] == "multi"]
         by_q = defaultdict(list)
         for r, p in obs:
@@ -419,8 +431,11 @@ def report(rows, results, args, cost, latencies, frozen=None) -> str:
                 f"| Sorgu doğruluğu — kapsam dışı | {pct(sum(p['query'] == 'out_of_scope' for r, p in oos) / len(oos)) if oos else '—'} |",
                 f"| Dönem doğruluğu | {pct(per_ok / n)} |",
                 f"| Hareket doğruluğu (hareketli sorular) | {pct(ex_ok / len(exr)) if exr else '—'} ({ex_ok}/{len(exr)}) |",
-                f"| Gerekli alanların hepsi doğru (kapsam içi) | {pct(allreq / len(ins))} |",
+                f"| Gerekli alanların hepsi doğru (kapsam içi, gerekli bilgisi tam ve destekli) | {pct(allreq / len(comp_obs)) if comp_obs else '—'} ({len(comp_obs)} gözlem) |",
 
+                f"| Yorum isteği (noul ≥ 0,5) doğru — kapsam içi, bilgi amaçlı | "
+                + (lambda L: f"{pct(sum((p['interp'] >= 0.5) == r['interp'] for r, p in L) / len(L))} ({len(L)} gözlem)" if L else "—")(
+                    [(r, p) for r, p in ins if "interp" in r]) + " |",
                 f"| Sıra değişince sorgu cevabı aynı kalan soru | {pct(stable / len(by_q))} ({stable}/{len(by_q)}) |", ""]
         if frozen:
             pick = metrics(obs, *(frozen[k] for k in ("Y", "Yp", "Ye", "M", "G")))

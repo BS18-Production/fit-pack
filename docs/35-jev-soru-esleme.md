@@ -319,4 +319,8 @@ bile üst sınır %3'ün üstünde. Karar Samet'te (§8 madde 6).
 5. ⏳ **Kabul setine 30 soru (Samet)** — ayar setini görmeden, telefonda
    aklına geldiği gibi.
 6. ✅ **Kabul ölçütü okuması (a):** gözlenen yanlış otomatik cevap ≤ %3 **ve**
-   %95 güven üst sınırı ≤ %5; kabul seti 100 soru (30 Samet + 35'er iki taraf).
+   %95 güven üst sınırı ≤ %5; kabul seti **120 soru** (30 Samet + 45'er iki
+   taraf) — 100 soruda ~60 otomatik cevapla sıfır hatada bile sınırdaydı.
+7. ✅ **Sözleşme v2** (docs/36): yorum katmanı, `today_remaining`,
+   `top_exercises`, `wants_interpretation`; v1 dondurması geçersiz, yeniden
+   ayar + dondurma.

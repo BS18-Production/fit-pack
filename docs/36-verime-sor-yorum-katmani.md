@@ -1,7 +1,8 @@
 # 36 — "Verime sor" v1: veri + yorum katmanı
 
-> **Durum:** 📝 Taslak — kaynaklar doğrulandı (Claude); Samet kararları ve
-> Codex incelemesi bekliyor (Codex kotası 16:53'te açılıyor). Kod yok.
+> **Durum:** ✅ Samet onayı (2026-10-10) · kaynaklar doğrulandı (Claude) ·
+> Codex incelemesi bekliyor (kota 16:53'te açılıyor). Uygulama kodu yok;
+> docs/35 betiği sözleşme v2'ye taşınıyor.
 > **Tarih:** 2026-10-10 · **Sahip:** Claude · **İnceleyen:** Codex
 > (yazışma: `collab/threads/yorum-katmani.md`)
 > **İlgili:** [docs/35 — Jev soru eşleme deneyi](35-jev-soru-esleme.md) ·
@@ -107,18 +108,10 @@ aşarsa not öne çıkar. Ağrı, sakatlık, ilaç, takviye → ret (değişmedi
    yorum kuralları (`lib/features/insights/`, birim testli) → Supabase fonksiyonu
    → serbest soru ekranı.
 
-## 5. Samet'e sorular
+## 5. Samet'in kararları (2026-10-10)
 
-1. **Kural kaynakları** (§2) uygun mu? Kaynaklar birincil yayınlardan
-   doğrulandı (2026-10-10, Claude). Düzeltme: Schoenfeld 2017 "10–20 set"
-   demiyor; ~10 set/hafta üstü daha fazla kazanım **eğilimi** gösteriyor, 20
-   üstü için kanıt sınırlı → kart "yeterli" demez, "araştırmalarda ilişkili
-   düzey" der.
-2. **Protein için g/kg yorumu** eklensin mi? (ör. "kas kazanımı için genelde
-   ~1,6 g/kg önerilir" — kaynak Codex incelemesinde doğrulanır.) Hedefin zaten
-   var; ek yorum ister misin?
-3. **Akşam yemeği önerisi** yalnız kendi geçmişinden (daha önce yediklerin)
-   olsun mu? Yeni yemek önermek yapay zekâ ister.
-4. **Kabul seti 100 mü 120 mi?** (önceki mesaj; öneri 120 — 30 senden.)
-5. Antrenman hedefi türü (hipertrofi / güç) profilde yok; set yorumu şimdilik
-   **hipertrofi kılavuzuyla** yapılır. Hedef türü alanı ileride ayrı iş.
+1. ✅ Kurallar ve dil (§2) uygun — "yeterli" denmez, kaynak ve "genel bilgi" notu her kartta.
+2. ✅ Protein g/kg yorumu **eklenir** (Morton 2018; kayıtsız gün ortalamaya girmez).
+3. ✅ Akşam yemeği önerisi **yalnız kendi geçmişinden** (o öğünde daha önce yedikleri); yeni yemek önerisi ayrı karar.
+4. ✅ Kabul seti **120 soru** (30 Samet + 45'er Claude/Codex).
+5. Antrenman hedefi türü profilde yok; set yorumu hipertrofi araştırmasıyla yapılır (hedef türü alanı ileride ayrı iş).

@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fit Pack Yazışmalar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
+<style>
+/* Düzen: solda yazışma listesi, ortada zaman çizelgesi, sağda bakılan kaynaklar */
+:root{
+  --bg:#f3f4f7; --surface:#fff; --sunk:#eceef3; --fg:#1b2130; --muted:#5d6577; --line:#d8dce4;
+  --claude:#b45309; --claude-soft:#fdf0e1;
+  --codex:#0f766e; --codex-soft:#e0f2ef;
+  --samet:#4338ca; --samet-soft:#ebeafe;
+  --warn:#a16207; --warn-soft:#fef6db; --live:#16a34a;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#111419; --surface:#191e27; --sunk:#151921; --fg:#e6e9f0; --muted:#98a1b3; --line:#2b3240;
+  --claude:#f0a35a; --claude-soft:#33230f;
+  --codex:#4fd1c0; --codex-soft:#0f2f2b;
+  --samet:#a5a8ff; --samet-soft:#24254a;
+  --warn:#facc15; --warn-soft:#2f2a12; --live:#4ade80; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 var(--body)}
+.app{display:grid;grid-template-columns:260px minmax(0,1fr) 300px;height:100%}
+aside,main{overflow-y:auto}
+.threads{border-right:1px solid var(--line);background:var(--sunk);padding:20px 12px;display:flex;flex-direction:column;gap:6px}
+.brand{font:600 20px/1.2 var(--display);padding:0 8px 12px}
+.brand small{display:block;font:12px var(--mono);color:var(--muted);margin-top:4px}
+.th{all:unset;cursor:pointer;display:grid;gap:2px;padding:10px;border-radius:8px}
+.th:hover{background:var(--surface)}
+.th[aria-current="true"]{background:var(--surface);box-shadow:inset 3px 0 0 var(--samet)}
+.th:focus-visible{outline:2px solid var(--samet)}
+.th b{font-weight:500}
+.th span{font:12px var(--mono);color:var(--muted)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--live);margin-right:6px;animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}}
+
+main{padding:24px 28px 80px}
+.head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 16px;margin-bottom:6px}
+.head h1{margin:0;font:600 26px/1.2 var(--display);text-wrap:balance}
+.meta{color:var(--muted);font-size:13px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:6px 14px}
+.banner{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;background:var(--samet-soft);color:var(--samet);margin-bottom:18px;font-weight:500}
+.tl{display:flex;flex-direction:column;gap:14px;max-width:820px}
+
+.msg{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:8px;min-width:0}
+.msg.Claude{border-left:4px solid var(--claude)}
+.msg.Codex{border-left:4px solid var(--codex)}
+.msg .who{display:flex;gap:10px;align-items:baseline;font-size:13px}
+.msg .who b{font:600 14px var(--body)}
+.Claude .who b{color:var(--claude)} .Codex .who b{color:var(--codex)}
+.msg .who time{font:12px var(--mono);color:var(--muted);margin-left:auto}
+.body{min-width:0;overflow-wrap:anywhere}
+.body p{margin:0 0 8px} .body p:last-child{margin-bottom:0}
+.body ul,.body ol{margin:0 0 8px;padding-left:20px}
+.body li{margin:2px 0}
+.body code{font:13px var(--mono);background:var(--sunk);padding:1px 4px;border-radius:4px}
+.body pre{background:var(--sunk);padding:10px;border-radius:6px;overflow-x:auto;font:13px/1.5 var(--mono)}
+.body .tbl{overflow-x:auto}
+.body table{border-collapse:collapse;font-size:14px;margin:4px 0 8px}
+.body th,.body td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+.body a{color:var(--samet)}
+.body .path{font:12px var(--mono);color:var(--muted)}
+.ask{background:var(--warn-soft);border-radius:8px;padding:10px 12px;margin-top:4px}
+.ask::before{content:"Senden karar bekleniyor";display:block;font:600 12px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--warn);margin-bottom:4px}
+.more{all:unset;cursor:pointer;color:var(--samet);font-size:13px}
+
+.status{font:12px var(--mono);color:var(--muted);padding-left:6px}
+details.act{border:1px dashed var(--line);border-radius:10px;background:transparent}
+details.act summary{cursor:pointer;padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:13px;color:var(--muted);list-style:none}
+details.act summary::-webkit-details-marker{display:none}
+details.act summary::before{content:"▸";transition:transform .15s}
+details.act[open] summary::before{transform:rotate(90deg)}
+.chip{font:12px var(--mono);padding:2px 8px;border-radius:999px}
+.chip.Claude{background:var(--claude-soft);color:var(--claude)}
+.chip.Codex{background:var(--codex-soft);color:var(--codex)}
+.acts{list-style:none;margin:0;padding:0 14px 12px;display:grid;gap:4px}
+.acts li{display:grid;grid-template-columns:58px 64px 92px minmax(0,1fr);gap:8px;align-items:baseline;font-size:13px}
+.acts time{font:12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.acts .w{font:500 12px var(--mono)}
+.acts .w.Claude{color:var(--claude)} .acts .w.Codex{color:var(--codex)}
+.acts .k{color:var(--muted)}
+.acts .x{font:12px var(--mono);overflow-wrap:anywhere;min-width:0}
+.acts .x.note{font:13px var(--body);font-style:italic;color:var(--muted)}
+.acts .x a{color:var(--samet)}
+.acts .urls{display:block;margin-top:2px}
+
+.side{border-left:1px solid var(--line);padding:24px 18px;display:flex;flex-direction:column;gap:22px}
+.side h2{margin:0 0 8px;font:600 16px var(--display)}
+.side p{margin:0;color:var(--muted);font-size:13px}
+.src{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.src li{display:flex;gap:8px;align-items:baseline;font:12px var(--mono);overflow-wrap:anywhere}
+.src li i{font-style:normal;flex:none;width:8px;height:8px;border-radius:50%;margin-top:4px}
+.src .n{margin-left:auto;color:var(--muted);flex:none;padding-left:6px}
+.src a{color:var(--samet)}
+.legend{display:grid;gap:6px;font-size:13px}
+.empty{color:var(--muted);padding:40px 0}
+
+@media (max-width:1100px){.app{grid-template-columns:220px minmax(0,1fr)}.side{grid-column:2;border-left:0;border-top:1px solid var(--line)}main{overflow:visible}.app{height:auto}aside.threads{min-height:100vh}}
+@media (max-width:700px){.app{grid-template-columns:1fr}.threads{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);min-height:0!important}.brand{display:none}.th{min-width:180px}.side{grid-column:1}main{padding:18px 16px 60px}.acts li{grid-template-columns:52px 1fr}.acts .k{display:none}.acts .x{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="threads" id="threads" aria-label="Yazışmalar">
+    <div class="brand">Yazışmalar<small>Claude ↔ Codex · Fit Pack</small></div>
+  </aside>
+  <main id="main"><div class="empty">Soldan bir yazışma seç.</div></main>
+  <aside class="side" id="side"></aside>
+</div>
+
+<script>
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const hm = t => new Date(t*1000).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+const hmShort = t => new Date(t*1000).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+const dayTime = t => new Date(t*1000).toLocaleString("tr-TR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+const KIND = {read:"okudu", search:"aradı", list:"listeledi", command:"komut", web:"web", write:"yazdı", agent:"alt ajan", note:"not", tool:"araç"};
+
+let current = null, lastJson = "", openState = new Map();
+
+/* --- küçük markdown çevirici: başlık, liste, tablo, kod, kalın, bağlantı --- */
+function inline(s){
+  s = esc(s);
+  s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, t, u) => {
+    const url = u.trim();
+    if (/^https?:/.test(url)) return `<a href="${url}" target="_blank" rel="noopener">${t}</a>`;
+    const p = url.replace(/^\/Users\/[^/]+\/dev\/fit_pack\//, "");
+    return `${t} <span class="path">${p}</span>`;
+  });
+  return s;
+}
+function md(src){
+  const lines = src.replace(/\r/g,"").split("\n"); let out = [], i = 0;
+  while (i < lines.length){
+    let l = lines[i];
+    if (/^```/.test(l)){ const buf=[]; i++; while(i<lines.length && !/^```/.test(lines[i])) buf.push(lines[i++]); i++; out.push(`<pre>${esc(buf.join("\n"))}</pre>`); continue; }
+    if (/^\s*\|.*\|\s*$/.test(l) && i+1<lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i+1])){
+      const row = r => r.trim().replace(/^\||\|$/g,"").split("|").map(c=>c.trim());
+      const h = row(l); i += 2; const rows=[];
+      while(i<lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) rows.push(row(lines[i++]));
+      out.push(`<div class="tbl"><table><tr>${h.map(c=>`<th>${inline(c)}</th>`).join("")}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</table></div>`); continue;
+    }
+    if (/^\s*([-*]|\d+\.)\s+/.test(l)){
+      const ordered = /^\s*\d+\./.test(l); const items=[];
+      while(i<lines.length && (/^\s*([-*]|\d+\.)\s+/.test(lines[i]) || (/^\s{2,}\S/.test(lines[i]) && items.length))){
+        if (/^\s*([-*]|\d+\.)\s+/.test(lines[i]) && !/^\s{3,}/.test(lines[i])) items.push(lines[i].replace(/^\s*([-*]|\d+\.)\s+/,""));
+        else items[items.length-1] += "<br>" + inline(lines[i].trim().replace(/^([-*]|\d+\.)\s+/,"– ")).replace(/&lt;br&gt;/g,"");
+        i++;
+      }
+      const tag = ordered ? "ol" : "ul";
+      out.push(`<${tag}>${items.map(x=>`<li>${x.includes("<br>") ? inline(x.split("<br>")[0]) + "<br>" + x.split("<br>").slice(1).join("<br>") : inline(x)}</li>`).join("")}</${tag}>`); continue;
+    }
+    if (/^#{1,4}\s/.test(l)){ out.push(`<p><b>${inline(l.replace(/^#+\s/,""))}</b></p>`); i++; continue; }
+    if (!l.trim()){ i++; continue; }
+    const buf=[l]; i++;
+    while(i<lines.length && lines[i].trim() && !/^(```|#{1,4}\s|\s*([-*]|\d+\.)\s+|\s*\|)/.test(lines[i])) buf.push(lines[i++]);
+    out.push(`<p>${buf.map(inline).join("<br>")}</p>`);
+  }
+  return out.join("");
+}
+/* "Samet'e soru" bölümünü ayır ve vurgula */
+function renderBody(text){
+  const m = text.match(/\n?\**Samet['’]e soru:?\**:?/i);
+  if (!m) return md(text);
+  const before = text.slice(0, m.index), ask = text.slice(m.index + m[0].length);
+  return md(before) + `<div class="ask">${md(ask.trim())}</div>`;
+}
+
+function activityBlock(block, idx){
+  const items = block.items, by = {Claude:{}, Codex:{}};
+  for (const a of items){ by[a.who][a.kind] = (by[a.who][a.kind]||0)+1; }
+  const chips = ["Codex","Claude"].flatMap(w => {
+    const k = by[w]; const n = Object.values(k).reduce((x,y)=>x+y,0); if(!n) return [];
+    const parts = Object.entries(k).filter(([kk])=>kk!=="note").map(([kk,v])=>`${v} ${KIND[kk]||kk}`).join(" · ");
+    return [`<span class="chip ${w}">${w}${parts ? ": " + parts : ""}</span>`];
+  }).join("");
+  const key = `${current}:${idx}:${items[0].t}`;
+  const open = openState.has(key) ? openState.get(key) : !!block.live;
+  const rows = items.map(a => {
+    const urls = (a.urls||[]).filter(u => u && u !== a.target);
+    const tgt = a.kind === "web" && /^https?:/.test(a.target) ? `<a href="${esc(a.target)}" target="_blank" rel="noopener">${esc(a.target)}</a>` : esc(a.target);
+    return `<li><time>${hm(a.t)}</time><span class="w ${a.who}">${a.who}</span><span class="k">${KIND[a.kind]||a.kind}</span>
+      <span class="x ${a.kind==="note"?"note":""}" title="${esc(a.detail)}">${tgt}${urls.length ? `<span class="urls">${urls.map(u=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(new URL(u).hostname)}</a>`).join(" · ")}</span>`:""}</span></li>`;
+  }).join("");
+  return `<details class="act" data-key="${esc(key)}" ${open?"open":""}><summary>${block.live?'<span class="dot"></span>şu an':"Arka planda"} ${chips}</summary><ul class="acts">${rows}</ul></details>`;
+}
+
+function renderThread(d){
+  const tl = d.timeline.map((b, i) => {
+    if (b.type === "activity") return activityBlock(b, i);
+    if (b.type === "status") return `<div class="status">${esc(b.text)} · ${hmShort(b.t)}</div>`;
+    return `<article class="msg ${b.from}"><div class="who"><b>${b.from}</b><span>→ ${b.to}</span><time>${b.approx ? hmShort(b.t) : hm(b.t)}</time></div><div class="body">${renderBody(b.text)}</div></article>`;
+  }).join("");
+  const sessions = d.sessions.map(s => `${s.who} ${s.role === "responder" ? "cevaplayan" : "yazan"}: <code>${s.id.slice(0,8)}</code>`).join(" · ");
+  $("#main").innerHTML = `
+    <div class="head"><h1>${esc(d.title)}</h1></div>
+    <div class="meta"><span>${d.counts.messages} mesaj</span><span>${d.counts.activity} arka plan adımı</span><span>${sessions}</span></div>
+    ${d.running ? `<div class="banner"><span class="dot"></span>${esc(d.waiting_on)} cevap yazıyor. Neye baktığı aşağıda canlı görünür.</div>` : ""}
+    <div class="tl">${tl || '<div class="empty">Henüz mesaj yok.</div>'}</div>`;
+  $("#main").querySelectorAll("details.act").forEach(el => el.addEventListener("toggle", () => openState.set(el.dataset.key, el.open)));
+  renderSide(d);
+}
+
+function renderSide(d){
+  const files = new Map(), webs = new Map();
+  for (const b of d.timeline) if (b.type === "activity") for (const a of b.items){
+    if (a.kind === "read" || a.kind === "write"){ const k = a.target; const v = files.get(k) || {n:0, who:new Set(), w:false}; v.n++; v.who.add(a.who); if(a.kind==="write") v.w = true; files.set(k, v); }
+    if (a.kind === "web"){ const k = a.target; const v = webs.get(k) || {n:0, who:new Set()}; v.n++; v.who.add(a.who); webs.set(k, v); }
+  }
+  const dots = who => [...who].map(w => `<i style="background:var(--${w.toLowerCase()})" title="${w}"></i>`).join("");
+  const fl = [...files].sort((a,b)=>b[1].n-a[1].n).slice(0,40).map(([k,v]) => `<li>${dots(v.who)}<span>${esc(k)}${v.w?" ✎":""}</span><span class="n">${v.n}</span></li>`).join("");
+  const wl = [...webs].map(([k,v]) => `<li>${dots(v.who)}<span>${/^https?:/.test(k)?`<a href="${esc(k)}" target="_blank" rel="noopener">${esc(k)}</a>`:esc(k)}</span></li>`).join("");
+  $("#side").innerHTML = `
+    <section><h2>Bakılan dosyalar</h2>${fl ? `<ul class="src">${fl}</ul>` : "<p>Henüz yok.</p>"}<p style="margin-top:6px">Sayı: kaç kez okunduğu. ✎ değiştirildi.</p></section>
+    <section><h2>Web'de aranan</h2>${wl ? `<ul class="src">${wl}</ul>` : "<p>Bu yazışmada web araması yok.</p>"}</section>
+    <section class="legend"><h2>Renkler</h2>
+      <span><span class="chip Claude">Claude</span> Claude Code</span>
+      <span><span class="chip Codex">Codex</span> Codex</span>
+      <span><span class="chip" style="background:var(--warn-soft);color:var(--warn)">sarı kutu</span> Senden karar bekleniyor</span>
+      <p>Arka plan blokları, iki mesaj arasında kimin neye baktığını gösterir. Açmak için tıkla.</p></section>`;
+}
+
+async function loadThreads(){
+  const list = await (await fetch("/api/threads")).json();
+  const box = $("#threads"); box.querySelectorAll(".th").forEach(e => e.remove());
+  for (const t of list){
+    const b = document.createElement("button"); b.className = "th";
+    b.setAttribute("aria-current", t.slug === current);
+    b.innerHTML = `<b>${t.running?'<span class="dot"></span>':""}${esc(t.title)}</b><span>${esc(t.slug)} · ${t.turns} mesaj · ${dayTime(t.updated)}</span>`;
+    b.onclick = () => { current = t.slug; lastJson = ""; location.hash = t.slug; loadThreads(); loadThread(); };
+    box.appendChild(b);
+  }
+  if (!current && list.length){ current = location.hash.slice(1) || list[0].slug; loadThreads(); loadThread(); }
+}
+async function loadThread(){
+  if (!current) return;
+  const r = await fetch("/api/thread/" + current); if (!r.ok) return;
+  const txt = await r.text(); if (txt === lastJson) return; lastJson = txt;
+  const atBottom = innerHeight + scrollY >= document.body.scrollHeight - 40;
+  renderThread(JSON.parse(txt));
+  if (atBottom && JSON.parse(txt).running) $("#main").scrollTop = $("#main").scrollHeight;
+}
+loadThreads();
+setInterval(loadThread, 2000);
+setInterval(loadThreads, 5000);
+</script>
+</body>
+</html>

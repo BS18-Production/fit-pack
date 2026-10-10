@@ -7,9 +7,17 @@ kararları verir.
 ## Samet nasıl izler
 
 ```bash
-tools/collab.sh list                 # yazışmalar (en yeni üstte)
-tools/collab.sh watch <konu>         # canlı izle (Ctrl+C ile çık)
+tools/collab.sh ui                   # izleme ekranı: http://127.0.0.1:8765
+tools/collab.sh list                 # terminalde yazışma listesi
+tools/collab.sh watch <konu>         # terminalde canlı izle (Ctrl+C ile çık)
 ```
+
+İzleme ekranı (`tools/collab_viewer/`) mesajları iki tarafın oturum
+kayıtlarıyla birleştirir: iki mesaj arasında kimin hangi dosyayı okuduğu,
+neyi aradığı, hangi komutu çalıştırdığı, web'de neye baktığı. Sağ panelde
+yazışma boyunca bakılan dosyalar ve web kaynakları toplanır. Cevap yazılırken
+karşı tarafın adımları canlı akar. Yalnız bu bilgisayarda (127.0.0.1) açılır;
+okuma yapar, hiçbir şey yazmaz.
 
 Dosyalar: `collab/threads/<konu>.md`. Her tur `### Gönderen → Alıcı · tarih`
 başlığıyla eklenir. Oturum kimlikleri aynı klasörde `.<konu>.*-session`

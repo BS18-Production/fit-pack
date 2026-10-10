@@ -9,6 +9,7 @@
 #   tools/collab.sh claude <konu> "<mesaj>"    Codex → Claude (cevap dosyaya)
 #   tools/collab.sh watch  <konu>              dosyayı canlı izle (Samet)
 #   tools/collab.sh list                       yazışmaları listele
+#   tools/collab.sh ui                         izleme ekranı (tarayıcıda)
 #
 # Mesaj "-" ise stdin'den okunur. Kurallar: collab/README.md.
 set -euo pipefail
@@ -31,7 +32,23 @@ read_msg() { if [[ "$1" == "-" ]]; then cat; else printf '%s' "$1"; fi; }
 append() { # dosya, gönderen, alıcı, metin
   printf '\n### %s → %s · %s\n\n%s\n' "$2" "$3" "$(now)" "$4" >>"$1"
 }
-status() { printf '\n> _%s · %s_\n' "$2" "$(now)" >>"$1"; }
+status() { printf '\n> _%s · %s_\n' "$2" "$(now)" >>"$1"; log_event status "" "" "$2"; }
+
+# İzleme ekranı için makinece okunur kayıt: .<konu>.events.jsonl (saniye
+# hassasiyeti + oturum kimlikleri; ekran bunlarla iki tarafın oturum
+# kayıtlarından okunan dosyaları, aramaları ve komutları eşler).
+EVENTS=""
+log_event() { # tür, gönderen, alıcı, metin, [çağıran oturum], [cevaplayan oturum]
+  [[ -n "$EVENTS" ]] || return 0
+  python3 -I -c 'import json,sys,datetime
+k,f,t,x,cs,rs=sys.argv[1:7]
+print(json.dumps({"ts":datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
+  "kind":k,"from":f,"to":t,"text":x,"caller_session":cs,"responder_session":rs},ensure_ascii=False))' \
+    "$1" "$2" "$3" "$4" "${5:-}" "${6:-}" >>"$EVENTS"
+}
+caller_session() { # gönderen
+  if [[ "$1" == Claude ]]; then echo "${CLAUDE_CODE_SESSION_ID:-}"; else echo "${CODEX_THREAD_ID:-}"; fi
+}
 
 # Karşı tarafa giden her mesajın başına eklenen sabit bağlam.
 preamble() { # gönderen, dosya
@@ -78,15 +95,17 @@ begin() { # konu, gönderen, alıcı, mesaj
   mkdir "$DIR/.$1.lock" 2>/dev/null || die "bu konuda süren bir çağrı var ($DIR/.$1.lock)"
   LOCK="$DIR/.$1.lock"
   TMP="$(mktemp -d)"
-  THREAD="$f"
+  THREAD="$f"; EVENTS="$DIR/.$1.events.jsonl"
   append "$f" "$2" "$3" "$4"
+  log_event message "$2" "$3" "$4" "$(caller_session "$2")"
   [[ "$ROOT" != "$MAIN" ]] && status "$f" "çalışma kopyası: $ROOT"
   return 0
 }
 
-finish() { # dosya, gönderen, alıcı, cevap
+finish() { # dosya, gönderen, alıcı, cevap, cevaplayan oturum
   [[ -n "$4" ]] || die "$2 boş cevap verdi"
   append "$1" "$2" "$3" "$4"
+  log_event message "$2" "$3" "$4" "" "${5:-}"
   DONE=1
   printf '%s\n' "$4"
 }
@@ -105,6 +124,7 @@ case "$cmd" in
     ( set -o noclobber
       printf '# %s\n\n- Başlangıç: %s\n- Katılanlar: Claude Code, Codex · izleyen/karar: Samet\n' \
         "$2" "$(now)" >"$f" ) 2>/dev/null || die "zaten var: $f"
+    EVENTS="$DIR/.$1.events.jsonl"; log_event created "" "" "$2"
     echo "$f"
     ;;
 
@@ -130,7 +150,7 @@ for l in open(sys.argv[1]):
     if e.get("type")=="thread.started": print(e["thread_id"]); break' "$TMP/log")"
       save_sid "$sid_file" "$sid"
     fi
-    finish "$THREAD" Codex Claude "$(cat "$TMP/last" 2>/dev/null)"
+    finish "$THREAD" Codex Claude "$(cat "$TMP/last" 2>/dev/null)" "$(cat "$sid_file")"
     ;;
 
   claude) # Codex → Claude
@@ -156,7 +176,7 @@ for l in open(sys.argv[1]):
 d=json.load(open(sys.argv[1]))
 if d.get("is_error"): sys.exit("claude hata: "+str(d.get("result")))
 print(d.get("result",""))' "$TMP/out")" || die "claude cevabı okunamadı"
-    finish "$THREAD" Claude Codex "$reply"
+    finish "$THREAD" Claude Codex "$reply" "$(cat "$sid_file")"
     ;;
 
   watch)
@@ -173,8 +193,12 @@ print(d.get("result",""))' "$TMP/out")" || die "claude cevabı okunamadı"
     done
     ;;
 
+  ui)
+    exec python3 -I "$ROOT/tools/collab_viewer/server.py" --threads "$DIR" "$@"
+    ;;
+
   *)
-    sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
     exit 1
     ;;
 esac

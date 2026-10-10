@@ -35,7 +35,7 @@ void main() {
         .customSelect("SELECT name FROM sqlite_master WHERE type = 'trigger'")
         .get();
     final names = rows.map((r) => r.read<String>('name')).toSet();
-    for (final t in syncedTableNames) {
+    for (final t in syncedTableNamesV14) {
       expect(names, contains('${t}_sync_ins'), reason: '$t insert tetikleyicisi');
       expect(names, contains('${t}_sync_upd'), reason: '$t update tetikleyicisi');
     }

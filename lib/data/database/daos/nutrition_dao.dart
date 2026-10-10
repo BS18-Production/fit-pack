@@ -1,12 +1,95 @@
 import 'package:drift/drift.dart';
 import '../app_database.dart';
 import '../tables/nutrition_tables.dart';
+import '../../../core/ids/deterministic_uid.dart';
 
 part 'nutrition_dao.g.dart';
 
-@DriftAccessor(tables: [Foods, FoodLogs, RecipeItems, WaterIntake])
+@DriftAccessor(tables: [Foods, FoodLogs, RecipeItems, WaterIntake, NutritionDays])
 class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixin {
   NutritionDao(super.db);
+
+  // === Beslenme günü tamamlandı (v15, docs/37 #8) ===
+
+  /// Yerel takvim günü anahtarı `YYYY-MM-DD`.
+  static String dayKey(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-'
+      '${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
+
+  /// Günü "kaydım tamamlandı" işaretler. Satır yoksa belirlenimci `uid` ile
+  /// açar, varsa durumu günceller (silinmiş-kimlik sorunu yok: satır hiç
+  /// silinmez). Tek transaction — çift dokunuşta iki satır açılmaz.
+  Future<void> markDayComplete(DateTime day, {DateTime? now}) =>
+      transaction(() async {
+        final key = dayKey(day);
+        final at = (now ?? DateTime.now()).millisecondsSinceEpoch;
+        final existing = await (select(nutritionDays)
+              ..where((n) => n.day.equals(key)))
+            .getSingleOrNull();
+        if (existing == null) {
+          await into(nutritionDays).insert(NutritionDaysCompanion.insert(
+            day: key,
+            status: 'complete',
+            completedAtMs: Value(at),
+            uid: Value(nutritionDayUid(key)),
+          ));
+        } else if (existing.status != 'complete') {
+          await (update(nutritionDays)..where((n) => n.id.equals(existing.id)))
+              .write(NutritionDaysCompanion(
+            status: const Value('complete'),
+            completedAtMs: Value(at),
+          ));
+        }
+      });
+
+  /// İşareti kaldırır: **silmez**, `status = 'open'` yapar (docs/37 §2).
+  /// Satır yoksa bir şey yapmaz.
+  Future<void> reopenDay(DateTime day) async {
+    await (update(nutritionDays)
+          ..where((n) => n.day.equals(dayKey(day)) & n.status.equals('complete')))
+        .write(const NutritionDaysCompanion(
+      status: Value('open'),
+      completedAtMs: Value(null),
+    ));
+  }
+
+  /// `[start, end)` aralığında tamamlanmış günlerin anahtarları.
+  Future<Set<String>> getCompletedDays(DateTime start, DateTime end) async {
+    final rows = await (select(nutritionDays)
+          ..where((n) =>
+              n.day.isBiggerOrEqualValue(dayKey(start)) &
+              n.day.isSmallerThanValue(dayKey(end)) &
+              n.status.equals('complete')))
+        .get();
+    return {for (final r in rows) r.day};
+  }
+
+  /// Günün durumu, değişikliklerde yeniden yayınlanır (ekran için).
+  Stream<NutritionDay?> watchDay(DateTime day) => (select(nutritionDays)
+        ..where((n) => n.day.equals(dayKey(day))))
+      .watchSingleOrNull();
+
+  /// Tamamlanmış güne sonradan kayıt eklendi/değişti mi? Saklanmaz,
+  /// hesaplanır: o günün kayıtlarının son yerel değişimi > tamamlanma anı.
+  /// (Silinen kayıt satırı kalmadığı için silme burada görünmez; mezar
+  /// taşından okumak docs/37'de açık iş olarak not edildi.)
+  Future<bool> changedAfterComplete(DateTime day) async {
+    final row = await (select(nutritionDays)
+          ..where((n) => n.day.equals(dayKey(day))))
+        .getSingleOrNull();
+    final done = row?.completedAtMs;
+    if (row == null || row.status != 'complete' || done == null) return false;
+    final start = _dayStart(day);
+    final end = DateTime(start.year, start.month, start.day + 1);
+    final latest = foodLogs.changedAtMs.max();
+    final q = selectOnly(foodLogs)
+      ..addColumns([latest])
+      ..where(foodLogs.date.isBiggerOrEqualValue(start) &
+          foodLogs.date.isSmallerThanValue(end));
+    final value = (await q.getSingle()).read(latest);
+    return value != null && value > done;
+  }
 
   // === Su takibi (v4) — gün başına tek satır, kümülatif ml ===
   DateTime _dayStart(DateTime d) => DateTime(d.year, d.month, d.day);

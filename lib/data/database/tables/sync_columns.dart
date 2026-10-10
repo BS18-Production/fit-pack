@@ -57,9 +57,13 @@ mixin SyncColumns on Table {
   IntColumn get serverRev => integer().nullable()();
 }
 
-/// Senkron kolonu taşıyan tabloların SQL adları (docs/18 §3.1–3.2).
-/// `Achievements` hariç — kullanılmıyor, senkron kapsamı dışı (docs/18 §3.3).
-const syncedTableNames = <String>[
+/// v10–v14 göç adımlarının gördüğü **dondurulmuş** liste (12 tablo).
+///
+/// Eski göç adımları (v10 tetikleyicileri, v11 doldurma, v13 yenileme) bu
+/// listeyi kullanır, [syncedTableNames]'i değil: o adımlar çalışırken sonradan
+/// eklenen tablolar (v15 `nutrition_days`) henüz yoktur ve onlara tetikleyici
+/// kurmak göçü kırar. Yeni senkron tablosu buraya EKLENMEZ.
+const syncedTableNamesV14 = <String>[
   'user_profile',
   'workout_sessions',
   'workout_sets',
@@ -72,6 +76,13 @@ const syncedTableNames = <String>[
   'recipe_items',
   'exercises',
   'foods',
+];
+
+/// Senkron kolonu taşıyan tabloların SQL adları (docs/18 §3.1–3.2).
+/// `Achievements` hariç — kullanılmıyor, senkron kapsamı dışı (docs/18 §3.3).
+const syncedTableNames = <String>[
+  ...syncedTableNamesV14,
+  'nutrition_days', // v15 (docs/37)
 ];
 
 /// Sunucudaki **silme işaretleri** tablosu (docs/20 §4.2). Çekme onu diğer
@@ -99,6 +110,7 @@ const syncPushOrder = <String>[
   'water_intake',
   'body_measurements',
   'progress_photos',
+  'nutrition_days', // v15 (docs/37) — bağımlılığı yok, en sonda
 ];
 
 /// Yerelde yaşayan ama sunucuya **GİTMEYEN** tablolar (docs/19 §3 K-2).

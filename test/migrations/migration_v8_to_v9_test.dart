@@ -112,7 +112,7 @@ void main() {
         .customSelect("SELECT name FROM sqlite_master WHERE type = 'index'")
         .get();
     final names = rows.map((r) => r.read<String>('name')).toSet();
-    for (final table in syncedTableNames) {
+    for (final table in syncedTableNamesV14) {
       expect(names, contains(uidIndexName(table)),
           reason: '$table için uid unique index eksik');
     }

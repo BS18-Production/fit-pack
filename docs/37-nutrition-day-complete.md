@@ -1,6 +1,6 @@
 # 37 — Beslenme günü tamamlandı (docs/21 #8)
 
-> **Durum:** 📝 Taslak — Codex incelemesi ve Samet onayı bekliyor. Kod yok.
+> **Durum:** 🔧 Uygulanıyor — Samet onayı (öneriler) 2026-10-10; Codex incelemesi bekliyor. Aşama 1 dalda.
 > **Tarih:** 2026-10-10 · **Sahip:** Claude · **İnceleyen:** Codex (derin:
 > şema + senkron + hesap) · görsel doğrulama Codex'ten istenir (iOS Simulator)
 > **Temel:** `main` · şema **v14** · docs/21 §2 #8
@@ -141,13 +141,22 @@ commit'te** (CLAUDE.md).
 - **Saat dilimi:** gün metni cihazın yerel takvimi; seyahatte gün kayabilir —
   tek kullanıcı için kabul, not edilir.
 
-## 6. Samet'e sorular
+## 6. Samet'in kararları (2026-10-10 — "devam edebilirsin, bekleme": öneriler kabul)
 
-1. **Kayıtsız günü "tamamlandı" işaretlemek** serbest mi (oruç, hiç yemedim),
-   yoksa en az bir kayıt mı gerekir? *Öneri:* serbest, ama kayıtsız tamamlanmış
-   gün ortalamaya **0 kalori** olarak girer — bu bilinçli bir beyan.
-2. **Akşam hatırlatması** ("bugünkü kaydını tamamladın mı?") v1'de olsun mu?
-   *Öneri:* hayır, önce düğmenin kullanılıp kullanılmadığını görelim.
-3. Haftalık değerlendirmede tamamlanmış gün varken **yalnız onları** kullanma
-   kuralı uygun mu? *Öneri:* evet; diğer günler "hesaba katılmadı" diye
-   yazılır.
+1. ✅ Kayıtsız gün işaretlenebilir; ortalamaya **0 kalori** olarak girer (bilinçli beyan).
+2. ✅ Akşam hatırlatması v1'de **yok**.
+3. ✅ Tamamlanmış gün varsa haftalık değerlendirme **yalnız onları** kullanır; diğerleri "hesaba katılmadı" yazılır.
+
+## 7. Uygulama durumu
+
+- ✅ **Aşama 1** (dal `feat/nutrition-day-complete`): şema v15, `nutrition_days`,
+  dondurulmuş `syncedTableNamesV14` (eski göç adımları), onarım rutininde
+  "tablo yoksa atla", UUIDv5 (`lib/core/ids/deterministic_uid.dart`, `uuid`
+  doğrudan bağımlılık), DAO (`markDayComplete`, `reopenDay`,
+  `getCompletedDays`, `watchDay`, `changedAfterComplete`), göç testi v14→v15,
+  DAO testleri. Tüm paket yeşil.
+- ⚠️ `changedAfterComplete` silinen kaydı görmez (satır kalmıyor); mezar taşı
+  tablosundan okumak açık iş.
+- ⛔ **Dal sunucu göçünden (Aşama 3) önce `main`'e birleşmez / cihaza kurulmaz**:
+  istemci `nutrition_days`'i gönderir, sunucu tablosu yoksa o tablo kalıcı
+  hataya düşer (kuyruğun geri kalanı durmaz ama hata göstergesi yanar).

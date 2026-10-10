@@ -12062,6 +12062,695 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
   }
 }
 
+class $NutritionDaysTable extends NutritionDays
+    with TableInfo<$NutritionDaysTable, NutritionDay> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NutritionDaysTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _uidMeta = const VerificationMeta('uid');
+  @override
+  late final GeneratedColumn<String> uid = GeneratedColumn<String>(
+    'uid',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStateMeta = const VerificationMeta(
+    'syncState',
+  );
+  @override
+  late final GeneratedColumn<int> syncState = GeneratedColumn<int>(
+    'sync_state',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _changedAtMsMeta = const VerificationMeta(
+    'changedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> changedAtMs = GeneratedColumn<int>(
+    'changed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _localSeqMeta = const VerificationMeta(
+    'localSeq',
+  );
+  @override
+  late final GeneratedColumn<int> localSeq = GeneratedColumn<int>(
+    'local_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverRevMeta = const VerificationMeta(
+    'serverRev',
+  );
+  @override
+  late final GeneratedColumn<int> serverRev = GeneratedColumn<int>(
+    'server_rev',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _dayMeta = const VerificationMeta('day');
+  @override
+  late final GeneratedColumn<String> day = GeneratedColumn<String>(
+    'day',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _completedAtMsMeta = const VerificationMeta(
+    'completedAtMs',
+  );
+  @override
+  late final GeneratedColumn<int> completedAtMs = GeneratedColumn<int>(
+    'completed_at_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    uid,
+    userId,
+    updatedAt,
+    syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
+    id,
+    day,
+    status,
+    completedAtMs,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'nutrition_days';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<NutritionDay> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('uid')) {
+      context.handle(
+        _uidMeta,
+        uid.isAcceptableOrUnknown(data['uid']!, _uidMeta),
+      );
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('sync_state')) {
+      context.handle(
+        _syncStateMeta,
+        syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('changed_at_ms')) {
+      context.handle(
+        _changedAtMsMeta,
+        changedAtMs.isAcceptableOrUnknown(
+          data['changed_at_ms']!,
+          _changedAtMsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('local_seq')) {
+      context.handle(
+        _localSeqMeta,
+        localSeq.isAcceptableOrUnknown(data['local_seq']!, _localSeqMeta),
+      );
+    }
+    if (data.containsKey('server_rev')) {
+      context.handle(
+        _serverRevMeta,
+        serverRev.isAcceptableOrUnknown(data['server_rev']!, _serverRevMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('day')) {
+      context.handle(
+        _dayMeta,
+        day.isAcceptableOrUnknown(data['day']!, _dayMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dayMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('completed_at_ms')) {
+      context.handle(
+        _completedAtMsMeta,
+        completedAtMs.isAcceptableOrUnknown(
+          data['completed_at_ms']!,
+          _completedAtMsMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  NutritionDay map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NutritionDay(
+      uid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uid'],
+      ),
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+      syncState: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sync_state'],
+      ),
+      changedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}changed_at_ms'],
+      ),
+      localSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}local_seq'],
+      ),
+      serverRev: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_rev'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      day: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      completedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}completed_at_ms'],
+      ),
+    );
+  }
+
+  @override
+  $NutritionDaysTable createAlias(String alias) {
+    return $NutritionDaysTable(attachedDatabase, alias);
+  }
+}
+
+class NutritionDay extends DataClass implements Insertable<NutritionDay> {
+  /// Dünyada tek kimlik (UUID v4), istemcide üretilir. Sunucuda birincil
+  /// anahtar. Nullable — göçte eski satırlara backfill edilir.
+  ///
+  /// Not: UNIQUE kısıtı kolonun kendisinde DEĞİL, ayrı bir unique index'te
+  /// (SQLite `ALTER TABLE ADD COLUMN` ile UNIQUE kolon eklenemez). Index
+  /// `AppDatabase` göçünde kurulur; NULL'lar birden fazla olabilir.
+  final String? uid;
+
+  /// Satırın sahibi (Supabase `auth.uid()`). Ortak katalog satırlarında NULL
+  /// (1022 hareket + seed besinler kimseye ait değil — docs/18 §3.2).
+  final String? userId;
+
+  /// Son değişiklik zamanı — çakışmada "en son yazan kazanır" (docs/18 §6.5).
+  final DateTime? updatedAt;
+
+  /// Giden kutusu durumu (docs/18 §6): 0 = temiz (senkron), 1 = beklemede,
+  /// 2 = hata. Kuyruk DİSKTE durur — uygulama öldürülse de kayıt kaybolmaz.
+  ///
+  /// **NULL = 0 (temiz).** Nullable olmasının sebebi projenin göç kuralı:
+  /// eklenen kolonlar nullable olmalı ki ara sürüme göç eden eski testler ve
+  /// v1'den gelen kurulumlar satır okurken patlamasın (üretilen mapper NOT
+  /// NULL kolonu zorunlu sayıyor). Kuyruk sorguları `sync_state = 1` aradığı
+  /// için NULL satırlar doğal olarak "gönderilecek bir şey yok" anlamına gelir.
+  final int? syncState;
+
+  /// Son yerel değişikliğin zamanı, **milisaniye** (senkron v2, docs/20 §4.1).
+  /// Çakışma kuralı buna bakar. `updated_at` (saniye) ekranlar için kalır ama
+  /// sürüm olarak kullanılmaz: aynı saniyedeki iki düzenleme ayırt edilemiyor,
+  /// gönderim sırasındaki düzenleme sessizce kayboluyordu (#3).
+  final int? changedAtMs;
+
+  /// Cihazdaki her yazmada artan sayı. "Gönderdiğim sürüm hâlâ aynı mı?"
+  /// sorusunun cevabı — temiz işaretleme buna bakar.
+  final int? localSeq;
+
+  /// Bu satırın en son görülen sunucu sürümü. `NULL` = hiç gönderilmedi.
+  /// (Sunucu tarafı Aşama 3'te gelir; kolon şimdiden ayrılır.)
+  final int? serverRev;
+  final int id;
+  final String day;
+  final String status;
+  final int? completedAtMs;
+  const NutritionDay({
+    this.uid,
+    this.userId,
+    this.updatedAt,
+    this.syncState,
+    this.changedAtMs,
+    this.localSeq,
+    this.serverRev,
+    required this.id,
+    required this.day,
+    required this.status,
+    this.completedAtMs,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (!nullToAbsent || uid != null) {
+      map['uid'] = Variable<String>(uid);
+    }
+    if (!nullToAbsent || userId != null) {
+      map['user_id'] = Variable<String>(userId);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    if (!nullToAbsent || syncState != null) {
+      map['sync_state'] = Variable<int>(syncState);
+    }
+    if (!nullToAbsent || changedAtMs != null) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs);
+    }
+    if (!nullToAbsent || localSeq != null) {
+      map['local_seq'] = Variable<int>(localSeq);
+    }
+    if (!nullToAbsent || serverRev != null) {
+      map['server_rev'] = Variable<int>(serverRev);
+    }
+    map['id'] = Variable<int>(id);
+    map['day'] = Variable<String>(day);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || completedAtMs != null) {
+      map['completed_at_ms'] = Variable<int>(completedAtMs);
+    }
+    return map;
+  }
+
+  NutritionDaysCompanion toCompanion(bool nullToAbsent) {
+    return NutritionDaysCompanion(
+      uid: uid == null && nullToAbsent ? const Value.absent() : Value(uid),
+      userId: userId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userId),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+      syncState: syncState == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncState),
+      changedAtMs: changedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(changedAtMs),
+      localSeq: localSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localSeq),
+      serverRev: serverRev == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverRev),
+      id: Value(id),
+      day: Value(day),
+      status: Value(status),
+      completedAtMs: completedAtMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAtMs),
+    );
+  }
+
+  factory NutritionDay.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NutritionDay(
+      uid: serializer.fromJson<String?>(json['uid']),
+      userId: serializer.fromJson<String?>(json['userId']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      syncState: serializer.fromJson<int?>(json['syncState']),
+      changedAtMs: serializer.fromJson<int?>(json['changedAtMs']),
+      localSeq: serializer.fromJson<int?>(json['localSeq']),
+      serverRev: serializer.fromJson<int?>(json['serverRev']),
+      id: serializer.fromJson<int>(json['id']),
+      day: serializer.fromJson<String>(json['day']),
+      status: serializer.fromJson<String>(json['status']),
+      completedAtMs: serializer.fromJson<int?>(json['completedAtMs']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'uid': serializer.toJson<String?>(uid),
+      'userId': serializer.toJson<String?>(userId),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'syncState': serializer.toJson<int?>(syncState),
+      'changedAtMs': serializer.toJson<int?>(changedAtMs),
+      'localSeq': serializer.toJson<int?>(localSeq),
+      'serverRev': serializer.toJson<int?>(serverRev),
+      'id': serializer.toJson<int>(id),
+      'day': serializer.toJson<String>(day),
+      'status': serializer.toJson<String>(status),
+      'completedAtMs': serializer.toJson<int?>(completedAtMs),
+    };
+  }
+
+  NutritionDay copyWith({
+    Value<String?> uid = const Value.absent(),
+    Value<String?> userId = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
+    Value<int?> syncState = const Value.absent(),
+    Value<int?> changedAtMs = const Value.absent(),
+    Value<int?> localSeq = const Value.absent(),
+    Value<int?> serverRev = const Value.absent(),
+    int? id,
+    String? day,
+    String? status,
+    Value<int?> completedAtMs = const Value.absent(),
+  }) => NutritionDay(
+    uid: uid.present ? uid.value : this.uid,
+    userId: userId.present ? userId.value : this.userId,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+    syncState: syncState.present ? syncState.value : this.syncState,
+    changedAtMs: changedAtMs.present ? changedAtMs.value : this.changedAtMs,
+    localSeq: localSeq.present ? localSeq.value : this.localSeq,
+    serverRev: serverRev.present ? serverRev.value : this.serverRev,
+    id: id ?? this.id,
+    day: day ?? this.day,
+    status: status ?? this.status,
+    completedAtMs: completedAtMs.present
+        ? completedAtMs.value
+        : this.completedAtMs,
+  );
+  NutritionDay copyWithCompanion(NutritionDaysCompanion data) {
+    return NutritionDay(
+      uid: data.uid.present ? data.uid.value : this.uid,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      changedAtMs: data.changedAtMs.present
+          ? data.changedAtMs.value
+          : this.changedAtMs,
+      localSeq: data.localSeq.present ? data.localSeq.value : this.localSeq,
+      serverRev: data.serverRev.present ? data.serverRev.value : this.serverRev,
+      id: data.id.present ? data.id.value : this.id,
+      day: data.day.present ? data.day.value : this.day,
+      status: data.status.present ? data.status.value : this.status,
+      completedAtMs: data.completedAtMs.present
+          ? data.completedAtMs.value
+          : this.completedAtMs,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NutritionDay(')
+          ..write('uid: $uid, ')
+          ..write('userId: $userId, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
+          ..write('id: $id, ')
+          ..write('day: $day, ')
+          ..write('status: $status, ')
+          ..write('completedAtMs: $completedAtMs')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    uid,
+    userId,
+    updatedAt,
+    syncState,
+    changedAtMs,
+    localSeq,
+    serverRev,
+    id,
+    day,
+    status,
+    completedAtMs,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NutritionDay &&
+          other.uid == this.uid &&
+          other.userId == this.userId &&
+          other.updatedAt == this.updatedAt &&
+          other.syncState == this.syncState &&
+          other.changedAtMs == this.changedAtMs &&
+          other.localSeq == this.localSeq &&
+          other.serverRev == this.serverRev &&
+          other.id == this.id &&
+          other.day == this.day &&
+          other.status == this.status &&
+          other.completedAtMs == this.completedAtMs);
+}
+
+class NutritionDaysCompanion extends UpdateCompanion<NutritionDay> {
+  final Value<String?> uid;
+  final Value<String?> userId;
+  final Value<DateTime?> updatedAt;
+  final Value<int?> syncState;
+  final Value<int?> changedAtMs;
+  final Value<int?> localSeq;
+  final Value<int?> serverRev;
+  final Value<int> id;
+  final Value<String> day;
+  final Value<String> status;
+  final Value<int?> completedAtMs;
+  const NutritionDaysCompanion({
+    this.uid = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
+    this.id = const Value.absent(),
+    this.day = const Value.absent(),
+    this.status = const Value.absent(),
+    this.completedAtMs = const Value.absent(),
+  });
+  NutritionDaysCompanion.insert({
+    this.uid = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncState = const Value.absent(),
+    this.changedAtMs = const Value.absent(),
+    this.localSeq = const Value.absent(),
+    this.serverRev = const Value.absent(),
+    this.id = const Value.absent(),
+    required String day,
+    required String status,
+    this.completedAtMs = const Value.absent(),
+  }) : day = Value(day),
+       status = Value(status);
+  static Insertable<NutritionDay> custom({
+    Expression<String>? uid,
+    Expression<String>? userId,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? syncState,
+    Expression<int>? changedAtMs,
+    Expression<int>? localSeq,
+    Expression<int>? serverRev,
+    Expression<int>? id,
+    Expression<String>? day,
+    Expression<String>? status,
+    Expression<int>? completedAtMs,
+  }) {
+    return RawValuesInsertable({
+      if (uid != null) 'uid': uid,
+      if (userId != null) 'user_id': userId,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncState != null) 'sync_state': syncState,
+      if (changedAtMs != null) 'changed_at_ms': changedAtMs,
+      if (localSeq != null) 'local_seq': localSeq,
+      if (serverRev != null) 'server_rev': serverRev,
+      if (id != null) 'id': id,
+      if (day != null) 'day': day,
+      if (status != null) 'status': status,
+      if (completedAtMs != null) 'completed_at_ms': completedAtMs,
+    });
+  }
+
+  NutritionDaysCompanion copyWith({
+    Value<String?>? uid,
+    Value<String?>? userId,
+    Value<DateTime?>? updatedAt,
+    Value<int?>? syncState,
+    Value<int?>? changedAtMs,
+    Value<int?>? localSeq,
+    Value<int?>? serverRev,
+    Value<int>? id,
+    Value<String>? day,
+    Value<String>? status,
+    Value<int?>? completedAtMs,
+  }) {
+    return NutritionDaysCompanion(
+      uid: uid ?? this.uid,
+      userId: userId ?? this.userId,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncState: syncState ?? this.syncState,
+      changedAtMs: changedAtMs ?? this.changedAtMs,
+      localSeq: localSeq ?? this.localSeq,
+      serverRev: serverRev ?? this.serverRev,
+      id: id ?? this.id,
+      day: day ?? this.day,
+      status: status ?? this.status,
+      completedAtMs: completedAtMs ?? this.completedAtMs,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (uid.present) {
+      map['uid'] = Variable<String>(uid.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncState.present) {
+      map['sync_state'] = Variable<int>(syncState.value);
+    }
+    if (changedAtMs.present) {
+      map['changed_at_ms'] = Variable<int>(changedAtMs.value);
+    }
+    if (localSeq.present) {
+      map['local_seq'] = Variable<int>(localSeq.value);
+    }
+    if (serverRev.present) {
+      map['server_rev'] = Variable<int>(serverRev.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (day.present) {
+      map['day'] = Variable<String>(day.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (completedAtMs.present) {
+      map['completed_at_ms'] = Variable<int>(completedAtMs.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NutritionDaysCompanion(')
+          ..write('uid: $uid, ')
+          ..write('userId: $userId, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncState: $syncState, ')
+          ..write('changedAtMs: $changedAtMs, ')
+          ..write('localSeq: $localSeq, ')
+          ..write('serverRev: $serverRev, ')
+          ..write('id: $id, ')
+          ..write('day: $day, ')
+          ..write('status: $status, ')
+          ..write('completedAtMs: $completedAtMs')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SyncMetaTable extends SyncMeta
     with TableInfo<$SyncMetaTable, SyncMetaEntry> {
   @override
@@ -12723,6 +13412,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ProgressPhotosTable progressPhotos = $ProgressPhotosTable(this);
   late final $AchievementsTable achievements = $AchievementsTable(this);
   late final $UserProfileTable userProfile = $UserProfileTable(this);
+  late final $NutritionDaysTable nutritionDays = $NutritionDaysTable(this);
   late final $SyncMetaTable syncMeta = $SyncMetaTable(this);
   late final $SyncTombstonesTable syncTombstones = $SyncTombstonesTable(this);
   late final WorkoutDao workoutDao = WorkoutDao(this as AppDatabase);
@@ -12753,6 +13443,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     progressPhotos,
     achievements,
     userProfile,
+    nutritionDays,
     syncMeta,
     syncTombstones,
   ];
@@ -19523,6 +20214,318 @@ typedef $$UserProfileTableProcessedTableManager =
       UserProfileData,
       PrefetchHooks Function()
     >;
+typedef $$NutritionDaysTableCreateCompanionBuilder =
+    NutritionDaysCompanion Function({
+      Value<String?> uid,
+      Value<String?> userId,
+      Value<DateTime?> updatedAt,
+      Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
+      Value<int> id,
+      required String day,
+      required String status,
+      Value<int?> completedAtMs,
+    });
+typedef $$NutritionDaysTableUpdateCompanionBuilder =
+    NutritionDaysCompanion Function({
+      Value<String?> uid,
+      Value<String?> userId,
+      Value<DateTime?> updatedAt,
+      Value<int?> syncState,
+      Value<int?> changedAtMs,
+      Value<int?> localSeq,
+      Value<int?> serverRev,
+      Value<int> id,
+      Value<String> day,
+      Value<String> status,
+      Value<int?> completedAtMs,
+    });
+
+class $$NutritionDaysTableFilterComposer
+    extends Composer<_$AppDatabase, $NutritionDaysTable> {
+  $$NutritionDaysTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get uid => $composableBuilder(
+    column: $table.uid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get completedAtMs => $composableBuilder(
+    column: $table.completedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$NutritionDaysTableOrderingComposer
+    extends Composer<_$AppDatabase, $NutritionDaysTable> {
+  $$NutritionDaysTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get uid => $composableBuilder(
+    column: $table.uid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get localSeq => $composableBuilder(
+    column: $table.localSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverRev => $composableBuilder(
+    column: $table.serverRev,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get day => $composableBuilder(
+    column: $table.day,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get completedAtMs => $composableBuilder(
+    column: $table.completedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$NutritionDaysTableAnnotationComposer
+    extends Composer<_$AppDatabase, $NutritionDaysTable> {
+  $$NutritionDaysTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get uid =>
+      $composableBuilder(column: $table.uid, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get syncState =>
+      $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get changedAtMs => $composableBuilder(
+    column: $table.changedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get localSeq =>
+      $composableBuilder(column: $table.localSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get serverRev =>
+      $composableBuilder(column: $table.serverRev, builder: (column) => column);
+
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get day =>
+      $composableBuilder(column: $table.day, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get completedAtMs => $composableBuilder(
+    column: $table.completedAtMs,
+    builder: (column) => column,
+  );
+}
+
+class $$NutritionDaysTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $NutritionDaysTable,
+          NutritionDay,
+          $$NutritionDaysTableFilterComposer,
+          $$NutritionDaysTableOrderingComposer,
+          $$NutritionDaysTableAnnotationComposer,
+          $$NutritionDaysTableCreateCompanionBuilder,
+          $$NutritionDaysTableUpdateCompanionBuilder,
+          (
+            NutritionDay,
+            BaseReferences<_$AppDatabase, $NutritionDaysTable, NutritionDay>,
+          ),
+          NutritionDay,
+          PrefetchHooks Function()
+        > {
+  $$NutritionDaysTableTableManager(_$AppDatabase db, $NutritionDaysTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NutritionDaysTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$NutritionDaysTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$NutritionDaysTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String?> uid = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
+                Value<int> id = const Value.absent(),
+                Value<String> day = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int?> completedAtMs = const Value.absent(),
+              }) => NutritionDaysCompanion(
+                uid: uid,
+                userId: userId,
+                updatedAt: updatedAt,
+                syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
+                id: id,
+                day: day,
+                status: status,
+                completedAtMs: completedAtMs,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String?> uid = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<int?> syncState = const Value.absent(),
+                Value<int?> changedAtMs = const Value.absent(),
+                Value<int?> localSeq = const Value.absent(),
+                Value<int?> serverRev = const Value.absent(),
+                Value<int> id = const Value.absent(),
+                required String day,
+                required String status,
+                Value<int?> completedAtMs = const Value.absent(),
+              }) => NutritionDaysCompanion.insert(
+                uid: uid,
+                userId: userId,
+                updatedAt: updatedAt,
+                syncState: syncState,
+                changedAtMs: changedAtMs,
+                localSeq: localSeq,
+                serverRev: serverRev,
+                id: id,
+                day: day,
+                status: status,
+                completedAtMs: completedAtMs,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$NutritionDaysTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $NutritionDaysTable,
+      NutritionDay,
+      $$NutritionDaysTableFilterComposer,
+      $$NutritionDaysTableOrderingComposer,
+      $$NutritionDaysTableAnnotationComposer,
+      $$NutritionDaysTableCreateCompanionBuilder,
+      $$NutritionDaysTableUpdateCompanionBuilder,
+      (
+        NutritionDay,
+        BaseReferences<_$AppDatabase, $NutritionDaysTable, NutritionDay>,
+      ),
+      NutritionDay,
+      PrefetchHooks Function()
+    >;
 typedef $$SyncMetaTableCreateCompanionBuilder =
     SyncMetaCompanion Function({
       required String key,
@@ -19911,6 +20914,8 @@ class $AppDatabaseManager {
       $$AchievementsTableTableManager(_db, _db.achievements);
   $$UserProfileTableTableManager get userProfile =>
       $$UserProfileTableTableManager(_db, _db.userProfile);
+  $$NutritionDaysTableTableManager get nutritionDays =>
+      $$NutritionDaysTableTableManager(_db, _db.nutritionDays);
   $$SyncMetaTableTableManager get syncMeta =>
       $$SyncMetaTableTableManager(_db, _db.syncMeta);
   $$SyncTombstonesTableTableManager get syncTombstones =>

@@ -47,21 +47,21 @@ tools/collab.sh claude jev-deneyi "mesaj"   # Codex yazar, Claude cevaplar
   Samet'e bırakılır.
 - Her cevabın sonunda karar gerekiyorsa **"Samet'e soru:"** bölümü olur.
 
-## Rol dağılımı (önerilen — Samet onayı bekliyor)
+## İş paylaşımı (Samet onayı: 2026-10-10)
 
-| Alan | Sahibi | Diğeri |
-|---|---|---|
-| Ekran, tema, etkileşim, erişilebilirlik, iOS Simulator'da görsel doğrulama | Codex | inceler |
-| Hesap mantığı, veritabanı/şema göçü, senkron, sunucu (Edge Function), testler, dokümanlar | Claude | inceler |
-
-Bu, uzmanlığa göre **varsayılan** paylaşımdır. İşi uygulayan, o işin
-testlerinden ve doküman güncellemesinden de sorumludur.
-
-Bir işte iki taraf da varsa önce **sözleşme** (veri tipi, sorgu kimlikleri,
-rota) yazışmada sabitlenir, sonra paralel çalışılır. Her iş yazışmasının
-başında şunlar yazılır: dal, çalışma kopyası, başlangıç commit'i, ortak
-dosyaların sahibi, birleştirecek taraf. Birleşen sonuç yeniden doğrulanır
-(`flutter analyze` + `flutter test`).
+1. **Her işin tek uçtan uca sahibi var.** Ekran, veri, test ve doküman aynı
+   tarafta biter; iş ekran/veri diye bölünmez.
+2. **Diğer taraf riske göre inceler.** Senkron, hesap, veri göçü ve sunucu
+   işlerinde derin inceleme; basit görsel düzeltmede kısa kontrol.
+3. **Araca bağlı işler doğal sahibinde:** iOS Simulator'da görsel doğrulama
+   Codex'te; Supabase'e kurulum/SQL Claude'da. Sahip bunları karşı taraftan
+   yazışmayla ister.
+4. İşin sahibi yazışmanın ilk mesajında yazılır: sahip, inceleyen, dal,
+   çalışma kopyası, başlangıç commit'i. Birleşen sonuç yeniden doğrulanır
+   (`flutter analyze` + `flutter test`).
+5. **Ölçüm:** her iş bitince NEXT_TASKS'taki kaydına süre, Samet'in harcadığı
+   dakika, yeniden çalışma ve sonradan bulunan hatalar not edilir; birkaç iş
+   sonra yöntem gözden geçirilir.
 
 ## Kod yazarken çakışmama kuralları
 

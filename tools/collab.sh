@@ -84,7 +84,7 @@ trap 'exit 143' TERM
 # Alt süreç arka planda + wait: sinyal hemen işlenir, cleanup onu sonlandırır.
 run() { # çıktı dosyası, komut...
   local out="$1"; shift
-  "$@" >"$out" 2>"$out.err" & CHILD=$!
+  "$@" </dev/null >"$out" 2>"$out.err" & CHILD=$!
   local rc=0; wait "$CHILD" || rc=$?
   CHILD=""; return $rc
 }
@@ -108,6 +108,17 @@ finish() { # dosya, gönderen, alıcı, cevap, cevaplayan oturum
   log_event message "$2" "$3" "$4" "" "${5:-}"
   DONE=1
   printf '%s\n' "$4"
+}
+
+# Codex hatasının sebebini (ör. kullanım limiti) yazışmaya ve ekrana taşı.
+codex_fail() {
+  local why
+  why="$(grep -h -o -E 'You.ve hit your usage limit[^"]*|"message":"[^"]{1,200}' \
+    "$TMP/log" "$TMP/log.err" 2>/dev/null | tail -1)"
+  why="${why#\"message\":\"}"
+  tail -5 "$TMP/log.err" >&2
+  [[ -n "$why" ]] && status "$THREAD" "Codex hatası: $why"
+  die "codex başarısız${why:+: $why}"
 }
 
 save_sid() { # dosya, kimlik — atomik
@@ -139,10 +150,10 @@ case "$cmd" in
     if [[ -s "$sid_file" ]]; then
       run "$TMP/log" codex exec resume "$(cat "$sid_file")" -c sandbox_mode='"read-only"' \
         "${common[@]}" "$prompt" \
-        || { tail -20 "$TMP/log.err" >&2; die "codex başarısız"; }
+        || codex_fail
     else
       run "$TMP/log" codex exec -s read-only -C "$ROOT" --add-dir "$DIR" --json \
-        "${common[@]}" "$prompt" || { tail -20 "$TMP/log.err" >&2; die "codex başarısız"; }
+        "${common[@]}" "$prompt" || codex_fail
       sid="$(python3 -I -c 'import json,sys
 for l in open(sys.argv[1]):
     try: e=json.loads(l)

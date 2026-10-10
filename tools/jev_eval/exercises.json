@@ -1,4 +1,172 @@
-["Barbell Bench Press", "Dumbbell Bench Press", "Incline Dumbbell Press", "Chest Press Machine",
- "Barbell Back Squat", "Hack Squat", "Bulgarian Split Squat", "Leg Press", "Leg Extension",
- "Romanian Deadlift", "Conventional Deadlift", "Hip Thrust", "Lat Pulldown", "Seated Cable Row",
- "Bent-Over Barbell Row", "Pull-Up", "Overhead Press", "Barbell Curl", "Hammer Curl", "Plank"]
+{
+  "_not": "Deney için sabit örnek liste (docs/35 §1). Uygulamada liste kullanıcının kendi hareketlerinden üretilir. 'aliases' Jev seçenek açıklamasına girer.",
+  "exercises": [
+    {
+      "id": "ex_barbell_bench_press",
+      "name": "Barbell Bench Press",
+      "family": "bench",
+      "aliases": "barla bench, barbell bench, düz bench barla",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_dumbbell_bench_press",
+      "name": "Dumbbell Bench Press",
+      "family": "bench",
+      "aliases": "dambıl bench, dumbbell bench, dambılla düz bench",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_incline_dumbbell_press",
+      "name": "Incline Dumbbell Press",
+      "family": null,
+      "aliases": "incline dambıl, eğimli dambıl press, incline press",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_chest_press_machine",
+      "name": "Chest Press Machine",
+      "family": null,
+      "aliases": "göğüs press makinesi, chest press, makinede göğüs",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_barbell_back_squat",
+      "name": "Barbell Back Squat",
+      "family": "squat",
+      "aliases": "barla squat, back squat, sırtta squat",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_hack_squat",
+      "name": "Hack Squat",
+      "family": "squat",
+      "aliases": "hack squat, hack makinesi",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_bulgarian_split_squat",
+      "name": "Bulgarian Split Squat",
+      "family": "squat",
+      "aliases": "bulgarian, bulgar squat, split squat",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_leg_press",
+      "name": "Leg Press",
+      "family": null,
+      "aliases": "leg press, bacak press",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_leg_extension",
+      "name": "Leg Extension",
+      "family": null,
+      "aliases": "leg extension, bacak açma, ön bacak makinesi",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_romanian_deadlift",
+      "name": "Romanian Deadlift",
+      "family": "deadlift",
+      "aliases": "rdl, romen deadlift, romanian",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_conventional_deadlift",
+      "name": "Conventional Deadlift",
+      "family": "deadlift",
+      "aliases": "klasik deadlift, yerden deadlift, conventional",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_hip_thrust",
+      "name": "Hip Thrust",
+      "family": null,
+      "aliases": "hip thrust, kalça itiş",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_lat_pulldown",
+      "name": "Lat Pulldown",
+      "family": null,
+      "aliases": "lat pulldown, lat çekiş, sırt çekiş makinesi",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_seated_cable_row",
+      "name": "Seated Cable Row",
+      "family": "row",
+      "aliases": "kablo row, oturarak kürek, seated row",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_bent_over_barbell_row",
+      "name": "Bent-Over Barbell Row",
+      "family": "row",
+      "aliases": "barbell row, eğilerek barla kürek, bent over row",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_pull_up",
+      "name": "Pull-Up",
+      "family": null,
+      "aliases": "barfiks, pull up, pullup",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_overhead_press",
+      "name": "Overhead Press",
+      "family": null,
+      "aliases": "ohp, omuz press, overhead press, askeri press",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_barbell_curl",
+      "name": "Barbell Curl",
+      "family": "curl",
+      "aliases": "barla curl, barbell curl, barla biceps",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_hammer_curl",
+      "name": "Hammer Curl",
+      "family": "curl",
+      "aliases": "hammer curl, çekiç curl",
+      "measurement": "weight_reps"
+    },
+    {
+      "id": "ex_plank",
+      "name": "Plank",
+      "family": null,
+      "aliases": "plank, karın köprüsü",
+      "measurement": "time"
+    }
+  ],
+  "families": [
+    {
+      "id": "fam_bench",
+      "family": "bench",
+      "aliases": "bench, bençpres, bench press — çeşit (barla/dambılla) belirtilmemiş"
+    },
+    {
+      "id": "fam_squat",
+      "family": "squat",
+      "aliases": "squat, skuat — çeşit belirtilmemiş"
+    },
+    {
+      "id": "fam_deadlift",
+      "family": "deadlift",
+      "aliases": "deadlift, ölü kaldırış — çeşit belirtilmemiş"
+    },
+    {
+      "id": "fam_row",
+      "family": "row",
+      "aliases": "row, kürek — çeşit belirtilmemiş"
+    },
+    {
+      "id": "fam_curl",
+      "family": "curl",
+      "aliases": "curl, biceps curl, pazı — çeşit belirtilmemiş"
+    }
+  ]
+}

@@ -1,9 +1,9 @@
 # Jev deneyi raporu — tuning_set.jsonl
 
 - Model: `jev-1.13.0` · sözleşme v1 · biçimler: A, B · sıra tekrarı: 3 · tohum: `fitpack-jev-1`
-- Soru: 72 · çağrı: 432 · toplam girdi token: 774,582 (çağrı başına ~1793) · bu çalıştırmada harcanan: $0.0054 · tümü önbelleksiz: $0.0325
-- Gecikme (önbelleksiz çağrılar, n=72): medyan 0.41 sn · en kötü 0.54 sn
-- Not: aynı sorunun farklı sıralı tekrarları bağımsız gözlem değildir; üst sınırlar iyimserdir. Kabul kararı yalnız kabul setinde verilir (docs/35 §5).
+- Soru: 72 · çağrı: 432 · toplam girdi token: 774,582 (çağrı başına ~1793) · bu çalıştırmada harcanan: $0.0000 · tümü önbelleksiz: $0.0325
+- Gecikme (önbelleksiz çağrılar, n=0): hepsi önbellekten
+- Not: aynı sorunun farklı sıralı tekrarları bağımsız gözlem değildir; üst sınırlar iyimserdir. Kabul kararı yalnız kabul setinde, dondurulmuş eşikle verilir (docs/35 §5).
 
 ## Biçim A — açıklamalar Türkçe
 
@@ -15,17 +15,18 @@
 | Dönem doğruluğu | %98.6 |
 | Hareket doğruluğu (hareketli sorular) | %98.2 (56/57) |
 | Gerekli alanların hepsi doğru (kapsam içi) | %95.0 |
-| Çoklu niyet noul ≥ 0,5 | %90.0 · kapsam içi tekli sorularda yanlış alarm %8.5 |
-| Çoklu niyet: seçilen eşikte doğru ele alınan (oto. cevap yok + ilk 3 seçenek iki niyeti de kapsıyor) | %93.3 (28/30) |
 | Sıra değişince sorgu cevabı aynı kalan soru | %91.7 (66/72) |
+
+| Çoklu niyet doğru ele alınan (seçilen eşikte: niyet seçtirme + ilk 3 seçenek kapsıyor) | %86.7 (26/30) |
+| Kapsam dışı soruda dönem/hareket sorma (kötü deneyim) | 0/45 |
 
 ### Eşik seçimi (ayar)
 
 Ölçütü (%3 / %30 / %95 / kritik 0) sağlayan, geri dönüşü en düşük eşik:
 
-| Y | Yp | Ye | M | G | otomatik | yanlış | yanlış üst %95 | geri dönüş | kapsam dışı reddi | …netleştirmeyle | kritik |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 0.55 | 0.0 | 0.6 | 0.90 | 0.70 | 105 | %2.9 (3) | %7.2 | %7.9 | %100.0 | 3/45 | 0 |
+| Y | Yp | Ye | M | G | otomatik | yanlış | yanlış üst %95 | geri dönüş | kapsam dışı reddi | kritik (hata/örnek) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0.97 | 0.0 | 0.2 | 0.90 | 0.70 | 84 | %1.2 (1) | %5.5 | %22.2 (108) | %100.0 (45) | 0/12 |
 
 ### En sık sorgu karışıklıkları
 
@@ -73,17 +74,18 @@
 | Dönem doğruluğu | %97.2 |
 | Hareket doğruluğu (hareketli sorular) | %96.5 (55/57) |
 | Gerekli alanların hepsi doğru (kapsam içi) | %95.7 |
-| Çoklu niyet noul ≥ 0,5 | %90.0 · kapsam içi tekli sorularda yanlış alarm %8.5 |
-| Çoklu niyet: seçilen eşikte doğru ele alınan (oto. cevap yok + ilk 3 seçenek iki niyeti de kapsıyor) | %86.7 (26/30) |
 | Sıra değişince sorgu cevabı aynı kalan soru | %94.4 (68/72) |
+
+| Çoklu niyet doğru ele alınan (seçilen eşikte: niyet seçtirme + ilk 3 seçenek kapsıyor) | %83.3 (25/30) |
+| Kapsam dışı soruda dönem/hareket sorma (kötü deneyim) | 1/45 |
 
 ### Eşik seçimi (ayar)
 
 Ölçütü (%3 / %30 / %95 / kritik 0) sağlayan, geri dönüşü en düşük eşik:
 
-| Y | Yp | Ye | M | G | otomatik | yanlış | yanlış üst %95 | geri dönüş | kapsam dışı reddi | …netleştirmeyle | kritik |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 0.95 | 0.0 | 0.0 | 1.01 | 0.30 | 90 | %2.2 (2) | %6.8 | %21.1 | %100.0 | 0/45 | 0 |
+| Y | Yp | Ye | M | G | otomatik | yanlış | yanlış üst %95 | geri dönüş | kapsam dışı reddi | kritik (hata/örnek) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0.85 | 0.0 | 0.4 | 0.50 | 0.50 | 78 | %2.6 (2) | %7.9 | %27.8 (108) | %97.8 (45) | 0/12 |
 
 ### En sık sorgu karışıklıkları
 

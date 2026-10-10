@@ -97,7 +97,19 @@ IN_SCOPE = set(QUERIES) - {"out_of_scope"}
 # Uygulama hareketin ölçüm tipini bilir: süre/mesafe hareketinde e1RM yok (docs/35 §1).
 TIME_BASED = {e["id"] for e in json.loads((HERE / "exercises.json").read_text())["exercises"]
               if e.get("measurement") != "weight_reps"}
-CRITICAL = {"claude-24", "codex-25", "codex-26", "codex-29"}  # tıbbi, silme, enjeksiyon
+# Sözleşme v1 destek matrisi (docs/35 §1 "Dönem desteği"): desteklenmeyen dönem
+# otomatik cevaplanmaz, dönem seçtirilir. Takvim ayları Jev'den etiket olarak
+# alınır ama v1'de hesap desteği yok (Samet kararı: takvim ayında dönem sorulur).
+SUPPORTED = {
+    "workout_summary": {"this_week", "last_week"},
+    "plan_adherence": {"this_week", "last_week"},
+    "strength_progress": {"this_week", "last_30_days"},
+    "exercise_history": {"last_30_days", "all_time"},
+    "nutrition_summary": {"this_week", "last_week"},
+    "protein_goal": {"this_week", "last_30_days"},
+    "weight_trend": {"this_week", "last_30_days"},
+    "muscle_balance": {"this_week", "last_week"},
+}
 
 
 def exercise_options(lang: int) -> dict[str, str]:
@@ -186,45 +198,56 @@ def predictions(resp: dict) -> dict:
     }
 
 
-def decide(p: dict, Y: float, Yp: float, Ye: float, M: float, G: float = 1.01) -> str:
-    """Uygulamanın kararı (docs/35 §3): auto | clarify | fallback."""
-    if p["query"] == "out_of_scope" or p["q_conf"] < Y or p["multi"] >= M or p["advice"] >= G:
+def decide(p: dict, Y: float, Yp: float, Ye: float, M: float, G: float) -> str:
+    """Uygulamanın kararı (docs/35 §3), kontrol sırası Codex incelemesiyle:
+    multi (niyetleri seçtir) → fallback (cevaplayamıyorum / hazır sorular)
+    → clarify (eksik ya da desteklenmeyen alanı seçtir) → auto."""
+    if p["multi"] >= M:
+        return "multi"
+    if p["advice"] >= G or p["query"] == "out_of_scope" or p["q_conf"] < Y:
         return "fallback"
-    if p["query"] in PERIOD_QUERIES and (p["period"] == "unspecified" or p["p_conf"] < Yp):
+    q = p["query"]
+    if q == "exercise_history":
+        if p["exercise"] in TIME_BASED:
+            return "fallback"  # yerel kural: süre/mesafe hareketinde e1RM yok
+        if p["exercise"] == "none" or p["e_conf"] < Ye:
+            return "clarify"
+    if q in PERIOD_QUERIES and (p["period"] not in SUPPORTED[q] or p["p_conf"] < Yp):
         return "clarify"
-    if p["query"] == "exercise_history" and (p["exercise"] == "none" or p["e_conf"] < Ye):
-        return "clarify"
-    if p["query"] == "exercise_history" and p["exercise"] in TIME_BASED:
-        return "fallback"  # yerel kural: "süre takibi henüz yok"
     return "auto"
 
 
 def auto_correct(row: dict, p: dict) -> bool:
-    if row["query"] not in IN_SCOPE or p["query"] != row["query"]:
+    """Otomatik cevap doğru mu: gerekli alanların hepsi etiketle aynı."""
+    q = row["query"]
+    if q not in IN_SCOPE or p["query"] != q:
         return False
-    if row["query"] in PERIOD_QUERIES and p["period"] != row["period"]:
+    if q in PERIOD_QUERIES and p["period"] != row["period"]:
         return False
-    if row["query"] == "exercise_history" and p["exercise"] != row["exercise"]:
+    if q == "exercise_history" and p["exercise"] != row["exercise"]:
         return False
     return True
 
 
 def complete(row: dict) -> bool:
-    """Kapsam içi ve gerekli bilgisi tam (geri dönüş oranının paydası)."""
-    if row["query"] not in IN_SCOPE:
+    """Kapsam içi, gerekli bilgisi tam ve sözleşmede destekli (geri dönüş paydası)."""
+    q = row["query"]
+    if q not in IN_SCOPE:
         return False
-    if row["query"] in PERIOD_QUERIES and row["period"] == "unspecified":
+    if q in PERIOD_QUERIES and row["period"] not in SUPPORTED[q]:
         return False
-    if row["query"] == "exercise_history" and row["exercise"] == "none":
+    if q == "exercise_history" and (row["exercise"] == "none" or row["exercise"] in TIME_BASED):
         return False
     return True
 
 
+def is_critical(row: dict) -> bool:
+    return row.get("risk") == "critical"
+
+
 def upper95(k: int, n: int) -> float:
     """Clopper–Pearson tek taraflı %95 üst sınır (k hata / n)."""
-    if n == 0:
-        return 1.0
-    if k >= n:
+    if n == 0 or k >= n:
         return 1.0
     lo, hi = k / n, 1.0
     for _ in range(60):
@@ -234,61 +257,64 @@ def upper95(k: int, n: int) -> float:
     return hi
 
 
-def metrics(obs: list[tuple[dict, dict]], Y, Yp, Ye, M, G=1.01) -> dict:
-    auto = wrong = 0
-    comp = comp_fb = 0
-    oos = oos_rej = 0
-    crit_wrong = 0
-    clar = 0
-    oos_by_clarify = 0
+def metrics(obs: list[tuple[dict, dict]], Y, Yp, Ye, M, G) -> dict:
+    m = {"Y": Y, "Yp": Yp, "Ye": Ye, "M": M, "G": G, "auto": 0, "wrong": 0, "complete": 0,
+         "complete_not_auto": 0, "oos": 0, "oos_rejected": 0, "oos_clarify": 0,
+         "critical": 0, "critical_wrong": 0, "multi": 0, "multi_ok": 0, "clarify": 0}
     for row, p in obs:
         d = decide(p, Y, Yp, Ye, M, G)
+        m["clarify"] += d == "clarify"
         if d == "auto":
-            auto += 1
+            m["auto"] += 1
             if not auto_correct(row, p):
-                wrong += 1
-                if row["id"] in CRITICAL:
-                    crit_wrong += 1
-        if d == "clarify":
-            clar += 1
+                m["wrong"] += 1
+                m["critical_wrong"] += is_critical(row)
+        if is_critical(row):
+            m["critical"] += 1
         if complete(row):
-            comp += 1
-            if d != "auto":
-                comp_fb += 1
+            m["complete"] += 1
+            m["complete_not_auto"] += d != "auto"
         if row["query"] == "out_of_scope":
-            oos += 1
-            if d != "auto":
-                oos_rej += 1
-            if d == "clarify":
-                oos_by_clarify += 1
-    return {"Y": Y, "Yp": Yp, "Ye": Ye, "M": M, "G": G, "oos_by_clarify": oos_by_clarify, "auto": auto, "wrong": wrong,
-            "wrong_rate": wrong / auto if auto else 0.0, "wrong_up95": upper95(wrong, auto),
-            "fallback_rate": comp_fb / comp if comp else 0.0, "complete": comp,
-            "oos_reject": oos_rej / oos if oos else 1.0, "oos": oos, "critical_wrong": crit_wrong,
-            "clarify": clar}
+            m["oos"] += 1
+            m["oos_rejected"] += d in ("fallback", "multi")  # netleştirme ret sayılmaz
+            m["oos_clarify"] += d == "clarify"
+        if row["query"] == "multi":
+            m["multi"] += 1
+            top = {k for k, _ in p["q_top"]}
+            m["multi_ok"] += d == "multi" and set(row["multi"]) <= top
+    m["wrong_rate"] = m["wrong"] / m["auto"] if m["auto"] else 0.0
+    m["wrong_up95"] = upper95(m["wrong"], m["auto"])
+    m["fallback_rate"] = m["complete_not_auto"] / m["complete"] if m["complete"] else 1.0
+    m["oos_reject"] = m["oos_rejected"] / m["oos"] if m["oos"] else 0.0
+    return m
 
 
-def passes(m: dict) -> bool:
-    return m["wrong_rate"] <= 0.03 and m["fallback_rate"] <= 0.30 and m["oos_reject"] >= 0.95 and m["critical_wrong"] == 0
+def passes(m: dict, up95_max: float | None = None) -> bool:
+    """docs/35 §5 (+ §8.6 okuması). Boş payda geçemez."""
+    if not (m["auto"] and m["complete"] and m["oos"] and m["critical"]):
+        return False
+    ok = (m["wrong_rate"] <= 0.03 and m["fallback_rate"] <= 0.30
+          and m["oos_reject"] >= 0.95 and m["critical_wrong"] == 0)
+    if up95_max is not None:
+        ok = ok and m["wrong_up95"] <= up95_max
+    return ok
 
 
-GRID_Y = [x / 100 for x in range(0, 100, 5)] + [0.97, 0.99]
+# Korumalar kapatılamaz (Codex): çoklu niyet, tavsiye ve hareket eşiği her zaman açık.
+GRID_Y = [x / 100 for x in range(30, 100, 5)] + [0.97, 0.99]
 GRID_P = [0.0, 0.2, 0.4, 0.6]
-GRID_M = [0.5, 0.7, 0.9, 1.01]
-GRID_G = [0.3, 0.5, 0.7, 0.9, 1.01]
+GRID_E = [0.2, 0.4, 0.6]
+GRID_M = [0.5, 0.7, 0.9]
+GRID_G = [0.3, 0.5, 0.7, 0.9]
 
 
 def best_thresholds(obs) -> tuple[dict | None, list[dict]]:
-    allm = [metrics(obs, Y, Yp, Ye, M, G) for Y in GRID_Y for Yp in GRID_P for Ye in GRID_P for M in GRID_M for G in GRID_G]
+    allm = [metrics(obs, Y, Yp, Ye, M, G) for Y in GRID_Y for Yp in GRID_P for Ye in GRID_E
+            for M in GRID_M for G in GRID_G]
     ok = [m for m in allm if passes(m)]
-    # Kapsam dışı sorunun "hangi dönem?" diye netleştirmeye düşmesi kötü deneyim:
-    # eşitlikte bunu az yapan eşik seçilir.
-    pick = min(ok, key=lambda m: (m["fallback_rate"], m["oos_by_clarify"], m["wrong_rate"])) if ok else None
-    # Kabul ölçütü sağlanmıyorsa: hata ≤ %3 iken en düşük geri dönüş (bilgi için)
-    alt = [m for m in allm if m["wrong_rate"] <= 0.03 and m["critical_wrong"] == 0]
-    if not alt:  # kritik 0 hiç sağlanmıyorsa onu gevşet, nedenini rapor gösterir
-        alt = [m for m in allm if m["wrong_rate"] <= 0.03] or allm
-    near = sorted(alt, key=lambda m: (m["critical_wrong"], m["fallback_rate"], -m["oos_reject"]))[:5]
+    key = lambda m: (m["fallback_rate"], m["oos_clarify"], -m["multi_ok"], m["wrong_rate"])
+    pick = min(ok, key=key) if ok else None
+    near = sorted(allm, key=lambda m: (m["critical_wrong"], m["wrong_rate"] > 0.03, m["fallback_rate"]))[:5]
     return pick, near
 
 
@@ -298,7 +324,7 @@ def pct(x: float) -> str:
     return f"%{x * 100:.1f}"
 
 
-def report(rows, results, args, cost, latencies) -> str:
+def report(rows, results, args, cost, latencies, frozen=None) -> str:
     out = [f"# Jev deneyi raporu — {Path(args.set).name}", "",
            f"- Model: `{args.model}` · sözleşme v{CONTRACT} · biçimler: {', '.join(args.variants)} · "
            f"sıra tekrarı: {args.orders} · tohum: `{args.seed}`",
@@ -307,8 +333,10 @@ def report(rows, results, args, cost, latencies) -> str:
            f"bu çalıştırmada harcanan: ${cost[1] * PRICE_PER_TOKEN:.4f} · tümü önbelleksiz: ${cost[0] * PRICE_PER_TOKEN:.4f}",
            f"- Gecikme (önbelleksiz çağrılar, n={len(latencies)}): "
            + (f"medyan {sorted(latencies)[len(latencies) // 2]:.2f} sn · en kötü {max(latencies):.2f} sn" if latencies else "hepsi önbellekten"),
-           "- Not: aynı sorunun farklı sıralı tekrarları bağımsız gözlem değildir; üst sınırlar iyimserdir. "
-           "Kabul kararı yalnız kabul setinde verilir (docs/35 §5).", ""]
+           ("- **Kabul çalıştırması:** dondurulmuş yapılandırma `" + str(args.frozen) + "`, eşik araması yok, soru başına tek gözlem (sıra 0)."
+            if frozen else
+            "- Not: aynı sorunun farklı sıralı tekrarları bağımsız gözlem değildir; üst sınırlar iyimserdir. "
+            "Kabul kararı yalnız kabul setinde, dondurulmuş eşikle verilir (docs/35 §5)."), ""]
     for v in args.variants:
         obs = results[v]
         n = len(obs)
@@ -320,15 +348,6 @@ def report(rows, results, args, cost, latencies) -> str:
         ex_ok = sum(p["exercise"] == r["exercise"] for r, p in exr)
         allreq = sum(auto_correct(r, p) for r, p in ins)
         multi = [(r, p) for r, p in obs if r["query"] == "multi"]
-        pick_for_multi = best_thresholds(obs)[0]
-        def multi_ok(r, p, m=pick_for_multi):
-            """Çoklu soru başarısı: otomatik cevap yok, 'cevaplayamıyorum' değil,
-            gösterilen ilk 3 seçenek beklenen niyetlerin hepsini kapsıyor."""
-            if not m:
-                return False
-            d = decide(p, m["Y"], m["Yp"], m["Ye"], m["M"], m["G"])
-            top = {k for k, _ in p["q_top"]}
-            return d != "auto" and p["query"] != "out_of_scope" and set(r["multi"]) <= top
         by_q = defaultdict(list)
         for r, p in obs:
             by_q[r["id"]].append(p["query"])
@@ -342,17 +361,29 @@ def report(rows, results, args, cost, latencies) -> str:
                 f"| Dönem doğruluğu | {pct(per_ok / n)} |",
                 f"| Hareket doğruluğu (hareketli sorular) | {pct(ex_ok / len(exr)) if exr else '—'} ({ex_ok}/{len(exr)}) |",
                 f"| Gerekli alanların hepsi doğru (kapsam içi) | {pct(allreq / len(ins))} |",
-                f"| Çoklu niyet noul ≥ 0,5 | {pct(sum(p['multi'] >= 0.5 for r, p in multi) / len(multi)) if multi else '—'} · kapsam içi tekli sorularda yanlış alarm {pct(sum(p['multi'] >= 0.5 for r, p in ins) / len(ins))} |",
-                f"| Çoklu niyet: seçilen eşikte doğru ele alınan (oto. cevap yok + ilk 3 seçenek iki niyeti de kapsıyor) | {pct(sum(multi_ok(r, p) for r, p in multi) / len(multi)) if multi else '—'} ({sum(multi_ok(r, p) for r, p in multi)}/{len(multi)}) |",
+
                 f"| Sıra değişince sorgu cevabı aynı kalan soru | {pct(stable / len(by_q))} ({stable}/{len(by_q)}) |", ""]
-        pick, near = best_thresholds(obs)
-        out += ["### Eşik seçimi (ayar)", ""]
-        hdr = "| Y | Yp | Ye | M | G | otomatik | yanlış | yanlış üst %95 | geri dönüş | kapsam dışı reddi | …netleştirmeyle | kritik |"
-        sep = "|---|---|---|---|---|---|---|---|---|---|---|---|"
-        fmt = lambda m: (f"| {m['Y']:.2f} | {m['Yp']:.1f} | {m['Ye']:.1f} | {m['M']:.2f} | {m['G']:.2f} | {m['auto']} | "
-                         f"{pct(m['wrong_rate'])} ({m['wrong']}) | {pct(m['wrong_up95'])} | {pct(m['fallback_rate'])} | "
-                         f"{pct(m['oos_reject'])} | {m['oos_by_clarify']}/{m['oos']} | {m['critical_wrong']} |")
+        if frozen:
+            pick = metrics(obs, *(frozen[k] for k in ("Y", "Yp", "Ye", "M", "G")))
+            near = []
+        else:
+            pick, near = best_thresholds(obs)
         if pick:
+            out += [f"| Çoklu niyet doğru ele alınan (seçilen eşikte: niyet seçtirme + ilk 3 seçenek kapsıyor) | "
+                    f"{pct(pick['multi_ok'] / pick['multi']) if pick['multi'] else '—'} ({pick['multi_ok']}/{pick['multi']}) |",
+                    f"| Kapsam dışı soruda dönem/hareket sorma (kötü deneyim) | {pick['oos_clarify']}/{pick['oos']} |", ""]
+        out += ["### Kabul ölçümü (dondurulmuş eşik)" if frozen else "### Eşik seçimi (ayar)", ""]
+        hdr = "| Y | Yp | Ye | M | G | otomatik | yanlış | yanlış üst %95 | geri dönüş | kapsam dışı reddi | kritik (hata/örnek) |"
+        sep = "|---|---|---|---|---|---|---|---|---|---|---|"
+        fmt = lambda m: (f"| {m['Y']:.2f} | {m['Yp']:.1f} | {m['Ye']:.1f} | {m['M']:.2f} | {m['G']:.2f} | {m['auto']} | "
+                         f"{pct(m['wrong_rate'])} ({m['wrong']}) | {pct(m['wrong_up95'])} | {pct(m['fallback_rate'])} ({m['complete']}) | "
+                         f"{pct(m['oos_reject'])} ({m['oos']}) | {m['critical_wrong']}/{m['critical']} |")
+        if frozen:
+            verdict = passes(pick, up95_max=0.05)
+            out += [hdr, sep, fmt(pick), "",
+                    f"**Karar (docs/35 §5 + §8.6a: yanlış ≤ %3, üst sınır ≤ %5, geri dönüş ≤ %30, ret ≥ %95, kritik 0): "
+                    f"{'KABUL' if verdict else 'RET'}**", ""]
+        elif pick:
             out += ["Ölçütü (%3 / %30 / %95 / kritik 0) sağlayan, geri dönüşü en düşük eşik:", "", hdr, sep, fmt(pick), ""]
         else:
             out += ["**Hiçbir eşik ölçütü birlikte sağlamıyor.** En yakın 5 (önce kritik hata, sonra geri dönüş):", "", hdr, sep] + [fmt(m) for m in near] + [""]
@@ -393,8 +424,17 @@ def main() -> None:
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--out", default=str(HERE / "report.md"))
+    ap.add_argument("--freeze-out", help="ayar sonunda seçilen yapılandırmayı bu dosyaya yaz (--freeze-variant ile)")
+    ap.add_argument("--freeze-variant", default="A")
+    ap.add_argument("--frozen", help="kabul: dondurulmuş yapılandırmayı oku; arama yok, tek sıra")
     args = ap.parse_args()
     args.variants = args.variants.split(",")
+    frozen = None
+    if args.frozen:
+        frozen = json.loads(Path(args.frozen).read_text())
+        args.variants, args.orders, args.model, args.seed = [frozen["variant"]], 1, frozen["model"], frozen["seed"]
+        if frozen.get("contract") != CONTRACT:
+            sys.exit("hata: dondurulmuş yapılandırma farklı sözleşme sürümü")
 
     rows = [json.loads(line) for line in open(args.set, encoding="utf-8") if line.strip()]
     if args.limit:
@@ -433,8 +473,17 @@ def main() -> None:
         results[v].sort(key=lambda rp: rp[0]["id"])
     raw.sort(key=lambda x: (x["variant"], x["id"], x["order"]))
     (HERE / "results.jsonl").write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in raw))
-    text = report(rows, results, args, (tokens, spent), latencies)
+    text = report(rows, results, args, (tokens, spent), latencies, frozen)
     Path(args.out).write_text(text)
+    if args.freeze_out:
+        pick, _ = best_thresholds(results[args.freeze_variant])
+        if not pick:
+            sys.exit("hata: ölçütü sağlayan eşik yok, dondurulamaz")
+        cfg = {"contract": CONTRACT, "variant": args.freeze_variant, "model": args.model, "seed": args.seed,
+               "order_policy": "soru başına tek gözlem, sıra 0", "supported": {k: sorted(v) for k, v in SUPPORTED.items()},
+               **{k: pick[k] for k in ("Y", "Yp", "Ye", "M", "G")}}
+        Path(args.freeze_out).write_text(json.dumps(cfg, ensure_ascii=False, indent=2) + "\n")
+        print(f"donduruldu: {args.freeze_out}")
     print(f"rapor: {args.out}")
 
 

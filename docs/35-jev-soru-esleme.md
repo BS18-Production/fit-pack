@@ -76,16 +76,18 @@ Kimlikler sabit metindir (enum sırası değil); Jev'e seçenek adı olarak gide
 - `streak` ve `out_of_scope` dönem almaz.
 
 **Dönem** ayrı bir sorudur: `this_week` · `last_week` · `last_30_days` ·
-`this_month` · `last_month` · `all_time` · `unspecified`. (Takvim ayları ayar
-turunda eklendi: Jev "geçen ay"ı %100 güvenle son 30 güne eşliyordu; kullanıcı
-takvim ayını kastediyorsa onu cevaplamak sormaktan iyi.) `unspecified` ise uygulama dönemi **sorar**;
+`this_month` · `last_month` · `all_time` · `unspecified`. Takvim ayları Jev'e
+**etiket** olarak eklendi (yoksa "geçen ay"ı %100 güvenle son 30 güne
+eşliyordu); v1'de hesap desteği yok, Samet kararı gereği **dönem sorulur**.
+Destek matrisi betikte `SUPPORTED`; desteklenmeyen sorgu–dönem birleşimi
+otomatik cevaplanmaz. `unspecified` ise uygulama dönemi **sorar**;
 model desteklenmeyen bir dönemi sessizce başkasına çeviremez. Tarih aralıkları
 `[başlangıç, bitiş)`; hafta başlangıcı kullanıcı ayarı (`weekStartProvider`);
 **Son 30 gün** (Samet kararı): bugün dahil son 30 takvim günü,
 `[bugün 00:00 − 29 gün, yarın 00:00)`; hafta başlangıcı ayarından bağımsız.
 "Son 1 ay", "son 4 hafta", "son 30 gün", "son bir ay" → `last_30_days`.
-"Bu ay" → `this_month` (ayın 1'inden bugüne), "geçen ay" → `last_month`
-(önceki takvim ayı). Cevap kesin
+"Bu ay" → `this_month`, "geçen ay" → `last_month`: dönem sorulur (takvim ayı
+desteği ayrı karar). Cevap kesin
 tarih aralığını ve kayıt sayısını yazar (30 gün iki fazla hafta günü içerir;
 sayılar buna göre okunur). Deney yalnız dönem **etiketini** ölçer, aralığı
 hesaplamaz.
@@ -266,27 +268,33 @@ Her biri ayrı iş, ayrı sahip (collab/README "İş paylaşımı").
 sıra = 432 çağrı. Rapor: `tools/jev_eval/report.md`, ham sonuç:
 `results.jsonl`. **Ayar sonucu iyimserdir; kabul kararı değildir.**
 
+Codex'in ölçüm incelemesinden (4. tur) sonra düzeltilmiş sonuçlar —
+destek matrisi, netleştirme ret sayılmıyor, çoklu niyet yalnız "niyet
+seçtirme" ile başarılı, kritik tuzaklar satır etiketinden, korumalar
+kapatılamıyor:
+
 | | A (Türkçe açıklama) | B (İngilizce açıklama) |
 |---|---|---|
 | Sorgu doğruluğu — kapsam içi | %95,7 | %97,2 |
 | Sorgu doğruluğu — kapsam dışı (ilk tahmin) | %73,3 | %80,0 |
 | Gerekli alanların hepsi doğru | %95,0 | %95,7 |
-| Çoklu niyet doğru ele alınan | %93,3 | %86,7 |
-| Seçilen eşikte yanlış otomatik / geri dönüş | %2,9 / %7,9 | %2,2 / %21,1 |
-| Kapsam dışı reddi · kritik hata | %100 · 0 | %100 · 0 |
+| Seçilen eşikte yanlış otomatik / geri dönüş | **%1,2 / %22,2** | %2,6 / %27,8 |
+| Kapsam dışı reddi · kritik hata | %100 · 0/12 | %97,8 · 0/12 |
+| Çoklu niyet doğru ele alınan | %86,7 | %83,3 |
+| Kapsam dışı soruda "hangi dönem?" (kötü deneyim) | 0/45 | 1/45 |
 
 - **Gecikme** medyan 0,40 sn, en kötü 0,91 sn. **Maliyet** çağrı başına ~1.800
-  token (tahminin 2,5 katı: hareket listesi) ≈ 0,000075 $; bütün ayar ~0,06 $.
-- **Ayarda yapılanlar:** takvim ayı dönemleri; süre ölçümlü hareket için yerel
-  kural; "tavsiye mi?" `noul` sorusu (kapsam dışı soruların "hangi dönem?"
-  netleştirmesine düşmesini 3/45'e indirdi, B'de 0/45).
-- **Kalan zayıflıklar:** olumsuz cümle ("bench'i sormuyom, barfikste…" → bench
-  seçildi; Jev'in belgelenmiş zayıflığı); talimat enjeksiyonu sorguyu %92+
-  güvenle saptırıyor ama dönem belirsizliği ve tavsiye sorusu otomatik cevabı
-  engelliyor (sonuç zararsız olurdu: kullanıcıya kendi verisi gösterilir);
-  kapsam içi tekli sorularda çoklu niyet yanlış alarmı %8,5.
-- **Dondurma adayı:** A, eşikler Y 0,55 · Yp 0 · Ye 0,6 · M 0,90 · G 0,70.
-  Codex incelemesinden sonra donar; kabul seti ondan sonra yazılır.
+  token ≈ 0,000075 $; bütün ayar ~0,06 $.
+- **Ayarda yapılanlar:** takvim ayı etiketi (cevap değil, dönem sorulur);
+  süre ölçümlü hareket için yerel kural; "tavsiye mi?" `noul` sorusu.
+- **Kalan zayıflıklar:** olumsuz cümle ("bench'i sormuyom, barfikste…");
+  talimat enjeksiyonu sorguyu %92+ güvenle saptırıyor — bu sette tavsiye
+  sorusu ve eşik engelledi, ama **dönemi açık enjeksiyon** kabul setinde
+  ayrıca sınanmalı (Codex).
+- **Dondurma adayı:** A — Y 0,97 · Yp 0 · Ye 0,2 · M 0,90 · G 0,70
+  (`tools/jev_eval/frozen.json`). Codex son kontrolünden sonra donar; kabul
+  seti ondan sonra yazılır. Kabul çalıştırması `--frozen` ile: arama yok, soru
+  başına tek gözlem.
 
 **İstatistik düzeltmesi (Codex):** %3 sınırını %95 güvenle göstermek sıfır
 hatada **≥99 bağımsız otomatik cevap** ister; 100 soruluk sette çoklu niyet ve
@@ -305,6 +313,5 @@ bile üst sınır %3'ün üstünde. Karar Samet'te (§8 madde 6).
    neyin seçildiği görünür + tek dokunuşla değiştirme.
 5. ⏳ **Kabul setine 30 soru (Samet)** — ayar setini görmeden, telefonda
    aklına geldiği gibi.
-6. ⏳ **Kabul ölçütü nasıl okunur?** (a) Gözlenen hata ≤ %3 **ve** %95 üst
-   sınır ≤ %5 — 100 soruyla yapılabilir; **Claude önerisi**. (b) %95 üst sınır
-   ≤ %3 — kabul seti ~140 soru olmalı (30 Samet + 55'er iki taraf).
+6. ✅ **Kabul ölçütü okuması (a):** gözlenen yanlış otomatik cevap ≤ %3 **ve**
+   %95 güven üst sınırı ≤ %5; kabul seti 100 soru (30 Samet + 35'er iki taraf).

@@ -1,0 +1,46 @@
+{
+  "contract": 1,
+  "variant": "A",
+  "model": "jev-1.13.0",
+  "seed": "fitpack-jev-1",
+  "order_policy": "soru başına tek gözlem, sıra 0",
+  "supported": {
+    "workout_summary": [
+      "last_week",
+      "this_week"
+    ],
+    "plan_adherence": [
+      "last_week",
+      "this_week"
+    ],
+    "strength_progress": [
+      "last_30_days",
+      "this_week"
+    ],
+    "exercise_history": [
+      "all_time",
+      "last_30_days"
+    ],
+    "nutrition_summary": [
+      "last_week",
+      "this_week"
+    ],
+    "protein_goal": [
+      "last_30_days",
+      "this_week"
+    ],
+    "weight_trend": [
+      "last_30_days",
+      "this_week"
+    ],
+    "muscle_balance": [
+      "last_week",
+      "this_week"
+    ]
+  },
+  "Y": 0.97,
+  "Yp": 0.0,
+  "Ye": 0.2,
+  "M": 0.9,
+  "G": 0.7
+}

@@ -2,8 +2,9 @@
 
     python3 -I tools/jev_eval/run.py                      # ayar seti, A+B, 3 sıra
     python3 -I tools/jev_eval/run.py --dry-run            # tek istek göster, API yok
-    python3 -I tools/jev_eval/run.py --set holdout_set.jsonl --variants B --orders 1 \
-        --freeze frozen.json                              # kabul ölçümü (dondurulmuş eşik)
+    python3 -I tools/jev_eval/run.py --freeze-out frozen.json --freeze-variant A   # ayar sonu: dondur
+    python3 -I tools/jev_eval/run.py --set holdout_set.jsonl --frozen frozen.json \
+        --out holdout_report.md                          # kabul ölçümü (arama yok, tek gözlem)
 
 Anahtar: TYPESAFE_API_KEY ortam değişkeni ya da ~/.config/fitpack/typesafe.env.
 Her cevap .cache/ altında tam isteğin özetiyle saklanır; yeniden çalıştırmak
@@ -222,7 +223,7 @@ def auto_correct(row: dict, p: dict) -> bool:
     q = row["query"]
     if q not in IN_SCOPE or p["query"] != q:
         return False
-    if q in PERIOD_QUERIES and p["period"] != row["period"]:
+    if q in PERIOD_QUERIES and (p["period"] != row["period"] or p["period"] not in SUPPORTED[q]):
         return False
     if q == "exercise_history" and p["exercise"] != row["exercise"]:
         return False
@@ -318,6 +319,64 @@ def best_thresholds(obs) -> tuple[dict | None, list[dict]]:
     return pick, near
 
 
+# ------------------------------------------------------ dondurma ve kabul
+
+def fingerprint() -> str:
+    """Dondurulan deneyin içeriği: istemler, seçenekler, hareketler, destek
+    matrisi ve karar kodu. Biri değişirse kabul çalıştırması reddedilir."""
+    import inspect
+    parts = [json.dumps([QUERIES, PERIODS, INSTR, NONE_EX, {k: sorted(v) for k, v in SUPPORTED.items()}],
+                        ensure_ascii=False, sort_keys=True),
+             (HERE / "exercises.json").read_text(),
+             inspect.getsource(build_request), inspect.getsource(decide), inspect.getsource(auto_correct),
+             inspect.getsource(complete)]
+    return hashlib.sha256("\n".join(parts).encode()).hexdigest()[:16]
+
+
+# docs/35 §4 + Codex 5. tur: kabul setinde zorunlu türler ("kind" alanı) ve en az sayıları
+REQUIRED_KINDS = {"family": 5, "explicit_variant": 5, "negated_exercise": 4, "history_no_advice": 4,
+                  "negated_advice": 3, "multi": 8, "clarify": 6, "injection": 4, "medical": 2,
+                  "delete": 2, "time_based": 2, "oos_other": 2}
+CRITICAL_KINDS = {"injection", "medical", "delete"}
+
+
+def validate_holdout(rows: list[dict], tuning_path: Path) -> list[str]:
+    errs = []
+    if len(rows) != 100:
+        errs.append(f"soru sayısı {len(rows)}, 100 olmalı")
+    if len({r["id"] for r in rows}) != len(rows):
+        errs.append("kimlikler benzersiz değil")
+    norm = lambda t: re.sub(r"\W+", " ", t.lower()).strip()
+    texts = [norm(r["q"]) for r in rows]
+    if len(set(texts)) != len(texts):
+        errs.append("soru metinleri benzersiz değil")
+    tuning = {norm(json.loads(l)["q"]) for l in open(tuning_path, encoding="utf-8") if l.strip()}
+    if overlap := set(texts) & tuning:
+        errs.append(f"ayar setiyle {len(overlap)} ortak soru")
+    if (n := sum(r.get("source") == "samet" for r in rows)) < 30:
+        errs.append(f"Samet'ten {n} soru, en az 30")
+    kinds = Counter(k for r in rows for k in r.get("kind", []))
+    for k, need in REQUIRED_KINDS.items():
+        if kinds[k] < need:
+            errs.append(f"tür '{k}': {kinds[k]}/{need}")
+    per_q = Counter(r["query"] for r in rows if complete(r))
+    for q in IN_SCOPE:
+        if per_q[q] < 4:
+            errs.append(f"sorgu '{q}' (gerekli alanı tam, destekli): {per_q[q]}/4")
+    for r in rows:
+        if set(r.get("kind", [])) & CRITICAL_KINDS and not is_critical(r):
+            errs.append(f"{r['id']}: kritik tür ama risk=critical değil")
+    return errs
+
+
+def verdict(m: dict) -> str:
+    """§5 + §8.6(a). Gözlenen ölçüt sağlanıp üst sınır %5'i aşıyorsa kanıt yetersiz;
+    sonuç görüldükten sonra soru eklenerek kabul aranmaz (Codex)."""
+    if not passes(m):
+        return "RET"
+    return "KABUL" if m["wrong_up95"] <= 0.05 else "YETERSİZ KANIT"
+
+
 # ------------------------------------------------------------------- rapor
 
 def pct(x: float) -> str:
@@ -379,10 +438,9 @@ def report(rows, results, args, cost, latencies, frozen=None) -> str:
                          f"{pct(m['wrong_rate'])} ({m['wrong']}) | {pct(m['wrong_up95'])} | {pct(m['fallback_rate'])} ({m['complete']}) | "
                          f"{pct(m['oos_reject'])} ({m['oos']}) | {m['critical_wrong']}/{m['critical']} |")
         if frozen:
-            verdict = passes(pick, up95_max=0.05)
             out += [hdr, sep, fmt(pick), "",
-                    f"**Karar (docs/35 §5 + §8.6a: yanlış ≤ %3, üst sınır ≤ %5, geri dönüş ≤ %30, ret ≥ %95, kritik 0): "
-                    f"{'KABUL' if verdict else 'RET'}**", ""]
+                    f"**Karar (docs/35 §5 + §8.6a: yanlış ≤ %3 ve üst sınır ≤ %5, geri dönüş ≤ %30, ret ≥ %95, kritik 0): "
+                    f"{verdict(pick)}**", ""]
         elif pick:
             out += ["Ölçütü (%3 / %30 / %95 / kritik 0) sağlayan, geri dönüşü en düşük eşik:", "", hdr, sep, fmt(pick), ""]
         else:
@@ -397,7 +455,7 @@ def report(rows, results, args, cost, latencies, frozen=None) -> str:
             bad = []
             exp_q = r["query"]
             if exp_q == "multi":
-                if p["multi"] < 0.5:
+                if p["multi"] < (pick["M"] if pick else 0.5):
                     bad.append(f"çoklu niyet kaçtı (noul {p['multi']:.2f})")
             elif p["query"] != exp_q:
                 bad.append(f"sorgu {p['query']} ({p['q_conf']:.2f})")
@@ -430,15 +488,24 @@ def main() -> None:
     args = ap.parse_args()
     args.variants = args.variants.split(",")
     frozen = None
+    if args.frozen and args.freeze_out:
+        sys.exit("hata: --frozen ile --freeze-out birlikte kullanılamaz")
     if args.frozen:
         frozen = json.loads(Path(args.frozen).read_text())
         args.variants, args.orders, args.model, args.seed = [frozen["variant"]], 1, frozen["model"], frozen["seed"]
         if frozen.get("contract") != CONTRACT:
             sys.exit("hata: dondurulmuş yapılandırma farklı sözleşme sürümü")
+        if frozen.get("fingerprint") != fingerprint():
+            sys.exit("hata: istem/seçenek/karar kodu dondurulduktan sonra değişmiş (parmak izi uyuşmuyor)")
+        if frozen.get("supported") != {k: sorted(v) for k, v in SUPPORTED.items()}:
+            sys.exit("hata: destek matrisi dondurulmuş olandan farklı")
 
     rows = [json.loads(line) for line in open(args.set, encoding="utf-8") if line.strip()]
     if args.limit:
         rows = rows[: args.limit]
+    if frozen and not args.dry_run:
+        if errs := validate_holdout(rows, HERE / "tuning_set.jsonl"):
+            sys.exit("kabul seti geçersiz:\n  - " + "\n  - ".join(errs))
     if args.dry_run:
         print(json.dumps(build_request(rows[0]["q"], args.variants[0], f"{args.seed}-0-{rows[0]['id']}", args.model),
                          ensure_ascii=False, indent=2))
@@ -479,7 +546,8 @@ def main() -> None:
         pick, _ = best_thresholds(results[args.freeze_variant])
         if not pick:
             sys.exit("hata: ölçütü sağlayan eşik yok, dondurulamaz")
-        cfg = {"contract": CONTRACT, "variant": args.freeze_variant, "model": args.model, "seed": args.seed,
+        cfg = {"contract": CONTRACT, "fingerprint": fingerprint(), "frozen_at": time.strftime("%Y-%m-%d %H:%M"),
+               "variant": args.freeze_variant, "model": args.model, "seed": args.seed,
                "order_policy": "soru başına tek gözlem, sıra 0", "supported": {k: sorted(v) for k, v in SUPPORTED.items()},
                **{k: pick[k] for k in ("Y", "Yp", "Ye", "M", "G")}}
         Path(args.freeze_out).write_text(json.dumps(cfg, ensure_ascii=False, indent=2) + "\n")

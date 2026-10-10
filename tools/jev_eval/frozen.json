@@ -1,5 +1,7 @@
 {
   "contract": 1,
+  "fingerprint": "96a24edc30881156",
+  "frozen_at": "2026-10-10 15:22",
   "variant": "A",
   "model": "jev-1.13.0",
   "seed": "fitpack-jev-1",

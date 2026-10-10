@@ -291,10 +291,15 @@ kapatılamıyor:
   talimat enjeksiyonu sorguyu %92+ güvenle saptırıyor — bu sette tavsiye
   sorusu ve eşik engelledi, ama **dönemi açık enjeksiyon** kabul setinde
   ayrıca sınanmalı (Codex).
-- **Dondurma adayı:** A — Y 0,97 · Yp 0 · Ye 0,2 · M 0,90 · G 0,70
-  (`tools/jev_eval/frozen.json`). Codex son kontrolünden sonra donar; kabul
-  seti ondan sonra yazılır. Kabul çalıştırması `--frozen` ile: arama yok, soru
-  başına tek gözlem.
+- ✅ **Donduruldu (2026-10-10, Codex 5. tur onayıyla):** A — Y 0,97 · Yp 0 ·
+  Ye 0,2 · M 0,90 · G 0,70 (`tools/jev_eval/frozen.json`, parmak izi
+  `96a24edc`). Parmak izi istemleri, seçenekleri, hareket listesini, destek
+  matrisini ve karar kodunu kapsar; biri değişirse kabul çalıştırması reddedilir.
+  Kabul çalıştırması `--frozen` ile: arama yok, soru başına tek gözlem; kabul
+  seti 100 soru, ayar setinden bağımsız, zorunlu türleri (`REQUIRED_KINDS`) ve
+  ≥30 Samet sorusunu içermezse betik çalışmaz. Karar: KABUL / RET / YETERSİZ
+  KANIT (gözlenen ölçüt sağlanıp %95 üst sınır %5'i aşarsa; sonuç görüldükten
+  sonra soru eklenmez).
 
 **İstatistik düzeltmesi (Codex):** %3 sınırını %95 güvenle göstermek sıfır
 hatada **≥99 bağımsız otomatik cevap** ister; 100 soruluk sette çoklu niyet ve

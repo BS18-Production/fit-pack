@@ -14,7 +14,7 @@
 | Sorgu doğruluğu — kapsam dışı | %73.3 |
 | Dönem doğruluğu | %98.6 |
 | Hareket doğruluğu (hareketli sorular) | %98.2 (56/57) |
-| Gerekli alanların hepsi doğru (kapsam içi) | %95.0 |
+| Gerekli alanların hepsi doğru (kapsam içi) | %72.3 |
 | Sıra değişince sorgu cevabı aynı kalan soru | %91.7 (66/72) |
 
 | Çoklu niyet doğru ele alınan (seçilen eşikte: niyet seçtirme + ilk 3 seçenek kapsıyor) | %86.7 (26/30) |
@@ -73,7 +73,7 @@
 | Sorgu doğruluğu — kapsam dışı | %80.0 |
 | Dönem doğruluğu | %97.2 |
 | Hareket doğruluğu (hareketli sorular) | %96.5 (55/57) |
-| Gerekli alanların hepsi doğru (kapsam içi) | %95.7 |
+| Gerekli alanların hepsi doğru (kapsam içi) | %72.3 |
 | Sıra değişince sorgu cevabı aynı kalan soru | %94.4 (68/72) |
 
 | Çoklu niyet doğru ele alınan (seçilen eşikte: niyet seçtirme + ilk 3 seçenek kapsıyor) | %83.3 (25/30) |

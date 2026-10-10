@@ -37,8 +37,8 @@ CONTRACT = 2  # v2: yorum katmanı (docs/36)
 
 QUERIES = {
     "workout_summary": (
-        "Antrenman sayısı, set, hacim, süre gibi antrenman özeti",
-        "Workout summary: number of sessions, sets, volume, duration"),
+        "Genel antrenman özeti: seans sayısı, toplam set, toplam hacim, süre (kas grubu ayrımı olmadan)",
+        "Overall workout summary: number of sessions, total sets, total volume, duration (not split by muscle group)"),
     "plan_adherence": (
         "Plana/programa uyum: planlanan antrenman günlerinin ne kadarı yapıldı",
         "Plan adherence: how many planned workout days were completed"),
@@ -58,8 +58,8 @@ QUERIES = {
         "Vücut ağırlığı (kilo, tartı) değişimi ve hedefe göre yönü",
         "Body weight change (scale) and direction relative to goal"),
     "muscle_balance": (
-        "Kas gruplarına göre set dağılımı, hangi bölge ne kadar çalışıldı",
-        "Sets per muscle group, which body part was trained how much"),
+        "Belirli bir kas grubuna (göğüs, sırt, bacak, omuz, kol, karın) ya da kas gruplarına göre kaç set yapıldığı",
+        "How many sets for a specific muscle group (chest, back, legs, shoulders, arms, core) or per muscle group"),
     "streak": (
         "Kaç haftadır düzenli/aralıksız antrenman yapıldığı (seri)",
         "Streak: how many consecutive weeks of regular training"),
@@ -93,8 +93,8 @@ INSTR = {
                  "If `user_question` mentions a specific exercise, which one?"),
     "multi_intent": ("`user_question` birbirinden ayrı iki ya da daha fazla veri mi istiyor (ör. hem antrenman sayısı hem kilo)? Bir sayıyı ve o sayının ne anlama geldiğini (yeterli mi, sağlıklı mı, normal mi) birlikte sormak TEK niyettir.",
                      "Does `user_question` ask for two or more separate pieces of data (e.g. both workout count and body weight)? Asking for a number together with what that number means (is it enough, healthy, normal) is ONE intent."),
-    "advice": ("`user_question` kişiye özel bir reçete (program, kaç kilo basmalı, neyi kesmeli), tıbbi/sakatlık/takviye görüşü ya da bir işlem (kayıt silme, değiştirme) mi istiyor? Kendi verisinin ne anlama geldiğini sormak ya da bugün kalan kalori/proteine göre ne yiyebileceğini sormak bu değildir.",
-               "Does `user_question` ask for a personal prescription (a program, how much to lift, what to cut), a medical/injury/supplement opinion, or an action (delete or edit records)? Asking what one's own data means, or what one can eat today given the remaining calories/protein, is not this."),
+    "advice": ("`user_question` kişiye özel bir reçete (program, kaç kilo basmalı, neyi kesmeli), tıbbi/sakatlık/takviye görüşü ya da bir işlem (kayıt silme, değiştirme) mi istiyor? Kendi verisinin ne anlama geldiğini sormak (“… için yeterli mi”, “sağlıklı mı”) ya da bugün kalan kalori/proteine göre ne yiyebileceğini sormak bu değildir.",
+               "Does `user_question` ask for a personal prescription (a program, how much to lift, what to cut), a medical/injury/supplement opinion, or an action (delete or edit records)? Asking what one's own data means (“is it enough for …”, “is it healthy”), or what one can eat today given the remaining calories/protein, is not this."),
     "wants_interpretation": ("`user_question` yalnız sayıyı değil, sayının ne anlama geldiğini de soruyor mu (yeterli mi, iyi mi, sağlıklı mı, anlamlı mı, normal mi)?",
                              "Besides the number itself, does `user_question` ask what the number means (is it enough, good, healthy, meaningful, normal)?"),
 }

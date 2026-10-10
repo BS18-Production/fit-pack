@@ -1,6 +1,7 @@
 # 36 — "Verime sor" v1: veri + yorum katmanı
 
-> **Durum:** 📝 Taslak — Codex incelemesi ve Samet onayı bekliyor. Kod yok.
+> **Durum:** 📝 Taslak — kaynaklar doğrulandı (Claude); Samet kararları ve
+> Codex incelemesi bekliyor (Codex kotası 16:53'te açılıyor). Kod yok.
 > **Tarih:** 2026-10-10 · **Sahip:** Claude · **İnceleyen:** Codex
 > (yazışma: `collab/threads/yorum-katmani.md`)
 > **İlgili:** [docs/35 — Jev soru eşleme deneyi](35-jev-soru-esleme.md) ·
@@ -68,13 +69,13 @@ dikkat notu dilinde (docs/22 ile aynı ton).
 
 | Sorgu | Yorum kuralı | Kaynak | Not |
 |---|---|---|---|
-| `muscle_balance` (kas grubu set) | Haftalık set: <10 "kas kazanımı için genel kılavuzun altında", 10–20 "aralıkta", >20 "kılavuzun üstünde — toparlanmanı izle" | Schoenfeld ve ark., *J Sports Sci* 2017 — haftalık ≥10 set daha fazla hipertrofi; 20 üstü için veri sınırlı | Bizim sayımız **birincil kasa yazılan tamamlanmış set**; kılavuz "zorlayıcı set" der → kartta açıkça yazılır |
-| `weight_trend` + hedef yönü "ver" | Haftalık değişim, vücut ağırlığının yüzdesi: %0,5–1 aralıkta; >%1 "hızlı — kas kaybı riski artar"; <%0,25 "yavaş" | Garthe ve ark., *IJSNEM* 2011 (sporcularda %0,7/hafta, %1,4'e göre yağsız kütleyi daha iyi korudu); CDC: haftada ~0,5–1 kg | ≥2 ölçüm ve ≥14 gün yoksa yorum yok ("tek ölçüm trend sayılmaz", docs/22 kuralı) |
-| `weight_trend` + yön "al" | %0,25–0,5/hafta aralıkta; üstü "yağ artışı payı yükselir" | Iraki ve ark., *Sports* 2019 — **yalnız ikincil kaynaklardan doğrulandı, Codex/Samet kontrolü gerekir** | |
+| `muscle_balance` (kas grubu set) | Haftalık set: <10 "araştırmalarda daha fazla kas kazanımıyla ilişkilendirilen ~10 set/hafta düzeyinin altında"; ≥10 "bu düzeyde"; >20 "bu düzeyin ötesi için kanıt sınırlı" (uyarı değil, bilgi) | Schoenfeld, Ogborn, Krieger, *J Sports Sci* 2017;35:1073–82 (çevrim içi 2016): 15 çalışma; ≥10 set/kas/hafta, <5 ve 5–9'a göre daha fazla kazanım **eğilimi** (P = 0,074); set başına ~%0,37 ek kazanım | Bizim sayımız **birincil kasa yazılan tamamlanmış set**; çalışmalar zorlayıcı set sayar → kartta yazılır. "Yeterli" kelimesi kullanılmaz; kanıt bir eğilim |
+| `weight_trend` + hedef yönü "ver" | Haftalık değişim, vücut ağırlığının yüzdesi: %0,5–1 "genel önerilen aralıkta"; >%1 "önerilenden hızlı"; <%0,25 "yavaş" | CDC: haftada ~1–2 pound (~0,45–0,9 kg), yavaş ve istikrarlı kayıp kalıcılıkla ilişkili. Garthe ve ark., *IJSNEM* 2011: 24 sporcu, kuvvet antrenmanıyla %0,7/hafta kaybeden grup diyet süresince %1,4'e göre daha çok yağsız kütle ve güç kazandı (12 ayda fark kalmadı) | | ≥2 ölçüm ve ≥14 gün yoksa yorum yok ("tek ölçüm trend sayılmaz", docs/22 kuralı) |
+| `weight_trend` + yön "al" | %0,25–0,5/hafta "önerilen aralıkta"; üstü "önerilenden hızlı" | Iraki, Fitschen, Espinar, Helms, *Sports* 2019;7(7):154 (PMID 31247944, anlatı derlemesi): başlangıç/orta seviye için %0,25–0,5/hafta; ileri seviye daha temkinli | Seviye bilgisi yok → aralık "başlangıç/orta için" diye yazılır |
 | `weight_trend` + yön "koru" / yok | Kendi ortalamasına göre ±%1 içinde "sabit" | — (kendi geçmişi) | Yön yoksa "hedef yönünü seçersen yorumlarım" |
 | `workout_summary` (hacim, set, seans) | **Mutlak norm yok.** Kendi son 8 haftasının medyanına göre: "%X üstünde/altında" | — (kendi geçmişi) | "50k tek başına anlamlı değil; senin ortalaman 42k" |
 | `strength_progress` / `exercise_history` | e1RM eğilimi: artıyor / sabit (3 hafta aynı = plato, A1 odak kuralı) / düşüyor | — (kendi geçmişi; docs/22 §3.3) | Hareketler arası norm ("bench'in iyi mi") yok |
-| `protein_goal`, `nutrition_summary` | Hedefe göre: tutturulan gün oranı; ortalama/hedef | Kullanıcının kendi hedefi | g/kg yorumu §5 açık soru |
+| `protein_goal`, `nutrition_summary` | Hedefe göre: tutturulan gün oranı; ortalama/hedef. **İsteğe bağlı (§5):** ortalama g/kg, "~1,6 g/kg civarı ve üstü" ile karşılaştırma | Kendi hedefi; Morton ve ark., *Br J Sports Med* 2018;52:376–84 (49 çalışma, 1.863 kişi): ~1,6 g/kg/gün üstünde ek yağsız kütle kazanımı görülmedi (kırılma noktası, güven aralığı geniş); Iraki 2019: 1,6–2,2 g/kg | Kayıtsız gün ortalamaya girmez (docs/22 kuralı) |
 | `today_remaining` | Kalan kalori/protein; **öneri:** son 30 günde o öğünde (ör. akşam) yediği yemeklerden kalan makroya sığanlar, en çok 3 | — (kendi geçmişi, deterministik) | Yeni yemek önermez; kayıt yoksa yalnız kalan miktar |
 
 **Sağlık sınırı:** "sağlıklı mı" sorusu genel kılavuzla cevaplanır, her zaman
@@ -108,8 +109,11 @@ aşarsa not öne çıkar. Ağrı, sakatlık, ilaç, takviye → ret (değişmedi
 
 ## 5. Samet'e sorular
 
-1. **Kural kaynakları** (§2) uygun mu? Özellikle hipertrofi için "haftada
-   10–20 set" ve kilo vermede "haftada vücut ağırlığının %0,5–1'i".
+1. **Kural kaynakları** (§2) uygun mu? Kaynaklar birincil yayınlardan
+   doğrulandı (2026-10-10, Claude). Düzeltme: Schoenfeld 2017 "10–20 set"
+   demiyor; ~10 set/hafta üstü daha fazla kazanım **eğilimi** gösteriyor, 20
+   üstü için kanıt sınırlı → kart "yeterli" demez, "araştırmalarda ilişkili
+   düzey" der.
 2. **Protein için g/kg yorumu** eklensin mi? (ör. "kas kazanımı için genelde
    ~1,6 g/kg önerilir" — kaynak Codex incelemesinde doğrulanır.) Hedefin zaten
    var; ek yorum ister misin?

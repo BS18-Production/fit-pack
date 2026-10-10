@@ -44,6 +44,11 @@ Flutter · Drift (SQLite, lokal) · Riverpod · GoRouter · fl_chart · Supabase
 - **Kod değişince emülatörde/cihazda çalıştır**, görsel doğrula.
 - **Oturum sonu:** PROJECT_STATE / NEXT_TASKS / README güncelle.
 
+## Codex ile Ortak Çalışma
+
+Codex aynı projede çalışır. Yazışma `tools/collab.sh codex <konu> "<mesaj>"`
+ile; kurallar, rol dağılımı ve worktree kuralı **[collab/README.md](collab/README.md)**.
+
 ## Sık Komutlar
 
 ```bash

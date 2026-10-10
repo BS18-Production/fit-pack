@@ -48,3 +48,6 @@ devtools_options.yaml
 # Supabase CLI çalışma dosyaları (sürüm önbelleği, yerel yığın durumu)
 supabase/.temp/
 supabase/.branches/
+
+# Claude ↔ Codex yazışmaları (yerel; depo herkese açık)
+/collab/threads/

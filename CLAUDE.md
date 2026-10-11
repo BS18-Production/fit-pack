@@ -44,7 +44,12 @@ Flutter · Drift (SQLite, lokal) · Riverpod · GoRouter · fl_chart · Supabase
 - **Kod değişince emülatörde/cihazda çalıştır**, görsel doğrula.
 - **Oturum sonu:** PROJECT_STATE / NEXT_TASKS / README güncelle.
 
-## Codex ile Ortak Çalışma
+## Paralel Oturumlar ve Codex (ÖNCE OKU)
+
+Aynı anda birden çok Claude oturumu ve Codex çalışabilir. İşe başlamadan
+**[collab/README.md](collab/README.md) "Paralel Claude oturumları"** bölümünü
+ve aktif işler defterini (`/Users/sametorhan/dev/fit_pack/collab/aktif-isler.md`)
+oku; kendi satırını ekle, kilitli alanlara sahibi varsa dokunma.
 
 Codex aynı projede çalışır. Yazışma `tools/collab.sh codex <konu> "<mesaj>"`
 ile; kurallar, rol dağılımı ve worktree kuralı **[collab/README.md](collab/README.md)**.

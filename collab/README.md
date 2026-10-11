@@ -78,6 +78,60 @@ tools/collab.sh claude jev-deneyi "mesaj"   # Codex yazar, Claude cevaplar
    CONVENTIONS §7b ölçütlerine giren işlerde gerekir; o doküman da Samet
    onayıyla koda geçer.
 
+## Paralel Claude oturumları (2026-10-11)
+
+Samet aynı anda birden çok Claude oturumu açabilir (Codex'e ek olarak). Her
+oturum **işe başlamadan önce** bu bölümü ve aktif işler defterini okur.
+
+**Açılış (Samet):**
+```bash
+git -C ~/dev/fit_pack worktree add -b <dal> ../fit_pack-<ad> main   # yeni alan
+cd ~/dev/fit_pack-<ad> && flutter pub get
+claude --dangerously-skip-permissions
+```
+
+### 1. Aktif işler defteri — tek doğruluk kaynağı
+
+`/Users/sametorhan/dev/fit_pack/collab/aktif-isler.md` (git dışı, **mutlak
+yol** — her worktree aynı dosyayı görür). Her oturum:
+- **Başlarken** kendi satırını ekler: oturum adı, klasör, dal, iş, dokunacağı
+  alanlar, aldığı kilitler, başlangıç zamanı.
+- **Kilitli bir alana dokunmadan önce** defterde başka sahibi var mı bakar;
+  varsa dokunmaz, Samet'e sorar.
+- **Bitirince** satırını "bitti" yapar, kilitleri bırakır.
+
+### 2. Kilitli alanlar — aynı anda yalnız bir oturum
+
+| Kilit | Dosyalar | Neden |
+|---|---|---|
+| `şema` | `app_database.dart` (schemaVersion, onUpgrade), `tables/`, `drift_schemas/`, `test/migrations/`, üretilen `*.g.dart` | İki dal aynı sürüm numarasını kullanırsa birleştirmede göç zinciri kırılır |
+| `senkron` | `tables/sync_columns.dart`, `lib/features/sync/` | Tablo listeleri ve sıra tek doğrudur |
+| `sunucu` | `supabase/migrations/`, `supabase/tests/`, Supabase'e her yazma | Göçler sıralıdır; üretime yalnız Samet onayıyla |
+| `bağımlılık` | `pubspec.yaml`, `pubspec.lock` | Kilit dosyası birleştirmede kolay bozulur |
+| `çeviri` | `lib/l10n/*.arb`, `app_l10n*.dart` | Aynı dosyanın sonuna iki dal ekler → çakışma |
+| `rota` | `lib/core/router/` | Tek `AppRoutes` |
+| `cihaz` | iPhone (`devicectl`), Android cihaz, iOS Simulator | Aynı anda iki kurulum / iki dokunma oturumu karışır |
+
+Kilit gerektirmeyenler: ekran içi değişiklikler (`lib/features/<özellik>/`
+altında yeni dosya), saf hesap kodu ve testleri, `docs/` altında **yeni**
+doküman. Ortak dokümanlar (`NEXT_TASKS.md`, `PROJECT_STATE.md`, `README.md`)
+**yalnız birleştirme anında** güncellenir — dalda değil.
+
+### 3. Değişmez kurallar
+
+- Yalnız **kendi worktree'nde** çalış; başka oturumun klasörüne yazma.
+- `flutter install` **asla** (veriyi siler). Cihaza kurulum, push, `main`'e
+  birleştirme, üretim Supabase'i → **Samet onayı**.
+- Supabase yazmaları yalnız `Fit Pack Dev` (`qecbnrkbordkqeogmevi`).
+- `build_runner`'ı yalnız kendi worktree'nde çalıştır; üretilen dosyaları
+  başka dala taşıma.
+- Codex kotası **ortak ve sınırlı**: Codex'e yalnız riskli işte, tek turluk
+  derin inceleme için yaz.
+- Birleştirmeden önce: `main`'i dala al (rebase/merge), `flutter analyze` +
+  `flutter test` yeşil, defterde kilit çakışması yok.
+- `--dangerously-skip-permissions` izin sormadan çalıştırır: yukarıdaki
+  onay gerektiren işlerde **yine de dur ve Samet'e sor**.
+
 ## Samet'in rolü
 
 - Yazışmayı başlatabilir ("Codex'le şunu konuşun") ya da sonradan okur.

@@ -51,3 +51,4 @@ supabase/.branches/
 
 # Claude ↔ Codex yazışmaları (yerel; depo herkese açık)
 /collab/threads/
+/collab/aktif-isler.md

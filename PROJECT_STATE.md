@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-10-09
+> **Son güncelleme:** 2026-10-11
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -13,6 +13,16 @@
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v14 · **Sahibi:** Samet Orhan (kişisel proje)
+
+## Verime sor — yorum katmanı · 2026-10-11
+
+docs/36 §1–2'nin hesap motoru yazıldı (`lib/features/insights/insight_*.dart`):
+veritabanı bilmez, cümle üretmez; her yorum çeviri anahtarı + parametre + not
++ kaynak döner. Kurallar: ~10 set/kas/hafta düzeyi (Schoenfeld 2017), kilo
+kaybı CDC kg aralığı (0,45–0,9 kg/hafta), alma %0,25–0,5 (Iraki 2019), kendi
+geçmişi 8 haftanın medyanıyla, protein 1,6 / 2,2 g/kg (Morton 2018, Iraki).
+"Yeterli" denmez; devam eden dönem "şu ana kadar". 783 test, analiz temiz.
+Ekran ve `.arb` cümleleri henüz yok.
 
 ## Beslenme — Sıcak Günlük · 2026-10-09
 

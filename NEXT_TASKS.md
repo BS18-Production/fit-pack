@@ -1,5 +1,20 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## Verime sor — yorum katmanı (docs/36 §1–2) · 2026-10-11
+
+Problem: soruların çoğu sayı + "ne anlama geliyor" istiyor; yorum kuralları
+ve iki yeni sorgu (`today_remaining`, `top_exercises`) kodda yoktu.
+Beklenen: saf Dart motoru, kaynaklı kurallar, cümle yerine çeviri anahtarı.
+
+- [x] `lib/features/insights/insight_window|queries|rules.dart` — dönem
+      pencereleri, bugün kalan + kendi geçmişinden öneri, en çok 5 hareket,
+      kas grubu set / kilo eğilimi / medyan karşılaştırma / e1RM (tahmini tek
+      tekrar maksimumu) / protein g/kg yorumları.
+- [x] 41 yeni birim testi; analiz temiz, 783 test. main'e birleşti (`e910426`).
+- [ ] Docs/36'da sayısı olmayan eşikler Samet onayında: medyan için en az 4
+      hafta, e1RM ±%1 "sabit", kilo 0,1 kg/hafta gürültü, öneri sırası.
+- [ ] Yorum cümleleri `.arb`'ye (çeviri kilidi) + provider'lar + ekran.
+
 ## Beslenme — Sıcak Günlük · 2026-10-09
 
 Problem: ikili halka ve büyük öğün kartları bilgi hiyerarşisini zayıflatıyor,

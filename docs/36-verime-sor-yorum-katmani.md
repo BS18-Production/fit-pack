@@ -132,3 +132,69 @@ olarak sunulmaz: "araştırmada bu düzeyin üstünde ek kazanım görülmedi".
 3. ✅ Akşam yemeği önerisi **yalnız kendi geçmişinden** (o öğünde daha önce yedikleri); yeni yemek önerisi ayrı karar.
 4. ✅ Kabul seti **120 soru** — sonradan (docs/35 §8.8) Samet'in soruları beklenmeden **60 Claude + 60 Codex**.
 5. Antrenman hedefi türü profilde yok; set yorumu hipertrofi araştırmasıyla yapılır (hedef türü alanı ileride ayrı iş).
+
+---
+
+## 6. Kalite paneli (Samet onayı: 2026-10-11)
+
+**Neden.** Kabul testi bizim yazdığımız sorularla ölçer; asistanın gerçek
+kullanımda ne kadar doğru çalıştığını ancak gerçek kullanım gösterir. Samet'in
+ilk önerisi "tüm kullanıcıların sohbetlerini gören admin paneli"ydi; sorular
+**sağlık verisi** içerdiği için (KVKK'da özel nitelikli kişisel veri) ve bu
+doküman "sorular saklanmaz" dediği için onun yerine **metinsiz** bir kalite
+paneli seçildi. Ham metin yalnız kullanıcının açık rızasıyla.
+
+### 6.1 Ne kaydedilir — soru başına bir olay (metin YOK)
+
+| Alan | Örnek | Neden |
+|---|---|---|
+| zaman, sözleşme sürümü, model, dondurma parmak izi | `2`, `jev-1.13.0`, `319234e4` | Sürüm değişince oranları ayırmak |
+| karar | `auto` / `clarify` / `multi` / `fallback` / `blocked` | Geri dönüş ve süzgeç oranı |
+| seçilen sorgu + güven, dönem + güven, hareket türü (`ex`/`fam`/`none`) | `muscle_balance` 0,99 | Hangi sorguda zorlanıyor |
+| yorum istendi mi (noul ≥ 0,5) | evet | Yorum katmanının kullanımı |
+| **kullanıcı düzeltmesi** | "değiştir" → `workout_summary` | **En değerli sinyal:** yanlış eşlemenin gerçek kanıtı |
+| netleştirmede seçilen seçenek | `last_30_days` | Belirsiz dönemlerin dağılımı |
+| gecikme, token | 0,41 sn · 2.100 | Hız ve maliyet |
+
+**Kaydedilmez:** soru metni, kullanıcının sayıları (kilo, kalori), hareket
+**adı** (yalnız türü), cevap metni.
+
+### 6.2 Panelde görünenler
+
+- Haftalık oranlar: otomatik / netleştirme / geri dönüş / süzgeç; **düzeltme
+  oranı** (otomatik cevaplardan "değiştir"e basılanlar ≈ gerçek yanlış oranı —
+  kabul ölçütündeki %3 ile karşılaştırılır).
+- Karışıklık listesi: "Jev X seçti → kullanıcı Y'ye düzeltti" çiftleri.
+- Sorgu dağılımı (en çok ne soruluyor → hangi hesaba yatırım yapılmalı).
+- Gecikme (medyan, %95) ve aylık maliyet.
+- **Alarm:** düzeltme oranı iki hafta üst üste %3'ü aşarsa panelde uyarı → yeni
+  ayar turu (docs/35 betiği, yeni kabul seti).
+
+### 6.3 Ham metin — yalnız açık rızayla
+
+- Ayarlar'da kapalı başlayan **"Sorularımı asistanı geliştirmek için paylaş"**
+  anahtarı. Açıkken yalnız **düzeltilen** ve **geri dönüşe düşen** soruların
+  metni saklanır (doğru giden soru gerekmez).
+- Saklama **30 gün**, sonra kendiliğinden silinir; kullanıcı istediği an
+  "paylaştıklarımı sil" ile siler; hesap silinince gider.
+- Bu metinler yeni ayar setinin hammaddesidir (gerçek kullanıcı dili — kabul
+  setinde en çok eksik kalan şey).
+
+### 6.4 Aşamalar
+
+| Aşama | Ne | Nerede | Kim görür |
+|---|---|---|---|
+| **K1** (asistanla birlikte) | Olaylar **cihazda** yerel tabloda; gizli "Geliştirici → Asistan kalitesi" ekranı | Telefon | Yalnız cihaz sahibi (Samet) |
+| **K2** (uygulama başkalarına açılınca) | Olaylar Supabase'e (metinsiz); günlük toplama; panel | Supabase + yönetici ekranı | Yalnız yönetici rolü; kullanıcı kendi olaylarını görür (RLS) |
+| **K3** (isteğe bağlı) | Açık rızalı metin örnekleri, 30 gün | Supabase, ayrı tablo, ayrı RLS | Yalnız yönetici |
+
+K2/K3 öncesinde: gizlilik politikası metni, KVKK aydınlatma metni ve açık rıza
+akışı (ayrı tasarım dokümanı). Yönetici rolü sunucu tarafında (Supabase
+`service_role` yalnız Edge Function'da; istemciye asla gömülmez).
+
+### 6.5 Açık noktalar
+
+- K1 yerel tablo şema değişikliği ister (v16) → asistan işiyle aynı dalda,
+  şema kilidi alınarak.
+- "Değiştir" düzeltmesi bazen yanlış eşleme değil fikir değişikliği olabilir;
+  oran bir **üst tahmin** olarak okunur.

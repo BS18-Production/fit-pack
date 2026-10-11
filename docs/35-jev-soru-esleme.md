@@ -448,6 +448,11 @@ değiştirmek yanlış olur.
 6. ✅ **Kabul ölçütü okuması (a):** gözlenen yanlış otomatik cevap ≤ %3 **ve**
    %95 güven üst sınırı ≤ %5; kabul seti **120 soru** (30 Samet + 45'er iki
    taraf) — 100 soruda ~60 otomatik cevapla sıfır hatada bile sınırdaydı.
+10. ✅ **v3 RET sonrası (2026-10-11):** (c) asistan önce **yapay zekâsız hazır
+   sorularla** başlar (docs/36 veri + yorum kuralları). (b) Claude Haiku denemesi
+   **iptal** — Samet ücretli LLM API'si olarak Claude'u kullanmak istemiyor.
+   Serbest soru eşleme ileride ayrı karar (Jev'in yeni sürümü ya da başka
+   sağlayıcı; aynı betik ve yeni kabul setiyle ölçülür).
 9. ✅ **Kabul ölçütü gevşetildi (2026-10-11, seçenek 1):** gözlenen yanlış
    otomatik ≤ %3, geri dönüş ≤ %30, kapsam dışı reddi ≥ %95, kritik 0; %95 üst
    sınır **raporlanır, şart değil** (§12 istatistik uyarısı). Güvence: her

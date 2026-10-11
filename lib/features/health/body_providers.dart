@@ -47,6 +47,8 @@ Future<int> runBodyImport({
       // Okuma sürerken hesap değiştiyse ya da rıza geri alındıysa dur.
       stillAllowed: () async =>
           healthEpoch.value == epoch && await consentNow(),
+      // Yazma işleminin İÇİNDE, eşzamanlı kontrol (temizlikle yarışmasın).
+      epochValid: () => healthEpoch.value == epoch,
     );
   } catch (_) {
     return 0;

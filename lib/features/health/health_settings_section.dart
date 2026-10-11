@@ -122,8 +122,12 @@ class _HealthSettingsSectionState extends ConsumerState<HealthSettingsSection> {
                       // Bağımlılıklar await'ten ÖNCE (Codex P2).
                       final sink = ref.read(workoutSinkProvider);
                       final prefs = ref.read(healthPrefsProvider.notifier);
+                      final epoch = healthEpoch.value;
                       // Açarken yazma izni istenir (docs/44 H-4).
                       if (v) await sink.requestWriteAccess();
+                      // İzin penceresi açıkken hesap değiştiyse eski işlem
+                      // yeni hesabın tercihini açmasın (Codex yeni P1).
+                      if (healthEpoch.value != epoch) return;
                       await prefs.setWriteWorkouts(v);
                     },
             ),

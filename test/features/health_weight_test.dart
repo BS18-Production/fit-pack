@@ -70,15 +70,20 @@ void main() {
     now: now,
   );
 
-  Future<void> elle(DateTime t, {double? kg, double? fat, double? bel}) =>
-      db.bodyDao.insertMeasurement(
-        BodyMeasurementsCompanion.insert(
-          date: t,
-          weightKg: Value(kg),
-          bodyFatPct: Value(fat),
-          waistCm: Value(bel),
-        ),
-      );
+  // Kayıt zamanını (changed_at_ms) ekleme tetikleyicisi milisaniyeyle
+  // damgalar; art arda iki elle giriş aynı milisaniyeye düşmesin diye kısa
+  // bekleme (gerçekte iki elle giriş arasında saniyeler olur).
+  Future<void> elle(DateTime t, {double? kg, double? fat, double? bel}) async {
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+    await db.bodyDao.insertMeasurement(
+      BodyMeasurementsCompanion.insert(
+        date: t,
+        weightKg: Value(kg),
+        bodyFatPct: Value(fat),
+        waistCm: Value(bel),
+      ),
+    );
+  }
 
   group('W-7 rıza kapısı', () {
     test('rıza yoksa platform okunmaz, satır yazılmaz', () async {
@@ -310,5 +315,17 @@ void main() {
         expect(p.healthConsentAt, t);
       },
     );
+  });
+
+  test('hesap temizliği başladıysa (dönem değişti) içe alma yazmaz', () async {
+    final n = await importBodySamples(
+      source: _FakeBody([_kilo('a', bugun7, 80)]),
+      dao: db.bodyDao,
+      consentGiven: true,
+      now: now,
+      epochValid: () => false,
+    );
+    expect(n, 0);
+    expect(await db.bodyDao.getAllMeasurements(), isEmpty);
   });
 }

@@ -95,6 +95,14 @@ Supabase'e aynı kolonları ekleyen göç (önce Dev, üretim Samet onayıyla).
 - İki tartı uygulaması aynı tartıyı ayrı örnek olarak yazarsa iki satır gelir;
   W-4 hesapta günde tek değer seçer, listede iki satır görünür (gizlenebilir).
 
+- **Silinen örneğin başka cihazda / yeniden kurulumda kısa süre görünmesi
+  (Codex P2, kabul edildi):** "yeniden rızada yalnız yeni örnekler" tarih
+  sınırı cihazda tutulur. Uygulama yeniden kurulunca ya da başka cihazda
+  sınır yoktur; eski bir örnek yerelde yeniden içe alınabilir. Sunucu silinmiş
+  kimliği kabul etmez (`sync_guard` K-3) ve sonraki çekmede satır cihazdan da
+  silinir → kalıcı veri oluşmaz, yalnız kısa süreli görünme. Kalıcı çözüm
+  sınırı profilde tutmak (şema v18) — gerek görülürse ayrı iş.
+
 ## 5. Samet'in kararları (2026-10-11)
 
 1. ✅ İçe alınan kilo **bulutta** tutulur.

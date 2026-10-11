@@ -75,7 +75,12 @@ class BodyDao extends DatabaseAccessor<AppDatabase> with _$BodyDaoMixin {
     double? weightKg,
     double? bodyFatPct,
     String? sourceApp,
-  }) async {
+    bool Function()? stillAllowed,
+  }) => transaction(() async {
+    // Kontrol ve yazma AYNI işlemde (Codex P1): hesap temizliği de bir işlem;
+    // SQLite ikisini sıraya koyar. Dönem temizlikten ÖNCE artırıldığı için
+    // temizlik başladıktan sonra hiçbir içe alma satır yazamaz.
+    if (stillAllowed != null && !stillAllowed()) return false;
     final existing = await (select(
       bodyMeasurements,
     )..where((m) => m.sourceRef.equals(sourceRef) | m.uid.equals(uid))).get();
@@ -92,7 +97,7 @@ class BodyDao extends DatabaseAccessor<AppDatabase> with _$BodyDaoMixin {
       ),
     );
     return true;
-  }
+  });
 
   /// İçe alınan satır silinmez, gizlenir (W-6) — senkronlanır, yeniden
   /// içe alınmaz.

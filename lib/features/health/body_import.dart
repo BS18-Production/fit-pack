@@ -141,6 +141,7 @@ Future<int> importBodySamples({
   required bool consentGiven,
   required DateTime now,
   Future<bool> Function()? stillAllowed,
+  bool Function()? epochValid,
   DateTime? floor,
 }) async {
   if (!consentGiven) return 0;
@@ -165,6 +166,7 @@ Future<int> importBodySamples({
       weightKg: isWeight ? value : null,
       bodyFatPct: isWeight ? null : value,
       sourceApp: s.sourceName.isEmpty ? null : s.sourceName,
+      stillAllowed: epochValid,
     );
     if (ok) added++;
   }

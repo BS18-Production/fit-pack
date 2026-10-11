@@ -87,9 +87,9 @@ int _recordedMs(BodyMeasurement r) =>
 BodyMeasurement _latest(List<BodyMeasurement> rows) => rows.reduce((a, b) {
   final c = _recordedMs(a).compareTo(_recordedMs(b));
   if (c != 0) return c > 0 ? a : b;
-  // Aynı milisaniye (pratikte yalnız aynı cihazda art arda kayıt): yerel
-  // ekleme sırası — son eklenen kazanır.
-  return a.id >= b.id ? a : b;
+  // Aynı milisaniye: cihazdan bağımsız `uid` — her cihaz aynı satırı seçer
+  // (Codex P2). Milisaniyelik damgada pratikte olmaz.
+  return _uidOf(a).compareTo(_uidOf(b)) >= 0 ? a : b;
 });
 
 String _uidOf(BodyMeasurement r) => r.uid ?? r.id.toString().padLeft(12, '0');

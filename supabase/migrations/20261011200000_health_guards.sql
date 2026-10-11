@@ -10,7 +10,9 @@
 --   2. RIZA ZAMANA GÖRE İLERLER (docs/41 §3): rıza verme / geri alma
 --      `health_consent_at` damgasıyla yazılır (geri alma: zaman + sürüm NULL).
 --      Daha eski damgalı bir profil kopyası (ör. başka cihazdaki eski profil
---      düzenlemesi) rıza kararını geri getiremez.
+--      düzenlemesi) rıza kararını geri getiremez; daha YENİ karar eski bir
+--      satırla gelse de kaybolmaz (yalnız karar alınır). Aynı anda farklı
+--      karar: geri alma kazanır. Gizleme için aynı birleştirme.
 --   3. delete_user(): asistan kota sayaçları (`assistant_private.counters`,
 --      bucket = '<kullanıcı uuid>:<gün>') yabancı anahtarsız olduğu için
 --      hesap silmede kalıyordu → açıkça silinir (GDPR md. 17).
@@ -29,7 +31,15 @@ set search_path = ''
 as $fn$
 begin
   if coalesce(old.hidden, false) then
+    -- Bir kez gizlenen geri açılmaz.
     new.hidden := true;
+  elsif coalesce(new.hidden, false) and new.changed_at_ms <= old.changed_at_ms then
+    -- Gizleme kararı, geri kalanı ESKİ bir satırla geldi (başka cihaz bu arada
+    -- satırı güncellemiş): sync_guard bütün yazmayı reddederdi → gizleme
+    -- kaybolurdu. Sunucudaki satır korunur, yalnız gizleme alınır.
+    new := old;
+    new.hidden := true;
+    new.changed_at_ms := old.changed_at_ms + 1;
   end if;
   return new;
 end $fn$;
@@ -43,12 +53,32 @@ returns trigger
 language plpgsql
 set search_path = ''
 as $fn$
+declare
+  v_at timestamptz;
+  v_ver integer;
 begin
   if old.health_consent_at is not null
      and (new.health_consent_at is null
-          or new.health_consent_at < old.health_consent_at) then
+          or new.health_consent_at < old.health_consent_at
+          -- Aynı an, farklı karar: geri alma (sürüm NULL) kazanır.
+          or (new.health_consent_at = old.health_consent_at
+              and old.health_consent_version is null)) then
+    -- Daha eski rıza kararı: sunucudaki karar korunur.
     new.health_consent_at := old.health_consent_at;
     new.health_consent_version := old.health_consent_version;
+  elsif new.health_consent_at is not null
+        and (old.health_consent_at is null
+             or new.health_consent_at > old.health_consent_at)
+        and new.changed_at_ms <= old.changed_at_ms then
+    -- Daha YENİ rıza kararı ESKİ bir satırla geldi: sync_guard bütün yazmayı
+    -- reddederdi → karar kaybolurdu. Sunucudaki profil korunur, yalnız rıza
+    -- alınır.
+    v_at := new.health_consent_at;
+    v_ver := new.health_consent_version;
+    new := old;
+    new.health_consent_at := v_at;
+    new.health_consent_version := v_ver;
+    new.changed_at_ms := old.changed_at_ms + 1;
   end if;
   return new;
 end $fn$;

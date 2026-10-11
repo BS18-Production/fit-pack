@@ -5596,7 +5596,7 @@ abstract class AppL10n {
   /// No description provided for @nutritionDayCompleteHint.
   ///
   /// In en, this message translates to:
-  /// **'Marked days count as \"known days\" in your weekly review, so a partial log isn\'t mistaken for eating little.'**
+  /// **'Marked days count as “known days” in your weekly review, so a partial log isn\'t mistaken for eating little.'**
   String get nutritionDayCompleteHint;
 
   /// No description provided for @nutritionDayCompleted.

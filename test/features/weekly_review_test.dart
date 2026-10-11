@@ -180,6 +180,13 @@ void main() {
       expect(n.proteinHitDays, 1, reason: 'cuma 0 g < hedef');
     });
 
+    test('bilinen gün = kayıtlı ∪ tamamlanmış (odak kuralı bunu sayar)', () {
+      final n = hesap(done: {carsamba, cuma}).nutrition;
+      expect(n.loggedDays, 2);
+      expect(n.knownDays, 3, reason: 'pzt + çar (kayıtlı) + cuma (tamamlandı)');
+      expect(hesap().nutrition.knownDays, 2, reason: 'eski kural: kayıtlı gün');
+    });
+
     test('hafta dışındaki tamamlanmış gün sayılmaz ([start, end))', () {
       final n = hesap(done: {pzt.add(const Duration(days: 7))}).nutrition;
       expect(n.basis, NutritionBasis.loggedDays);

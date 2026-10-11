@@ -55,7 +55,9 @@ class DayCompleteCard extends ConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          FilledButton.tonalIcon(
+          // Kenarlıklı: "Yemek Ekle" ana eylem kalır, bu ikincil (görsel
+          // kontrol 2026-10-11 — iki parlak birincil düğme yarışıyordu).
+          OutlinedButton.icon(
             key: const ValueKey('nutrition.dayComplete'),
             onPressed: () => dao.markDayComplete(date),
             icon: const FitPackIcon.material(Icons.task_alt_rounded),

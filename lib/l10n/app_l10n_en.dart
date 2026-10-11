@@ -3293,7 +3293,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get nutritionDayCompleteHint =>
-      'Marked days count as \"known days\" in your weekly review, so a partial log isn\'t mistaken for eating little.';
+      'Marked days count as “known days” in your weekly review, so a partial log isn\'t mistaken for eating little.';
 
   @override
   String get nutritionDayCompleted => 'Log complete';

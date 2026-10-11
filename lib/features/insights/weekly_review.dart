@@ -231,6 +231,11 @@ class NutritionSection {
   /// ([basis] = completedDays iken; ekran "hesaba katılmadı" der).
   final int excludedLoggedDays;
 
+  /// Bilinen gün = kaydı olan ∪ tamamlanmış gün. Kayıt alışkanlığı odağı buna
+  /// bakar: kayıtsız ama "tamamlandı" işaretli gün bilinçli beyandır, "kayıt
+  /// girmedin" denmez (docs/37, görsel kontrol 2026-10-11).
+  final int knownDays;
+
   /// Protein hedefinin tutturulduğu gün sayısı — **yalnız tamamlanmış
   /// günlerde bilinir**; tamamlanmış gün yoksa `null` (eksik kayıttan
   /// başarısızlık çıkarılmaz, Samet kuralı).
@@ -250,9 +255,10 @@ class NutritionSection {
     required this.proteinGoal,
     this.basis = NutritionBasis.loggedDays,
     this.completedDays = 0,
+    int? knownDays,
     this.excludedLoggedDays = 0,
     this.proteinHitDays,
-  });
+  }) : knownDays = knownDays ?? loggedDays;
 }
 
 class WeightSection {
@@ -455,6 +461,7 @@ NutritionSection _nutrition(WeeklyReviewInput i) {
     loggedDays: n,
     basis: NutritionBasis.completedDays,
     completedDays: done.length,
+    knownDays: {...kcal.keys, ...done}.length,
     excludedLoggedDays: kcal.keys.where((d) => !done.contains(d)).length,
     proteinHitDays: i.proteinGoal <= 0
         ? null
@@ -587,8 +594,8 @@ ReviewFocus _focus(
   // 3) Beslenme kaydı az. Eşik geçen güne göre ölçeklenir: pazartesi 1 gün
   //    kayıtla "alışkanlık kur" demek anlamsız.
   final esik = period.daysElapsed < 4 ? period.daysElapsed : 4;
-  if (nutrition.loggedDays < esik) {
-    return ReviewFocus(FocusKind.loggingHabit, done: nutrition.loggedDays);
+  if (nutrition.knownDays < esik) {
+    return ReviewFocus(FocusKind.loggingHabit, done: nutrition.knownDays);
   }
 
   // 4) Kilo 2 haftadır hedefin tersine. Yön bu haftadan ÖNCE seçilmiş

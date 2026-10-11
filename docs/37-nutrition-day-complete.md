@@ -188,8 +188,16 @@ commit'te** (CLAUDE.md).
   tamamlanmış gün de takvimde görünür.
 - ✅ **Aşama 5c** (değerlendirme ekranı): tamamlanmış gün varken "N tamamlanmış
   gün · M gün hesaba katılmadı" ve "Protein hedefi K/N gün". Paket 762 yeşil.
-- ⏳ **Kalan:** Codex iOS Simulator görsel kontrolü; Aşama 6 (üretim:
-  sunucu göçü önce, sonra istemci) — Samet onayı.
+- ✅ **Görsel kontrol (2026-10-11, Claude, Android emülatörü + Dev test
+  hesabı):** düğme → ✓ "Kaydın tamam" → sunucuda `complete`, uid Python'da
+  bağımsız hesaplanan UUIDv5 ile birebir; takvimde ✓ rozeti; haftalık
+  değerlendirmede "1 tamamlanmış gün · Protein hedefi 0/1 gün"; "Geri al" →
+  sunucuda `open`, satır silinmedi. Bulunan ve düzeltilen: (1) kayıt
+  alışkanlığı odağı tamamlanmış günü saymıyordu ("0 gün kayıt" diyordu) →
+  `knownDays` = kayıtlı ∪ tamamlanmış; (2) düğme "Yemek Ekle" ile aynı parlak
+  renkteydi → kenarlıklı ikincil düğme; (3) düz tırnak → “ ”. Paket 763 yeşil.
+- ⏳ **Aşama 6 (üretim):** sunucu göçü üretim Supabase'e → dal `main`'e →
+  iPhone'a `devicectl` ile kurulum — Samet onayı.
 - ⚠️ `changedAfterComplete` silinen kaydı görmez (satır kalmıyor); mezar taşı
   tablosundan okumak açık iş.
 - ⛔ **Dal sunucu göçünden (Aşama 3) önce `main`'e birleşmez / cihaza kurulmaz**:

@@ -1959,7 +1959,7 @@
   },
   "nutritionDayCompleteToday": "Today's log is complete",
   "nutritionDayCompletePast": "This day's log is complete",
-  "nutritionDayCompleteHint": "Marked days count as \"known days\" in your weekly review, so a partial log isn't mistaken for eating little.",
+  "nutritionDayCompleteHint": "Marked days count as “known days” in your weekly review, so a partial log isn't mistaken for eating little.",
   "nutritionDayCompleted": "Log complete",
   "nutritionDayChangedAfter": "Changed after completion",
   "nutritionDayReopen": "Undo",

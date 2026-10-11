@@ -3246,7 +3246,7 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get nutritionDayCompleteHint =>
-      'İşaretlediğin günler haftalık değerlendirmede \"bilinen gün\" sayılır; eksik kayıt düşük tüketim sanılmaz.';
+      'İşaretlediğin günler haftalık değerlendirmede “bilinen gün” sayılır; eksik kayıt düşük tüketim sanılmaz.';
 
   @override
   String get nutritionDayCompleted => 'Kaydın tamam';

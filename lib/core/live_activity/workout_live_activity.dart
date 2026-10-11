@@ -23,6 +23,15 @@ class WorkoutLiveState {
   /// set var ve canlı seans).
   final bool canComplete;
 
+  /// Kartta görünen setin kimliği. Kilit ekranı eylemi bununla gelir;
+  /// arada set değiştiyse (gecikmiş/çift dokunuş) eylem uygulanmaz.
+  final String setKey;
+
+  /// ± düğmelerinin etiketi ("−2,5 kg" / "+1 tekrar"); boşsa düğme yok
+  /// (süre/mesafe hareketi).
+  final String stepDownLabel;
+  final String stepUpLabel;
+
   const WorkoutLiveState({
     required this.exercise,
     required this.setLabel,
@@ -32,6 +41,9 @@ class WorkoutLiveState {
     required this.doneSets,
     required this.totalSets,
     this.canComplete = false,
+    this.setKey = '',
+    this.stepDownLabel = '',
+    this.stepUpLabel = '',
   });
 
   bool get resting => restEndsAt != null;
@@ -45,6 +57,9 @@ class WorkoutLiveState {
         'doneSets': doneSets,
         'totalSets': totalSets,
         'canComplete': canComplete,
+        'setKey': setKey,
+        'stepDownLabel': stepDownLabel,
+        'stepUpLabel': stepUpLabel,
       };
 
   @override
@@ -57,11 +72,15 @@ class WorkoutLiveState {
       other.restEndsAt == restEndsAt &&
       other.doneSets == doneSets &&
       other.totalSets == totalSets &&
-      other.canComplete == canComplete;
+      other.canComplete == canComplete &&
+      other.setKey == setKey &&
+      other.stepDownLabel == stepDownLabel &&
+      other.stepUpLabel == stepUpLabel;
 
   @override
   int get hashCode => Object.hash(exercise, setLabel, target, restStartedAt,
-      restEndsAt, doneSets, totalSets, canComplete);
+      restEndsAt, doneSets, totalSets, canComplete, setKey, stepDownLabel,
+      stepUpLabel);
 }
 
 /// Kilit ekranı metinleri — seans boyunca sabit, aktif dilden (ARB) gelir.
@@ -114,10 +133,13 @@ class WorkoutLiveLabels {
 
 /// Kilit ekranından gelen eylemler (docs/45 §2). Yerel taraf yalnız iletir;
 /// seans durumunu değiştiren tek yer seans ekranıdır.
-enum LiveAction { completeSet, addRest, skipRest }
+enum LiveAction { completeSet, stepDown, stepUp, addRest, skipRest }
 
-/// Eylemi uygulayan taraf. `true` = uygulandı; `false` = açık seans yok.
-typedef LiveActionHandler = Future<bool> Function(LiveAction action);
+/// Eylemi uygulayan taraf. [setKey]: dokunulan kartın gösterdiği set
+/// ([WorkoutLiveState.setKey]; dinlenme eylemlerinde yok). `true` =
+/// uygulandı; `false` = açık seans yok ya da kart bayat.
+typedef LiveActionHandler = Future<bool> Function(
+    LiveAction action, String? setKey);
 
 /// iOS Canlı Etkinlik + Android seans bildirimi köprüsü (yerel taraf:
 /// `AppDelegate.swift` + `WorkoutLiveActivityController.swift`,
@@ -225,12 +247,15 @@ class WorkoutLiveActivity {
 
   Future<Object?> _onNativeCall(MethodCall call) async {
     if (call.method != 'action') throw MissingPluginException();
-    final action = LiveAction.values
-        .where((a) => a.name == call.arguments)
-        .firstOrNull;
+    // Yerel taraf {action, setKey} gönderir; eski biçim yalnız ad.
+    final args = call.arguments;
+    final name = args is Map ? args['action'] : args;
+    final setKey = args is Map ? args['setKey'] as String? : null;
+    final action =
+        LiveAction.values.where((a) => a.name == name).firstOrNull;
     final h = _handler;
     if (action == null || h == null) return false;
-    return h(action);
+    return h(action, setKey);
   }
 
   Future<void> _enqueue(Future<void> Function() op) =>

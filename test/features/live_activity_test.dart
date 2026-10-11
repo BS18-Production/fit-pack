@@ -113,7 +113,7 @@ void main() {
   group('kilit ekranı eylemleri', () {
     tearDown(() => debugDefaultTargetPlatformOverride = null);
 
-    Future<Object?> fromNative(String action) async {
+    Future<Object?> fromNative(Object action) async {
       const codec = StandardMethodCodec();
       Object? reply;
       await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -129,20 +129,25 @@ void main() {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       final live = WorkoutLiveActivity();
       final got = <LiveAction>[];
-      Future<bool> handler(LiveAction a) async {
+      final keys = <String?>[];
+      Future<bool> handler(LiveAction a, String? key) async {
         got.add(a);
+        keys.add(key);
         return true;
       }
 
       live.attach(handler);
       expect(await fromNative('completeSet'), isTrue);
       expect(await fromNative('skipRest'), isTrue);
+      expect(await fromNative({'action': 'stepUp', 'setKey': '12:1'}), isTrue);
       expect(await fromNative('bilinmeyen'), isFalse);
-      expect(got, [LiveAction.completeSet, LiveAction.skipRest]);
+      expect(got,
+          [LiveAction.completeSet, LiveAction.skipRest, LiveAction.stepUp]);
+      expect(keys, [null, null, '12:1'], reason: 'set kimliği iletilir');
 
       live.detach(handler);
       expect(await fromNative('addRest'), isFalse);
-      expect(got, hasLength(2));
+      expect(got, hasLength(3));
     });
   });
 }

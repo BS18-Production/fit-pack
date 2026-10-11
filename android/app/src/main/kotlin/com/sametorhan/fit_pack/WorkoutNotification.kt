@@ -35,6 +35,7 @@ object WorkoutNotification {
     const val CHANNEL = "workout_session"
     private const val OLD_CHANNEL = "workout_live"
     const val ACTION_PREFIX = "fit_pack.live."
+    const val EXTRA_SET_KEY = "setKey"
 
     data class Labels(
         val rest: String,
@@ -56,6 +57,11 @@ object WorkoutNotification {
         val doneSets: Int,
         val totalSets: Int,
         val canComplete: Boolean,
+        /** Kartın gösterdiği set — eylem bununla döner, bayatsa yok sayılır. */
+        val setKey: String,
+        /** ± etiketleri ("−2,5 kg"); boşsa düğme yok. */
+        val stepDownLabel: String,
+        val stepUpLabel: String,
         val labels: Labels,
         /** Dinlenme Dart uyurken bitti (servis bildirdi) — "Dinlenme bitti". */
         val restOver: Boolean = false,
@@ -131,7 +137,12 @@ object WorkoutNotification {
                 .setChronometerCountDown(false)
             if (s.totalSets > 0) b.setProgress(s.totalSets, s.doneSets, false)
             if (s.canComplete) {
-                b.addAction(0, l.completeSet, actionIntent(context, "completeSet"))
+                // En çok 3 eylem (Android sınırı): − · + · Seti tamamla.
+                if (s.stepDownLabel.isNotEmpty) {
+                    b.addAction(0, s.stepDownLabel, actionIntent(context, "stepDown", s.setKey))
+                    b.addAction(0, s.stepUpLabel, actionIntent(context, "stepUp", s.setKey))
+                }
+                b.addAction(0, l.completeSet, actionIntent(context, "completeSet", s.setKey))
             }
         }
         return b.build()
@@ -141,7 +152,7 @@ object WorkoutNotification {
      * Eylemi Dart'a iletir. Motor yoksa (uygulama süreci yeniden başladı)
      * bildirim bayattır: kaldırılır — seans açılınca taslaktan yeniden kurulur.
      */
-    fun dispatch(context: Context, action: String, done: () -> Unit) {
+    fun dispatch(context: Context, action: String, setKey: String, done: () -> Unit) {
         val ch = channel
         if (ch == null || state == null) {
             nm(context)?.cancel(RestTimerService.ID_LIVE)
@@ -157,7 +168,8 @@ object WorkoutNotification {
             }
         }
         main.post {
-            ch.invokeMethod("action", action, object : MethodChannel.Result {
+            val args = mapOf("action" to action, "setKey" to setKey)
+            ch.invokeMethod("action", args, object : MethodChannel.Result {
                 override fun success(result: Any?) = finish()
                 override fun error(code: String, msg: String?, details: Any?) = finish()
                 override fun notImplemented() = finish()
@@ -167,8 +179,10 @@ object WorkoutNotification {
         main.postDelayed(finish, 8000)
     }
 
-    private fun actionIntent(context: Context, action: String): PendingIntent {
-        val i = Intent(context, LiveActionReceiver::class.java).setAction(ACTION_PREFIX + action)
+    private fun actionIntent(context: Context, action: String, setKey: String = ""): PendingIntent {
+        val i = Intent(context, LiveActionReceiver::class.java)
+            .setAction(ACTION_PREFIX + action)
+            .putExtra(EXTRA_SET_KEY, setKey)
         return PendingIntent.getBroadcast(
             context, action.hashCode(), i,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
@@ -219,6 +233,9 @@ object WorkoutNotification {
             doneSets = (a["doneSets"] as? Number)?.toInt() ?: 0,
             totalSets = (a["totalSets"] as? Number)?.toInt() ?: 0,
             canComplete = a["canComplete"] as? Boolean ?: false,
+            setKey = str(a, "setKey"),
+            stepDownLabel = str(a, "stepDownLabel"),
+            stepUpLabel = str(a, "stepUpLabel"),
             labels = Labels(
                 rest = str(l, "rest"),
                 restOver = str(l, "restOver"),
@@ -237,6 +254,9 @@ class LiveActionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action?.removePrefix(WorkoutNotification.ACTION_PREFIX) ?: return
         val pending = goAsync()
-        WorkoutNotification.dispatch(context.applicationContext, action) { pending.finish() }
+        val setKey = intent.getStringExtra(WorkoutNotification.EXTRA_SET_KEY) ?: ""
+        WorkoutNotification.dispatch(context.applicationContext, action, setKey) {
+            pending.finish()
+        }
     }
 }

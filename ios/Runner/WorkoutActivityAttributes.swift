@@ -22,6 +22,11 @@ struct WorkoutActivityAttributes: ActivityAttributes {
     var totalSets: Int
     /// "Seti tamamla" düğmesi gösterilsin mi.
     var canComplete: Bool
+    /// Kartın gösterdiği set (eylem bununla döner; bayatsa yok sayılır).
+    var setKey: String
+    /// ± düğme etiketleri ("−2,5 kg"); boşsa düğme yok.
+    var stepDownLabel: String
+    var stepUpLabel: String
   }
 
   /// Kilit ekranı metinleri — Dart'tan (.arb) gelir, seans boyunca sabit.

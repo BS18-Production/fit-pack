@@ -56,11 +56,12 @@ import UIKit
   /// sonra kart güncellemesi bitene kadar beklenir — `perform` dönünce
   /// sistem uygulamayı yeniden uyutur.
   private func registerLiveActivityActions(_ channel: FlutterMethodChannel) {
-    LiveActivityActionRouter.handler = { [weak channel] action in
+    LiveActivityActionRouter.handler = { [weak channel] action, setKey in
       guard let channel else { return false }
       let applied = await withCheckedContinuation { (cont: CheckedContinuation<Bool, Never>) in
         let once = ResumeOnce(cont)
-        channel.invokeMethod("action", arguments: action) { reply in
+        let args: [String: Any] = ["action": action, "setKey": setKey]
+        channel.invokeMethod("action", arguments: args) { reply in
           once.resume(reply as? Bool ?? false)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 8) { once.resume(false) }

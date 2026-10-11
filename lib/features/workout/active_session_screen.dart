@@ -353,13 +353,22 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   /// Uygulama arka plandayken çalışır; ekrandaki dokunuşla aynı yolu izler —
   /// seans durumunun tek sahibi bu ekran. Kart güncellemesi gidene kadar
   /// beklenir (sistem ardından uygulamayı yeniden uyutur).
-  Future<bool> _onLiveAction(LiveAction action) async {
+  Future<bool> _onLiveAction(LiveAction action, String? setKey) async {
     if (!mounted || _loading || _draftCleared || _isManual) return false;
+    // Set eylemi yalnız kartın gösterdiği sete uygulanır: arada set
+    // değiştiyse (gecikmiş ya da çift dokunuş) sıradaki set tamamlanmaz
+    // (Codex incelemesi, 2026-10-12).
+    final next = _nextLiveSet();
+    final sameSet = next != null && setKey == next.key;
     switch (action) {
       case LiveAction.completeSet:
-        final next = _nextLiveSet();
-        if (next == null || !next.canComplete) return false;
+        if (!sameSet || !next.canComplete) return false;
         _toggleDone(next.exercise, next.set);
+      case LiveAction.stepDown:
+      case LiveAction.stepUp:
+        if (!sameSet || !_canStep(next.exercise)) return false;
+        _stepLive(next.exercise, next.set, next.index,
+            action == LiveAction.stepUp ? 1 : -1);
       case LiveAction.addRest:
         if (_restDeadline == null) return false;
         _bumpRest(15);
@@ -374,8 +383,13 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   /// Kilit ekranındaki "şu anki set": sırayla ilk tamamlanmamış set.
   /// [canComplete]: değeri girilmiş ya da öneriyle dolacak — boş set kilit
   /// ekranından işaretlenmez (değersiz kayıt üretirdi).
-  ({_SessionExercise exercise, _SetEntry set, int index, bool canComplete})?
-      _nextLiveSet() {
+  ({
+    _SessionExercise exercise,
+    _SetEntry set,
+    int index,
+    String key,
+    bool canComplete,
+  })? _nextLiveSet() {
     final pos = livePosition(
         [for (final e in _exercises) [for (final s in e.sets) s.done]]);
     if (pos == null) return null;
@@ -385,8 +399,39 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       exercise: ex,
       set: set,
       index: pos.set,
+      // Hareket kimliği + sıra: hareket eklenip sıra kaysa da eşleşmez.
+      key: '${ex.exercise.id}:${pos.set}',
       canComplete: set.hasInput(ex.measure) || ex.suggestionAt(pos.set) != null,
     );
+  }
+
+  /// Kartta (ve ✓'de) geçerli değerler: girilen değer önce, boş alan
+  /// öneriden — `_toggleDone`'un kaydedeceğiyle aynı (G-2).
+  SetValues _shownValues(_SessionExercise ex, _SetEntry set, int index) {
+    final suggestion = ex.suggestionAt(index);
+    return suggestion == null
+        ? set.values
+        : fillMissing(set.values, suggestion, ex.measure);
+  }
+
+  /// Kilit ekranı ± yalnız kilo×tekrar (kilo adımı) ve tekrar (±1)
+  /// hareketlerinde; süre/mesafede yok.
+  bool _canStep(_SessionExercise ex) =>
+      ex.measure != 'time' && ex.measure != 'distance';
+
+  /// Kilit ekranı ±: yalnız bu setin tek alanını değiştirir (kilo ya da
+  /// tekrar); boşsa öneriden başlar. Sonraki setlere ve öneriye dokunmaz.
+  void _stepLive(_SessionExercise ex, _SetEntry set, int index, int dir) {
+    if (ex.measure == 'reps') {
+      final from = set.reps ?? ex.suggestionAt(index)?.reps ?? 0;
+      setState(() {
+        set.reps = (from + dir).clamp(0, 999);
+        set.fillGen++;
+      });
+    } else {
+      _stepWeight(ex, set, dir);
+    }
+    _saveDraft(); // arka planda: gecikmeli yazım tetiklenmeyebilir
   }
 
   // ───────── taslak (draft) ─────────
@@ -442,7 +487,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       final ex = next.exercise;
       exercise = ex.exercise.name;
       setLabel = l.liveSetLabel(next.index + 1, ex.sets.length);
-      final v = ex.suggestionAt(next.index) ?? next.set.values;
+      final v = _shownValues(ex, next.set, next.index);
       target = switch (ex.measure) {
         'reps' => v.reps == null ? '' : '× ${v.reps}',
         'time' => v.durationSec == null ? '' : fmtDuration(v.durationSec!),
@@ -457,6 +502,15 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
     final deadline = _restDeadline;
     final resting = deadline != null && deadline.isAfter(DateTime.now());
+    final step = next == null || !_canStep(next.exercise)
+        ? (down: '', up: '')
+        : next.exercise.measure == 'reps'
+            ? (down: '−1 ${l.unitReps}', up: '+1 ${l.unitReps}')
+            : () {
+                final kg = units.lift(
+                    _stepKgFor(next.exercise, ref.read(weightStepPrefsProvider)));
+                return (down: '−$kg', up: '+$kg');
+              }();
     _live.show(
       title: _title,
       startedAt: _startedAt,
@@ -469,6 +523,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         doneSets: done,
         totalSets: total,
         canComplete: next?.canComplete ?? false,
+        setKey: next?.key ?? '',
+        stepDownLabel: step.down,
+        stepUpLabel: step.up,
       ),
       labels: WorkoutLiveLabels(
         rest: l.labelRest,

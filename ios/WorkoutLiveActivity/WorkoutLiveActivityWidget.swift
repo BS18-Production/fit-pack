@@ -145,11 +145,29 @@ private struct ActionRow: View {
           .buttonStyle(PillStyle(prominent: true))
         }
       } else if context.state.canComplete {
-        Button(intent: CompleteSetIntent()) {
-          Label(l.completeSet, systemImage: "checkmark")
-            .frame(maxWidth: .infinity)
+        let s = context.state
+        HStack(spacing: 8) {
+          // Kilo adımı / ±1 tekrar — yalnız bu set; ✓ görünen değeri kaydeder.
+          if !s.stepDownLabel.isEmpty {
+            Button(intent: StepSetIntent(setKey: s.setKey, up: false)) {
+              Text(s.stepDownLabel).lineLimit(1).minimumScaleFactor(0.8)
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(PillStyle(prominent: false))
+            Button(intent: StepSetIntent(setKey: s.setKey, up: true)) {
+              Text(s.stepUpLabel).lineLimit(1).minimumScaleFactor(0.8)
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(PillStyle(prominent: false))
+          }
+          Button(intent: CompleteSetIntent(setKey: s.setKey)) {
+            Label(l.completeSet, systemImage: "checkmark")
+              .lineLimit(1).minimumScaleFactor(0.8)
+              .frame(maxWidth: .infinity)
+          }
+          .buttonStyle(PillStyle(prominent: true))
+          .layoutPriority(1)
         }
-        .buttonStyle(PillStyle(prominent: true))
       }
     }
   }

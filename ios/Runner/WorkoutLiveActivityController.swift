@@ -37,7 +37,10 @@ enum WorkoutLiveActivityController {
       restEndsAt: ms(a["restEndsAtMs"]).map { Date(timeIntervalSince1970: $0 / 1000) },
       doneSets: a["doneSets"] as? Int ?? 0,
       totalSets: a["totalSets"] as? Int ?? 0,
-      canComplete: a["canComplete"] as? Bool ?? false)
+      canComplete: a["canComplete"] as? Bool ?? false,
+      setKey: a["setKey"] as? String ?? "",
+      stepDownLabel: a["stepDownLabel"] as? String ?? "",
+      stepUpLabel: a["stepUpLabel"] as? String ?? "")
   }
 
   static func attributes(_ a: [String: Any]) -> WorkoutActivityAttributes {

@@ -1,0 +1,12 @@
+{
+  "fingerprint": "d879f8993e8be890",
+  "model": "gemini-3.5-flash-lite",
+  "thresholds": {
+    "Y": 0.6,
+    "Yp": 0.0,
+    "Ye": 0.2,
+    "M": 0.9,
+    "G": 0.7
+  },
+  "frozen_at": "2026-10-11 12:20"
+}

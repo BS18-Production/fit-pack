@@ -1,7 +1,7 @@
 {
   "contract": 2,
-  "fingerprint": "3e837661e45517ed",
-  "frozen_at": "2026-10-11 03:03",
+  "fingerprint": "8c7005110fa38542",
+  "frozen_at": "2026-10-11 11:58",
   "variant": "A",
   "model": "jev-1.13.0",
   "seed": "fitpack-jev-1",
@@ -45,9 +45,9 @@
       "this_week"
     ]
   },
-  "Y": 0.7,
+  "Y": 0.6,
   "Yp": 0.0,
   "Ye": 0.2,
   "M": 0.9,
-  "G": 0.5
+  "G": 0.7
 }

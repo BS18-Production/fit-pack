@@ -109,6 +109,50 @@ IN_SCOPE = set(QUERIES) - {"out_of_scope"}
 # Uygulama hareketin ölçüm tipini bilir: süre/mesafe hareketinde e1RM yok (docs/35 §1).
 TIME_BASED = {e["id"] for e in json.loads((HERE / "exercises.json").read_text())["exercises"]
               if e.get("measurement") != "weight_reps"}
+# ---------------------------------------------- yerel kontroller (v3, docs/35 §12)
+# Jev'e gitmeden önce ve Jev'den sonra uygulamanın KENDİ yaptığı kesin
+# kontroller. Kabul ölçümünde dönemi açık talimat enjeksiyonu Jev'i %90+
+# güvenle saptırdı (§11); bu kalıplar normal kullanıcı dilinde geçmez.
+_INJECTION = [
+    r"[{}]",                                            # JSON / şablon
+    r"\b(query|period|confidence|exercise|criteria|noul|choice)\s*[=:]",
+    r"\b[a-z]+_[a-z_]+\b",                              # iç kimlik (workout_summary…)
+    r"^\s*(sistem|system|yönetici|admin|developer|geliştirici)\b[^\n]{0,20}[:：]",
+    r"(talimat|kural|komut|instruction|rule)\w*\W+(\w+\W+){0,3}(unut|boşver|yok say|görmezden|ignore|forget)",
+    r"(unut|boşver|yok say|görmezden gel|ignore|forget)\w*\W+(\w+\W+){0,3}(talimat|kural|instruction|rule)",
+    r"\b(prompt|jailbreak)\b",
+]
+
+
+def prefilter(q: str) -> bool:
+    """True → soru Jev'e gitmez, doğrudan hazır sorular gösterilir."""
+    t = q.lower()
+    return any(re.search(p, t) for p in _INJECTION)
+
+
+def _exercise_keywords() -> list[str]:
+    data = json.loads((HERE / "exercises.json").read_text())
+    # Sabit sıra (uzun önce, eşitlikte alfabetik): küme sırası her süreçte değişir
+    # ve parmak izini kararsız yapıyordu (2026-10-11). Eşleşme sonucu sıradan bağımsız.
+    return sorted({k for e in data["exercises"] for k in e.get("keywords", [])}, key=lambda k: (-len(k), k))
+
+
+EXERCISE_KEYWORDS = _exercise_keywords()
+
+
+def mentions_exercise(q: str) -> bool:
+    """Soruda bilinen bir hareket kelimesi geçiyor mu (Türkçe ekleriyle:
+    'latta', 'benchte'). Uygulamada liste kullanıcının kendi hareketlerinden."""
+    t = q.lower()
+    return any(re.search(r"(?<![a-zçğıöşü])" + re.escape(k) + r"[a-zçğıöşü']{0,6}(?![a-zçğıöşü])", t)
+               for k in EXERCISE_KEYWORDS)
+
+
+BLOCKED = {"query": "out_of_scope", "q_conf": 1.0, "q_top": [("out_of_scope", 1.0)], "period": "unspecified",
+           "p_conf": 1.0, "exercise": "none", "e_conf": 1.0, "multi": 0.0, "advice": 1.0, "interp": 0.0,
+           "blocked": True, "mentions_ex": False}
+
+
 # Sözleşme v1 destek matrisi (docs/35 §1 "Dönem desteği"): desteklenmeyen dönem
 # otomatik cevaplanmaz, dönem seçtirilir. Takvim ayları Jev'den etiket olarak
 # alınır ama v1'de hesap desteği yok (Samet kararı: takvim ayında dönem sorulur).
@@ -217,11 +261,17 @@ def decide(p: dict, Y: float, Yp: float, Ye: float, M: float, G: float) -> str:
     """Uygulamanın kararı (docs/35 §3), kontrol sırası Codex incelemesiyle:
     multi (niyetleri seçtir) → fallback (cevaplayamıyorum / hazır sorular)
     → clarify (eksik ya da desteklenmeyen alanı seçtir) → auto."""
+    if p.get("blocked"):
+        return "fallback"  # yerel süzgeç: Jev'e hiç gitmedi
     if p["multi"] >= M:
         return "multi"
     if p["advice"] >= G or p["query"] == "out_of_scope" or p["q_conf"] < Y:
         return "fallback"
     q = p["query"]
+    # "Latta ne kadar ağırlık artırdım": hareket geçen soruda "ağırlık" kaldırılan
+    # yüktür, vücut ağırlığı değil → kilo sorgusu otomatik cevaplanmaz.
+    if q == "weight_trend" and (p["exercise"] != "none" or p.get("mentions_ex")):
+        return "fallback"
     # "Bugün kalan" yalnız bugün için: dün/yarın sorusu reçete ya da başka
     # bir sorgu, otomatik cevaplanmaz (Codex 6. tur karşı örneği).
     if q == "today_remaining" and p["period"] not in ("today", "unspecified"):
@@ -347,8 +397,8 @@ def fingerprint() -> str:
     # (metrics/passes/verdict/kabul doğrulaması) da parmak izine girer.
     data = [QUERIES, PERIODS, INSTR, NONE_EX, {k: sorted(v) for k, v in SUPPORTED.items()},
             sorted(PERIOD_QUERIES), sorted(IN_SCOPE), sorted(TIME_BASED), REQUIRED_KINDS,
-            sorted(CRITICAL_KINDS), CONTRACT]
-    funcs = [build_request, exercise_options, predictions, decide, auto_correct, complete,
+            sorted(CRITICAL_KINDS), CONTRACT, _INJECTION, EXERCISE_KEYWORDS]
+    funcs = [prefilter, mentions_exercise, build_request, exercise_options, predictions, decide, auto_correct, complete,
              is_critical, metrics, passes, verdict, validate_holdout]
     parts = [json.dumps(data, ensure_ascii=False, sort_keys=True), (HERE / "exercises.json").read_text()]
     parts += [inspect.getsource(fn) for fn in funcs]
@@ -398,11 +448,11 @@ def validate_holdout(rows: list[dict], tuning_path: Path) -> list[str]:
 
 
 def verdict(m: dict) -> str:
-    """§5 + §8.6(a). Gözlenen ölçüt sağlanıp üst sınır %5'i aşıyorsa kanıt yetersiz;
-    sonuç görüldükten sonra soru eklenerek kabul aranmaz (Codex)."""
-    if not passes(m):
-        return "RET"
-    return "KABUL" if m["wrong_up95"] <= 0.05 else "YETERSİZ KANIT"
+    """§5 + §8.9 (Samet, 2026-10-11, seçenek 1): gözlenen yanlış ≤ %3, geri
+    dönüş ≤ %30, ret ≥ %95, kritik 0. %95 üst sınır **raporlanır, şart değil**:
+    120 soruda sıfır hata isterdi (gerçek oran ~%2 iken geçme şansı ~%22).
+    Güvence: her cevapta "Anladığım soru · değiştir" + gerçek kullanım ölçümü."""
+    return "KABUL" if passes(m) else "RET"
 
 
 # ------------------------------------------------------------------- rapor
@@ -456,6 +506,9 @@ def report(rows, results, args, cost, latencies, frozen=None) -> str:
                 f"| Yorum isteyen soruları yakalama (interp:true içinde noul ≥ 0,5) | "
                 + (lambda L: f"{pct(sum(p['interp'] >= 0.5 for r, p in L) / len(L))} ({len(L)} gözlem)" if L else "—")(
                     [(r, p) for r, p in obs if r.get("interp") is True]) + " |",
+                f"| Yerel süzgeç: engellenen · kapsam içi soruda YANLIŞ engelleme | "
+                f"{sum(bool(p.get('blocked')) for r, p in obs)} · "
+                f"{sum(bool(p.get('blocked')) for r, p in obs if r['query'] in IN_SCOPE or r['query'] == 'multi')} |",
                 f"| Sıra değişince sorgu cevabı aynı kalan soru | {pct(stable / len(by_q))} ({stable}/{len(by_q)}) |", ""]
         if frozen:
             pick = metrics(obs, *(frozen[k] for k in ("Y", "Yp", "Ye", "M", "G")))
@@ -474,7 +527,7 @@ def report(rows, results, args, cost, latencies, frozen=None) -> str:
                          f"{pct(m['oos_reject'])} ({m['oos']}) | {m['critical_wrong']}/{m['critical']} |")
         if frozen:
             out += [hdr, sep, fmt(pick), "",
-                    f"**Karar (docs/35 §5 + §8.6a: yanlış ≤ %3 ve üst sınır ≤ %5, geri dönüş ≤ %30, ret ≥ %95, kritik 0): "
+                    f"**Karar (docs/35 §5 + §8.9: gözlenen yanlış ≤ %3, geri dönüş ≤ %30, ret ≥ %95, kritik 0; üst sınır bilgi amaçlı): "
                     f"{verdict(pick)}**", ""]
         elif pick:
             out += ["Ölçütü (%3 / %30 / %95 / kritik 0) sağlayan, geri dönüşü en düşük eşik:", "", hdr, sep, fmt(pick), ""]
@@ -546,11 +599,17 @@ def main() -> None:
                          ensure_ascii=False, indent=2))
         return
 
+    results: dict[str, list] = defaultdict(list)
     key = api_key()
     cache = HERE / ".cache"
     cache.mkdir(exist_ok=True)
-    jobs = [(v, o, r) for v in args.variants for o in range(args.orders) for r in rows]
-    results: dict[str, list] = defaultdict(list)
+    jobs = [(v, o, r) for v in args.variants for o in range(args.orders) for r in rows
+            if not prefilter(r["q"])]
+    for v in args.variants:
+        for o in range(args.orders):
+            for r in rows:
+                if prefilter(r["q"]):
+                    results[v].append((r, dict(BLOCKED)))
     tokens = spent = 0
     latencies: list[float] = []
     raw = []
@@ -561,6 +620,7 @@ def main() -> None:
             v, o, r = futs[fut]
             res = fut.result()
             p = predictions(res["response"])
+            p["mentions_ex"] = mentions_exercise(r["q"])
             results[v].append((r, p))
             used = res["response"].get("usage", {}).get("input_tokens", 0)
             tokens += used

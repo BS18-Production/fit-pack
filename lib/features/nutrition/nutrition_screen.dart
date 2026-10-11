@@ -59,8 +59,6 @@ class NutritionScreen extends ConsumerStatefulWidget {
 }
 
 class _NutritionScreenState extends ConsumerState<NutritionScreen> {
-  bool _showMacros = false;
-
   void _invalidateAll(WidgetRef ref) {
     ref.invalidate(logsWithFoodProvider);
     ref.invalidate(nutritionTotalsProvider);
@@ -249,34 +247,9 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
               error: (_, _) => const SizedBox.shrink(),
             ),
             AppSpacing.vGapXl,
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final toggle = TextButton(
-                  key: const ValueKey('nutrition.macros'),
-                  onPressed: () => setState(() => _showMacros = !_showMacros),
-                  child: Text(
-                    _showMacros ? l.nutritionHideMacros : l.nutritionShowMacros,
-                  ),
-                );
-                final title = Text(
-                  l.nutritionDiary,
-                  style: context.texts.titleMedium,
-                );
-                if (constraints.maxWidth < 330 ||
-                    MediaQuery.textScalerOf(context).scale(1) > 1.15) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [title, toggle],
-                  );
-                }
-                return Row(
-                  children: [
-                    Expanded(child: title),
-                    toggle,
-                  ],
-                );
-              },
-            ),
+            // Makrolar her kayıtta görünür (Samet, 2026-10-11) — görünüm
+            // anahtarı kaldırıldı; satırda gramla aynı satırda durur.
+            Text(l.nutritionDiary, style: context.texts.titleMedium),
             AppSpacing.vGapSm,
             logsAsync.when(
               loading: () => Column(
@@ -325,7 +298,6 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                             '${date.year}-${date.month}-${date.day}-$mealType',
                           ),
                           initiallyExpanded: latest == mealType,
-                          showMacros: _showMacros,
                           showUsual: isToday,
                           mealType: mealType,
                           items: logs
@@ -485,7 +457,7 @@ class _DateNavButton extends StatelessWidget {
 class _MealSection extends StatefulWidget {
   final String mealType;
   final List<FoodLogWithFood> items;
-  final bool initiallyExpanded, showMacros, showUsual;
+  final bool initiallyExpanded, showUsual;
   final VoidCallback onAddFood, onCopyFromDay;
   final void Function(FoodLogWithFood) onDelete;
   const _MealSection({
@@ -493,7 +465,6 @@ class _MealSection extends StatefulWidget {
     required this.mealType,
     required this.items,
     required this.initiallyExpanded,
-    required this.showMacros,
     required this.showUsual,
     required this.onAddFood,
     required this.onCopyFromDay,
@@ -620,7 +591,6 @@ class _MealSectionState extends State<_MealSection> {
             (item) => _FoodLogRow(
               key: ValueKey(item.log.id),
               item: item,
-              showMacros: widget.showMacros,
               onDelete: () => widget.onDelete(item),
             ),
           ),
@@ -637,13 +607,11 @@ class _MealSectionState extends State<_MealSection> {
 class _FoodLogRow extends StatelessWidget {
   final FoodLogWithFood item;
   final VoidCallback onDelete;
-  final bool showMacros;
 
   const _FoodLogRow({
     super.key,
     required this.item,
     required this.onDelete,
-    required this.showMacros,
   });
 
   @override
@@ -681,22 +649,16 @@ class _FoodLogRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   AppSpacing.vGapXs,
-                  Text(
-                    item.food.source == quickFoodSource
-                        ? AppL10n.of(context).nhQuickEntry
-                        : '${context.numFmt.format(log.grams.round())} g',
-                    style: context.texts.bodySmall?.copyWith(
-                      color: context.colors.onSurfaceVariant,
-                    ),
+                  // Miktar + makrolar tek satır: bilgi hep orada, satır
+                  // yüksekliği değişmez (eski "Makroları göster" yerine).
+                  MacroInlineText(
+                    prefix: item.food.source == quickFoodSource
+                        ? '${AppL10n.of(context).nhQuickEntry} · '
+                        : '${context.numFmt.format(log.grams.round())} g · ',
+                    protein: log.computedProtein,
+                    carb: log.computedCarb,
+                    fat: log.computedFat,
                   ),
-                  if (showMacros) ...[
-                    AppSpacing.vGapXs,
-                    MacroInlineText(
-                      protein: log.computedProtein,
-                      carb: log.computedCarb,
-                      fat: log.computedFat,
-                    ),
-                  ],
                 ],
               ),
             ),

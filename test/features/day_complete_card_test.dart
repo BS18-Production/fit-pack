@@ -54,22 +54,22 @@ void main() {
   testWidgets('işaretle → ✓ "Kaydın tamam"; geri al → düğme geri gelir',
       (tester) async {
     await ac(tester);
-    expect(find.text('Bugünkü kaydım tamamlandı'), findsOneWidget);
+    expect(find.text('Bugünün tüm öğünlerini girdim'), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('nutrition.dayComplete')));
     await settle(tester);
-    expect(find.text('Kaydın tamam'), findsOneWidget);
+    expect(find.text('Tüm öğünler girildi'), findsOneWidget);
     expect(find.text('Tamamlandıktan sonra değişti'), findsNothing);
 
     await tester.tap(find.byKey(const ValueKey('nutrition.dayReopen')));
     await settle(tester);
-    expect(find.text('Bugünkü kaydım tamamlandı'), findsOneWidget);
+    expect(find.text('Bugünün tüm öğünlerini girdim'), findsOneWidget);
     final rows = await tester.runAsync(() => db.select(db.nutritionDays).get());
     expect(rows!.single.status, 'open', reason: 'geri al satırı silmez');
   });
 
   testWidgets('geçmiş gün kendi metniyle', (tester) async {
     await ac(tester, isToday: false);
-    expect(find.text('Bu günün kaydı tamamlandı'), findsOneWidget);
+    expect(find.text('Bu günün tüm öğünlerini girdim'), findsOneWidget);
   });
 }

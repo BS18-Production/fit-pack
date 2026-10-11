@@ -9,7 +9,7 @@ import 'package:fit_pack/data/providers.dart';
 import 'package:fit_pack/features/health/step_providers.dart';
 import 'package:fit_pack/features/health/step_source.dart';
 import 'package:fit_pack/features/update/app_version_gate.dart';
-import 'package:fit_pack/features/nutrition/meal_idea_card.dart';
+import 'package:fit_pack/features/nutrition/today_meals_card.dart';
 import 'package:fit_pack/l10n/app_l10n.dart';
 import 'package:fit_pack/shared/widgets/glass.dart';
 import 'package:flutter/material.dart';
@@ -144,18 +144,18 @@ void main() {
       await capture('home');
       final homeScroll = find.byType(Scrollable).first;
       await tester.scrollUntilVisible(
-        find.byKey(const ValueKey('journal.addMeal')),
+        find.byKey(const ValueKey('journal.meals')),
         150,
         scrollable: homeScroll,
       );
       await settle();
       await Scrollable.ensureVisible(
-        tester.element(find.byType(MealIdeaCard)),
+        tester.element(find.byType(TodayMealsCard)),
         alignment: 0,
       );
       await settle();
       await capture('meal');
-      await tester.tap(find.byKey(const ValueKey('journal.addMeal')));
+      await tester.tap(find.byKey(const ValueKey('journal.meal.lunch')));
       await settle();
       expect(find.byType(BottomSheet), findsOneWidget);
       await capture('food-sheet');

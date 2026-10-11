@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/live_activity/workout_live_activity.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/sync_meta_dao.dart';
 import '../../data/database/tables/sync_columns.dart';
@@ -161,6 +162,7 @@ class AccountSwitchGuard {
     // Yarım kalmış seans taslağı da kullanıcı verisidir; prefs'te durduğu için
     // tablo silmesi ona dokunmaz.
     await WorkoutDraftService().clear();
+    await WorkoutLiveActivity.endAll(); // önceki hesabın seans kartı kalmasın
     // Sağlık bağlantısı ve adım hedefi de bu hesabındır (docs/39 S-8).
     await HealthPrefs.clear();
     // İlerleme fotoğraflarının DOSYALARI da gider (docs/19 §6 kural 4). Satır

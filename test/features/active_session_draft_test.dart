@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:fit_pack/core/feedback/feedback_service.dart';
+import 'package:fit_pack/core/feedback/rest_sound.dart';
 import 'package:fit_pack/core/notifications/notification_service.dart';
 import 'package:fit_pack/core/theme/app_colors.dart';
 import 'package:fit_pack/data/database/app_database.dart';
@@ -320,10 +321,10 @@ void main() {
 /// Ses/titreşim yok; ses oynatıcısı test ortamında kurulmaz.
 class _SilentFeedback extends FeedbackService {
   @override
-  void warmUp() {}
+  void warmUp([RestSound sound = RestSound.fallback]) {}
 
   @override
-  void playCountdown({int offsetMs = 0}) {}
+  void playCountdown({int offsetMs = 0, RestSound? sound}) {}
 
   @override
   void stopCountdown() {}
@@ -345,6 +346,7 @@ class _NoNotifications extends NotificationService {
     required Duration after,
     required String title,
     required String body,
+    RestSound? sound,
   }) async {}
 
   @override

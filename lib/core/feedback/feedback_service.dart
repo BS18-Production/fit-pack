@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'audio_session_release.dart';
+import 'rest_sound.dart';
 
 /// Mola sayacının bir tikte vermesi gereken işaret (G-1).
 enum RestCue { none, tick, done }
@@ -60,7 +61,7 @@ int restTickDelayMs(int leftMs) {
 }
 
 /// Tek parça geri sayım dosyasında bitiş sesinin başladığı an (ms).
-/// `rest_countdown.wav`: 0, 1, 2. sn'de tık, 3. sn'de bitiş.
+/// `rest_<ses>.m4a`: 0, 1, 2. sn'de tık, 3. sn'de bitiş (bkz. [RestSound]).
 const restCountdownLeadMs = 3000;
 
 /// Geri sayım sesinin ne zaman ve dosyanın neresinden başlayacağı.
@@ -90,7 +91,6 @@ const restCountdownLeadMs = 3000;
 /// (bkz. `rest_alarm.dart`, docs/25). Bu yol iOS'ta ve servis
 /// başlatılamadığında kullanılır.
 class FeedbackService {
-  static const _countdownAsset = 'sounds/rest_countdown.wav';
 
   static final _audioContext = AudioContext(
     android: const AudioContextAndroid(
@@ -111,6 +111,10 @@ class FeedbackService {
       : _releaseSession = release;
 
   AudioPlayer? _countdown;
+  // Oynatıcıya yüklü ses ve istenen ses (Ayarlar'dan değişebilir).
+  RestSound _loaded = RestSound.fallback;
+  RestSound _wanted = RestSound.fallback;
+  AudioPlayer? _preview;
   Future<void>? _ready;
   StreamSubscription<void>? _completeSub;
   // Her çalışta artar: eski bir "bırak" isteği yeni başlayan sesi kesmesin.
@@ -131,23 +135,68 @@ class FeedbackService {
     if (defaultTargetPlatform == TargetPlatform.android) {
       await p.setAudioContext(_audioContext);
     }
-    await p.setSource(AssetSource(_countdownAsset));
+    final sound = _wanted;
+    await p.setSource(AssetSource(sound.countdownSource));
+    _loaded = sound;
     _completeSub = p.onPlayerComplete.listen((_) => _release(_playGen));
     _countdown = p;
   }
 
+  /// Seçili sesi oynatıcıya yükler (değiştiyse). Mola başlarken çağrılır —
+  /// geri sayım en erken 3 sn sonra çalar, yükleme o ana yetişir.
+  Future<void> _load(RestSound sound) async {
+    _wanted = sound;
+    await _ensureReady();
+    final p = _countdown;
+    if (p == null || _loaded == _wanted) return;
+    final next = _wanted;
+    await p.setSource(AssetSource(next.countdownSource));
+    _loaded = next;
+  }
+
   /// Seans ekranı açılınca çağrılır — ilk çalışta yükleme gecikmesi olmasın.
-  void warmUp() => unawaited(_ensureReady().catchError((_) {}));
+  void warmUp([RestSound sound = RestSound.fallback]) =>
+      unawaited(_load(sound).catchError((_) {}));
+
+  /// Ayarlar → Mola sesi: sesi baştan sona bir kez çalar (geri sayım +
+  /// bitiş). Önceki önizlemeyi keser; seans geri sayımına dokunmaz.
+  Future<void> preview(RestSound sound) async {
+    try {
+      await _ensureReady(); // ses bağlamı (müziği kısma) kurulmuş olsun
+      final p = _preview ??= await _newPreviewPlayer();
+      await p.stop();
+      await p.play(AssetSource(sound.countdownSource));
+    } catch (_) {
+      // Önizleme en iyi çaba — ses servisi yoksa sessiz geçer.
+    }
+  }
+
+  Future<void> stopPreview() async {
+    try {
+      await _preview?.stop();
+    } catch (_) {}
+    unawaited(_releaseSession());
+  }
+
+  Future<AudioPlayer> _newPreviewPlayer() async {
+    final p = AudioPlayer();
+    await p.setReleaseMode(ReleaseMode.stop);
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      await p.setAudioContext(_audioContext);
+    }
+    p.onPlayerComplete.listen((_) => unawaited(_releaseSession()));
+    return p;
+  }
 
   /// Geri sayım sesini [offsetMs]'den başlatır (bkz. [countdownPlan]).
   /// Tek dosya olduğu için tıklar arası aralık oynatıcı gecikmesinden
   /// etkilenmez — eski "her saniye durdur/başlat" yolunda 2. ve 3. bip
   /// kayıyordu (Samet, 2026-09-30).
-  void playCountdown({int offsetMs = 0}) {
+  void playCountdown({int offsetMs = 0, RestSound? sound}) {
     _playGen++;
     unawaited(() async {
       try {
-        await _ensureReady();
+        await _load(sound ?? _wanted);
         final p = _countdown;
         if (p == null) return;
         await p.stop();
@@ -186,6 +235,7 @@ class FeedbackService {
   Future<void> dispose() async {
     await _completeSub?.cancel();
     await _countdown?.dispose();
+    await _preview?.dispose();
     await _releaseSession();
   }
 }

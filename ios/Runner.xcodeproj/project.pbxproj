@@ -15,6 +15,7 @@
 		49F59A6CC0D5A30E7A11ED13 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52011E4D35FDEEBDF3E9F93F /* SwiftUI.framework */; };
 		5244633887812F3CBA23E1CA /* WorkoutLiveActivity.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 059299590A2CC026616801AC /* WorkoutLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		54071DE1BA0A487682B78693 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FDF9428FCE1B44168D503A2 /* Pods_RunnerTests.framework */; };
+		5511E7DCB22E6243CF87F31A /* WorkoutLiveActivityIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 398ECFA7069E60EAF9B36742 /* WorkoutLiveActivityIntents.swift */; };
 		5CF41EE23E66DCE81E920D90 /* ActivityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26A877007D80BE830D3D178A /* ActivityKit.framework */; };
 		72E54B7BA06D465C9E46124C /* WorkoutLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F3C821AB0A44D2CF1D41CB /* WorkoutLiveActivityWidget.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
@@ -26,6 +27,7 @@
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		C549FCDEE0AFE37754E62FC3 /* WorkoutLiveActivityBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4852EFE94ED9756706EFE76C /* WorkoutLiveActivityBundle.swift */; };
 		D69D88778121ACB9D4944F6A /* WorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D7FD4D3299807B5B7E4842E /* WorkoutActivityAttributes.swift */; };
+		DA12A86DCD88C55C0E1132E0 /* WorkoutLiveActivityIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 398ECFA7069E60EAF9B36742 /* WorkoutLiveActivityIntents.swift */; };
 		FA9C1A0000000000000000E4 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FA9C1A0000000000000000E3 /* InfoPlist.strings */; };
 		FC767633D9C014FCED330E1F /* WorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D7FD4D3299807B5B7E4842E /* WorkoutActivityAttributes.swift */; };
 /* End PBXBuildFile section */
@@ -85,6 +87,7 @@
 		3148C98658391FE6DCD727EF /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		398ECFA7069E60EAF9B36742 /* WorkoutLiveActivityIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivityIntents.swift; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		479FF52FB437CA42D050EF7B /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4852EFE94ED9756706EFE76C /* WorkoutLiveActivityBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivityBundle.swift; sourceTree = "<group>"; };
@@ -233,6 +236,7 @@
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				2D7FD4D3299807B5B7E4842E /* WorkoutActivityAttributes.swift */,
 				2064FF51197936305ACF664E /* WorkoutLiveActivityController.swift */,
+				398ECFA7069E60EAF9B36742 /* WorkoutLiveActivityIntents.swift */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -512,6 +516,7 @@
 				7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */,
 				D69D88778121ACB9D4944F6A /* WorkoutActivityAttributes.swift in Sources */,
 				785BDDE7B1A26F6C9245BD6E /* WorkoutLiveActivityController.swift in Sources */,
+				5511E7DCB22E6243CF87F31A /* WorkoutLiveActivityIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -522,6 +527,7 @@
 				C549FCDEE0AFE37754E62FC3 /* WorkoutLiveActivityBundle.swift in Sources */,
 				72E54B7BA06D465C9E46124C /* WorkoutLiveActivityWidget.swift in Sources */,
 				FC767633D9C014FCED330E1F /* WorkoutActivityAttributes.swift in Sources */,
+				DA12A86DCD88C55C0E1132E0 /* WorkoutLiveActivityIntents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -684,14 +690,19 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = DQBCHYZUU7;
 				ENABLE_BITCODE = NO;
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-weak_framework",
+					AppIntents,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.sametorhan.fitPack;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -868,14 +879,19 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = DQBCHYZUU7;
 				ENABLE_BITCODE = NO;
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-weak_framework",
+					AppIntents,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.sametorhan.fitPack;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -892,14 +908,19 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = DQBCHYZUU7;
 				ENABLE_BITCODE = NO;
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-weak_framework",
+					AppIntents,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.sametorhan.fitPack;
 				PRODUCT_NAME = "$(TARGET_NAME)";

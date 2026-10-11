@@ -1,11 +1,17 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
+
+import '../feedback/rest_sound.dart';
 
 /// Yerel bildirimler (docs/16 §5 — B6, P-11).
 ///
@@ -134,14 +140,28 @@ class NotificationService {
 
   /// Dinlenme bitince tek seferlik bildirim — [after] sonra (docs/12 + P-11).
   /// Dakik alarm izni yoksa inexact'e düşer (birkaç dk gecikebilir).
+  ///
+  /// iOS'ta [sound] seçili mola sesinin bitiş parçasıdır (docs/45 §3).
+  /// Sistem bildirim sesi telefonun sessiz anahtarına ve Odaklanma'ya
+  /// uyar — bu bir uygulama hatası değil, iOS kuralı.
   Future<void> scheduleRestDone({
     required Duration after,
     required String title,
     required String body,
+    RestSound? sound,
   }) async {
     await init();
     final when = tz.TZDateTime.now(tz.local).add(after);
-    const details = NotificationDetails(android: _chRest, iOS: _iosRest);
+    final iosSound = sound == null ? null : await _installIosSound(sound);
+    final details = NotificationDetails(
+      android: _chRest,
+      iOS: iosSound == null
+          ? _iosRest
+          : DarwinNotificationDetails(
+              interruptionLevel: InterruptionLevel.timeSensitive,
+              sound: iosSound,
+            ),
+    );
     try {
       await _plugin.zonedSchedule(
           id: idRest,
@@ -162,6 +182,43 @@ class NotificationService {
   }
 
   Future<void> cancelRestDone() => _plugin.cancel(id: idRest);
+
+  /// iOS bildirim sesi yalnız uygulama paketinden ya da kabın
+  /// `Library/Sounds/` klasöründen çalınır; Flutter varlıkları ikisinde de
+  /// değil. Seçili sesin bitiş dosyası oraya bir kez kopyalanır (boyut
+  /// değiştiyse — ses yeniden üretildiyse — üzerine yazılır). Başarısızsa
+  /// `null` → sistem varsayılan sesi.
+  Future<String?> _installIosSound(RestSound sound) async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return null;
+    try {
+      final data = await rootBundle.load(sound.endAsset);
+      final dir = Directory(p.join((await getLibraryDirectory()).path, 'Sounds'));
+      final file = File(p.join(dir.path, sound.endFileName));
+      if (!await file.exists() || await file.length() != data.lengthInBytes) {
+        await dir.create(recursive: true);
+        await file.writeAsBytes(
+            data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
+            flush: true);
+      }
+      return sound.endFileName;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// iOS: bu uygulamanın bildirim sesi sistem ayarlarında açık mı. Ayarlar
+  /// ekranı uyarı göstermek için sorar; Android'de ses servisten gelir → true.
+  Future<bool> iosSoundAllowed() async {
+    await init();
+    final ios = _ios;
+    if (ios == null) return true;
+    try {
+      final o = await ios.checkPermissions();
+      return o == null || (o.isEnabled && o.isSoundEnabled);
+    } catch (_) {
+      return true;
+    }
+  }
 
   /// Her gün aynı saatte tekrar eden hatırlatıcı (antrenman/su). Dakiklik
   /// kritik değil → inexact (SCHEDULE_EXACT_ALARM izni istemez).

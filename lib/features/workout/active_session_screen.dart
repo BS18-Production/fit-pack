@@ -198,8 +198,16 @@ class ActiveSessionScreen extends ConsumerStatefulWidget {
   final DateTime? manualDate;
   // Kaydedilmiş taslaktan devam (docs/12). true ise routine yerine taslak yüklenir.
   final bool resume;
+
+  /// Geçmiş kayıtta tarih seçici açılışta kendiliğinden açılsın mı. Takvimden
+  /// belli bir gün için gelince hayır (gün zaten seçili).
+  final bool pickDateOnOpen;
   const ActiveSessionScreen(
-      {super.key, this.routineId, this.manualDate, this.resume = false});
+      {super.key,
+      this.routineId,
+      this.manualDate,
+      this.resume = false,
+      this.pickDateOnOpen = true});
 
   @override
   ConsumerState<ActiveSessionScreen> createState() =>
@@ -237,6 +245,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   // timer'ları donar; tık saymak yerine hedef bitiş anı saklanır, her tikte
   // kalan süre gerçek zamandan hesaplanır — dönüşte doğru kalır.
   DateTime? _restDeadline;
+  DateTime? _restStartedAt; // kilit ekranı ilerleme çubuğu (docs/45)
   int _restRemaining = 0; // yalnız görüntü için (deadline'dan türetilir)
   // Mola sesi/titreşimi Android yerel servisinde mi (docs/25)? true ise
   // ekran çalmaz; false ise (iOS, servis başlatılamadı) uygulama içi yol.
@@ -260,8 +269,10 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _draftClearCount = _drafts.clearCount;
     if (!_isManual) {
       WakelockPlus.enable(); // antrenman boyunca ekran uyanık kalsın (docs/12)
-      _feedback.warmUp(); // ilk bip gecikmesin (G-1)
+      // İlk bip gecikmesin (G-1) — seçili ses yüklensin (docs/45 §3).
+      _feedback.warmUp(ref.read(notificationPrefsProvider).restSound);
       WidgetsBinding.instance.addObserver(this);
+      _live.attach(_onLiveAction); // kilit ekranı düğmeleri (docs/45 §2)
       _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
         if (mounted) setState(() => _elapsed = DateTime.now().difference(_startedAt));
       });
@@ -298,25 +309,84 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
     // P-11 (docs/16 §5): dinlenme sürerken arka plana geçildiyse bitişe
     // bildirim kur; öne dönünce iptal (uygulama içinde sayaç zaten görünür).
-    // Android yerel servisi çalışıyorsa bildirimi o verir (docs/25).
-    if (state == AppLifecycleState.paused) {
-      final deadline = _restDeadline;
-      if (!_nativeRest &&
-          deadline != null &&
-          deadline.isAfter(DateTime.now()) &&
-          ref.read(notificationPrefsProvider).restEnabled &&
-          mounted) {
-        final l = AppL10n.of(context);
-        ref.read(notificationServiceProvider).scheduleRestDone(
-              after: deadline.difference(DateTime.now()),
-              title: l.notifRestDoneTitle,
-              body: l.notifRestDoneBody,
-            );
-      }
-    } else if (state == AppLifecycleState.resumed) {
-      ref.read(notificationServiceProvider).cancelRestDone();
-      _restAlarm.dismissDone();
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.resumed) {
+      _syncRestNotification();
     }
+    if (state == AppLifecycleState.resumed) _restAlarm.dismissDone();
+  }
+
+  bool get _inForeground =>
+      WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
+
+  /// Mola sonu bildirimini duruma göre kurar ya da kaldırır (docs/45 §3).
+  ///
+  /// Kurulur: dinlenme sürüyor, uygulama ön planda DEĞİL, bildirim açık ve
+  /// sesi Android yerel servisi vermiyor (docs/25). Yalnız `paused` anında
+  /// kurmak yetmiyordu: kilit ekranından "Seti tamamla" ile başlayan
+  /// dinlenme uygulama zaten arkadayken başlar — o molanın bildirimi hiç
+  /// kurulmazdı. Artık dinlenme başlarken/değişirken de çağrılır.
+  void _syncRestNotification() {
+    if (!mounted) return;
+    final service = ref.read(notificationServiceProvider);
+    final prefs = ref.read(notificationPrefsProvider);
+    final deadline = _restDeadline;
+    final now = DateTime.now();
+    if (_nativeRest ||
+        _inForeground ||
+        deadline == null ||
+        !deadline.isAfter(now) ||
+        !prefs.restEnabled) {
+      service.cancelRestDone();
+      return;
+    }
+    final l = AppL10n.of(context);
+    service.scheduleRestDone(
+      after: deadline.difference(now),
+      title: l.notifRestDoneTitle,
+      body: l.notifRestDoneBody,
+      sound: prefs.restSoundEnabled ? prefs.restSound : null,
+    );
+  }
+
+  /// Kilit ekranından gelen eylem (iOS düğmesi / Android bildirim eylemi).
+  /// Uygulama arka plandayken çalışır; ekrandaki dokunuşla aynı yolu izler —
+  /// seans durumunun tek sahibi bu ekran. Kart güncellemesi gidene kadar
+  /// beklenir (sistem ardından uygulamayı yeniden uyutur).
+  Future<bool> _onLiveAction(LiveAction action) async {
+    if (!mounted || _loading || _draftCleared || _isManual) return false;
+    switch (action) {
+      case LiveAction.completeSet:
+        final next = _nextLiveSet();
+        if (next == null || !next.canComplete) return false;
+        _toggleDone(next.exercise, next.set);
+      case LiveAction.addRest:
+        if (_restDeadline == null) return false;
+        _bumpRest(15);
+      case LiveAction.skipRest:
+        if (_restDeadline == null) return false;
+        _skipRest();
+    }
+    await _live.flush();
+    return true;
+  }
+
+  /// Kilit ekranındaki "şu anki set": sırayla ilk tamamlanmamış set.
+  /// [canComplete]: değeri girilmiş ya da öneriyle dolacak — boş set kilit
+  /// ekranından işaretlenmez (değersiz kayıt üretirdi).
+  ({_SessionExercise exercise, _SetEntry set, int index, bool canComplete})?
+      _nextLiveSet() {
+    final pos = livePosition(
+        [for (final e in _exercises) [for (final s in e.sets) s.done]]);
+    if (pos == null) return null;
+    final ex = _exercises[pos.exercise];
+    final set = ex.sets[pos.set];
+    return (
+      exercise: ex,
+      set: set,
+      index: pos.set,
+      canComplete: set.hasInput(ex.measure) || ex.suggestionAt(pos.set) != null,
+    );
   }
 
   // ───────── taslak (draft) ─────────
@@ -326,6 +396,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         routineId: _routineId,
         startedAtMs: _startedAt.millisecondsSinceEpoch,
         sessionDateMs: _sessionDate.millisecondsSinceEpoch,
+        restStartedAtMs: _restStartedAt?.millisecondsSinceEpoch,
+        restEndsAtMs: _restDeadline?.millisecondsSinceEpoch,
         exercises: _exercises
             .map((e) => DraftExercise(
                   exerciseId: e.exercise.id,
@@ -357,21 +429,20 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
     final l = AppL10n.of(context);
     final units = ref.read(unitsProvider);
-    final pos = livePosition(
-        [for (final e in _exercises) [for (final s in e.sets) s.done]]);
+    final next = _nextLiveSet();
     final total = _exercises.fold<int>(0, (n, e) => n + e.sets.length);
     final done = _exercises.fold<int>(
         0, (n, e) => n + e.sets.where((s) => s.done).length);
     final String exercise, setLabel, target;
-    if (pos == null) {
+    if (next == null) {
       exercise = _exercises.isEmpty ? _title : _exercises.last.exercise.name;
       setLabel = l.liveAllDone;
       target = '';
     } else {
-      final ex = _exercises[pos.exercise];
+      final ex = next.exercise;
       exercise = ex.exercise.name;
-      setLabel = l.liveSetLabel(pos.set + 1, ex.sets.length);
-      final v = ex.suggestionAt(pos.set) ?? ex.sets[pos.set].values;
+      setLabel = l.liveSetLabel(next.index + 1, ex.sets.length);
+      final v = ex.suggestionAt(next.index) ?? next.set.values;
       target = switch (ex.measure) {
         'reps' => v.reps == null ? '' : '× ${v.reps}',
         'time' => v.durationSec == null ? '' : fmtDuration(v.durationSec!),
@@ -385,6 +456,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       };
     }
     final deadline = _restDeadline;
+    final resting = deadline != null && deadline.isAfter(DateTime.now());
     _live.show(
       title: _title,
       startedAt: _startedAt,
@@ -392,10 +464,20 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         exercise: exercise,
         setLabel: setLabel,
         target: target,
-        restEndsAt:
-            deadline != null && deadline.isAfter(DateTime.now()) ? deadline : null,
+        restStartedAt: resting ? _restStartedAt : null,
+        restEndsAt: resting ? deadline : null,
         doneSets: done,
         totalSets: total,
+        canComplete: next?.canComplete ?? false,
+      ),
+      labels: WorkoutLiveLabels(
+        rest: l.labelRest,
+        restOver: l.liveRestOver,
+        next: l.liveNext,
+        completeSet: l.liveCompleteSet,
+        addRest: l.liveAddRest,
+        skipRest: l.liveSkipRest,
+        elapsed: l.liveElapsed,
       ),
     );
   }
@@ -438,6 +520,12 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _routineId = d.routineId;
     _startedAt = d.startedAt;
     _sessionDate = d.sessionDate;
+    // Süren dinlenme (uygulama arka planda öldürüldü): kaldığı yerden sürer.
+    final restEnds = d.restEndsAt;
+    if (restEnds != null && restEnds.isAfter(DateTime.now())) {
+      _restDeadline = restEnds;
+      _restStartedAt = d.restStartedAt;
+    }
     // Hedef tekrar aralıkları rutinde — ilerleme önerisi için yeniden okunur.
     final targets = <int, RoutineExercise>{
       if (d.routineId != null)
@@ -539,6 +627,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     // ref kullanmaz; temizlenmiş/başka yerden silinmiş taslağı yazmaz.
     if (_draftDebounce?.isActive ?? false) _saveDraft();
     if (!_isManual) {
+      _live.detach(_onLiveAction);
       _live.end();
       WidgetsBinding.instance.removeObserver(this);
       WakelockPlus.disable();
@@ -553,6 +642,11 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       final draft = await _drafts.load();
       if (draft != null) await _restoreFromDraft(draft);
       if (mounted) setState(() => _loading = false);
+      if (mounted && _restDeadline != null) {
+        _tickRest();
+        _scheduleRestTick();
+        _armRestAlarm();
+      }
       _syncLive();
       return;
     }
@@ -591,7 +685,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _saveDraft(); // başlangıç taslağını yaz (boş bile olsa resume hedefi olur)
     // Geçmiş kayıt (C-18): akışın ilk sorusu "hangi gün?" — tarih seçici
     // kendiliğinden açılır; vazgeçilirse bugün kalır.
-    if (_isManual && mounted) {
+    if (_isManual && widget.pickDateOnOpen && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _pickSessionDate();
       });
@@ -831,11 +925,14 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   void _startRest(int seconds) {
     _restTimer?.cancel();
-    _restDeadline = DateTime.now().add(Duration(seconds: seconds));
+    final now = DateTime.now();
+    _restStartedAt = now;
+    _restDeadline = now.add(Duration(seconds: seconds));
     _tickRest();
     _scheduleRestTick();
     _armRestAlarm();
-    _offerRestNotificationOnce();
+    // İzin penceresi arka planda açılamaz (kilit ekranından tamamlanan set).
+    if (_inForeground) _offerRestNotificationOnce();
     _syncLive();
   }
 
@@ -878,6 +975,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     final native = await _restAlarm.start(
       deadline: deadline,
       sound: prefs.restSoundEnabled,
+      soundFile: prefs.restSound,
       title: l.labelRest,
       // Boş = "bitti" bildirimi yok (kullanıcı mola bildirimini kapattı).
       doneTitle: prefs.restEnabled ? l.notifRestDoneTitle : '',
@@ -886,6 +984,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     // Beklerken süre değiştiyse/atlandıysa bu çağrının sonucu eskidi.
     if (!mounted || _restDeadline != deadline) return;
     _nativeRest = native;
+    _syncRestNotification();
     if (native || !prefs.restSoundEnabled) return;
     final plan = countdownPlan(deadline.difference(DateTime.now()).inMilliseconds);
     if (plan == null) return;
@@ -893,7 +992,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       if (_restDeadline != deadline) return;
       // Zamanlayıcı geç düştüyse dosyanın doğru yerinden başla.
       final now = countdownPlan(deadline.difference(DateTime.now()).inMilliseconds);
-      if (now != null) _feedback.playCountdown(offsetMs: now.offsetMs);
+      if (now != null) {
+        _feedback.playCountdown(offsetMs: now.offsetMs, sound: prefs.restSound);
+      }
     });
   }
 
@@ -926,6 +1027,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (left <= 0) {
       _restTimer?.cancel();
       _restDeadline = null;
+      _restStartedAt = null;
       _syncLive(); // kilit ekranındaki geri sayım kalksın
     }
   }
@@ -937,18 +1039,19 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     // Hedef değişti → sıradaki tık ve ses yeni hedefe göre yeniden kurulur.
     _scheduleRestTick();
     _armRestAlarm();
-    _syncLive();
+    _saveDraft(); // kilit ekranı + taslaktaki bitiş anı (_syncLive dahil)
   }
 
   void _skipRest() {
     _restTimer?.cancel();
     _countdownTimer?.cancel();
     _restDeadline = null;
+    _restStartedAt = null;
     _feedback.stopCountdown();
     _restAlarm.stop();
     ref.read(notificationServiceProvider).cancelRestDone();
     setState(() => _restRemaining = 0);
-    _syncLive();
+    _saveDraft();
   }
 
   // ───────── bitir / kaydet ─────────
@@ -1056,6 +1159,12 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         _exercises.map((e) => e.sets.map((s) => s.done)));
     final showProgress = !_isManual && !progress.isEmpty;
     final stepPrefs = ref.watch(weightStepPrefsProvider);
+    // Ses Ayarlar'dan değişti (docs/45 §3): süren mola yeni sesle kurulsun —
+    // eski seçimin çalmaya devam etmesi olmasın.
+    ref.listen(notificationPrefsProvider.select((p) => p.restSound),
+        (prev, next) {
+      if (prev != next && _restDeadline != null) _armRestAlarm();
+    });
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {

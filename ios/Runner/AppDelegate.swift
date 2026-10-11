@@ -36,11 +36,9 @@ import UIKit
       }
       let args = call.arguments as? [String: Any] ?? [:]
       switch call.method {
-      case "start":
-        WorkoutLiveActivityController.start(args: args)
-        result(true)
-      case "update":
-        WorkoutLiveActivityController.update(args: args)
+      // İkisi de tekil: aynı seansın kartı varsa günceller (docs/45 §1).
+      case "start", "update":
+        WorkoutLiveActivityController.upsert(args: args)
         result(true)
       case "end":
         WorkoutLiveActivityController.endAll()
@@ -50,6 +48,28 @@ import UIKit
       }
     }
     liveActivityChannel = channel
+    registerLiveActivityActions(channel)
+  }
+
+  /// Kilit ekranı düğmeleri (iOS 17+, `WorkoutLiveActivityIntents.swift`):
+  /// eylem Dart'taki açık seansa iletilir, cevap beklenir (en çok 8 sn),
+  /// sonra kart güncellemesi bitene kadar beklenir — `perform` dönünce
+  /// sistem uygulamayı yeniden uyutur.
+  private func registerLiveActivityActions(_ channel: FlutterMethodChannel) {
+    LiveActivityActionRouter.handler = { [weak channel] action in
+      guard let channel else { return false }
+      let applied = await withCheckedContinuation { (cont: CheckedContinuation<Bool, Never>) in
+        let once = ResumeOnce(cont)
+        channel.invokeMethod("action", arguments: action) { reply in
+          once.resume(reply as? Bool ?? false)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8) { once.resume(false) }
+      }
+      if #available(iOS 16.2, *) {
+        await WorkoutLiveActivityController.drain()
+      }
+      return applied
+    }
   }
 
   /// Mola geri sayım sesi müziği kısarak (duckOthers) çalar. audioplayers ses
@@ -77,5 +97,20 @@ import UIKit
       }
     }
     audioSessionChannel = channel
+  }
+}
+
+/// Devamı tek kez sürdürür: Dart cevabı ile zaman aşımı yarışır (ikisi de
+/// ana iş parçacığında çağrılır).
+private final class ResumeOnce {
+  private var continuation: CheckedContinuation<Bool, Never>?
+
+  init(_ continuation: CheckedContinuation<Bool, Never>) {
+    self.continuation = continuation
+  }
+
+  func resume(_ value: Bool) {
+    continuation?.resume(returning: value)
+    continuation = nil
   }
 }

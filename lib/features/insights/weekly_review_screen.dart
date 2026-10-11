@@ -378,15 +378,30 @@ class _KpiGrid extends ConsumerWidget {
       label: l.wrKpiKcal,
       value: n.avgKcal == null ? '—' : nf.format(n.avgKcal),
       unit: n.avgKcal == null ? null : 'kcal',
-      notes: n.loggedDays == 0
-          ? [l.wrNoRecord]
-          : [
-              l.wrLoggedOf(n.loggedDays, review.period.daysElapsed),
+      notes: n.basis == NutritionBasis.completedDays
+          // Tamamlanmış günler bilinen günler (docs/37 §3): ortalama onlardan,
+          // yarım günler "hesaba katılmadı", protein hedefi yargılanabilir.
+          ? [
+              [
+                l.wrCompletedDays(n.completedDays),
+                if (n.excludedLoggedDays > 0)
+                  l.wrExcludedDays(n.excludedLoggedDays),
+              ].join(' · '),
               [
                 l.wrProteinAvg(n.avgProtein!),
-                if (n.kcalGoal > 0) l.wrGoalShort(n.kcalGoal),
+                if (n.proteinHitDays != null)
+                  l.wrProteinHit(n.proteinHitDays!, n.completedDays),
               ].join(' · '),
-            ],
+            ]
+          : n.loggedDays == 0
+              ? [l.wrNoRecord]
+              : [
+                  l.wrLoggedOf(n.loggedDays, review.period.daysElapsed),
+                  [
+                    l.wrProteinAvg(n.avgProtein!),
+                    if (n.kcalGoal > 0) l.wrGoalShort(n.kcalGoal),
+                  ].join(' · '),
+                ],
     );
 
     final weight = _KpiTile(

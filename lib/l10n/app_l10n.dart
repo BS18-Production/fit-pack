@@ -5616,6 +5616,24 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Undo'**
   String get nutritionDayReopen;
+
+  /// No description provided for @wrCompletedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} completed days'**
+  String wrCompletedDays(int days);
+
+  /// No description provided for @wrExcludedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} not counted'**
+  String wrExcludedDays(int days);
+
+  /// No description provided for @wrProteinHit.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein goal {hit}/{total} days'**
+  String wrProteinHit(int hit, int total);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

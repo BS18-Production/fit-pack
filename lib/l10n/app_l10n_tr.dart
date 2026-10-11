@@ -3256,4 +3256,19 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get nutritionDayReopen => 'Geri al';
+
+  @override
+  String wrCompletedDays(int days) {
+    return '$days tamamlanmış gün';
+  }
+
+  @override
+  String wrExcludedDays(int days) {
+    return '$days gün hesaba katılmadı';
+  }
+
+  @override
+  String wrProteinHit(int hit, int total) {
+    return 'Protein hedefi $hit/$total gün';
+  }
 }

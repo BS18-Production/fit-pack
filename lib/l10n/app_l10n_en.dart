@@ -3303,4 +3303,19 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get nutritionDayReopen => 'Undo';
+
+  @override
+  String wrCompletedDays(int days) {
+    return '$days completed days';
+  }
+
+  @override
+  String wrExcludedDays(int days) {
+    return '$days not counted';
+  }
+
+  @override
+  String wrProteinHit(int hit, int total) {
+    return 'Protein goal $hit/$total days';
+  }
 }

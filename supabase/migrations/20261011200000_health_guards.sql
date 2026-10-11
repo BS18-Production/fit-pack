@@ -68,7 +68,11 @@ begin
     new.health_consent_version := old.health_consent_version;
   elsif new.health_consent_at is not null
         and (old.health_consent_at is null
-             or new.health_consent_at > old.health_consent_at)
+             or new.health_consent_at > old.health_consent_at
+             -- Aynı an: gelen geri alma da kazanmalı (Codex son kontrol).
+             or (new.health_consent_at = old.health_consent_at
+                 and new.health_consent_version is null
+                 and old.health_consent_version is not null))
         and new.changed_at_ms <= old.changed_at_ms then
     -- Daha YENİ rıza kararı ESKİ bir satırla geldi: sync_guard bütün yazmayı
     -- reddederdi → karar kaybolurdu. Sunucudaki profil korunur, yalnız rıza

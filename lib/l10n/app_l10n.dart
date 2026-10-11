@@ -5580,6 +5580,42 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'{count, plural, =0{No entries} =1{1 food} other{{count} foods}}'**
   String nutritionFoodCount(int count);
+
+  /// No description provided for @nutritionDayCompleteToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s log is complete'**
+  String get nutritionDayCompleteToday;
+
+  /// No description provided for @nutritionDayCompletePast.
+  ///
+  /// In en, this message translates to:
+  /// **'This day\'s log is complete'**
+  String get nutritionDayCompletePast;
+
+  /// No description provided for @nutritionDayCompleteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked days count as \"known days\" in your weekly review, so a partial log isn\'t mistaken for eating little.'**
+  String get nutritionDayCompleteHint;
+
+  /// No description provided for @nutritionDayCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Log complete'**
+  String get nutritionDayCompleted;
+
+  /// No description provided for @nutritionDayChangedAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed after completion'**
+  String get nutritionDayChangedAfter;
+
+  /// No description provided for @nutritionDayReopen.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get nutritionDayReopen;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

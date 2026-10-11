@@ -3284,4 +3284,23 @@ class AppL10nEn extends AppL10n {
     );
     return '$_temp0';
   }
+
+  @override
+  String get nutritionDayCompleteToday => 'Today\'s log is complete';
+
+  @override
+  String get nutritionDayCompletePast => 'This day\'s log is complete';
+
+  @override
+  String get nutritionDayCompleteHint =>
+      'Marked days count as \"known days\" in your weekly review, so a partial log isn\'t mistaken for eating little.';
+
+  @override
+  String get nutritionDayCompleted => 'Log complete';
+
+  @override
+  String get nutritionDayChangedAfter => 'Changed after completion';
+
+  @override
+  String get nutritionDayReopen => 'Undo';
 }

@@ -3237,4 +3237,23 @@ class AppL10nTr extends AppL10n {
     );
     return '$_temp0';
   }
+
+  @override
+  String get nutritionDayCompleteToday => 'Bugünkü kaydım tamamlandı';
+
+  @override
+  String get nutritionDayCompletePast => 'Bu günün kaydı tamamlandı';
+
+  @override
+  String get nutritionDayCompleteHint =>
+      'İşaretlediğin günler haftalık değerlendirmede \"bilinen gün\" sayılır; eksik kayıt düşük tüketim sanılmaz.';
+
+  @override
+  String get nutritionDayCompleted => 'Kaydın tamam';
+
+  @override
+  String get nutritionDayChangedAfter => 'Tamamlandıktan sonra değişti';
+
+  @override
+  String get nutritionDayReopen => 'Geri al';
 }

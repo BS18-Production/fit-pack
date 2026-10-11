@@ -177,6 +177,14 @@ commit'te** (CLAUDE.md).
   (işaretlenince değerlendirme kendiliğinden yenilenir — eksikti, düzeltildi).
   Yol haritasındaki `dashboard_stats.dart:76-78` protein uyumu kodda artık yok;
   ana ekranda değişecek hesap kalmadı. W-10 testleri (4) + paket 758 yeşil.
+- 🔧 **Aşama 5a** (ekran): `lib/features/nutrition/day_complete.dart` —
+  `dayCompletionProvider` (gün tablosu + öğün kayıtları izlenir) ve
+  `DayCompleteCard` (öğünlerin altında; işaretsiz → "Bugünkü kaydım
+  tamamlandı"/"Bu günün kaydı tamamlandı" + açıklama; işaretli → ✓ "Kaydın
+  tamam", gerekirse "Tamamlandıktan sonra değişti", "Geri al"). Çeviri: 6
+  anahtar (tr/en), biçim korunarak eklendi. Widget testi 2/2. **Kalan:** takvim
+  ✓ rozeti (5b), haftalık değerlendirme ekranında "N tamamlanmış gün · M gün
+  hesaba katılmadı" metni (5c), Codex iOS Simulator görsel kontrolü.
 - ⚠️ `changedAfterComplete` silinen kaydı görmez (satır kalmıyor); mezar taşı
   tablosundan okumak açık iş.
 - ⛔ **Dal sunucu göçünden (Aşama 3) önce `main`'e birleşmez / cihaza kurulmaz**:

@@ -5634,6 +5634,1111 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Protein goal {hit}/{total} days'**
   String wrProteinHit(int hit, int total);
+
+  /// No description provided for @assistantTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask my data'**
+  String get assistantTitle;
+
+  /// No description provided for @assistantSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Answers from your records. Pick a question to explore.'**
+  String get assistantSubtitle;
+
+  /// No description provided for @assistantQuestionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How were my workouts this week?'**
+  String get assistantQuestionHint;
+
+  /// No description provided for @assistantAsk.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask'**
+  String get assistantAsk;
+
+  /// No description provided for @assistantReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready questions'**
+  String get assistantReady;
+
+  /// No description provided for @assistantAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All questions'**
+  String get assistantAll;
+
+  /// No description provided for @assistantLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get assistantLess;
+
+  /// No description provided for @assistantUnderstood.
+  ///
+  /// In en, this message translates to:
+  /// **'My understanding'**
+  String get assistantUnderstood;
+
+  /// No description provided for @assistantChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get assistantChange;
+
+  /// No description provided for @assistantApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Show result'**
+  String get assistantApply;
+
+  /// No description provided for @assistantPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Period'**
+  String get assistantPeriod;
+
+  /// No description provided for @assistantExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise'**
+  String get assistantExercise;
+
+  /// No description provided for @assistantChooseExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an exercise'**
+  String get assistantChooseExercise;
+
+  /// No description provided for @assistantInterpretation.
+  ///
+  /// In en, this message translates to:
+  /// **'Explain the numbers too'**
+  String get assistantInterpretation;
+
+  /// No description provided for @assistantMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a meal for food examples'**
+  String get assistantMeal;
+
+  /// No description provided for @assistantNoMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining amounts only'**
+  String get assistantNoMeal;
+
+  /// No description provided for @assistantPrivacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your question will be sent to Google'**
+  String get assistantPrivacyTitle;
+
+  /// No description provided for @assistantPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Only your question and fixed routing definitions go to Gemini; workout, nutrition and measurement records stay on your device. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.'**
+  String get assistantPrivacy;
+
+  /// No description provided for @assistantPrivacyAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand, send question'**
+  String get assistantPrivacyAccept;
+
+  /// No description provided for @assistantPrivacyCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Use ready questions'**
+  String get assistantPrivacyCancel;
+
+  /// No description provided for @assistantUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Free-text routing is unavailable. You can continue with ready questions.'**
+  String get assistantUnavailable;
+
+  /// No description provided for @assistantSignedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to ask a free-text question. Ready questions run on your device.'**
+  String get assistantSignedOut;
+
+  /// No description provided for @assistantPrivateBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'This question may contain private information. Remove identity, contact or health details, or choose a ready question.'**
+  String get assistantPrivateBlocked;
+
+  /// No description provided for @assistantFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'I could not reliably route this question. Choose a ready question to explore your records.'**
+  String get assistantFallback;
+
+  /// No description provided for @assistantClarify.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a period or exercise before opening the result.'**
+  String get assistantClarify;
+
+  /// No description provided for @assistantMulti.
+  ///
+  /// In en, this message translates to:
+  /// **'There are several topics. Which one should we explore first?'**
+  String get assistantMulti;
+
+  /// No description provided for @assistantQuota.
+  ///
+  /// In en, this message translates to:
+  /// **'Question limit reached. Resets: {time}. Ready questions remain available.'**
+  String assistantQuota(String time);
+
+  /// No description provided for @assistantError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read records. Try again.'**
+  String get assistantError;
+
+  /// No description provided for @assistantRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get assistantRetry;
+
+  /// No description provided for @assistantOpenRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'Open records'**
+  String get assistantOpenRecords;
+
+  /// No description provided for @assistantRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} records'**
+  String assistantRecords(String count);
+
+  /// No description provided for @assistantSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'So far'**
+  String get assistantSoFar;
+
+  /// No description provided for @assistantUnknownStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Since the first record'**
+  String get assistantUnknownStart;
+
+  /// No description provided for @assistantNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No records in this period. Missing data is not a zero result.'**
+  String get assistantNoData;
+
+  /// No description provided for @assistantInsufficient.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers are available; there is not enough data for a trend interpretation yet.'**
+  String get assistantInsufficient;
+
+  /// No description provided for @assistantNoGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'No goal has been set for this calculation.'**
+  String get assistantNoGoal;
+
+  /// No description provided for @assistantNoPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'No workout days are scheduled.'**
+  String get assistantNoPlan;
+
+  /// No description provided for @assistantIncompleteDays.
+  ///
+  /// In en, this message translates to:
+  /// **'No completed days; protein-goal success cannot be calculated.'**
+  String get assistantIncompleteDays;
+
+  /// No description provided for @assistantLoggedBasis.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged days only; records may be incomplete.'**
+  String get assistantLoggedBasis;
+
+  /// No description provided for @assistantCompletedBasis.
+  ///
+  /// In en, this message translates to:
+  /// **'Average uses completed days only; a completed empty day counts as zero.'**
+  String get assistantCompletedBasis;
+
+  /// No description provided for @assistantCurrentPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses your current plan; past plan changes are unknown.'**
+  String get assistantCurrentPlan;
+
+  /// No description provided for @assistantFoodBasis.
+  ///
+  /// In en, this message translates to:
+  /// **'Examples use past portions for the selected meal. Filtered by remaining calories only; nothing is logged automatically.'**
+  String get assistantFoodBasis;
+
+  /// No description provided for @assistantUnknownExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown exercise'**
+  String get assistantUnknownExercise;
+
+  /// No description provided for @assistantOwnHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Your own history'**
+  String get assistantOwnHistory;
+
+  /// No description provided for @assistantGuideline.
+  ///
+  /// In en, this message translates to:
+  /// **'General research finding'**
+  String get assistantGuideline;
+
+  /// No description provided for @assistantSources.
+  ///
+  /// In en, this message translates to:
+  /// **'Sources'**
+  String get assistantSources;
+
+  /// No description provided for @assistantDeveloper.
+  ///
+  /// In en, this message translates to:
+  /// **'Developer'**
+  String get assistantDeveloper;
+
+  /// No description provided for @assistantQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistant quality'**
+  String get assistantQuality;
+
+  /// No description provided for @assistantQualityInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Text-free events on this device only. Correction rate is not accuracy; no correction does not prove a correct route.'**
+  String get assistantQualityInfo;
+
+  /// No description provided for @assistantQualityAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic answers'**
+  String get assistantQualityAuto;
+
+  /// No description provided for @assistantQualityCorrections.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed selections'**
+  String get assistantQualityCorrections;
+
+  /// No description provided for @assistantQualityLatency.
+  ///
+  /// In en, this message translates to:
+  /// **'Latency: median / 95th percentile'**
+  String get assistantQualityLatency;
+
+  /// No description provided for @assistantQualityTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Input / output tokens'**
+  String get assistantQualityTokens;
+
+  /// No description provided for @assistantQualityFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Gemini free tier · cost \$0'**
+  String get assistantQualityFree;
+
+  /// No description provided for @assistantQualityClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear local quality events'**
+  String get assistantQualityClear;
+
+  /// No description provided for @assistantQualityClearConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete assistant quality events? Your fitness records are preserved.'**
+  String get assistantQualityClearConfirm;
+
+  /// No description provided for @assistantQualitySmall.
+  ///
+  /// In en, this message translates to:
+  /// **'Small sample; interpret the rate cautiously.'**
+  String get assistantQualitySmall;
+
+  /// No description provided for @assistantQualityWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Correction rate exceeded 3% in two consecutive weeks. Review routing.'**
+  String get assistantQualityWarning;
+
+  /// No description provided for @assistantQualityTransitions.
+  ///
+  /// In en, this message translates to:
+  /// **'Query changes'**
+  String get assistantQualityTransitions;
+
+  /// No description provided for @assistantQualityDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get assistantQualityDays;
+
+  /// No description provided for @assistantNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get assistantNotAvailable;
+
+  /// No description provided for @assistantPeriodToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get assistantPeriodToday;
+
+  /// No description provided for @assistantPeriodThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get assistantPeriodThisWeek;
+
+  /// No description provided for @assistantPeriodLastWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Last week'**
+  String get assistantPeriodLastWeek;
+
+  /// No description provided for @assistantPeriodLast30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get assistantPeriodLast30Days;
+
+  /// No description provided for @assistantPeriodAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get assistantPeriodAllTime;
+
+  /// No description provided for @assistantQueryWorkoutSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'How were my workouts?'**
+  String get assistantQueryWorkoutSummary;
+
+  /// No description provided for @assistantQueryPlanAdherence.
+  ///
+  /// In en, this message translates to:
+  /// **'How closely did I follow scheduled days?'**
+  String get assistantQueryPlanAdherence;
+
+  /// No description provided for @assistantQueryStrengthProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Which exercises improved?'**
+  String get assistantQueryStrengthProgress;
+
+  /// No description provided for @assistantQueryExerciseHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'How did I progress in this exercise?'**
+  String get assistantQueryExerciseHistory;
+
+  /// No description provided for @assistantQueryNutritionSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'What do my nutrition records show?'**
+  String get assistantQueryNutritionSummary;
+
+  /// No description provided for @assistantQueryProteinGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'How many days did I reach my protein goal?'**
+  String get assistantQueryProteinGoal;
+
+  /// No description provided for @assistantQueryWeightTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'How did my weight change?'**
+  String get assistantQueryWeightTrend;
+
+  /// No description provided for @assistantQueryMuscleBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'How many sets per muscle group?'**
+  String get assistantQueryMuscleBalance;
+
+  /// No description provided for @assistantQueryStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'How many consistent weeks?'**
+  String get assistantQueryStreak;
+
+  /// No description provided for @assistantQueryTodayRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'What remains of my goals today?'**
+  String get assistantQueryTodayRemaining;
+
+  /// No description provided for @assistantQueryTopExercises.
+  ///
+  /// In en, this message translates to:
+  /// **'Which exercises did I do most?'**
+  String get assistantQueryTopExercises;
+
+  /// No description provided for @assistantMetricSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get assistantMetricSessions;
+
+  /// No description provided for @assistantMetricSets.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed sets'**
+  String get assistantMetricSets;
+
+  /// No description provided for @assistantMetricMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get assistantMetricMinutes;
+
+  /// No description provided for @assistantMetricVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get assistantMetricVolume;
+
+  /// No description provided for @assistantMetricPlannedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled days'**
+  String get assistantMetricPlannedDays;
+
+  /// No description provided for @assistantMetricDoneDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled days completed'**
+  String get assistantMetricDoneDays;
+
+  /// No description provided for @assistantMetricLoggedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged days'**
+  String get assistantMetricLoggedDays;
+
+  /// No description provided for @assistantMetricCompletedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed days'**
+  String get assistantMetricCompletedDays;
+
+  /// No description provided for @assistantMetricExcludedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Excluded days'**
+  String get assistantMetricExcludedDays;
+
+  /// No description provided for @assistantMetricAvgKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Average energy'**
+  String get assistantMetricAvgKcal;
+
+  /// No description provided for @assistantMetricAvgProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Average protein'**
+  String get assistantMetricAvgProtein;
+
+  /// No description provided for @assistantMetricProteinGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein goal'**
+  String get assistantMetricProteinGoal;
+
+  /// No description provided for @assistantMetricHitDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed days reaching goal'**
+  String get assistantMetricHitDays;
+
+  /// No description provided for @assistantMetricMeasurements.
+  ///
+  /// In en, this message translates to:
+  /// **'Measurements'**
+  String get assistantMetricMeasurements;
+
+  /// No description provided for @assistantMetricFirstWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'First weight'**
+  String get assistantMetricFirstWeight;
+
+  /// No description provided for @assistantMetricLastWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Last weight'**
+  String get assistantMetricLastWeight;
+
+  /// No description provided for @assistantMetricChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get assistantMetricChange;
+
+  /// No description provided for @assistantMetricWeeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly streak'**
+  String get assistantMetricWeeks;
+
+  /// No description provided for @assistantMetricWeeklyGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly day goal'**
+  String get assistantMetricWeeklyGoal;
+
+  /// No description provided for @assistantMetricRemainingKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining energy'**
+  String get assistantMetricRemainingKcal;
+
+  /// No description provided for @assistantMetricRemainingProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining protein'**
+  String get assistantMetricRemainingProtein;
+
+  /// No description provided for @assistantMetricFirstE1rm.
+  ///
+  /// In en, this message translates to:
+  /// **'First estimated one-rep maximum'**
+  String get assistantMetricFirstE1rm;
+
+  /// No description provided for @assistantMetricLastE1rm.
+  ///
+  /// In en, this message translates to:
+  /// **'Last estimated one-rep maximum'**
+  String get assistantMetricLastE1rm;
+
+  /// No description provided for @assistantMetricPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'Past portion'**
+  String get assistantMetricPortion;
+
+  /// No description provided for @assistantMetricPortionKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion energy'**
+  String get assistantMetricPortionKcal;
+
+  /// No description provided for @assistantMetricPortionProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion protein'**
+  String get assistantMetricPortionProtein;
+
+  /// No description provided for @insightMuscleBelowTen.
+  ///
+  /// In en, this message translates to:
+  /// **'{muscle}: {sets} sets, below the roughly {level} weekly-set level studied.'**
+  String insightMuscleBelowTen(String muscle, String sets, String level);
+
+  /// No description provided for @insightMuscleAtTen.
+  ///
+  /// In en, this message translates to:
+  /// **'{muscle}: {sets} sets, at or above the roughly {level}-set level studied.'**
+  String insightMuscleAtTen(String muscle, String sets, String level);
+
+  /// No description provided for @insightMuscleBeyondTwenty.
+  ///
+  /// In en, this message translates to:
+  /// **'{muscle}: {sets} sets. Evidence for added gains beyond {limitedEvidenceAbove} sets is limited.'**
+  String insightMuscleBeyondTwenty(
+    String muscle,
+    String sets,
+    String limitedEvidenceAbove,
+  );
+
+  /// No description provided for @insightWeightNotEnoughData.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} measurements spanning {spanDays} days. Trend interpretation needs at least two measurements over {minDays} days.'**
+  String insightWeightNotEnoughData(
+    String count,
+    String spanDays,
+    String minDays,
+  );
+
+  /// No description provided for @insightWeightAgainstGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly change is {weeklyChangeKg}, opposite your selected goal direction.'**
+  String insightWeightAgainstGoal(String weeklyChangeKg);
+
+  /// No description provided for @insightWeightNoClearChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly change is {weeklyChangeKg}; no clear trend is visible.'**
+  String insightWeightNoClearChange(String weeklyChangeKg);
+
+  /// No description provided for @insightWeightLossSlower.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly change is {weeklyChangeKg}; slower than the CDC general loss range of {rangeMinKg}–{rangeMaxKg}.'**
+  String insightWeightLossSlower(
+    String weeklyChangeKg,
+    String rangeMinKg,
+    String rangeMaxKg,
+  );
+
+  /// No description provided for @insightWeightLossInRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly change is {weeklyChangeKg}; within the CDC general loss range of {rangeMinKg}–{rangeMaxKg}.'**
+  String insightWeightLossInRange(
+    String weeklyChangeKg,
+    String rangeMinKg,
+    String rangeMaxKg,
+  );
+
+  /// No description provided for @insightWeightLossFaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly change is {weeklyChangeKg}; faster than the CDC general loss range of {rangeMinKg}–{rangeMaxKg}.'**
+  String insightWeightLossFaster(
+    String weeklyChangeKg,
+    String rangeMinKg,
+    String rangeMaxKg,
+  );
+
+  /// No description provided for @insightWeightGainSlower.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly gain is {pctPerWeek}%, slower than the {rangeMinPct}–{rangeMaxPct}% level studied.'**
+  String insightWeightGainSlower(
+    String pctPerWeek,
+    String rangeMinPct,
+    String rangeMaxPct,
+  );
+
+  /// No description provided for @insightWeightGainInRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly gain is {pctPerWeek}%, within the {rangeMinPct}–{rangeMaxPct}% level studied.'**
+  String insightWeightGainInRange(
+    String pctPerWeek,
+    String rangeMinPct,
+    String rangeMaxPct,
+  );
+
+  /// No description provided for @insightWeightGainFaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly gain is {pctPerWeek}%, faster than the {rangeMinPct}–{rangeMaxPct}% level studied.'**
+  String insightWeightGainFaster(
+    String pctPerWeek,
+    String rangeMinPct,
+    String rangeMaxPct,
+  );
+
+  /// No description provided for @insightWeightStable.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated change over the period is {totalChangePct}%, within ±{stablePct}% of the mean.'**
+  String insightWeightStable(String totalChangePct, String stablePct);
+
+  /// No description provided for @insightWeightDriftUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated increase over the period is {totalChangePct}%.'**
+  String insightWeightDriftUp(String totalChangePct);
+
+  /// No description provided for @insightWeightDriftDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated change over the period is {totalChangePct}%.'**
+  String insightWeightDriftDown(String totalChangePct);
+
+  /// No description provided for @insightWorkoutNotEnoughHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'{metric}: {value}. Comparison with your history needs at least {minWeeks} complete weeks; you have {baselineWeeks}.'**
+  String insightWorkoutNotEnoughHistory(
+    String metric,
+    String value,
+    String minWeeks,
+    String baselineWeeks,
+  );
+
+  /// No description provided for @insightWorkoutNoBaseline.
+  ///
+  /// In en, this message translates to:
+  /// **'{metric}: {value}. Historical median is 0; percentage comparison is unavailable.'**
+  String insightWorkoutNoBaseline(String metric, String value);
+
+  /// No description provided for @insightWorkoutSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'{metric}: {value} so far. Median of the prior {baselineWeeks} weeks is {median}; an ongoing week is not compared as a full week.'**
+  String insightWorkoutSoFar(
+    String metric,
+    String value,
+    String baselineWeeks,
+    String median,
+  );
+
+  /// No description provided for @insightWorkoutAboveMedian.
+  ///
+  /// In en, this message translates to:
+  /// **'{metric}: {value}, historical median {median}; {pct}% above.'**
+  String insightWorkoutAboveMedian(
+    String metric,
+    String value,
+    String median,
+    String pct,
+  );
+
+  /// No description provided for @insightWorkoutAtMedian.
+  ///
+  /// In en, this message translates to:
+  /// **'{metric}: {value}, equal to the historical median ({median}).'**
+  String insightWorkoutAtMedian(String metric, String value, String median);
+
+  /// No description provided for @insightWorkoutBelowMedian.
+  ///
+  /// In en, this message translates to:
+  /// **'{metric}: {value}, historical median {median}; difference {pct}%.'**
+  String insightWorkoutBelowMedian(
+    String metric,
+    String value,
+    String median,
+    String pct,
+  );
+
+  /// No description provided for @insightStrengthNotApplicable.
+  ///
+  /// In en, this message translates to:
+  /// **'No suitable weight/repetition sets; estimated one-rep maximum is unavailable.'**
+  String get insightStrengthNotApplicable;
+
+  /// No description provided for @insightStrengthNotEnoughData.
+  ///
+  /// In en, this message translates to:
+  /// **'Suitable sets on {days} distinct days; progress needs at least two days.'**
+  String insightStrengthNotEnoughData(String days);
+
+  /// No description provided for @insightStrengthUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated one-rep maximum: {firstE1rm} → {lastE1rm}; {pct}% increase.'**
+  String insightStrengthUp(String firstE1rm, String lastE1rm, String pct);
+
+  /// No description provided for @insightStrengthStable.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated one-rep maximum: {firstE1rm} → {lastE1rm}; change within ±1%.'**
+  String insightStrengthStable(String firstE1rm, String lastE1rm);
+
+  /// No description provided for @insightStrengthDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated one-rep maximum: {firstE1rm} → {lastE1rm}; change {pct}%.'**
+  String insightStrengthDown(String firstE1rm, String lastE1rm, String pct);
+
+  /// No description provided for @insightStrengthPlateau.
+  ///
+  /// In en, this message translates to:
+  /// **'Heaviest set was {topKg} in each of the last {weeks} consecutive data weeks.'**
+  String insightStrengthPlateau(String topKg, String weeks);
+
+  /// No description provided for @insightNutritionNoLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'No nutrition data for this period.'**
+  String get insightNutritionNoLogs;
+
+  /// No description provided for @insightProteinGoalDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein goal of {goal} g reached on {hitDays}/{loggedDays} completed days.'**
+  String insightProteinGoalDays(String goal, String hitDays, String loggedDays);
+
+  /// No description provided for @insightKcalVsGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Average across {loggedDays} days: {avgKcal} kcal; goal {goal} kcal ({pctOfGoal}%).'**
+  String insightKcalVsGoal(
+    String loggedDays,
+    String avgKcal,
+    String goal,
+    String pctOfGoal,
+  );
+
+  /// No description provided for @insightProteinPerKgBelow.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded average is {gPerKg} g/kg, below the roughly {breakpoint} g/kg level studied. Weight used: {bodyWeightKg} ({bodyWeightDate}).'**
+  String insightProteinPerKgBelow(
+    String gPerKg,
+    String breakpoint,
+    String bodyWeightKg,
+    String bodyWeightDate,
+  );
+
+  /// No description provided for @insightProteinPerKgInRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded average is {gPerKg} g/kg, within the {breakpoint}–{upper} g/kg range studied. Weight used: {bodyWeightKg} ({bodyWeightDate}).'**
+  String insightProteinPerKgInRange(
+    String gPerKg,
+    String breakpoint,
+    String upper,
+    String bodyWeightKg,
+    String bodyWeightDate,
+  );
+
+  /// No description provided for @insightProteinPerKgAbove.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded average is {gPerKg} g/kg. Research found no additional lean-mass gains above roughly {breakpoint} g/kg; this is not a safety limit. Weight used: {bodyWeightKg} ({bodyWeightDate}).'**
+  String insightProteinPerKgAbove(
+    String gPerKg,
+    String breakpoint,
+    String bodyWeightKg,
+    String bodyWeightDate,
+  );
+
+  /// No description provided for @insightTodayNoGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'No energy goal; {loggedKcal} kcal and {loggedProtein} g protein recorded today.'**
+  String insightTodayNoGoal(String loggedKcal, String loggedProtein);
+
+  /// No description provided for @insightTodayRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{remainingKcal} kcal remain to your energy goal. Records may be incomplete.'**
+  String insightTodayRemaining(String remainingKcal);
+
+  /// No description provided for @insightTodayGoalReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining energy is {remainingKcal} kcal; zero or a negative value means the recorded goal has been reached.'**
+  String insightTodayGoalReached(String remainingKcal);
+
+  /// No description provided for @assistantNoteGeneralGuideline.
+  ///
+  /// In en, this message translates to:
+  /// **'General guidance, not personal medical advice.'**
+  String get assistantNoteGeneralGuideline;
+
+  /// No description provided for @assistantNoteConsultProfessional.
+  ///
+  /// In en, this message translates to:
+  /// **'Consult a professional for medical assessment.'**
+  String get assistantNoteConsultProfessional;
+
+  /// No description provided for @assistantNoteSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'Records so far in the ongoing period.'**
+  String get assistantNoteSoFar;
+
+  /// No description provided for @assistantNoteCompletedSetsCounted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed non-warm-up sets count toward the primary muscle; studies examine challenging sets.'**
+  String get assistantNoteCompletedSetsCounted;
+
+  /// No description provided for @assistantNoteFastLossCaution.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly loss exceeded 1.5%. This caution threshold is a product choice.'**
+  String get assistantNoteFastLossCaution;
+
+  /// No description provided for @assistantNoteLeanMassInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'In one study of strength athletes, roughly 0.7% weekly loss preserved lean mass better.'**
+  String get assistantNoteLeanMassInfo;
+
+  /// No description provided for @assistantNoteBeginnerIntermediateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'This range was studied for beginner/intermediate athletes.'**
+  String get assistantNoteBeginnerIntermediateRange;
+
+  /// No description provided for @assistantNoteLoggedOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded amounts only; records may be incomplete.'**
+  String get assistantNoteLoggedOnly;
+
+  /// No description provided for @assistantNoteCompletedDaysOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only completed days were included.'**
+  String get assistantNoteCompletedDaysOnly;
+
+  /// No description provided for @assistantNoteChooseGoalDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a goal direction for direction-specific interpretation.'**
+  String get assistantNoteChooseGoalDirection;
+
+  /// No description provided for @assistantQualityUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not write local quality event. You can still use your results.'**
+  String get assistantQualityUnavailable;
+
+  /// No description provided for @assistantDecisionAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get assistantDecisionAuto;
+
+  /// No description provided for @assistantDecisionClarify.
+  ///
+  /// In en, this message translates to:
+  /// **'Clarification'**
+  String get assistantDecisionClarify;
+
+  /// No description provided for @assistantDecisionMulti.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiple topics'**
+  String get assistantDecisionMulti;
+
+  /// No description provided for @assistantDecisionFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Fallback to ready questions'**
+  String get assistantDecisionFallback;
+
+  /// No description provided for @assistantDecisionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Network / quota error'**
+  String get assistantDecisionError;
+
+  /// No description provided for @assistantMuscleChest.
+  ///
+  /// In en, this message translates to:
+  /// **'Chest'**
+  String get assistantMuscleChest;
+
+  /// No description provided for @assistantMuscleUpperChest.
+  ///
+  /// In en, this message translates to:
+  /// **'Upper chest'**
+  String get assistantMuscleUpperChest;
+
+  /// No description provided for @assistantMuscleBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get assistantMuscleBack;
+
+  /// No description provided for @assistantMuscleShoulders.
+  ///
+  /// In en, this message translates to:
+  /// **'Shoulders'**
+  String get assistantMuscleShoulders;
+
+  /// No description provided for @assistantMuscleFrontDelt.
+  ///
+  /// In en, this message translates to:
+  /// **'Front delts'**
+  String get assistantMuscleFrontDelt;
+
+  /// No description provided for @assistantMuscleRearDelt.
+  ///
+  /// In en, this message translates to:
+  /// **'Rear delts'**
+  String get assistantMuscleRearDelt;
+
+  /// No description provided for @assistantMuscleBiceps.
+  ///
+  /// In en, this message translates to:
+  /// **'Biceps'**
+  String get assistantMuscleBiceps;
+
+  /// No description provided for @assistantMuscleTriceps.
+  ///
+  /// In en, this message translates to:
+  /// **'Triceps'**
+  String get assistantMuscleTriceps;
+
+  /// No description provided for @assistantMuscleForearms.
+  ///
+  /// In en, this message translates to:
+  /// **'Forearms'**
+  String get assistantMuscleForearms;
+
+  /// No description provided for @assistantMuscleLegs.
+  ///
+  /// In en, this message translates to:
+  /// **'Legs'**
+  String get assistantMuscleLegs;
+
+  /// No description provided for @assistantMuscleQuads.
+  ///
+  /// In en, this message translates to:
+  /// **'Quads'**
+  String get assistantMuscleQuads;
+
+  /// No description provided for @assistantMuscleHamstrings.
+  ///
+  /// In en, this message translates to:
+  /// **'Hamstrings'**
+  String get assistantMuscleHamstrings;
+
+  /// No description provided for @assistantMuscleGlutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Glutes'**
+  String get assistantMuscleGlutes;
+
+  /// No description provided for @assistantMuscleCalves.
+  ///
+  /// In en, this message translates to:
+  /// **'Calves'**
+  String get assistantMuscleCalves;
+
+  /// No description provided for @assistantMuscleCore.
+  ///
+  /// In en, this message translates to:
+  /// **'Core'**
+  String get assistantMuscleCore;
+
+  /// No description provided for @assistantMuscleFullBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Full body'**
+  String get assistantMuscleFullBody;
+
+  /// No description provided for @assistantMuscleOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get assistantMuscleOther;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

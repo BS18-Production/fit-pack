@@ -25,6 +25,7 @@ import '../../core/prefs/week_start_provider.dart';
 import '../nutrition/nutrition_habit_widgets.dart';
 import 'rhythm_state.dart';
 import 'streak_calc.dart';
+import '../assistant/assistant_screen.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 
 /// Ana Sayfa (docs/24). Sıra: başlık → haftalık şerit → bugünün eylemi →
@@ -80,6 +81,7 @@ class HomeScreen extends ConsumerWidget {
             WorkoutActivityCard(),
             AppSpacing.vGapXl,
             _RhythmCard(),
+            AssistantEntryCard(),
             AppSpacing.vGapXl,
             _InsightCard(),
             _CompactHealthRow(),

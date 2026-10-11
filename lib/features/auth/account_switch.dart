@@ -175,6 +175,8 @@ class AccountSwitchGuard {
 
   static Future<void> _wipeTables(AppDatabase db) async {
     await db.transaction(() async {
+      // K1 senkron tablosu değildir; eski hesabın kalite olayları cihazdan gider.
+      await db.assistantQualityDao.clear();
       for (final table in syncPushOrder.reversed) {
         if (catalogTableNames.contains(table)) {
           await db.customStatement('DELETE FROM $table WHERE is_custom = 1');

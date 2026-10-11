@@ -230,6 +230,12 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.info_outline_rounded,
                 title: AppConstants.appName,
                 subtitle: l.settingsAboutSubtitle(AppConstants.appVersion),
+                onLongPress: () => showModalBottomSheet<void>(context: context,
+                  builder: (sheetContext) => SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    ListTile(title: Text(l.assistantDeveloper)),
+                    ListTile(leading: const Icon(Icons.query_stats_rounded),title: Text(l.assistantQuality),
+                      onTap: () { Navigator.pop(sheetContext); context.push(AppRoutes.assistantQuality); }),
+                  ]))),
                 trailing: const FitPackIcon.material(Icons.chevron_right_rounded),
                 // Flutter'ın hazır lisans sayfası — tüm paket lisansları (B2).
                 onTap: () => showLicensePage(

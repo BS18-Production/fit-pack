@@ -1974,5 +1974,603 @@
   "wrProteinHit": "Protein goal {hit}/{total} days",
   "@wrProteinHit": {
     "placeholders": { "hit": { "type": "int" }, "total": { "type": "int" } }
-  }
+  },
+  "assistantTitle": "Ask my data",
+  "assistantSubtitle": "Answers from your records. Pick a question to explore.",
+  "assistantQuestionHint": "How were my workouts this week?",
+  "assistantAsk": "Ask",
+  "assistantReady": "Ready questions",
+  "assistantAll": "All questions",
+  "assistantLess": "Show less",
+  "assistantUnderstood": "My understanding",
+  "assistantChange": "Change",
+  "assistantApply": "Show result",
+  "assistantPeriod": "Period",
+  "assistantExercise": "Exercise",
+  "assistantChooseExercise": "Choose an exercise",
+  "assistantInterpretation": "Explain the numbers too",
+  "assistantMeal": "Choose a meal for food examples",
+  "assistantNoMeal": "Remaining amounts only",
+  "assistantPrivacyTitle": "Your question will be sent to Google",
+  "assistantPrivacy": "Only your question and fixed routing definitions go to Gemini; workout, nutrition and measurement records stay on your device. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.",
+  "assistantPrivacyAccept": "I understand, send question",
+  "assistantPrivacyCancel": "Use ready questions",
+  "assistantUnavailable": "Free-text routing is unavailable. You can continue with ready questions.",
+  "assistantSignedOut": "Sign in to ask a free-text question. Ready questions run on your device.",
+  "assistantPrivateBlocked": "This question may contain private information. Remove identity, contact or health details, or choose a ready question.",
+  "assistantFallback": "I could not reliably route this question. Choose a ready question to explore your records.",
+  "assistantClarify": "Choose a period or exercise before opening the result.",
+  "assistantMulti": "There are several topics. Which one should we explore first?",
+  "assistantQuota": "Question limit reached. Resets: {time}. Ready questions remain available.",
+  "@assistantQuota": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "assistantError": "Could not read records. Try again.",
+  "assistantRetry": "Try again",
+  "assistantOpenRecords": "Open records",
+  "assistantRecords": "{count} records",
+  "@assistantRecords": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "assistantSoFar": "So far",
+  "assistantUnknownStart": "Since the first record",
+  "assistantNoData": "No records in this period. Missing data is not a zero result.",
+  "assistantInsufficient": "Numbers are available; there is not enough data for a trend interpretation yet.",
+  "assistantNoGoal": "No goal has been set for this calculation.",
+  "assistantNoPlan": "No workout days are scheduled.",
+  "assistantIncompleteDays": "No completed days; protein-goal success cannot be calculated.",
+  "assistantLoggedBasis": "Logged days only; records may be incomplete.",
+  "assistantCompletedBasis": "Average uses completed days only; a completed empty day counts as zero.",
+  "assistantCurrentPlan": "Uses your current plan; past plan changes are unknown.",
+  "assistantFoodBasis": "Examples use past portions for the selected meal. Filtered by remaining calories only; nothing is logged automatically.",
+  "assistantUnknownExercise": "Unknown exercise",
+  "assistantOwnHistory": "Your own history",
+  "assistantGuideline": "General research finding",
+  "assistantSources": "Sources",
+  "assistantDeveloper": "Developer",
+  "assistantQuality": "Assistant quality",
+  "assistantQualityInfo": "Text-free events on this device only. Correction rate is not accuracy; no correction does not prove a correct route.",
+  "assistantQualityAuto": "Automatic answers",
+  "assistantQualityCorrections": "Changed selections",
+  "assistantQualityLatency": "Latency: median / 95th percentile",
+  "assistantQualityTokens": "Input / output tokens",
+  "assistantQualityFree": "Gemini free tier · cost $0",
+  "assistantQualityClear": "Clear local quality events",
+  "assistantQualityClearConfirm": "Delete assistant quality events? Your fitness records are preserved.",
+  "assistantQualitySmall": "Small sample; interpret the rate cautiously.",
+  "assistantQualityWarning": "Correction rate exceeded 3% in two consecutive weeks. Review routing.",
+  "assistantQualityTransitions": "Query changes",
+  "assistantQualityDays": "Last 7 days",
+  "assistantNotAvailable": "Unknown",
+  "assistantPeriodToday": "Today",
+  "assistantPeriodThisWeek": "This week",
+  "assistantPeriodLastWeek": "Last week",
+  "assistantPeriodLast30Days": "Last 30 days",
+  "assistantPeriodAllTime": "All time",
+  "assistantQueryWorkoutSummary": "How were my workouts?",
+  "assistantQueryPlanAdherence": "How closely did I follow scheduled days?",
+  "assistantQueryStrengthProgress": "Which exercises improved?",
+  "assistantQueryExerciseHistory": "How did I progress in this exercise?",
+  "assistantQueryNutritionSummary": "What do my nutrition records show?",
+  "assistantQueryProteinGoal": "How many days did I reach my protein goal?",
+  "assistantQueryWeightTrend": "How did my weight change?",
+  "assistantQueryMuscleBalance": "How many sets per muscle group?",
+  "assistantQueryStreak": "How many consistent weeks?",
+  "assistantQueryTodayRemaining": "What remains of my goals today?",
+  "assistantQueryTopExercises": "Which exercises did I do most?",
+  "assistantMetricSessions": "Sessions",
+  "assistantMetricSets": "Completed sets",
+  "assistantMetricMinutes": "Duration",
+  "assistantMetricVolume": "Volume",
+  "assistantMetricPlannedDays": "Scheduled days",
+  "assistantMetricDoneDays": "Scheduled days completed",
+  "assistantMetricLoggedDays": "Logged days",
+  "assistantMetricCompletedDays": "Completed days",
+  "assistantMetricExcludedDays": "Excluded days",
+  "assistantMetricAvgKcal": "Average energy",
+  "assistantMetricAvgProtein": "Average protein",
+  "assistantMetricProteinGoal": "Protein goal",
+  "assistantMetricHitDays": "Completed days reaching goal",
+  "assistantMetricMeasurements": "Measurements",
+  "assistantMetricFirstWeight": "First weight",
+  "assistantMetricLastWeight": "Last weight",
+  "assistantMetricChange": "Change",
+  "assistantMetricWeeks": "Weekly streak",
+  "assistantMetricWeeklyGoal": "Weekly day goal",
+  "assistantMetricRemainingKcal": "Remaining energy",
+  "assistantMetricRemainingProtein": "Remaining protein",
+  "assistantMetricFirstE1rm": "First estimated one-rep maximum",
+  "assistantMetricLastE1rm": "Last estimated one-rep maximum",
+  "assistantMetricPortion": "Past portion",
+  "assistantMetricPortionKcal": "Portion energy",
+  "assistantMetricPortionProtein": "Portion protein",
+  "insightMuscleBelowTen": "{muscle}: {sets} sets, below the roughly {level} weekly-set level studied.",
+  "@insightMuscleBelowTen": {
+    "placeholders": {
+      "muscle": {
+        "type": "String"
+      },
+      "sets": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "insightMuscleAtTen": "{muscle}: {sets} sets, at or above the roughly {level}-set level studied.",
+  "@insightMuscleAtTen": {
+    "placeholders": {
+      "muscle": {
+        "type": "String"
+      },
+      "sets": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "insightMuscleBeyondTwenty": "{muscle}: {sets} sets. Evidence for added gains beyond {limitedEvidenceAbove} sets is limited.",
+  "@insightMuscleBeyondTwenty": {
+    "placeholders": {
+      "muscle": {
+        "type": "String"
+      },
+      "sets": {
+        "type": "String"
+      },
+      "limitedEvidenceAbove": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightNotEnoughData": "{count} measurements spanning {spanDays} days. Trend interpretation needs at least two measurements over {minDays} days.",
+  "@insightWeightNotEnoughData": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "spanDays": {
+        "type": "String"
+      },
+      "minDays": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightAgainstGoal": "Weekly change is {weeklyChangeKg}, opposite your selected goal direction.",
+  "@insightWeightAgainstGoal": {
+    "placeholders": {
+      "weeklyChangeKg": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightNoClearChange": "Weekly change is {weeklyChangeKg}; no clear trend is visible.",
+  "@insightWeightNoClearChange": {
+    "placeholders": {
+      "weeklyChangeKg": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightLossSlower": "Weekly change is {weeklyChangeKg}; slower than the CDC general loss range of {rangeMinKg}–{rangeMaxKg}.",
+  "@insightWeightLossSlower": {
+    "placeholders": {
+      "weeklyChangeKg": {
+        "type": "String"
+      },
+      "rangeMinKg": {
+        "type": "String"
+      },
+      "rangeMaxKg": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightLossInRange": "Weekly change is {weeklyChangeKg}; within the CDC general loss range of {rangeMinKg}–{rangeMaxKg}.",
+  "@insightWeightLossInRange": {
+    "placeholders": {
+      "weeklyChangeKg": {
+        "type": "String"
+      },
+      "rangeMinKg": {
+        "type": "String"
+      },
+      "rangeMaxKg": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightLossFaster": "Weekly change is {weeklyChangeKg}; faster than the CDC general loss range of {rangeMinKg}–{rangeMaxKg}.",
+  "@insightWeightLossFaster": {
+    "placeholders": {
+      "weeklyChangeKg": {
+        "type": "String"
+      },
+      "rangeMinKg": {
+        "type": "String"
+      },
+      "rangeMaxKg": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightGainSlower": "Weekly gain is {pctPerWeek}%, slower than the {rangeMinPct}–{rangeMaxPct}% level studied.",
+  "@insightWeightGainSlower": {
+    "placeholders": {
+      "pctPerWeek": {
+        "type": "String"
+      },
+      "rangeMinPct": {
+        "type": "String"
+      },
+      "rangeMaxPct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightGainInRange": "Weekly gain is {pctPerWeek}%, within the {rangeMinPct}–{rangeMaxPct}% level studied.",
+  "@insightWeightGainInRange": {
+    "placeholders": {
+      "pctPerWeek": {
+        "type": "String"
+      },
+      "rangeMinPct": {
+        "type": "String"
+      },
+      "rangeMaxPct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightGainFaster": "Weekly gain is {pctPerWeek}%, faster than the {rangeMinPct}–{rangeMaxPct}% level studied.",
+  "@insightWeightGainFaster": {
+    "placeholders": {
+      "pctPerWeek": {
+        "type": "String"
+      },
+      "rangeMinPct": {
+        "type": "String"
+      },
+      "rangeMaxPct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightStable": "Estimated change over the period is {totalChangePct}%, within ±{stablePct}% of the mean.",
+  "@insightWeightStable": {
+    "placeholders": {
+      "totalChangePct": {
+        "type": "String"
+      },
+      "stablePct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightDriftUp": "Estimated increase over the period is {totalChangePct}%.",
+  "@insightWeightDriftUp": {
+    "placeholders": {
+      "totalChangePct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightDriftDown": "Estimated change over the period is {totalChangePct}%.",
+  "@insightWeightDriftDown": {
+    "placeholders": {
+      "totalChangePct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWorkoutNotEnoughHistory": "{metric}: {value}. Comparison with your history needs at least {minWeeks} complete weeks; you have {baselineWeeks}.",
+  "@insightWorkoutNotEnoughHistory": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "minWeeks": {
+        "type": "String"
+      },
+      "baselineWeeks": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWorkoutNoBaseline": "{metric}: {value}. Historical median is 0; percentage comparison is unavailable.",
+  "@insightWorkoutNoBaseline": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWorkoutSoFar": "{metric}: {value} so far. Median of the prior {baselineWeeks} weeks is {median}; an ongoing week is not compared as a full week.",
+  "@insightWorkoutSoFar": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "baselineWeeks": {
+        "type": "String"
+      },
+      "median": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWorkoutAboveMedian": "{metric}: {value}, historical median {median}; {pct}% above.",
+  "@insightWorkoutAboveMedian": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "median": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWorkoutAtMedian": "{metric}: {value}, equal to the historical median ({median}).",
+  "@insightWorkoutAtMedian": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "median": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWorkoutBelowMedian": "{metric}: {value}, historical median {median}; difference {pct}%.",
+  "@insightWorkoutBelowMedian": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "median": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightStrengthNotApplicable": "No suitable weight/repetition sets; estimated one-rep maximum is unavailable.",
+  "insightStrengthNotEnoughData": "Suitable sets on {days} distinct days; progress needs at least two days.",
+  "@insightStrengthNotEnoughData": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "insightStrengthUp": "Estimated one-rep maximum: {firstE1rm} → {lastE1rm}; {pct}% increase.",
+  "@insightStrengthUp": {
+    "placeholders": {
+      "firstE1rm": {
+        "type": "String"
+      },
+      "lastE1rm": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightStrengthStable": "Estimated one-rep maximum: {firstE1rm} → {lastE1rm}; change within ±1%.",
+  "@insightStrengthStable": {
+    "placeholders": {
+      "firstE1rm": {
+        "type": "String"
+      },
+      "lastE1rm": {
+        "type": "String"
+      }
+    }
+  },
+  "insightStrengthDown": "Estimated one-rep maximum: {firstE1rm} → {lastE1rm}; change {pct}%.",
+  "@insightStrengthDown": {
+    "placeholders": {
+      "firstE1rm": {
+        "type": "String"
+      },
+      "lastE1rm": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightStrengthPlateau": "Heaviest set was {topKg} in each of the last {weeks} consecutive data weeks.",
+  "@insightStrengthPlateau": {
+    "placeholders": {
+      "topKg": {
+        "type": "String"
+      },
+      "weeks": {
+        "type": "String"
+      }
+    }
+  },
+  "insightNutritionNoLogs": "No nutrition data for this period.",
+  "insightProteinGoalDays": "Protein goal of {goal} g reached on {hitDays}/{loggedDays} completed days.",
+  "@insightProteinGoalDays": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      },
+      "hitDays": {
+        "type": "String"
+      },
+      "loggedDays": {
+        "type": "String"
+      }
+    }
+  },
+  "insightKcalVsGoal": "Average across {loggedDays} days: {avgKcal} kcal; goal {goal} kcal ({pctOfGoal}%).",
+  "@insightKcalVsGoal": {
+    "placeholders": {
+      "loggedDays": {
+        "type": "String"
+      },
+      "avgKcal": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      },
+      "pctOfGoal": {
+        "type": "String"
+      }
+    }
+  },
+  "insightProteinPerKgBelow": "Recorded average is {gPerKg} g/kg, below the roughly {breakpoint} g/kg level studied. Weight used: {bodyWeightKg} ({bodyWeightDate}).",
+  "@insightProteinPerKgBelow": {
+    "placeholders": {
+      "gPerKg": {
+        "type": "String"
+      },
+      "breakpoint": {
+        "type": "String"
+      },
+      "bodyWeightKg": {
+        "type": "String"
+      },
+      "bodyWeightDate": {
+        "type": "String"
+      }
+    }
+  },
+  "insightProteinPerKgInRange": "Recorded average is {gPerKg} g/kg, within the {breakpoint}–{upper} g/kg range studied. Weight used: {bodyWeightKg} ({bodyWeightDate}).",
+  "@insightProteinPerKgInRange": {
+    "placeholders": {
+      "gPerKg": {
+        "type": "String"
+      },
+      "breakpoint": {
+        "type": "String"
+      },
+      "upper": {
+        "type": "String"
+      },
+      "bodyWeightKg": {
+        "type": "String"
+      },
+      "bodyWeightDate": {
+        "type": "String"
+      }
+    }
+  },
+  "insightProteinPerKgAbove": "Recorded average is {gPerKg} g/kg. Research found no additional lean-mass gains above roughly {breakpoint} g/kg; this is not a safety limit. Weight used: {bodyWeightKg} ({bodyWeightDate}).",
+  "@insightProteinPerKgAbove": {
+    "placeholders": {
+      "gPerKg": {
+        "type": "String"
+      },
+      "breakpoint": {
+        "type": "String"
+      },
+      "bodyWeightKg": {
+        "type": "String"
+      },
+      "bodyWeightDate": {
+        "type": "String"
+      }
+    }
+  },
+  "insightTodayNoGoal": "No energy goal; {loggedKcal} kcal and {loggedProtein} g protein recorded today.",
+  "@insightTodayNoGoal": {
+    "placeholders": {
+      "loggedKcal": {
+        "type": "String"
+      },
+      "loggedProtein": {
+        "type": "String"
+      }
+    }
+  },
+  "insightTodayRemaining": "{remainingKcal} kcal remain to your energy goal. Records may be incomplete.",
+  "@insightTodayRemaining": {
+    "placeholders": {
+      "remainingKcal": {
+        "type": "String"
+      }
+    }
+  },
+  "insightTodayGoalReached": "Remaining energy is {remainingKcal} kcal; zero or a negative value means the recorded goal has been reached.",
+  "@insightTodayGoalReached": {
+    "placeholders": {
+      "remainingKcal": {
+        "type": "String"
+      }
+    }
+  },
+  "assistantNoteGeneralGuideline": "General guidance, not personal medical advice.",
+  "assistantNoteConsultProfessional": "Consult a professional for medical assessment.",
+  "assistantNoteSoFar": "Records so far in the ongoing period.",
+  "assistantNoteCompletedSetsCounted": "Completed non-warm-up sets count toward the primary muscle; studies examine challenging sets.",
+  "assistantNoteFastLossCaution": "Weekly loss exceeded 1.5%. This caution threshold is a product choice.",
+  "assistantNoteLeanMassInfo": "In one study of strength athletes, roughly 0.7% weekly loss preserved lean mass better.",
+  "assistantNoteBeginnerIntermediateRange": "This range was studied for beginner/intermediate athletes.",
+  "assistantNoteLoggedOnly": "Recorded amounts only; records may be incomplete.",
+  "assistantNoteCompletedDaysOnly": "Only completed days were included.",
+  "assistantNoteChooseGoalDirection": "Select a goal direction for direction-specific interpretation.",
+  "assistantQualityUnavailable": "Could not write local quality event. You can still use your results.",
+  "assistantDecisionAuto": "Automatic",
+  "assistantDecisionClarify": "Clarification",
+  "assistantDecisionMulti": "Multiple topics",
+  "assistantDecisionFallback": "Fallback to ready questions",
+  "assistantDecisionError": "Network / quota error",
+  "assistantMuscleChest": "Chest",
+  "assistantMuscleUpperChest": "Upper chest",
+  "assistantMuscleBack": "Back",
+  "assistantMuscleShoulders": "Shoulders",
+  "assistantMuscleFrontDelt": "Front delts",
+  "assistantMuscleRearDelt": "Rear delts",
+  "assistantMuscleBiceps": "Biceps",
+  "assistantMuscleTriceps": "Triceps",
+  "assistantMuscleForearms": "Forearms",
+  "assistantMuscleLegs": "Legs",
+  "assistantMuscleQuads": "Quads",
+  "assistantMuscleHamstrings": "Hamstrings",
+  "assistantMuscleGlutes": "Glutes",
+  "assistantMuscleCalves": "Calves",
+  "assistantMuscleCore": "Core",
+  "assistantMuscleFullBody": "Full body",
+  "assistantMuscleOther": "Other"
 }

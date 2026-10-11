@@ -11,12 +11,14 @@ import 'tables/body_tables.dart';
 import 'tables/achievement_tables.dart';
 import 'tables/sync_columns.dart';
 import 'tables/sync_tables.dart';
+import 'tables/assistant_tables.dart';
 import 'daos/workout_dao.dart';
 import 'daos/nutrition_dao.dart';
 import 'daos/body_dao.dart';
 import 'daos/achievement_dao.dart';
 import 'daos/user_profile_dao.dart';
 import 'daos/sync_meta_dao.dart';
+import 'daos/assistant_quality_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -38,6 +40,7 @@ part 'app_database.g.dart';
     NutritionDays,
     SyncMeta,
     SyncTombstones,
+    AssistantQualityEvents,
   ],
   daos: [
     WorkoutDao,
@@ -46,6 +49,7 @@ part 'app_database.g.dart';
     AchievementDao,
     UserProfileDao,
     SyncMetaDao,
+    AssistantQualityDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -110,7 +114,8 @@ class AppDatabase extends _$AppDatabase {
   /// dondurulmuş `syncedTableNamesV14` listesini kullanır — o adımlarda bu
   /// tablo henüz yok. Sunucu tablosu istemciden ÖNCE uygulanır (docs/37 §4).
   @override
-  int get schemaVersion => 15;
+  // v15 → v16: yerel/metinsiz asistan kalite olayları (docs/38). Senkron yok.
+  int get schemaVersion => 16;
 
   /// v5→v6 gibi ARA göç adımları `m.createTable()` ile GÜNCEL tanımı kullanır —
   /// yani o adımda doğan tablo (routines, routine_exercises, water_intake)
@@ -477,6 +482,9 @@ class AppDatabase extends _$AppDatabase {
               .customStatement(createUpdateTriggerSql('nutrition_days'));
           await m.database
               .customStatement(createDeleteTriggerSql('nutrition_days'));
+        }
+        if (from < 16 && to >= 16) {
+          await m.createTable(assistantQualityEvents);
         }
       },
 

@@ -1,0 +1,7 @@
+{
+  "lock": true,
+  "tasks": {
+    "test": "deno test handler_test.ts",
+    "check": "deno check index.ts"
+  }
+}

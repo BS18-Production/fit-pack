@@ -51,7 +51,7 @@ void main() {
     // doldurma UPDATE'lerinde çalışıp her satırı yeniden kuyruğa aldılar.
     // Şema anlık görüntüsünde tetikleyici olmadığı için bu hata testten
     // kaçmıştı (2026-09-18, simülatörde yakalandı).
-    for (final t in syncedTableNames) {
+    for (final t in syncedTableNamesV14) {
       await old.customStatement(createInsertTriggerSqlV10(t));
       await old.customStatement(createUpdateTriggerSqlV10(t));
     }
@@ -103,12 +103,12 @@ void main() {
         .customSelect("SELECT name FROM sqlite_master WHERE type = 'trigger'")
         .get();
     final names = rows.map((r) => r.read<String>('name')).toSet();
-    for (final t in syncedTableNames) {
+    for (final t in syncedTableNamesV14) {
       for (final trigger in syncTriggerNames(t)) {
         expect(names, contains(trigger), reason: '$t → $trigger');
       }
     }
-    expect(syncedTableNames.length * 3, 36);
+    expect(syncedTableNamesV14.length * 3, 36);
     await db.close();
   });
 

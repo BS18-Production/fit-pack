@@ -1,6 +1,6 @@
 # 37 — Beslenme günü tamamlandı (docs/21 #8)
 
-> **Durum:** 📝 Taslak — Codex incelemesi ve Samet onayı bekliyor. Kod yok.
+> **Durum:** 🔧 Uygulanıyor — Samet onayı (öneriler) 2026-10-10; Codex incelemesi bekliyor. Aşama 1 dalda.
 > **Tarih:** 2026-10-10 · **Sahip:** Claude · **İnceleyen:** Codex (derin:
 > şema + senkron + hesap) · görsel doğrulama Codex'ten istenir (iOS Simulator)
 > **Temel:** `main` · şema **v14** · docs/21 §2 #8
@@ -141,13 +141,65 @@ commit'te** (CLAUDE.md).
 - **Saat dilimi:** gün metni cihazın yerel takvimi; seyahatte gün kayabilir —
   tek kullanıcı için kabul, not edilir.
 
-## 6. Samet'e sorular
+## 6. Samet'in kararları (2026-10-10 — "devam edebilirsin, bekleme": öneriler kabul)
 
-1. **Kayıtsız günü "tamamlandı" işaretlemek** serbest mi (oruç, hiç yemedim),
-   yoksa en az bir kayıt mı gerekir? *Öneri:* serbest, ama kayıtsız tamamlanmış
-   gün ortalamaya **0 kalori** olarak girer — bu bilinçli bir beyan.
-2. **Akşam hatırlatması** ("bugünkü kaydını tamamladın mı?") v1'de olsun mu?
-   *Öneri:* hayır, önce düğmenin kullanılıp kullanılmadığını görelim.
-3. Haftalık değerlendirmede tamamlanmış gün varken **yalnız onları** kullanma
-   kuralı uygun mu? *Öneri:* evet; diğer günler "hesaba katılmadı" diye
-   yazılır.
+1. ✅ Kayıtsız gün işaretlenebilir; ortalamaya **0 kalori** olarak girer (bilinçli beyan).
+2. ✅ Akşam hatırlatması v1'de **yok**.
+3. ✅ Tamamlanmış gün varsa haftalık değerlendirme **yalnız onları** kullanır; diğerleri "hesaba katılmadı" yazılır.
+
+## 7. Uygulama durumu
+
+- ✅ **Aşama 1** (dal `feat/nutrition-day-complete`): şema v15, `nutrition_days`,
+  dondurulmuş `syncedTableNamesV14` (eski göç adımları), onarım rutininde
+  "tablo yoksa atla", UUIDv5 (`lib/core/ids/deterministic_uid.dart`, `uuid`
+  doğrudan bağımlılık), DAO (`markDayComplete`, `reopenDay`,
+  `getCompletedDays`, `watchDay`, `changedAfterComplete`), göç testi v14→v15,
+  DAO testleri. Tüm paket yeşil.
+- ✅ **Aşama 2** (senkron): ek kod gerekmedi — senkron katmanı tablo
+  listesinden ve sütun tiplerinden genel çalışıyor. İki cihaz testi
+  (`test/features/nutrition_day_sync_test.dart`): aynı gün → sunucuda ve iki
+  cihazda tek satır; geri al öteki cihaza `open` iner (silinmez); geri alınan
+  gün yeniden işaretlenebilir.
+- ✅ **Aşama 3** (sunucu): `supabase/migrations/20261010120000_nutrition_days.sql`
+  — PK **(user_id, uid)** (gün kimliği kullanıcıdan bağımsız; diğer tablolarda
+  PK hâlâ yalnız `uid`, docs/20 Aşama 6), `unique (user_id, day)`, RLS, yetki,
+  imleç dizini, `sync_guard` + silme izi tetikleyicileri, `sync_delete` izin
+  listesi 13 tablo. **`Fit Pack Dev`'e uygulandı (2026-10-11)**; pgTAP
+  (`supabase/tests/nutrition_days.sql`) **9/9 yeşil** (2026-10-11): iki
+  kullanıcı aynı gün aynı uid, LWW, gün biçimi, RLS ve `sync_delete` gerçek
+  istemci rolüyle. Eski Aşama 3/5 testlerinin 13 tablo beklentisi henüz
+  yeniden koşulmadı. Eski testlerde global tetikleyici sayıları
+  12 → 13. **Üretime UYGULANMADI.**
+- ✅ **Aşama 4** (hesap): `WeeklyReviewInput.completedDays`;
+  `NutritionSection` → `basis` (tamamlanmış/kayıtlı günler), `completedDays`,
+  `excludedLoggedDays`, `proteinHitDays` (yalnız tamamlanmış günlerde). Kayıtsız
+  tamamlanmış gün 0 kalori. Sağlayıcı `nutrition_days` tablosunu da izliyor
+  (işaretlenince değerlendirme kendiliğinden yenilenir — eksikti, düzeltildi).
+  Yol haritasındaki `dashboard_stats.dart:76-78` protein uyumu kodda artık yok;
+  ana ekranda değişecek hesap kalmadı. W-10 testleri (4) + paket 758 yeşil.
+- 🔧 **Aşama 5a** (ekran): `lib/features/nutrition/day_complete.dart` —
+  `dayCompletionProvider` (gün tablosu + öğün kayıtları izlenir) ve
+  `DayCompleteCard` (öğünlerin altında; işaretsiz → "Bugünkü kaydım
+  tamamlandı"/"Bu günün kaydı tamamlandı" + açıklama; işaretli → ✓ "Kaydın
+  tamam", gerekirse "Tamamlandıktan sonra değişti", "Geri al"). Çeviri: 6
+  anahtar (tr/en), biçim korunarak eklendi. Widget testi 2/2.
+- ✅ **Aşama 5b** (takvim): `DayActivity.dayComplete`, takvim sağlayıcısı
+  `nutrition_days`'i izliyor, gün hücresinin köşesinde küçük ✓; kayıtsız
+  tamamlanmış gün de takvimde görünür.
+- ✅ **Aşama 5c** (değerlendirme ekranı): tamamlanmış gün varken "N tamamlanmış
+  gün · M gün hesaba katılmadı" ve "Protein hedefi K/N gün". Paket 762 yeşil.
+- ✅ **Görsel kontrol (2026-10-11, Claude, Android emülatörü + Dev test
+  hesabı):** düğme → ✓ "Kaydın tamam" → sunucuda `complete`, uid Python'da
+  bağımsız hesaplanan UUIDv5 ile birebir; takvimde ✓ rozeti; haftalık
+  değerlendirmede "1 tamamlanmış gün · Protein hedefi 0/1 gün"; "Geri al" →
+  sunucuda `open`, satır silinmedi. Bulunan ve düzeltilen: (1) kayıt
+  alışkanlığı odağı tamamlanmış günü saymıyordu ("0 gün kayıt" diyordu) →
+  `knownDays` = kayıtlı ∪ tamamlanmış; (2) düğme "Yemek Ekle" ile aynı parlak
+  renkteydi → kenarlıklı ikincil düğme; (3) düz tırnak → “ ”. Paket 763 yeşil.
+- ⏳ **Aşama 6 (üretim):** sunucu göçü üretim Supabase'e → dal `main`'e →
+  iPhone'a `devicectl` ile kurulum — Samet onayı.
+- ⚠️ `changedAfterComplete` silinen kaydı görmez (satır kalmıyor); mezar taşı
+  tablosundan okumak açık iş.
+- ⛔ **Dal sunucu göçünden (Aşama 3) önce `main`'e birleşmez / cihaza kurulmaz**:
+  istemci `nutrition_days`'i gönderir, sunucu tablosu yoksa o tablo kalıcı
+  hataya düşer (kuyruğun geri kalanı durmaz ama hata göstergesi yanar).

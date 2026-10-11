@@ -21,6 +21,7 @@ import 'meal_copy_sheet.dart';
 import 'add_food_sheet.dart';
 import 'meal_types.dart';
 import 'nutrition_habit_widgets.dart';
+import 'day_complete.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 
 final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
@@ -354,6 +355,8 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                 );
               },
             ),
+            AppSpacing.vGapMd,
+            DayCompleteCard(date: date, isToday: isToday),
             if (isToday) ...[
               AppSpacing.vGapMd,
               const LogWeekLineText(),

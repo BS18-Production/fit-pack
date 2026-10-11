@@ -102,6 +102,37 @@ void main() {
     expect(find.textContaining('gün kayıt'), findsOneWidget);
   });
 
+  testWidgets('beslenme: tamamlanmış gün varsa onu yazar (docs/37 §3)',
+      (tester) async {
+    await db.userProfileDao.ensureProfile();
+    final bugun = DateTime.now();
+    final food = await db.into(db.foods).insert(FoodsCompanion.insert(
+          name: 'Test',
+          kcalPer100g: 100,
+          proteinPer100g: 10,
+          carbPer100g: 0,
+          fatPer100g: 0,
+        ));
+    await db.into(db.foodLogs).insert(FoodLogsCompanion.insert(
+          date: bugun,
+          mealType: 'lunch',
+          foodId: food,
+          grams: 100,
+          computedKcal: 2400,
+          computedProtein: 200,
+          computedCarb: 0,
+          computedFat: 0,
+        ));
+    await db.nutritionDao.markDayComplete(bugun);
+    await ac(tester);
+
+    expect(find.textContaining('1 tamamlanmış gün'), findsOneWidget);
+    expect(find.textContaining('Protein hedefi 1/1 gün'), findsOneWidget,
+        reason: 'varsayılan hedef 180 g, 200 g yenmiş');
+    expect(find.textContaining('gün kayıt'), findsNothing,
+        reason: 'tamamlanmış gün varken eski "N/M gün kayıt" yazılmaz');
+  });
+
   testWidgets('hedef yönü seçilince profile yazılır, tarihiyle', (tester) async {
     await db.userProfileDao.ensureProfile();
     await ac(tester);

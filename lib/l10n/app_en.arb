@@ -1956,5 +1956,23 @@
         "type": "int"
       }
     }
+  },
+  "nutritionDayCompleteToday": "Today's log is complete",
+  "nutritionDayCompletePast": "This day's log is complete",
+  "nutritionDayCompleteHint": "Marked days count as “known days” in your weekly review, so a partial log isn't mistaken for eating little.",
+  "nutritionDayCompleted": "Log complete",
+  "nutritionDayChangedAfter": "Changed after completion",
+  "nutritionDayReopen": "Undo",
+  "wrCompletedDays": "{days} completed days",
+  "@wrCompletedDays": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "wrExcludedDays": "{days} not counted",
+  "@wrExcludedDays": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "wrProteinHit": "Protein goal {hit}/{total} days",
+  "@wrProteinHit": {
+    "placeholders": { "hit": { "type": "int" }, "total": { "type": "int" } }
   }
 }

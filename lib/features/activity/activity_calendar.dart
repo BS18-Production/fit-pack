@@ -306,7 +306,21 @@ class _DayCell extends StatelessWidget {
             track: c.onSurface.withValues(alpha: 0.08),
             show: !isFuture,
           ),
-          child: Center(
+          child: Stack(
+            children: [
+              // Gün "kaydım tamamlandı" işaretli (docs/37).
+              if (a?.dayComplete ?? false)
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: FitPackIcon.material(
+                    Icons.check_circle_rounded,
+                    key: ValueKey('calendar.dayComplete.$day'),
+                    size: 11,
+                    color: s.macroProtein,
+                  ),
+                ),
+              Center(
             child: Container(
               width: 22,
               height: 22,
@@ -325,6 +339,8 @@ class _DayCell extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+            ],
           ),
         ),
       ),

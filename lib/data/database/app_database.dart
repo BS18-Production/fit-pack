@@ -35,6 +35,7 @@ part 'app_database.g.dart';
     ProgressPhotos,
     Achievements,
     UserProfile,
+    NutritionDays,
     SyncMeta,
     SyncTombstones,
   ],
@@ -103,8 +104,13 @@ class AppDatabase extends _$AppDatabase {
   /// `routines.program_key` (nullable). Sunucuya aynı kolon ÖNCE eklendi
   /// (`supabase/migrations/20261008120000_routines_program_key.sql`).
   /// Geri dönüş: eski sürüm kolonu bilmez, göndermez; değer silinmez.
+  ///
+  /// v14 → v15 (2026-10-10, beslenme günü tamamlandı — docs/37):
+  /// `nutrition_days` tablosu (13. senkron tablosu). Eski göç adımları
+  /// dondurulmuş `syncedTableNamesV14` listesini kullanır — o adımlarda bu
+  /// tablo henüz yok. Sunucu tablosu istemciden ÖNCE uygulanır (docs/37 §4).
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   /// v5→v6 gibi ARA göç adımları `m.createTable()` ile GÜNCEL tanımı kullanır —
   /// yani o adımda doğan tablo (routines, routine_exercises, water_intake)
@@ -167,7 +173,16 @@ class AppDatabase extends _$AppDatabase {
       "SELECT name FROM sqlite_master WHERE type = 'trigger'",
     ).get();
     final present = {for (final r in rows) r.read<String>('name')};
+    final tables = {
+      for (final r in await customSelect(
+        "SELECT name FROM sqlite_master WHERE type = 'table'",
+      ).get())
+        r.read<String>('name'),
+    };
     for (final table in syncedTableNames) {
+      // Ara sürüm veritabanı (ör. göç testinde v11) sonradan eklenen tabloyu
+      // henüz taşımaz → olmayan tabloya tetikleyici kurulmaz.
+      if (!tables.contains(table)) continue;
       final expected = syncTriggerNames(table);
       if (present.containsAll(expected)) continue;
       await customStatement(createInsertTriggerSql(table));
@@ -353,7 +368,7 @@ class AppDatabase extends _$AppDatabase {
           await _addColumnIfMissing(m, foods, foods.userId);
           await _addColumnIfMissing(m, foods, foods.updatedAt);
           await _addColumnIfMissing(m, foods, foods.syncState);
-          for (final name in syncedTableNames) {
+          for (final name in syncedTableNamesV14) {
             // Sıra önemli: önce backfill, sonra index. (Index NULL'ları
             // engellemez ama backfill'i tek seferde bitirmek daha temiz.)
             await m.database.customStatement(backfillUidSql(name));
@@ -366,7 +381,7 @@ class AppDatabase extends _$AppDatabase {
         if (from < 10 && to >= 10) {
           // DONMUŞ v10 SQL'i (bkz. createInsertTriggerSqlV10): güncel sürüm
           // v11 kolonlarını ister, bu adımda onlar henüz yok.
-          for (final name in syncedTableNames) {
+          for (final name in syncedTableNamesV14) {
             await m.database.customStatement(createInsertTriggerSqlV10(name));
             await m.database.customStatement(createUpdateTriggerSqlV10(name));
           }
@@ -387,7 +402,7 @@ class AppDatabase extends _$AppDatabase {
             await _addColumnIfMissing(m, table.$1, table.$3);
             await _addColumnIfMissing(m, table.$1, table.$4);
           }
-          for (final name in syncedTableNames) {
+          for (final name in syncedTableNamesV14) {
             // ÖNCE eski tetikleyicileri düşür: v10 tetikleyicileri `capture`
             // bayrağını tanımıyor, aşağıdaki doldurma UPDATE'lerinde çalışıp
             // bütün satırları yeniden kuyruğa alırlardı (cihazda görüldü:
@@ -404,7 +419,7 @@ class AppDatabase extends _$AppDatabase {
           // Sayaç, dağıtılan en büyük `local_seq`'in üstünden devam etsin.
           // Sayaç, dağıtılan EN BÜYÜK `local_seq`'in bir üstünden devam eder.
           // (Tek `UNION ALL` alt sorgusu yalnız ilk satırı döndürürdü → 0.)
-          final union = syncedTableNames
+          final union = syncedTableNamesV14
               .map((t) => 'SELECT COALESCE(MAX(local_seq), 0) AS s FROM $t')
               .join(' UNION ALL ');
           await m.database.customStatement(
@@ -436,7 +451,7 @@ class AppDatabase extends _$AppDatabase {
           for (final sql in seedSyncMetaSql) {
             await m.database.customStatement(sql); // clock_offset_ms = 0
           }
-          for (final name in syncedTableNames) {
+          for (final name in syncedTableNamesV14) {
             await m.database.customStatement(dropInsertTriggerSql(name));
             await m.database.customStatement(dropUpdateTriggerSql(name));
             await m.database.customStatement(dropDeleteTriggerSql(name));
@@ -449,6 +464,19 @@ class AppDatabase extends _$AppDatabase {
         // çalıştırmaz → hiçbir satır kuyruğa girmez.
         if (from < 14 && to >= 14) {
           await _addColumnIfMissing(m, routines, routines.programKey);
+        }
+        // v14 → v15: beslenme günü tamamlandı (docs/37, #8). Yalnız EKLEME:
+        // yeni tablo + uid index'i + üç senkron tetikleyicisi. Mevcut hiçbir
+        // satır değişmez, kuyruğa girmez (tablo boş doğar).
+        if (from < 15 && to >= 15) {
+          await m.createTable(nutritionDays);
+          await m.database.customStatement(createUidIndexSql('nutrition_days'));
+          await m.database
+              .customStatement(createInsertTriggerSql('nutrition_days'));
+          await m.database
+              .customStatement(createUpdateTriggerSql('nutrition_days'));
+          await m.database
+              .customStatement(createDeleteTriggerSql('nutrition_days'));
         }
       },
 

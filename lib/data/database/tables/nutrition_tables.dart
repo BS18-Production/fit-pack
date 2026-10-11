@@ -53,3 +53,21 @@ class WaterIntake extends Table with SyncColumns {
   DateTimeColumn get date => dateTime()();
   IntColumn get amountMl => integer().withDefault(const Constant(0))();
 }
+
+/// v15 (docs/37, #8): beslenme günü "kaydım tamamlandı" durumu. Gün başına
+/// **tek satır**; işaretsiz gün = bilinmiyor (eksik değil).
+///
+/// - `day` yerel takvim günü metni (`YYYY-MM-DD`): saat dilimi kayması olmasın.
+/// - `uid` gün metninden **türetilir** (UUIDv5, [nutritionDayUid]): iki cihaz
+///   aynı günü işaretlerse aynı satırı yazar, çift kayıt olmaz.
+/// - İşaret kaldırma **silme değil**, `status = 'open'`: senkron v2'de silinen
+///   kimlik bir daha kullanılamaz (docs/20 §5.3) — silseydik o güne bir daha
+///   işaret konamazdı.
+/// - "Tamamlandıktan sonra değişti" saklanmaz; o günün kayıtlarının son
+///   değişimi ile [completedAtMs] karşılaştırılarak hesaplanır.
+class NutritionDays extends Table with SyncColumns {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get day => text().unique()();
+  TextColumn get status => text()(); // complete | open
+  IntColumn get completedAtMs => integer().nullable()();
+}

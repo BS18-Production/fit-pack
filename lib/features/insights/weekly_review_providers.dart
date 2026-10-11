@@ -24,6 +24,7 @@ final weeklyReviewProvider =
     db.routines,
     db.routineExercises,
     db.foodLogs,
+    db.nutritionDays, // gün tamamlandı (docs/37) — işaretlenince yeniden hesapla
     db.bodyMeasurements,
     db.userProfile,
   ], () async {
@@ -88,6 +89,10 @@ final weeklyReviewProvider =
       targetRepsMaxByExercise: targetMax,
       progressPoints: points,
       foodLogs: await nut.getLogsInRange(start, end),
+      completedDays: {
+        for (final key in await nut.getCompletedDays(start, end))
+          DateTime.parse(key), // 'YYYY-MM-DD' → yerel 00:00
+      },
       kcalGoal: profile?.kcalGoal ?? 0,
       proteinGoal: profile?.proteinGoal ?? 0,
       measurements: await body.getMeasurementsInRange(

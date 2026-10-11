@@ -72,10 +72,11 @@ begin
   return next extensions.is(v_sayi, 12,
     '12 senkron tablosunun hepsinde server_rev var');
 
+  -- 13: v15 nutrition_days eklendi (docs/37, migrations/20261010120000).
   select count(*)::int into v_sayi from pg_trigger
     where tgname = 'sync_guard_trg' and not tgisinternal;
-  return next extensions.is(v_sayi, 12,
-    '12 tabloda sync_guard tetikleyicisi var');
+  return next extensions.is(v_sayi, 13,
+    '13 tabloda sync_guard tetikleyicisi var');
 
   select count(*)::int into v_sayi from pg_indexes
     where schemaname = 'public'

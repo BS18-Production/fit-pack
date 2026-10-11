@@ -937,5 +937,14 @@
         "type": "int"
       }
     }
-  }
+  },
+  "nutritionDayCompleteToday": "Bugünkü kaydım tamamlandı",
+  "nutritionDayCompletePast": "Bu günün kaydı tamamlandı",
+  "nutritionDayCompleteHint": "İşaretlediğin günler haftalık değerlendirmede “bilinen gün” sayılır; eksik kayıt düşük tüketim sanılmaz.",
+  "nutritionDayCompleted": "Kaydın tamam",
+  "nutritionDayChangedAfter": "Tamamlandıktan sonra değişti",
+  "nutritionDayReopen": "Geri al",
+  "wrCompletedDays": "{days} tamamlanmış gün",
+  "wrExcludedDays": "{days} gün hesaba katılmadı",
+  "wrProteinHit": "Protein hedefi {hit}/{total} gün"
 }

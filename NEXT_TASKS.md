@@ -1,5 +1,25 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## Sağlık entegrasyonu — Faz 0–1: adım (docs/39) · 2026-10-11
+
+Problem: hareket verisi elle girilmiyor, uygulamada yoktu. Beklenen: Apple
+Sağlık / Health Connect'ten yalnız adım okunur, Ana Sayfa'da tek hücre;
+cihazda kalır, kalori hedefini değiştirmez.
+Araştırma raporu: [FitPack Sağlık Verisi Entegrasyonu](https://claude.ai/code/artifact/47047c15-7754-46fb-87df-294b300de472).
+
+- [x] Faz 0: `health` paketi, Android minSdk 26 (Samet kararı), HealthKit
+      yeteneği — ücretsiz Apple hesabıyla imzalanıyor (doğrulandı).
+- [x] Faz 1 veri katmanı (`lib/features/health/`) + ekran (Ana Sayfa hücresi,
+      7 gün sayfası, izin açıklaması, Ayarlar → Sağlık). Ekranı Codex yazdı.
+- [x] Analiz temiz, 840 test. iPhone 17'ye yerinde kuruldu; adım sayısı
+      Sağlık uygulamasıyla tutarlı (Samet, 2026-10-11).
+- [ ] Samsung'da (Health Connect) görsel kontrol — cihaz bağlı değildi.
+- [ ] Faz 1b: akıllı tartıdan kilo + yağ oranı (Samet tartı kullanıyor) —
+      şema + kaynak önceliği, önce tasarım dokümanı.
+- [ ] Faz 2: kuvvet antrenmanını Sağlık'a yazma (Samet Apple Watch kullanıyor).
+- [ ] KVKK açık rıza / aydınlatma metni — Alper üretimde ikinci kullanıcı;
+      kilo ve yağ oranı bugün de Supabase'e (Frankfurt) gidiyor.
+
 ## Verime sor — yorum katmanı (docs/36 §1–2) · 2026-10-11
 
 Problem: soruların çoğu sayı + "ne anlama geliyor" istiyor; yorum kuralları

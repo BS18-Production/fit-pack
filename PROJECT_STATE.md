@@ -14,6 +14,16 @@
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v15 · **Sahibi:** Samet Orhan (kişisel proje)
 
+## Sağlık entegrasyonu — adım · 2026-10-11
+
+Apple Sağlık (HealthKit) ve Android Health Connect'ten **yalnız adım** okunuyor
+(docs/39). Ana Sayfa'da su + kilo yanında adım hücresi, dokununca son 7 gün;
+izin ihtiyaç anında ve tek ekranlık açıklamadan sonra isteniyor. Adım cihazda
+kalır (Supabase'e gitmez), hiçbir hesaba (kalori hedefi, TDEE) girmez. 0 adım
+"veri yok" sayılır (iOS izin reddini bildirmiyor). Android `minSdk` 26.
+Ücretsiz Apple hesabı HealthKit'i destekliyor. iPhone 17'de doğrulandı.
+840 test, analiz temiz.
+
 ## #8 Beslenme günü tamamlandı — üretimde · 2026-10-11
 
 - **Ne:** Beslenme ekranında "Bugünkü kaydım tamamlandı" (ikincil düğme) →

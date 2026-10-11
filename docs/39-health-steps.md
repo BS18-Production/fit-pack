@@ -1,7 +1,7 @@
 # 39 — Sağlık entegrasyonu Faz 0–1: adım
 
-> **Durum:** Faz 0 ✅ (2026-10-11) · Faz 1 kodlanıyor (veri katmanı); ekran
-> çeviri kilidini bekliyor.
+> **Durum:** Faz 0 ✅ · Faz 1 ✅ (2026-10-11) — iPhone 17'de doğrulandı: adım
+> sayısı Sağlık uygulamasıyla tutarlı (Samet). Sıradaki: Faz 1b (tartıdan kilo).
 > **Tarih:** 2026-10-11 · **Sahip:** Claude-2 · **İnceleyen:** Codex
 > (`collab/threads/saglik-entegrasyonu.md`)
 > **Araştırma raporu:** [FitPack Sağlık Verisi Entegrasyonu](https://claude.ai/code/artifact/47047c15-7754-46fb-87df-294b300de472)

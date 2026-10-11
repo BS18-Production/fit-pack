@@ -15,6 +15,7 @@ import '../../core/units/units.dart';
 import '../../core/theme/theme_mode_provider.dart';
 import '../../l10n/app_l10n.dart';
 import '../insights/weekly_review_reminder.dart';
+import '../health/health_settings_section.dart';
 import '../../shared/widgets/setting_tiles.dart';
 import '../../core/router/app_routes.dart';
 import '../../shared/widgets/fitpack_icon.dart';
@@ -207,6 +208,7 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ],
           ),
+          const HealthSettingsSection(),
           SettingsSection(
             title: l.settingsSectionNutrition,
             children: [

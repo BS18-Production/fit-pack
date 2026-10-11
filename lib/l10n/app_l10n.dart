@@ -5634,6 +5634,174 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Protein goal {hit}/{total} days'**
   String wrProteinHit(int hit, int total);
+
+  /// No description provided for @healthSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get healthSteps;
+
+  /// No description provided for @healthInstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Health Connect'**
+  String get healthInstall;
+
+  /// No description provided for @healthSeeSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'See your steps'**
+  String get healthSeeSteps;
+
+  /// No description provided for @healthNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data — check your health permissions'**
+  String get healthNoData;
+
+  /// No description provided for @healthReadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t read your steps. Try again.'**
+  String get healthReadError;
+
+  /// No description provided for @healthStepGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily step goal'**
+  String get healthStepGoal;
+
+  /// No description provided for @healthPermissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your steps on Home'**
+  String get healthPermissionTitle;
+
+  /// No description provided for @healthPermissionStepsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only your step count is read.'**
+  String get healthPermissionStepsOnly;
+
+  /// No description provided for @healthPermissionOnDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Your steps stay on this phone.'**
+  String get healthPermissionOnDevice;
+
+  /// No description provided for @healthPermissionNoSharing.
+  ///
+  /// In en, this message translates to:
+  /// **'Your calorie goal stays the same. Nothing is shared.'**
+  String get healthPermissionNoSharing;
+
+  /// No description provided for @healthConnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get healthConnect;
+
+  /// No description provided for @healthNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get healthNotNow;
+
+  /// No description provided for @healthConnectError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t connect. Check your health permissions and try again.'**
+  String get healthConnectError;
+
+  /// No description provided for @healthWeekTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get healthWeekTitle;
+
+  /// No description provided for @healthRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get healthRetry;
+
+  /// No description provided for @healthNotConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not connected · see your steps'**
+  String get healthNotConnected;
+
+  /// No description provided for @healthAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average of days with data'**
+  String get healthAverage;
+
+  /// No description provided for @healthStepCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} steps'**
+  String healthStepCount(String count);
+
+  /// No description provided for @healthGoalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank or enter 0 for no goal.'**
+  String get healthGoalHint;
+
+  /// No description provided for @healthGoalSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t save your goal. Try again.'**
+  String get healthGoalSaveError;
+
+  /// No description provided for @healthSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get healthSection;
+
+  /// No description provided for @healthConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Step connection'**
+  String get healthConnection;
+
+  /// No description provided for @healthConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get healthConnected;
+
+  /// No description provided for @healthDisconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get healthDisconnect;
+
+  /// No description provided for @healthDisconnectNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You can also revoke access in Health or Health Connect settings.'**
+  String get healthDisconnectNote;
+
+  /// No description provided for @healthNoGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'No goal'**
+  String get healthNoGoal;
+
+  /// No description provided for @healthInstallError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t open Health Connect. Try again.'**
+  String get healthInstallError;
+
+  /// No description provided for @healthDisconnectError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn’t disconnect. Try again.'**
+  String get healthDisconnectError;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

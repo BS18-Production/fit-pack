@@ -1974,5 +1974,40 @@
   "wrProteinHit": "Protein goal {hit}/{total} days",
   "@wrProteinHit": {
     "placeholders": { "hit": { "type": "int" }, "total": { "type": "int" } }
-  }
+  },
+  "healthSteps": "Steps",
+  "healthInstall": "Install Health Connect",
+  "healthSeeSteps": "See your steps",
+  "healthNoData": "No data — check your health permissions",
+  "healthReadError": "Couldn’t read your steps. Try again.",
+  "healthStepGoal": "Daily step goal",
+  "healthPermissionTitle": "Your steps on Home",
+  "healthPermissionStepsOnly": "Only your step count is read.",
+  "healthPermissionOnDevice": "Your steps stay on this phone.",
+  "healthPermissionNoSharing": "Your calorie goal stays the same. Nothing is shared.",
+  "healthConnect": "Connect",
+  "healthNotNow": "Not now",
+  "healthConnectError": "Couldn’t connect. Check your health permissions and try again.",
+  "healthWeekTitle": "Last 7 days",
+  "healthRetry": "Try again",
+  "healthNotConnected": "Not connected · see your steps",
+  "healthAverage": "Average of days with data",
+  "healthStepCount": "{count} steps",
+  "@healthStepCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "healthGoalHint": "Leave blank or enter 0 for no goal.",
+  "healthGoalSaveError": "Couldn’t save your goal. Try again.",
+  "healthSection": "Health",
+  "healthConnection": "Step connection",
+  "healthConnected": "Connected",
+  "healthDisconnect": "Disconnect",
+  "healthDisconnectNote": "You can also revoke access in Health or Health Connect settings.",
+  "healthNoGoal": "No goal",
+  "healthInstallError": "Couldn’t open Health Connect. Try again.",
+  "healthDisconnectError": "Couldn’t disconnect. Try again."
 }

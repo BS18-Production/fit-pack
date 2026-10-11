@@ -946,5 +946,40 @@
   "nutritionDayReopen": "Geri al",
   "wrCompletedDays": "{days} tamamlanmış gün",
   "wrExcludedDays": "{days} gün hesaba katılmadı",
-  "wrProteinHit": "Protein hedefi {hit}/{total} gün"
+  "wrProteinHit": "Protein hedefi {hit}/{total} gün",
+  "healthSteps": "Adım",
+  "healthInstall": "Health Connect'i kur",
+  "healthSeeSteps": "Adımlarını gör",
+  "healthNoData": "Veri yok — Sağlık izinlerini kontrol et",
+  "healthReadError": "Adımlar okunamadı. Yeniden dene.",
+  "healthStepGoal": "Günlük adım hedefi",
+  "healthPermissionTitle": "Adımların Ana Sayfa'da",
+  "healthPermissionStepsOnly": "Yalnız adım sayın okunur.",
+  "healthPermissionOnDevice": "Adımların yalnız bu telefonda kalır.",
+  "healthPermissionNoSharing": "Kalori hedefin değişmez, kimseyle paylaşılmaz.",
+  "healthConnect": "Bağlan",
+  "healthNotNow": "Şimdi değil",
+  "healthConnectError": "Bağlanamadık. Sağlık izinlerini kontrol edip yeniden dene.",
+  "healthWeekTitle": "Son 7 gün",
+  "healthRetry": "Yeniden dene",
+  "healthNotConnected": "Bağlı değil · adımlarını gör",
+  "healthAverage": "Ortalama (verisi olan günler)",
+  "healthStepCount": "{count} adım",
+  "@healthStepCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "healthGoalHint": "Boş bırak ya da 0 yaz: hedef olmasın.",
+  "healthGoalSaveError": "Hedef kaydedilemedi. Yeniden dene.",
+  "healthSection": "Sağlık",
+  "healthConnection": "Adım bağlantısı",
+  "healthConnected": "Bağlı",
+  "healthDisconnect": "Bağlantıyı kes",
+  "healthDisconnectNote": "İzni ayrıca Sağlık veya Health Connect ayarlarından kaldırabilirsin.",
+  "healthNoGoal": "Hedef yok",
+  "healthInstallError": "Health Connect açılamadı. Yeniden dene.",
+  "healthDisconnectError": "Bağlantı kesilemedi. Yeniden dene."
 }

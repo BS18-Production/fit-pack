@@ -3318,4 +3318,93 @@ class AppL10nEn extends AppL10n {
   String wrProteinHit(int hit, int total) {
     return 'Protein goal $hit/$total days';
   }
+
+  @override
+  String get healthSteps => 'Steps';
+
+  @override
+  String get healthInstall => 'Install Health Connect';
+
+  @override
+  String get healthSeeSteps => 'See your steps';
+
+  @override
+  String get healthNoData => 'No data — check your health permissions';
+
+  @override
+  String get healthReadError => 'Couldn’t read your steps. Try again.';
+
+  @override
+  String get healthStepGoal => 'Daily step goal';
+
+  @override
+  String get healthPermissionTitle => 'Your steps on Home';
+
+  @override
+  String get healthPermissionStepsOnly => 'Only your step count is read.';
+
+  @override
+  String get healthPermissionOnDevice => 'Your steps stay on this phone.';
+
+  @override
+  String get healthPermissionNoSharing =>
+      'Your calorie goal stays the same. Nothing is shared.';
+
+  @override
+  String get healthConnect => 'Connect';
+
+  @override
+  String get healthNotNow => 'Not now';
+
+  @override
+  String get healthConnectError =>
+      'Couldn’t connect. Check your health permissions and try again.';
+
+  @override
+  String get healthWeekTitle => 'Last 7 days';
+
+  @override
+  String get healthRetry => 'Try again';
+
+  @override
+  String get healthNotConnected => 'Not connected · see your steps';
+
+  @override
+  String get healthAverage => 'Average of days with data';
+
+  @override
+  String healthStepCount(String count) {
+    return '$count steps';
+  }
+
+  @override
+  String get healthGoalHint => 'Leave blank or enter 0 for no goal.';
+
+  @override
+  String get healthGoalSaveError => 'Couldn’t save your goal. Try again.';
+
+  @override
+  String get healthSection => 'Health';
+
+  @override
+  String get healthConnection => 'Step connection';
+
+  @override
+  String get healthConnected => 'Connected';
+
+  @override
+  String get healthDisconnect => 'Disconnect';
+
+  @override
+  String get healthDisconnectNote =>
+      'You can also revoke access in Health or Health Connect settings.';
+
+  @override
+  String get healthNoGoal => 'No goal';
+
+  @override
+  String get healthInstallError => 'Couldn’t open Health Connect. Try again.';
+
+  @override
+  String get healthDisconnectError => 'Couldn’t disconnect. Try again.';
 }

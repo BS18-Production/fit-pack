@@ -6,6 +6,8 @@ import 'package:fit_pack/core/onboarding/first_run_hints.dart';
 import 'package:fit_pack/core/router/app_routes.dart';
 import 'package:fit_pack/core/theme/app_theme.dart';
 import 'package:fit_pack/data/providers.dart';
+import 'package:fit_pack/features/health/step_providers.dart';
+import 'package:fit_pack/features/health/step_source.dart';
 import 'package:fit_pack/features/update/app_version_gate.dart';
 import 'package:fit_pack/features/nutrition/meal_idea_card.dart';
 import 'package:fit_pack/l10n/app_l10n.dart';
@@ -20,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/design_fixture.dart';
 import '../helpers/test_database.dart';
+import '../helpers/fake_step_source.dart';
 
 /// Gerçek router/sağlayıcılar ve temalar: sekmeler, detaylar, 320 pt ve
 /// büyük metinde taşma kontrolü. İsteğe bağlı PNG'ler örnek test verisidir.
@@ -96,7 +99,12 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [databaseProvider.overrideWithValue(db)],
+          overrides: [
+            databaseProvider.overrideWithValue(db),
+            stepSourceProvider.overrideWithValue(
+              FakeStepSource(status: StepPlatformStatus.unavailable),
+            ),
+          ],
           child: RepaintBoundary(
             key: boundary,
             child: MaterialApp.router(

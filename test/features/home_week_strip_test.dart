@@ -1,4 +1,6 @@
 import 'package:drift/drift.dart' show Value;
+import 'package:fit_pack/features/health/step_providers.dart';
+import 'package:fit_pack/features/health/step_source.dart';
 import 'package:fit_pack/core/theme/app_colors.dart';
 import 'package:fit_pack/data/database/app_database.dart';
 import 'package:fit_pack/data/providers.dart';
@@ -13,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/test_database.dart';
+import '../helpers/fake_step_source.dart';
 
 /// Ana sayfa haftalık şeridi + bugünün eylemi (docs/24 §2) — gerçek
 /// bellek-içi veritabanı, gerçek sağlayıcılar.
@@ -31,7 +34,14 @@ void main() {
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(ProviderScope(
-      overrides: [databaseProvider.overrideWithValue(db), ...overrides],
+      overrides: [
+        databaseProvider.overrideWithValue(db),
+        // Gerçek sağlık kaynağı testte platform kanalı çağırmasın (docs/39).
+        stepSourceProvider.overrideWithValue(
+          FakeStepSource(status: StepPlatformStatus.unavailable),
+        ),
+        ...overrides,
+      ],
       child: MaterialApp(
         theme: ThemeData(
           colorScheme: AppColors.lightScheme,

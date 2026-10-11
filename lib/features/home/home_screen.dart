@@ -13,6 +13,8 @@ import '../../data/providers.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/glass.dart';
 import '../calendar/week_strip.dart';
+import '../health/step_mini.dart';
+import '../health/step_providers.dart';
 import '../workout/routine_providers.dart';
 import '../workout/workout_draft.dart';
 import '../nutrition/nutrition_summary_card.dart';
@@ -54,6 +56,8 @@ class HomeScreen extends ConsumerWidget {
           ref.invalidate(last30WorkoutStatsProvider);
           ref.invalidate(recentWorkoutActivityProvider);
           ref.invalidate(topProgressProvider);
+          ref.invalidate(stepLinkStateProvider);
+          ref.invalidate(stepWeekProvider);
         },
         child: ListView(
           padding: EdgeInsets.fromLTRB(
@@ -816,22 +820,57 @@ class _InsightCard extends ConsumerWidget {
   }
 }
 
-// ──────────────────────────────────────────────────── Su + Kilo mini satır
+// ──────────────────────────────────────────────── Su + Kilo + Adım mini satır
 
 class _CompactHealthRow extends ConsumerWidget {
   const _CompactHealthRow();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return const IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(child: _WaterMini()),
-          SizedBox(width: AppSpacing.md),
-          Expanded(child: _WeightMini()),
-        ],
-      ),
+    final link = ref.watch(stepLinkStateProvider).valueOrNull;
+    final showSteps = link != null && link != StepLinkState.unavailable;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final readableWidth =
+            constraints.maxWidth / MediaQuery.textScalerOf(context).scale(1);
+        // Üç hücre yalnız yeterli yer varsa yan yana. Büyük metinde mevcut
+        // su/kilo hücreleri de tam genişliğe geçer; sayı/metin kırpılmaz.
+        if (readableWidth < 260) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const _WaterMini(),
+              AppSpacing.vGapMd,
+              const _WeightMini(),
+              if (showSteps) ...[AppSpacing.vGapMd, StepMini(link: link)],
+            ],
+          );
+        }
+        final inlineSteps = showSteps && readableWidth >= 540;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Expanded(child: _WaterMini()),
+                  AppSpacing.hGapMd,
+                  const Expanded(child: _WeightMini()),
+                  if (inlineSteps) ...[
+                    AppSpacing.hGapMd,
+                    Expanded(child: StepMini(link: link)),
+                  ],
+                ],
+              ),
+            ),
+            if (showSteps && !inlineSteps) ...[
+              AppSpacing.vGapMd,
+              StepMini(link: link),
+            ],
+          ],
+        );
+      },
     );
   }
 }

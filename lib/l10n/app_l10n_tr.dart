@@ -3271,4 +3271,93 @@ class AppL10nTr extends AppL10n {
   String wrProteinHit(int hit, int total) {
     return 'Protein hedefi $hit/$total gün';
   }
+
+  @override
+  String get healthSteps => 'Adım';
+
+  @override
+  String get healthInstall => 'Health Connect\'i kur';
+
+  @override
+  String get healthSeeSteps => 'Adımlarını gör';
+
+  @override
+  String get healthNoData => 'Veri yok — Sağlık izinlerini kontrol et';
+
+  @override
+  String get healthReadError => 'Adımlar okunamadı. Yeniden dene.';
+
+  @override
+  String get healthStepGoal => 'Günlük adım hedefi';
+
+  @override
+  String get healthPermissionTitle => 'Adımların Ana Sayfa\'da';
+
+  @override
+  String get healthPermissionStepsOnly => 'Yalnız adım sayın okunur.';
+
+  @override
+  String get healthPermissionOnDevice => 'Adımların yalnız bu telefonda kalır.';
+
+  @override
+  String get healthPermissionNoSharing =>
+      'Kalori hedefin değişmez, kimseyle paylaşılmaz.';
+
+  @override
+  String get healthConnect => 'Bağlan';
+
+  @override
+  String get healthNotNow => 'Şimdi değil';
+
+  @override
+  String get healthConnectError =>
+      'Bağlanamadık. Sağlık izinlerini kontrol edip yeniden dene.';
+
+  @override
+  String get healthWeekTitle => 'Son 7 gün';
+
+  @override
+  String get healthRetry => 'Yeniden dene';
+
+  @override
+  String get healthNotConnected => 'Bağlı değil · adımlarını gör';
+
+  @override
+  String get healthAverage => 'Ortalama (verisi olan günler)';
+
+  @override
+  String healthStepCount(String count) {
+    return '$count adım';
+  }
+
+  @override
+  String get healthGoalHint => 'Boş bırak ya da 0 yaz: hedef olmasın.';
+
+  @override
+  String get healthGoalSaveError => 'Hedef kaydedilemedi. Yeniden dene.';
+
+  @override
+  String get healthSection => 'Sağlık';
+
+  @override
+  String get healthConnection => 'Adım bağlantısı';
+
+  @override
+  String get healthConnected => 'Bağlı';
+
+  @override
+  String get healthDisconnect => 'Bağlantıyı kes';
+
+  @override
+  String get healthDisconnectNote =>
+      'İzni ayrıca Sağlık veya Health Connect ayarlarından kaldırabilirsin.';
+
+  @override
+  String get healthNoGoal => 'Hedef yok';
+
+  @override
+  String get healthInstallError => 'Health Connect açılamadı. Yeniden dene.';
+
+  @override
+  String get healthDisconnectError => 'Bağlantı kesilemedi. Yeniden dene.';
 }

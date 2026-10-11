@@ -132,7 +132,9 @@ def prefilter(q: str) -> bool:
 
 def _exercise_keywords() -> list[str]:
     data = json.loads((HERE / "exercises.json").read_text())
-    return sorted({k for e in data["exercises"] for k in e.get("keywords", [])}, key=len, reverse=True)
+    # Sabit sıra (uzun önce, eşitlikte alfabetik): küme sırası her süreçte değişir
+    # ve parmak izini kararsız yapıyordu (2026-10-11). Eşleşme sonucu sıradan bağımsız.
+    return sorted({k for e in data["exercises"] for k in e.get("keywords", [])}, key=lambda k: (-len(k), k))
 
 
 EXERCISE_KEYWORDS = _exercise_keywords()

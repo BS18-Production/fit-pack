@@ -13390,6 +13390,1259 @@ class SyncTombstonesCompanion extends UpdateCompanion<SyncTombstone> {
   }
 }
 
+class $AssistantQualityEventsTable extends AssistantQualityEvents
+    with TableInfo<$AssistantQualityEventsTable, AssistantQualityEvent> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AssistantQualityEventsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _eventIdMeta = const VerificationMeta(
+    'eventId',
+  );
+  @override
+  late final GeneratedColumn<String> eventId = GeneratedColumn<String>(
+    'event_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _occurredAtMeta = const VerificationMeta(
+    'occurredAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> occurredAt = GeneratedColumn<DateTime>(
+    'occurred_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contractVersionMeta = const VerificationMeta(
+    'contractVersion',
+  );
+  @override
+  late final GeneratedColumn<int> contractVersion = GeneratedColumn<int>(
+    'contract_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(2),
+  );
+  static const VerificationMeta _modelMeta = const VerificationMeta('model');
+  @override
+  late final GeneratedColumn<String> model = GeneratedColumn<String>(
+    'model',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fingerprintMeta = const VerificationMeta(
+    'fingerprint',
+  );
+  @override
+  late final GeneratedColumn<String> fingerprint = GeneratedColumn<String>(
+    'fingerprint',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _decisionMeta = const VerificationMeta(
+    'decision',
+  );
+  @override
+  late final GeneratedColumn<String> decision = GeneratedColumn<String>(
+    'decision',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _outcomeMeta = const VerificationMeta(
+    'outcome',
+  );
+  @override
+  late final GeneratedColumn<String> outcome = GeneratedColumn<String>(
+    'outcome',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('completed'),
+  );
+  static const VerificationMeta _queryIdMeta = const VerificationMeta(
+    'queryId',
+  );
+  @override
+  late final GeneratedColumn<String> queryId = GeneratedColumn<String>(
+    'query_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _periodIdMeta = const VerificationMeta(
+    'periodId',
+  );
+  @override
+  late final GeneratedColumn<String> periodId = GeneratedColumn<String>(
+    'period_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _exerciseTypeMeta = const VerificationMeta(
+    'exerciseType',
+  );
+  @override
+  late final GeneratedColumn<String> exerciseType = GeneratedColumn<String>(
+    'exercise_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('none'),
+  );
+  static const VerificationMeta _wantsInterpretationMeta =
+      const VerificationMeta('wantsInterpretation');
+  @override
+  late final GeneratedColumn<bool> wantsInterpretation = GeneratedColumn<bool>(
+    'wants_interpretation',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("wants_interpretation" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _ambiguousMeta = const VerificationMeta(
+    'ambiguous',
+  );
+  @override
+  late final GeneratedColumn<bool> ambiguous = GeneratedColumn<bool>(
+    'ambiguous',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("ambiguous" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _correctedQueryIdMeta = const VerificationMeta(
+    'correctedQueryId',
+  );
+  @override
+  late final GeneratedColumn<String> correctedQueryId = GeneratedColumn<String>(
+    'corrected_query_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _correctedPeriodIdMeta = const VerificationMeta(
+    'correctedPeriodId',
+  );
+  @override
+  late final GeneratedColumn<String> correctedPeriodId =
+      GeneratedColumn<String>(
+        'corrected_period_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _exerciseChangedMeta = const VerificationMeta(
+    'exerciseChanged',
+  );
+  @override
+  late final GeneratedColumn<bool> exerciseChanged = GeneratedColumn<bool>(
+    'exercise_changed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("exercise_changed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _clarifiedMeta = const VerificationMeta(
+    'clarified',
+  );
+  @override
+  late final GeneratedColumn<bool> clarified = GeneratedColumn<bool>(
+    'clarified',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("clarified" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _latencyMsMeta = const VerificationMeta(
+    'latencyMs',
+  );
+  @override
+  late final GeneratedColumn<int> latencyMs = GeneratedColumn<int>(
+    'latency_ms',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _inputTokensMeta = const VerificationMeta(
+    'inputTokens',
+  );
+  @override
+  late final GeneratedColumn<int> inputTokens = GeneratedColumn<int>(
+    'input_tokens',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _outputTokensMeta = const VerificationMeta(
+    'outputTokens',
+  );
+  @override
+  late final GeneratedColumn<int> outputTokens = GeneratedColumn<int>(
+    'output_tokens',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _errorCodeMeta = const VerificationMeta(
+    'errorCode',
+  );
+  @override
+  late final GeneratedColumn<String> errorCode = GeneratedColumn<String>(
+    'error_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    eventId,
+    ownerId,
+    occurredAt,
+    source,
+    contractVersion,
+    model,
+    fingerprint,
+    decision,
+    outcome,
+    queryId,
+    periodId,
+    exerciseType,
+    wantsInterpretation,
+    ambiguous,
+    correctedQueryId,
+    correctedPeriodId,
+    exerciseChanged,
+    clarified,
+    latencyMs,
+    inputTokens,
+    outputTokens,
+    errorCode,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'assistant_quality_events';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AssistantQualityEvent> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('event_id')) {
+      context.handle(
+        _eventIdMeta,
+        eventId.isAcceptableOrUnknown(data['event_id']!, _eventIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_eventIdMeta);
+    }
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+        _occurredAtMeta,
+        occurredAt.isAcceptableOrUnknown(data['occurred_at']!, _occurredAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    if (data.containsKey('contract_version')) {
+      context.handle(
+        _contractVersionMeta,
+        contractVersion.isAcceptableOrUnknown(
+          data['contract_version']!,
+          _contractVersionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('model')) {
+      context.handle(
+        _modelMeta,
+        model.isAcceptableOrUnknown(data['model']!, _modelMeta),
+      );
+    }
+    if (data.containsKey('fingerprint')) {
+      context.handle(
+        _fingerprintMeta,
+        fingerprint.isAcceptableOrUnknown(
+          data['fingerprint']!,
+          _fingerprintMeta,
+        ),
+      );
+    }
+    if (data.containsKey('decision')) {
+      context.handle(
+        _decisionMeta,
+        decision.isAcceptableOrUnknown(data['decision']!, _decisionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_decisionMeta);
+    }
+    if (data.containsKey('outcome')) {
+      context.handle(
+        _outcomeMeta,
+        outcome.isAcceptableOrUnknown(data['outcome']!, _outcomeMeta),
+      );
+    }
+    if (data.containsKey('query_id')) {
+      context.handle(
+        _queryIdMeta,
+        queryId.isAcceptableOrUnknown(data['query_id']!, _queryIdMeta),
+      );
+    }
+    if (data.containsKey('period_id')) {
+      context.handle(
+        _periodIdMeta,
+        periodId.isAcceptableOrUnknown(data['period_id']!, _periodIdMeta),
+      );
+    }
+    if (data.containsKey('exercise_type')) {
+      context.handle(
+        _exerciseTypeMeta,
+        exerciseType.isAcceptableOrUnknown(
+          data['exercise_type']!,
+          _exerciseTypeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('wants_interpretation')) {
+      context.handle(
+        _wantsInterpretationMeta,
+        wantsInterpretation.isAcceptableOrUnknown(
+          data['wants_interpretation']!,
+          _wantsInterpretationMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ambiguous')) {
+      context.handle(
+        _ambiguousMeta,
+        ambiguous.isAcceptableOrUnknown(data['ambiguous']!, _ambiguousMeta),
+      );
+    }
+    if (data.containsKey('corrected_query_id')) {
+      context.handle(
+        _correctedQueryIdMeta,
+        correctedQueryId.isAcceptableOrUnknown(
+          data['corrected_query_id']!,
+          _correctedQueryIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('corrected_period_id')) {
+      context.handle(
+        _correctedPeriodIdMeta,
+        correctedPeriodId.isAcceptableOrUnknown(
+          data['corrected_period_id']!,
+          _correctedPeriodIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('exercise_changed')) {
+      context.handle(
+        _exerciseChangedMeta,
+        exerciseChanged.isAcceptableOrUnknown(
+          data['exercise_changed']!,
+          _exerciseChangedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('clarified')) {
+      context.handle(
+        _clarifiedMeta,
+        clarified.isAcceptableOrUnknown(data['clarified']!, _clarifiedMeta),
+      );
+    }
+    if (data.containsKey('latency_ms')) {
+      context.handle(
+        _latencyMsMeta,
+        latencyMs.isAcceptableOrUnknown(data['latency_ms']!, _latencyMsMeta),
+      );
+    }
+    if (data.containsKey('input_tokens')) {
+      context.handle(
+        _inputTokensMeta,
+        inputTokens.isAcceptableOrUnknown(
+          data['input_tokens']!,
+          _inputTokensMeta,
+        ),
+      );
+    }
+    if (data.containsKey('output_tokens')) {
+      context.handle(
+        _outputTokensMeta,
+        outputTokens.isAcceptableOrUnknown(
+          data['output_tokens']!,
+          _outputTokensMeta,
+        ),
+      );
+    }
+    if (data.containsKey('error_code')) {
+      context.handle(
+        _errorCodeMeta,
+        errorCode.isAcceptableOrUnknown(data['error_code']!, _errorCodeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {eventId};
+  @override
+  AssistantQualityEvent map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AssistantQualityEvent(
+      eventId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}event_id'],
+      )!,
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
+      occurredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}occurred_at'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      contractVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}contract_version'],
+      )!,
+      model: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}model'],
+      ),
+      fingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}fingerprint'],
+      ),
+      decision: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}decision'],
+      )!,
+      outcome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outcome'],
+      )!,
+      queryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}query_id'],
+      ),
+      periodId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}period_id'],
+      ),
+      exerciseType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}exercise_type'],
+      )!,
+      wantsInterpretation: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}wants_interpretation'],
+      )!,
+      ambiguous: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}ambiguous'],
+      )!,
+      correctedQueryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}corrected_query_id'],
+      ),
+      correctedPeriodId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}corrected_period_id'],
+      ),
+      exerciseChanged: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}exercise_changed'],
+      )!,
+      clarified: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}clarified'],
+      )!,
+      latencyMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}latency_ms'],
+      ),
+      inputTokens: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}input_tokens'],
+      ),
+      outputTokens: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}output_tokens'],
+      ),
+      errorCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error_code'],
+      ),
+    );
+  }
+
+  @override
+  $AssistantQualityEventsTable createAlias(String alias) {
+    return $AssistantQualityEventsTable(attachedDatabase, alias);
+  }
+}
+
+class AssistantQualityEvent extends DataClass
+    implements Insertable<AssistantQualityEvent> {
+  final String eventId;
+  final String ownerId;
+  final DateTime occurredAt;
+  final String source;
+  final int contractVersion;
+  final String? model;
+  final String? fingerprint;
+  final String decision;
+  final String outcome;
+  final String? queryId;
+  final String? periodId;
+  final String exerciseType;
+  final bool wantsInterpretation;
+  final bool ambiguous;
+  final String? correctedQueryId;
+  final String? correctedPeriodId;
+  final bool exerciseChanged;
+  final bool clarified;
+  final int? latencyMs;
+  final int? inputTokens;
+  final int? outputTokens;
+  final String? errorCode;
+  const AssistantQualityEvent({
+    required this.eventId,
+    required this.ownerId,
+    required this.occurredAt,
+    required this.source,
+    required this.contractVersion,
+    this.model,
+    this.fingerprint,
+    required this.decision,
+    required this.outcome,
+    this.queryId,
+    this.periodId,
+    required this.exerciseType,
+    required this.wantsInterpretation,
+    required this.ambiguous,
+    this.correctedQueryId,
+    this.correctedPeriodId,
+    required this.exerciseChanged,
+    required this.clarified,
+    this.latencyMs,
+    this.inputTokens,
+    this.outputTokens,
+    this.errorCode,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['event_id'] = Variable<String>(eventId);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['occurred_at'] = Variable<DateTime>(occurredAt);
+    map['source'] = Variable<String>(source);
+    map['contract_version'] = Variable<int>(contractVersion);
+    if (!nullToAbsent || model != null) {
+      map['model'] = Variable<String>(model);
+    }
+    if (!nullToAbsent || fingerprint != null) {
+      map['fingerprint'] = Variable<String>(fingerprint);
+    }
+    map['decision'] = Variable<String>(decision);
+    map['outcome'] = Variable<String>(outcome);
+    if (!nullToAbsent || queryId != null) {
+      map['query_id'] = Variable<String>(queryId);
+    }
+    if (!nullToAbsent || periodId != null) {
+      map['period_id'] = Variable<String>(periodId);
+    }
+    map['exercise_type'] = Variable<String>(exerciseType);
+    map['wants_interpretation'] = Variable<bool>(wantsInterpretation);
+    map['ambiguous'] = Variable<bool>(ambiguous);
+    if (!nullToAbsent || correctedQueryId != null) {
+      map['corrected_query_id'] = Variable<String>(correctedQueryId);
+    }
+    if (!nullToAbsent || correctedPeriodId != null) {
+      map['corrected_period_id'] = Variable<String>(correctedPeriodId);
+    }
+    map['exercise_changed'] = Variable<bool>(exerciseChanged);
+    map['clarified'] = Variable<bool>(clarified);
+    if (!nullToAbsent || latencyMs != null) {
+      map['latency_ms'] = Variable<int>(latencyMs);
+    }
+    if (!nullToAbsent || inputTokens != null) {
+      map['input_tokens'] = Variable<int>(inputTokens);
+    }
+    if (!nullToAbsent || outputTokens != null) {
+      map['output_tokens'] = Variable<int>(outputTokens);
+    }
+    if (!nullToAbsent || errorCode != null) {
+      map['error_code'] = Variable<String>(errorCode);
+    }
+    return map;
+  }
+
+  AssistantQualityEventsCompanion toCompanion(bool nullToAbsent) {
+    return AssistantQualityEventsCompanion(
+      eventId: Value(eventId),
+      ownerId: Value(ownerId),
+      occurredAt: Value(occurredAt),
+      source: Value(source),
+      contractVersion: Value(contractVersion),
+      model: model == null && nullToAbsent
+          ? const Value.absent()
+          : Value(model),
+      fingerprint: fingerprint == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fingerprint),
+      decision: Value(decision),
+      outcome: Value(outcome),
+      queryId: queryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(queryId),
+      periodId: periodId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(periodId),
+      exerciseType: Value(exerciseType),
+      wantsInterpretation: Value(wantsInterpretation),
+      ambiguous: Value(ambiguous),
+      correctedQueryId: correctedQueryId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(correctedQueryId),
+      correctedPeriodId: correctedPeriodId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(correctedPeriodId),
+      exerciseChanged: Value(exerciseChanged),
+      clarified: Value(clarified),
+      latencyMs: latencyMs == null && nullToAbsent
+          ? const Value.absent()
+          : Value(latencyMs),
+      inputTokens: inputTokens == null && nullToAbsent
+          ? const Value.absent()
+          : Value(inputTokens),
+      outputTokens: outputTokens == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outputTokens),
+      errorCode: errorCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(errorCode),
+    );
+  }
+
+  factory AssistantQualityEvent.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AssistantQualityEvent(
+      eventId: serializer.fromJson<String>(json['eventId']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
+      source: serializer.fromJson<String>(json['source']),
+      contractVersion: serializer.fromJson<int>(json['contractVersion']),
+      model: serializer.fromJson<String?>(json['model']),
+      fingerprint: serializer.fromJson<String?>(json['fingerprint']),
+      decision: serializer.fromJson<String>(json['decision']),
+      outcome: serializer.fromJson<String>(json['outcome']),
+      queryId: serializer.fromJson<String?>(json['queryId']),
+      periodId: serializer.fromJson<String?>(json['periodId']),
+      exerciseType: serializer.fromJson<String>(json['exerciseType']),
+      wantsInterpretation: serializer.fromJson<bool>(
+        json['wantsInterpretation'],
+      ),
+      ambiguous: serializer.fromJson<bool>(json['ambiguous']),
+      correctedQueryId: serializer.fromJson<String?>(json['correctedQueryId']),
+      correctedPeriodId: serializer.fromJson<String?>(
+        json['correctedPeriodId'],
+      ),
+      exerciseChanged: serializer.fromJson<bool>(json['exerciseChanged']),
+      clarified: serializer.fromJson<bool>(json['clarified']),
+      latencyMs: serializer.fromJson<int?>(json['latencyMs']),
+      inputTokens: serializer.fromJson<int?>(json['inputTokens']),
+      outputTokens: serializer.fromJson<int?>(json['outputTokens']),
+      errorCode: serializer.fromJson<String?>(json['errorCode']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'eventId': serializer.toJson<String>(eventId),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'occurredAt': serializer.toJson<DateTime>(occurredAt),
+      'source': serializer.toJson<String>(source),
+      'contractVersion': serializer.toJson<int>(contractVersion),
+      'model': serializer.toJson<String?>(model),
+      'fingerprint': serializer.toJson<String?>(fingerprint),
+      'decision': serializer.toJson<String>(decision),
+      'outcome': serializer.toJson<String>(outcome),
+      'queryId': serializer.toJson<String?>(queryId),
+      'periodId': serializer.toJson<String?>(periodId),
+      'exerciseType': serializer.toJson<String>(exerciseType),
+      'wantsInterpretation': serializer.toJson<bool>(wantsInterpretation),
+      'ambiguous': serializer.toJson<bool>(ambiguous),
+      'correctedQueryId': serializer.toJson<String?>(correctedQueryId),
+      'correctedPeriodId': serializer.toJson<String?>(correctedPeriodId),
+      'exerciseChanged': serializer.toJson<bool>(exerciseChanged),
+      'clarified': serializer.toJson<bool>(clarified),
+      'latencyMs': serializer.toJson<int?>(latencyMs),
+      'inputTokens': serializer.toJson<int?>(inputTokens),
+      'outputTokens': serializer.toJson<int?>(outputTokens),
+      'errorCode': serializer.toJson<String?>(errorCode),
+    };
+  }
+
+  AssistantQualityEvent copyWith({
+    String? eventId,
+    String? ownerId,
+    DateTime? occurredAt,
+    String? source,
+    int? contractVersion,
+    Value<String?> model = const Value.absent(),
+    Value<String?> fingerprint = const Value.absent(),
+    String? decision,
+    String? outcome,
+    Value<String?> queryId = const Value.absent(),
+    Value<String?> periodId = const Value.absent(),
+    String? exerciseType,
+    bool? wantsInterpretation,
+    bool? ambiguous,
+    Value<String?> correctedQueryId = const Value.absent(),
+    Value<String?> correctedPeriodId = const Value.absent(),
+    bool? exerciseChanged,
+    bool? clarified,
+    Value<int?> latencyMs = const Value.absent(),
+    Value<int?> inputTokens = const Value.absent(),
+    Value<int?> outputTokens = const Value.absent(),
+    Value<String?> errorCode = const Value.absent(),
+  }) => AssistantQualityEvent(
+    eventId: eventId ?? this.eventId,
+    ownerId: ownerId ?? this.ownerId,
+    occurredAt: occurredAt ?? this.occurredAt,
+    source: source ?? this.source,
+    contractVersion: contractVersion ?? this.contractVersion,
+    model: model.present ? model.value : this.model,
+    fingerprint: fingerprint.present ? fingerprint.value : this.fingerprint,
+    decision: decision ?? this.decision,
+    outcome: outcome ?? this.outcome,
+    queryId: queryId.present ? queryId.value : this.queryId,
+    periodId: periodId.present ? periodId.value : this.periodId,
+    exerciseType: exerciseType ?? this.exerciseType,
+    wantsInterpretation: wantsInterpretation ?? this.wantsInterpretation,
+    ambiguous: ambiguous ?? this.ambiguous,
+    correctedQueryId: correctedQueryId.present
+        ? correctedQueryId.value
+        : this.correctedQueryId,
+    correctedPeriodId: correctedPeriodId.present
+        ? correctedPeriodId.value
+        : this.correctedPeriodId,
+    exerciseChanged: exerciseChanged ?? this.exerciseChanged,
+    clarified: clarified ?? this.clarified,
+    latencyMs: latencyMs.present ? latencyMs.value : this.latencyMs,
+    inputTokens: inputTokens.present ? inputTokens.value : this.inputTokens,
+    outputTokens: outputTokens.present ? outputTokens.value : this.outputTokens,
+    errorCode: errorCode.present ? errorCode.value : this.errorCode,
+  );
+  AssistantQualityEvent copyWithCompanion(
+    AssistantQualityEventsCompanion data,
+  ) {
+    return AssistantQualityEvent(
+      eventId: data.eventId.present ? data.eventId.value : this.eventId,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      occurredAt: data.occurredAt.present
+          ? data.occurredAt.value
+          : this.occurredAt,
+      source: data.source.present ? data.source.value : this.source,
+      contractVersion: data.contractVersion.present
+          ? data.contractVersion.value
+          : this.contractVersion,
+      model: data.model.present ? data.model.value : this.model,
+      fingerprint: data.fingerprint.present
+          ? data.fingerprint.value
+          : this.fingerprint,
+      decision: data.decision.present ? data.decision.value : this.decision,
+      outcome: data.outcome.present ? data.outcome.value : this.outcome,
+      queryId: data.queryId.present ? data.queryId.value : this.queryId,
+      periodId: data.periodId.present ? data.periodId.value : this.periodId,
+      exerciseType: data.exerciseType.present
+          ? data.exerciseType.value
+          : this.exerciseType,
+      wantsInterpretation: data.wantsInterpretation.present
+          ? data.wantsInterpretation.value
+          : this.wantsInterpretation,
+      ambiguous: data.ambiguous.present ? data.ambiguous.value : this.ambiguous,
+      correctedQueryId: data.correctedQueryId.present
+          ? data.correctedQueryId.value
+          : this.correctedQueryId,
+      correctedPeriodId: data.correctedPeriodId.present
+          ? data.correctedPeriodId.value
+          : this.correctedPeriodId,
+      exerciseChanged: data.exerciseChanged.present
+          ? data.exerciseChanged.value
+          : this.exerciseChanged,
+      clarified: data.clarified.present ? data.clarified.value : this.clarified,
+      latencyMs: data.latencyMs.present ? data.latencyMs.value : this.latencyMs,
+      inputTokens: data.inputTokens.present
+          ? data.inputTokens.value
+          : this.inputTokens,
+      outputTokens: data.outputTokens.present
+          ? data.outputTokens.value
+          : this.outputTokens,
+      errorCode: data.errorCode.present ? data.errorCode.value : this.errorCode,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AssistantQualityEvent(')
+          ..write('eventId: $eventId, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('source: $source, ')
+          ..write('contractVersion: $contractVersion, ')
+          ..write('model: $model, ')
+          ..write('fingerprint: $fingerprint, ')
+          ..write('decision: $decision, ')
+          ..write('outcome: $outcome, ')
+          ..write('queryId: $queryId, ')
+          ..write('periodId: $periodId, ')
+          ..write('exerciseType: $exerciseType, ')
+          ..write('wantsInterpretation: $wantsInterpretation, ')
+          ..write('ambiguous: $ambiguous, ')
+          ..write('correctedQueryId: $correctedQueryId, ')
+          ..write('correctedPeriodId: $correctedPeriodId, ')
+          ..write('exerciseChanged: $exerciseChanged, ')
+          ..write('clarified: $clarified, ')
+          ..write('latencyMs: $latencyMs, ')
+          ..write('inputTokens: $inputTokens, ')
+          ..write('outputTokens: $outputTokens, ')
+          ..write('errorCode: $errorCode')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    eventId,
+    ownerId,
+    occurredAt,
+    source,
+    contractVersion,
+    model,
+    fingerprint,
+    decision,
+    outcome,
+    queryId,
+    periodId,
+    exerciseType,
+    wantsInterpretation,
+    ambiguous,
+    correctedQueryId,
+    correctedPeriodId,
+    exerciseChanged,
+    clarified,
+    latencyMs,
+    inputTokens,
+    outputTokens,
+    errorCode,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AssistantQualityEvent &&
+          other.eventId == this.eventId &&
+          other.ownerId == this.ownerId &&
+          other.occurredAt == this.occurredAt &&
+          other.source == this.source &&
+          other.contractVersion == this.contractVersion &&
+          other.model == this.model &&
+          other.fingerprint == this.fingerprint &&
+          other.decision == this.decision &&
+          other.outcome == this.outcome &&
+          other.queryId == this.queryId &&
+          other.periodId == this.periodId &&
+          other.exerciseType == this.exerciseType &&
+          other.wantsInterpretation == this.wantsInterpretation &&
+          other.ambiguous == this.ambiguous &&
+          other.correctedQueryId == this.correctedQueryId &&
+          other.correctedPeriodId == this.correctedPeriodId &&
+          other.exerciseChanged == this.exerciseChanged &&
+          other.clarified == this.clarified &&
+          other.latencyMs == this.latencyMs &&
+          other.inputTokens == this.inputTokens &&
+          other.outputTokens == this.outputTokens &&
+          other.errorCode == this.errorCode);
+}
+
+class AssistantQualityEventsCompanion
+    extends UpdateCompanion<AssistantQualityEvent> {
+  final Value<String> eventId;
+  final Value<String> ownerId;
+  final Value<DateTime> occurredAt;
+  final Value<String> source;
+  final Value<int> contractVersion;
+  final Value<String?> model;
+  final Value<String?> fingerprint;
+  final Value<String> decision;
+  final Value<String> outcome;
+  final Value<String?> queryId;
+  final Value<String?> periodId;
+  final Value<String> exerciseType;
+  final Value<bool> wantsInterpretation;
+  final Value<bool> ambiguous;
+  final Value<String?> correctedQueryId;
+  final Value<String?> correctedPeriodId;
+  final Value<bool> exerciseChanged;
+  final Value<bool> clarified;
+  final Value<int?> latencyMs;
+  final Value<int?> inputTokens;
+  final Value<int?> outputTokens;
+  final Value<String?> errorCode;
+  final Value<int> rowid;
+  const AssistantQualityEventsCompanion({
+    this.eventId = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.source = const Value.absent(),
+    this.contractVersion = const Value.absent(),
+    this.model = const Value.absent(),
+    this.fingerprint = const Value.absent(),
+    this.decision = const Value.absent(),
+    this.outcome = const Value.absent(),
+    this.queryId = const Value.absent(),
+    this.periodId = const Value.absent(),
+    this.exerciseType = const Value.absent(),
+    this.wantsInterpretation = const Value.absent(),
+    this.ambiguous = const Value.absent(),
+    this.correctedQueryId = const Value.absent(),
+    this.correctedPeriodId = const Value.absent(),
+    this.exerciseChanged = const Value.absent(),
+    this.clarified = const Value.absent(),
+    this.latencyMs = const Value.absent(),
+    this.inputTokens = const Value.absent(),
+    this.outputTokens = const Value.absent(),
+    this.errorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AssistantQualityEventsCompanion.insert({
+    required String eventId,
+    required String ownerId,
+    required DateTime occurredAt,
+    required String source,
+    this.contractVersion = const Value.absent(),
+    this.model = const Value.absent(),
+    this.fingerprint = const Value.absent(),
+    required String decision,
+    this.outcome = const Value.absent(),
+    this.queryId = const Value.absent(),
+    this.periodId = const Value.absent(),
+    this.exerciseType = const Value.absent(),
+    this.wantsInterpretation = const Value.absent(),
+    this.ambiguous = const Value.absent(),
+    this.correctedQueryId = const Value.absent(),
+    this.correctedPeriodId = const Value.absent(),
+    this.exerciseChanged = const Value.absent(),
+    this.clarified = const Value.absent(),
+    this.latencyMs = const Value.absent(),
+    this.inputTokens = const Value.absent(),
+    this.outputTokens = const Value.absent(),
+    this.errorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : eventId = Value(eventId),
+       ownerId = Value(ownerId),
+       occurredAt = Value(occurredAt),
+       source = Value(source),
+       decision = Value(decision);
+  static Insertable<AssistantQualityEvent> custom({
+    Expression<String>? eventId,
+    Expression<String>? ownerId,
+    Expression<DateTime>? occurredAt,
+    Expression<String>? source,
+    Expression<int>? contractVersion,
+    Expression<String>? model,
+    Expression<String>? fingerprint,
+    Expression<String>? decision,
+    Expression<String>? outcome,
+    Expression<String>? queryId,
+    Expression<String>? periodId,
+    Expression<String>? exerciseType,
+    Expression<bool>? wantsInterpretation,
+    Expression<bool>? ambiguous,
+    Expression<String>? correctedQueryId,
+    Expression<String>? correctedPeriodId,
+    Expression<bool>? exerciseChanged,
+    Expression<bool>? clarified,
+    Expression<int>? latencyMs,
+    Expression<int>? inputTokens,
+    Expression<int>? outputTokens,
+    Expression<String>? errorCode,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (eventId != null) 'event_id': eventId,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (source != null) 'source': source,
+      if (contractVersion != null) 'contract_version': contractVersion,
+      if (model != null) 'model': model,
+      if (fingerprint != null) 'fingerprint': fingerprint,
+      if (decision != null) 'decision': decision,
+      if (outcome != null) 'outcome': outcome,
+      if (queryId != null) 'query_id': queryId,
+      if (periodId != null) 'period_id': periodId,
+      if (exerciseType != null) 'exercise_type': exerciseType,
+      if (wantsInterpretation != null)
+        'wants_interpretation': wantsInterpretation,
+      if (ambiguous != null) 'ambiguous': ambiguous,
+      if (correctedQueryId != null) 'corrected_query_id': correctedQueryId,
+      if (correctedPeriodId != null) 'corrected_period_id': correctedPeriodId,
+      if (exerciseChanged != null) 'exercise_changed': exerciseChanged,
+      if (clarified != null) 'clarified': clarified,
+      if (latencyMs != null) 'latency_ms': latencyMs,
+      if (inputTokens != null) 'input_tokens': inputTokens,
+      if (outputTokens != null) 'output_tokens': outputTokens,
+      if (errorCode != null) 'error_code': errorCode,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AssistantQualityEventsCompanion copyWith({
+    Value<String>? eventId,
+    Value<String>? ownerId,
+    Value<DateTime>? occurredAt,
+    Value<String>? source,
+    Value<int>? contractVersion,
+    Value<String?>? model,
+    Value<String?>? fingerprint,
+    Value<String>? decision,
+    Value<String>? outcome,
+    Value<String?>? queryId,
+    Value<String?>? periodId,
+    Value<String>? exerciseType,
+    Value<bool>? wantsInterpretation,
+    Value<bool>? ambiguous,
+    Value<String?>? correctedQueryId,
+    Value<String?>? correctedPeriodId,
+    Value<bool>? exerciseChanged,
+    Value<bool>? clarified,
+    Value<int?>? latencyMs,
+    Value<int?>? inputTokens,
+    Value<int?>? outputTokens,
+    Value<String?>? errorCode,
+    Value<int>? rowid,
+  }) {
+    return AssistantQualityEventsCompanion(
+      eventId: eventId ?? this.eventId,
+      ownerId: ownerId ?? this.ownerId,
+      occurredAt: occurredAt ?? this.occurredAt,
+      source: source ?? this.source,
+      contractVersion: contractVersion ?? this.contractVersion,
+      model: model ?? this.model,
+      fingerprint: fingerprint ?? this.fingerprint,
+      decision: decision ?? this.decision,
+      outcome: outcome ?? this.outcome,
+      queryId: queryId ?? this.queryId,
+      periodId: periodId ?? this.periodId,
+      exerciseType: exerciseType ?? this.exerciseType,
+      wantsInterpretation: wantsInterpretation ?? this.wantsInterpretation,
+      ambiguous: ambiguous ?? this.ambiguous,
+      correctedQueryId: correctedQueryId ?? this.correctedQueryId,
+      correctedPeriodId: correctedPeriodId ?? this.correctedPeriodId,
+      exerciseChanged: exerciseChanged ?? this.exerciseChanged,
+      clarified: clarified ?? this.clarified,
+      latencyMs: latencyMs ?? this.latencyMs,
+      inputTokens: inputTokens ?? this.inputTokens,
+      outputTokens: outputTokens ?? this.outputTokens,
+      errorCode: errorCode ?? this.errorCode,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (eventId.present) {
+      map['event_id'] = Variable<String>(eventId.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<DateTime>(occurredAt.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (contractVersion.present) {
+      map['contract_version'] = Variable<int>(contractVersion.value);
+    }
+    if (model.present) {
+      map['model'] = Variable<String>(model.value);
+    }
+    if (fingerprint.present) {
+      map['fingerprint'] = Variable<String>(fingerprint.value);
+    }
+    if (decision.present) {
+      map['decision'] = Variable<String>(decision.value);
+    }
+    if (outcome.present) {
+      map['outcome'] = Variable<String>(outcome.value);
+    }
+    if (queryId.present) {
+      map['query_id'] = Variable<String>(queryId.value);
+    }
+    if (periodId.present) {
+      map['period_id'] = Variable<String>(periodId.value);
+    }
+    if (exerciseType.present) {
+      map['exercise_type'] = Variable<String>(exerciseType.value);
+    }
+    if (wantsInterpretation.present) {
+      map['wants_interpretation'] = Variable<bool>(wantsInterpretation.value);
+    }
+    if (ambiguous.present) {
+      map['ambiguous'] = Variable<bool>(ambiguous.value);
+    }
+    if (correctedQueryId.present) {
+      map['corrected_query_id'] = Variable<String>(correctedQueryId.value);
+    }
+    if (correctedPeriodId.present) {
+      map['corrected_period_id'] = Variable<String>(correctedPeriodId.value);
+    }
+    if (exerciseChanged.present) {
+      map['exercise_changed'] = Variable<bool>(exerciseChanged.value);
+    }
+    if (clarified.present) {
+      map['clarified'] = Variable<bool>(clarified.value);
+    }
+    if (latencyMs.present) {
+      map['latency_ms'] = Variable<int>(latencyMs.value);
+    }
+    if (inputTokens.present) {
+      map['input_tokens'] = Variable<int>(inputTokens.value);
+    }
+    if (outputTokens.present) {
+      map['output_tokens'] = Variable<int>(outputTokens.value);
+    }
+    if (errorCode.present) {
+      map['error_code'] = Variable<String>(errorCode.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AssistantQualityEventsCompanion(')
+          ..write('eventId: $eventId, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('source: $source, ')
+          ..write('contractVersion: $contractVersion, ')
+          ..write('model: $model, ')
+          ..write('fingerprint: $fingerprint, ')
+          ..write('decision: $decision, ')
+          ..write('outcome: $outcome, ')
+          ..write('queryId: $queryId, ')
+          ..write('periodId: $periodId, ')
+          ..write('exerciseType: $exerciseType, ')
+          ..write('wantsInterpretation: $wantsInterpretation, ')
+          ..write('ambiguous: $ambiguous, ')
+          ..write('correctedQueryId: $correctedQueryId, ')
+          ..write('correctedPeriodId: $correctedPeriodId, ')
+          ..write('exerciseChanged: $exerciseChanged, ')
+          ..write('clarified: $clarified, ')
+          ..write('latencyMs: $latencyMs, ')
+          ..write('inputTokens: $inputTokens, ')
+          ..write('outputTokens: $outputTokens, ')
+          ..write('errorCode: $errorCode, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -13415,6 +14668,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $NutritionDaysTable nutritionDays = $NutritionDaysTable(this);
   late final $SyncMetaTable syncMeta = $SyncMetaTable(this);
   late final $SyncTombstonesTable syncTombstones = $SyncTombstonesTable(this);
+  late final $AssistantQualityEventsTable assistantQualityEvents =
+      $AssistantQualityEventsTable(this);
   late final WorkoutDao workoutDao = WorkoutDao(this as AppDatabase);
   late final NutritionDao nutritionDao = NutritionDao(this as AppDatabase);
   late final BodyDao bodyDao = BodyDao(this as AppDatabase);
@@ -13425,6 +14680,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this as AppDatabase,
   );
   late final SyncMetaDao syncMetaDao = SyncMetaDao(this as AppDatabase);
+  late final AssistantQualityDao assistantQualityDao = AssistantQualityDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -13446,6 +14704,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     nutritionDays,
     syncMeta,
     syncTombstones,
+    assistantQualityEvents,
   ];
 }
 
@@ -20884,6 +22143,568 @@ typedef $$SyncTombstonesTableProcessedTableManager =
       SyncTombstone,
       PrefetchHooks Function()
     >;
+typedef $$AssistantQualityEventsTableCreateCompanionBuilder =
+    AssistantQualityEventsCompanion Function({
+      required String eventId,
+      required String ownerId,
+      required DateTime occurredAt,
+      required String source,
+      Value<int> contractVersion,
+      Value<String?> model,
+      Value<String?> fingerprint,
+      required String decision,
+      Value<String> outcome,
+      Value<String?> queryId,
+      Value<String?> periodId,
+      Value<String> exerciseType,
+      Value<bool> wantsInterpretation,
+      Value<bool> ambiguous,
+      Value<String?> correctedQueryId,
+      Value<String?> correctedPeriodId,
+      Value<bool> exerciseChanged,
+      Value<bool> clarified,
+      Value<int?> latencyMs,
+      Value<int?> inputTokens,
+      Value<int?> outputTokens,
+      Value<String?> errorCode,
+      Value<int> rowid,
+    });
+typedef $$AssistantQualityEventsTableUpdateCompanionBuilder =
+    AssistantQualityEventsCompanion Function({
+      Value<String> eventId,
+      Value<String> ownerId,
+      Value<DateTime> occurredAt,
+      Value<String> source,
+      Value<int> contractVersion,
+      Value<String?> model,
+      Value<String?> fingerprint,
+      Value<String> decision,
+      Value<String> outcome,
+      Value<String?> queryId,
+      Value<String?> periodId,
+      Value<String> exerciseType,
+      Value<bool> wantsInterpretation,
+      Value<bool> ambiguous,
+      Value<String?> correctedQueryId,
+      Value<String?> correctedPeriodId,
+      Value<bool> exerciseChanged,
+      Value<bool> clarified,
+      Value<int?> latencyMs,
+      Value<int?> inputTokens,
+      Value<int?> outputTokens,
+      Value<String?> errorCode,
+      Value<int> rowid,
+    });
+
+class $$AssistantQualityEventsTableFilterComposer
+    extends Composer<_$AppDatabase, $AssistantQualityEventsTable> {
+  $$AssistantQualityEventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get eventId => $composableBuilder(
+    column: $table.eventId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get contractVersion => $composableBuilder(
+    column: $table.contractVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get model => $composableBuilder(
+    column: $table.model,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fingerprint => $composableBuilder(
+    column: $table.fingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get decision => $composableBuilder(
+    column: $table.decision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get outcome => $composableBuilder(
+    column: $table.outcome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get queryId => $composableBuilder(
+    column: $table.queryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get periodId => $composableBuilder(
+    column: $table.periodId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get exerciseType => $composableBuilder(
+    column: $table.exerciseType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get wantsInterpretation => $composableBuilder(
+    column: $table.wantsInterpretation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get ambiguous => $composableBuilder(
+    column: $table.ambiguous,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get correctedQueryId => $composableBuilder(
+    column: $table.correctedQueryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get correctedPeriodId => $composableBuilder(
+    column: $table.correctedPeriodId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get exerciseChanged => $composableBuilder(
+    column: $table.exerciseChanged,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get clarified => $composableBuilder(
+    column: $table.clarified,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get latencyMs => $composableBuilder(
+    column: $table.latencyMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get inputTokens => $composableBuilder(
+    column: $table.inputTokens,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get outputTokens => $composableBuilder(
+    column: $table.outputTokens,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get errorCode => $composableBuilder(
+    column: $table.errorCode,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AssistantQualityEventsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AssistantQualityEventsTable> {
+  $$AssistantQualityEventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get eventId => $composableBuilder(
+    column: $table.eventId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get contractVersion => $composableBuilder(
+    column: $table.contractVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get model => $composableBuilder(
+    column: $table.model,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fingerprint => $composableBuilder(
+    column: $table.fingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get decision => $composableBuilder(
+    column: $table.decision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get outcome => $composableBuilder(
+    column: $table.outcome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get queryId => $composableBuilder(
+    column: $table.queryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get periodId => $composableBuilder(
+    column: $table.periodId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get exerciseType => $composableBuilder(
+    column: $table.exerciseType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get wantsInterpretation => $composableBuilder(
+    column: $table.wantsInterpretation,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get ambiguous => $composableBuilder(
+    column: $table.ambiguous,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get correctedQueryId => $composableBuilder(
+    column: $table.correctedQueryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get correctedPeriodId => $composableBuilder(
+    column: $table.correctedPeriodId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get exerciseChanged => $composableBuilder(
+    column: $table.exerciseChanged,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get clarified => $composableBuilder(
+    column: $table.clarified,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get latencyMs => $composableBuilder(
+    column: $table.latencyMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get inputTokens => $composableBuilder(
+    column: $table.inputTokens,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get outputTokens => $composableBuilder(
+    column: $table.outputTokens,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get errorCode => $composableBuilder(
+    column: $table.errorCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AssistantQualityEventsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AssistantQualityEventsTable> {
+  $$AssistantQualityEventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get eventId =>
+      $composableBuilder(column: $table.eventId, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<int> get contractVersion => $composableBuilder(
+    column: $table.contractVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get model =>
+      $composableBuilder(column: $table.model, builder: (column) => column);
+
+  GeneratedColumn<String> get fingerprint => $composableBuilder(
+    column: $table.fingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get decision =>
+      $composableBuilder(column: $table.decision, builder: (column) => column);
+
+  GeneratedColumn<String> get outcome =>
+      $composableBuilder(column: $table.outcome, builder: (column) => column);
+
+  GeneratedColumn<String> get queryId =>
+      $composableBuilder(column: $table.queryId, builder: (column) => column);
+
+  GeneratedColumn<String> get periodId =>
+      $composableBuilder(column: $table.periodId, builder: (column) => column);
+
+  GeneratedColumn<String> get exerciseType => $composableBuilder(
+    column: $table.exerciseType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get wantsInterpretation => $composableBuilder(
+    column: $table.wantsInterpretation,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get ambiguous =>
+      $composableBuilder(column: $table.ambiguous, builder: (column) => column);
+
+  GeneratedColumn<String> get correctedQueryId => $composableBuilder(
+    column: $table.correctedQueryId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get correctedPeriodId => $composableBuilder(
+    column: $table.correctedPeriodId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get exerciseChanged => $composableBuilder(
+    column: $table.exerciseChanged,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get clarified =>
+      $composableBuilder(column: $table.clarified, builder: (column) => column);
+
+  GeneratedColumn<int> get latencyMs =>
+      $composableBuilder(column: $table.latencyMs, builder: (column) => column);
+
+  GeneratedColumn<int> get inputTokens => $composableBuilder(
+    column: $table.inputTokens,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get outputTokens => $composableBuilder(
+    column: $table.outputTokens,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get errorCode =>
+      $composableBuilder(column: $table.errorCode, builder: (column) => column);
+}
+
+class $$AssistantQualityEventsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AssistantQualityEventsTable,
+          AssistantQualityEvent,
+          $$AssistantQualityEventsTableFilterComposer,
+          $$AssistantQualityEventsTableOrderingComposer,
+          $$AssistantQualityEventsTableAnnotationComposer,
+          $$AssistantQualityEventsTableCreateCompanionBuilder,
+          $$AssistantQualityEventsTableUpdateCompanionBuilder,
+          (
+            AssistantQualityEvent,
+            BaseReferences<
+              _$AppDatabase,
+              $AssistantQualityEventsTable,
+              AssistantQualityEvent
+            >,
+          ),
+          AssistantQualityEvent,
+          PrefetchHooks Function()
+        > {
+  $$AssistantQualityEventsTableTableManager(
+    _$AppDatabase db,
+    $AssistantQualityEventsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AssistantQualityEventsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$AssistantQualityEventsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$AssistantQualityEventsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> eventId = const Value.absent(),
+                Value<String> ownerId = const Value.absent(),
+                Value<DateTime> occurredAt = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<int> contractVersion = const Value.absent(),
+                Value<String?> model = const Value.absent(),
+                Value<String?> fingerprint = const Value.absent(),
+                Value<String> decision = const Value.absent(),
+                Value<String> outcome = const Value.absent(),
+                Value<String?> queryId = const Value.absent(),
+                Value<String?> periodId = const Value.absent(),
+                Value<String> exerciseType = const Value.absent(),
+                Value<bool> wantsInterpretation = const Value.absent(),
+                Value<bool> ambiguous = const Value.absent(),
+                Value<String?> correctedQueryId = const Value.absent(),
+                Value<String?> correctedPeriodId = const Value.absent(),
+                Value<bool> exerciseChanged = const Value.absent(),
+                Value<bool> clarified = const Value.absent(),
+                Value<int?> latencyMs = const Value.absent(),
+                Value<int?> inputTokens = const Value.absent(),
+                Value<int?> outputTokens = const Value.absent(),
+                Value<String?> errorCode = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AssistantQualityEventsCompanion(
+                eventId: eventId,
+                ownerId: ownerId,
+                occurredAt: occurredAt,
+                source: source,
+                contractVersion: contractVersion,
+                model: model,
+                fingerprint: fingerprint,
+                decision: decision,
+                outcome: outcome,
+                queryId: queryId,
+                periodId: periodId,
+                exerciseType: exerciseType,
+                wantsInterpretation: wantsInterpretation,
+                ambiguous: ambiguous,
+                correctedQueryId: correctedQueryId,
+                correctedPeriodId: correctedPeriodId,
+                exerciseChanged: exerciseChanged,
+                clarified: clarified,
+                latencyMs: latencyMs,
+                inputTokens: inputTokens,
+                outputTokens: outputTokens,
+                errorCode: errorCode,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String eventId,
+                required String ownerId,
+                required DateTime occurredAt,
+                required String source,
+                Value<int> contractVersion = const Value.absent(),
+                Value<String?> model = const Value.absent(),
+                Value<String?> fingerprint = const Value.absent(),
+                required String decision,
+                Value<String> outcome = const Value.absent(),
+                Value<String?> queryId = const Value.absent(),
+                Value<String?> periodId = const Value.absent(),
+                Value<String> exerciseType = const Value.absent(),
+                Value<bool> wantsInterpretation = const Value.absent(),
+                Value<bool> ambiguous = const Value.absent(),
+                Value<String?> correctedQueryId = const Value.absent(),
+                Value<String?> correctedPeriodId = const Value.absent(),
+                Value<bool> exerciseChanged = const Value.absent(),
+                Value<bool> clarified = const Value.absent(),
+                Value<int?> latencyMs = const Value.absent(),
+                Value<int?> inputTokens = const Value.absent(),
+                Value<int?> outputTokens = const Value.absent(),
+                Value<String?> errorCode = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AssistantQualityEventsCompanion.insert(
+                eventId: eventId,
+                ownerId: ownerId,
+                occurredAt: occurredAt,
+                source: source,
+                contractVersion: contractVersion,
+                model: model,
+                fingerprint: fingerprint,
+                decision: decision,
+                outcome: outcome,
+                queryId: queryId,
+                periodId: periodId,
+                exerciseType: exerciseType,
+                wantsInterpretation: wantsInterpretation,
+                ambiguous: ambiguous,
+                correctedQueryId: correctedQueryId,
+                correctedPeriodId: correctedPeriodId,
+                exerciseChanged: exerciseChanged,
+                clarified: clarified,
+                latencyMs: latencyMs,
+                inputTokens: inputTokens,
+                outputTokens: outputTokens,
+                errorCode: errorCode,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AssistantQualityEventsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AssistantQualityEventsTable,
+      AssistantQualityEvent,
+      $$AssistantQualityEventsTableFilterComposer,
+      $$AssistantQualityEventsTableOrderingComposer,
+      $$AssistantQualityEventsTableAnnotationComposer,
+      $$AssistantQualityEventsTableCreateCompanionBuilder,
+      $$AssistantQualityEventsTableUpdateCompanionBuilder,
+      (
+        AssistantQualityEvent,
+        BaseReferences<
+          _$AppDatabase,
+          $AssistantQualityEventsTable,
+          AssistantQualityEvent
+        >,
+      ),
+      AssistantQualityEvent,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -20920,4 +22741,9 @@ class $AppDatabaseManager {
       $$SyncMetaTableTableManager(_db, _db.syncMeta);
   $$SyncTombstonesTableTableManager get syncTombstones =>
       $$SyncTombstonesTableTableManager(_db, _db.syncTombstones);
+  $$AssistantQualityEventsTableTableManager get assistantQualityEvents =>
+      $$AssistantQualityEventsTableTableManager(
+        _db,
+        _db.assistantQualityEvents,
+      );
 }

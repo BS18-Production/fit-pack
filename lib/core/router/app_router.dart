@@ -35,6 +35,8 @@ import 'package:fit_pack/features/update/update_required_screen.dart';
 import 'package:fit_pack/shared/widgets/app_shell.dart';
 import 'package:fit_pack/shared/widgets/glass.dart';
 import 'app_routes.dart';
+import '../../features/assistant/assistant_screen.dart';
+import '../../features/assistant/assistant_quality_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -194,6 +196,10 @@ GoRouter createAppRouter({
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => _glass(const WeeklyReviewScreen()),
     ),
+    GoRoute(path: AppRoutes.assistant, parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const AssistantScreen())),
+    GoRoute(path: AppRoutes.assistantQuality, parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const AssistantQualityScreen())),
     // İlerleme fotoğrafları (docs/19). Karşılaştırma iki kimliği sorgudan alır.
     GoRoute(
       path: AppRoutes.progressPhotos,

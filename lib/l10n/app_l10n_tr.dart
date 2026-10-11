@@ -3360,4 +3360,699 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get healthDisconnectError => 'Bağlantı kesilemedi. Yeniden dene.';
+
+  @override
+  String get assistantTitle => 'Verime sor';
+
+  @override
+  String get assistantSubtitle =>
+      'Sayılar senin kayıtlarından. Sorunu seç, birlikte bakalım.';
+
+  @override
+  String get assistantQuestionHint => 'Bu hafta antrenmanlarım nasıldı?';
+
+  @override
+  String get assistantAsk => 'Sor';
+
+  @override
+  String get assistantReady => 'Hazır sorular';
+
+  @override
+  String get assistantAll => 'Tüm sorular';
+
+  @override
+  String get assistantLess => 'Daha az göster';
+
+  @override
+  String get assistantUnderstood => 'Anladığım soru';
+
+  @override
+  String get assistantChange => 'Değiştir';
+
+  @override
+  String get assistantApply => 'Sonucu göster';
+
+  @override
+  String get assistantPeriod => 'Dönem';
+
+  @override
+  String get assistantExercise => 'Hareket';
+
+  @override
+  String get assistantChooseExercise => 'Hareket seç';
+
+  @override
+  String get assistantInterpretation => 'Sayıların anlamını da göster';
+
+  @override
+  String get assistantMeal => 'Yemek örnekleri için öğün seç';
+
+  @override
+  String get assistantNoMeal => 'Yalnız kalan miktar';
+
+  @override
+  String get assistantPrivacyTitle => 'Sorun Google’a gönderilecek';
+
+  @override
+  String get assistantPrivacy =>
+      'Yalnız yazdığın soru ve sabit soru tanımları Gemini’ye gider; antrenman, beslenme ve ölçüm kayıtların gönderilmez. Ücretsiz Gemini’de Google metni ve model çıktısını ürün geliştirme için kullanabilir; insan incelemesi olabilir. Kimlik, iletişim veya özel sağlık bilgisi yazma. Hazır sorular cihazda çalışır.';
+
+  @override
+  String get assistantPrivacyAccept => 'Anladım, soruyu gönder';
+
+  @override
+  String get assistantPrivacyCancel => 'Hazır soruları kullan';
+
+  @override
+  String get assistantUnavailable =>
+      'Serbest soru şu an kullanılamıyor. Hazır sorularla devam edebilirsin.';
+
+  @override
+  String get assistantSignedOut =>
+      'Serbest soru için hesabına giriş yap. Hazır sorular cihazda çalışır.';
+
+  @override
+  String get assistantPrivateBlocked =>
+      'Bu soruda özel bilgi olabilir. Kimlik, iletişim veya sağlık bilgilerini kaldır ya da hazır bir soru seç.';
+
+  @override
+  String get assistantFallback =>
+      'Bu soruyu güvenle eşleyemedim. Kayıtlarını incelemek için hazır bir soru seç.';
+
+  @override
+  String get assistantClarify => 'Hesabı açmadan önce dönem veya hareketi seç.';
+
+  @override
+  String get assistantMulti => 'Birden fazla konu var. Önce hangisine bakalım?';
+
+  @override
+  String assistantQuota(String time) {
+    return 'Soru sınırına ulaşıldı. Yenilenme: $time. Hazır sorular açık.';
+  }
+
+  @override
+  String get assistantError => 'Kayıtlar okunamadı. Tekrar dene.';
+
+  @override
+  String get assistantRetry => 'Tekrar dene';
+
+  @override
+  String get assistantOpenRecords => 'Kayıtları aç';
+
+  @override
+  String assistantRecords(String count) {
+    return '$count kayıt';
+  }
+
+  @override
+  String get assistantSoFar => 'Şu ana kadar';
+
+  @override
+  String get assistantUnknownStart => 'İlk kayıttan beri';
+
+  @override
+  String get assistantNoData =>
+      'Bu dönemde kayıt yok. Veri yokluğunu sıfır sonuç olarak değerlendirmiyorum.';
+
+  @override
+  String get assistantInsufficient =>
+      'Sayılar görünür; eğilim yorumu için henüz yeterli veri yok.';
+
+  @override
+  String get assistantNoGoal => 'Bu hesap için hedef belirlenmemiş.';
+
+  @override
+  String get assistantNoPlan => 'Planlı antrenman günü yok.';
+
+  @override
+  String get assistantIncompleteDays =>
+      'Tamamlanan gün yok; protein hedefi başarısı hesaplanmaz.';
+
+  @override
+  String get assistantLoggedBasis =>
+      'Yalnız kaydedilen günler; eksik kayıt olabilir.';
+
+  @override
+  String get assistantCompletedBasis =>
+      'Ortalama yalnız tamamlanan günlerden; boş tamamlanan gün 0 sayılır.';
+
+  @override
+  String get assistantCurrentPlan =>
+      'Bugünkü plan kullanılır; geçmiş plan değişiklikleri bilinmiyor.';
+
+  @override
+  String get assistantFoodBasis =>
+      'Örnekler seçtiğin öğündeki geçmiş porsiyonların. Yalnız kalan kaloriye göre süzülür; otomatik kaydedilmez.';
+
+  @override
+  String get assistantUnknownExercise => 'Bilinmeyen hareket';
+
+  @override
+  String get assistantOwnHistory => 'Kendi geçmişin';
+
+  @override
+  String get assistantGuideline => 'Genel araştırma bulgusu';
+
+  @override
+  String get assistantSources => 'Kaynaklar';
+
+  @override
+  String get assistantDeveloper => 'Geliştirici';
+
+  @override
+  String get assistantQuality => 'Asistan kalitesi';
+
+  @override
+  String get assistantQualityInfo =>
+      'Yalnız bu cihazdaki metinsiz olaylar. Düzeltme oranı doğruluk oranı değildir; hiç düzeltmemen doğru eşleme kanıtı sayılmaz.';
+
+  @override
+  String get assistantQualityAuto => 'Otomatik cevaplar';
+
+  @override
+  String get assistantQualityCorrections => 'Değiştirilen seçimler';
+
+  @override
+  String get assistantQualityLatency => 'Gecikme: medyan / %95';
+
+  @override
+  String get assistantQualityTokens => 'Girdi / çıktı tokenı';
+
+  @override
+  String get assistantQualityFree => 'Gemini ücretsiz katmanı · maliyet \$0';
+
+  @override
+  String get assistantQualityClear => 'Yerel kalite kayıtlarını temizle';
+
+  @override
+  String get assistantQualityClearConfirm =>
+      'Asistan kalite kayıtları silinsin mi? Fitness kayıtların korunur.';
+
+  @override
+  String get assistantQualitySmall => 'Az örnek; oranı temkinli oku.';
+
+  @override
+  String get assistantQualityWarning =>
+      'İki hafta üst üste düzeltme oranı %3’ü aştı. Eşlemeleri gözden geçir.';
+
+  @override
+  String get assistantQualityTransitions => 'Sorgu değişiklikleri';
+
+  @override
+  String get assistantQualityDays => 'Son 7 gün';
+
+  @override
+  String get assistantNotAvailable => 'Bilinmiyor';
+
+  @override
+  String get assistantPeriodToday => 'Bugün';
+
+  @override
+  String get assistantPeriodThisWeek => 'Bu hafta';
+
+  @override
+  String get assistantPeriodLastWeek => 'Geçen hafta';
+
+  @override
+  String get assistantPeriodLast30Days => 'Son 30 gün';
+
+  @override
+  String get assistantPeriodAllTime => 'Tüm zamanlar';
+
+  @override
+  String get assistantQueryWorkoutSummary => 'Antrenmanlarım nasıldı?';
+
+  @override
+  String get assistantQueryPlanAdherence => 'Planlı günlere ne kadar uydum?';
+
+  @override
+  String get assistantQueryStrengthProgress => 'Hangi hareketlerde ilerledim?';
+
+  @override
+  String get assistantQueryExerciseHistory => 'Bu harekette nasıl ilerledim?';
+
+  @override
+  String get assistantQueryNutritionSummary =>
+      'Beslenme kayıtlarım ne söylüyor?';
+
+  @override
+  String get assistantQueryProteinGoal => 'Protein hedefine kaç gün ulaştım?';
+
+  @override
+  String get assistantQueryWeightTrend => 'Kilom nasıl değişti?';
+
+  @override
+  String get assistantQueryMuscleBalance => 'Kas gruplarına kaç set yaptım?';
+
+  @override
+  String get assistantQueryStreak => 'Kaç haftadır düzenliyim?';
+
+  @override
+  String get assistantQueryTodayRemaining => 'Bugün hedefime ne kaldı?';
+
+  @override
+  String get assistantQueryTopExercises => 'En çok hangi hareketleri yaptım?';
+
+  @override
+  String get assistantMetricSessions => 'Seans';
+
+  @override
+  String get assistantMetricSets => 'Tamamlanan set';
+
+  @override
+  String get assistantMetricMinutes => 'Süre';
+
+  @override
+  String get assistantMetricVolume => 'Hacim';
+
+  @override
+  String get assistantMetricPlannedDays => 'Planlı gün';
+
+  @override
+  String get assistantMetricDoneDays => 'Yapılan planlı gün';
+
+  @override
+  String get assistantMetricLoggedDays => 'Kayıtlı gün';
+
+  @override
+  String get assistantMetricCompletedDays => 'Tamamlanan gün';
+
+  @override
+  String get assistantMetricExcludedDays => 'Hesaba katılmayan gün';
+
+  @override
+  String get assistantMetricAvgKcal => 'Ortalama enerji';
+
+  @override
+  String get assistantMetricAvgProtein => 'Ortalama protein';
+
+  @override
+  String get assistantMetricProteinGoal => 'Protein hedefi';
+
+  @override
+  String get assistantMetricHitDays => 'Hedefe ulaşan tamamlanmış gün';
+
+  @override
+  String get assistantMetricMeasurements => 'Ölçüm';
+
+  @override
+  String get assistantMetricFirstWeight => 'İlk kilo';
+
+  @override
+  String get assistantMetricLastWeight => 'Son kilo';
+
+  @override
+  String get assistantMetricChange => 'Değişim';
+
+  @override
+  String get assistantMetricWeeks => 'Haftalık seri';
+
+  @override
+  String get assistantMetricWeeklyGoal => 'Haftalık gün hedefi';
+
+  @override
+  String get assistantMetricRemainingKcal => 'Kalan enerji';
+
+  @override
+  String get assistantMetricRemainingProtein => 'Kalan protein';
+
+  @override
+  String get assistantMetricFirstE1rm => 'İlk tahmini tek tekrar maksimumu';
+
+  @override
+  String get assistantMetricLastE1rm => 'Son tahmini tek tekrar maksimumu';
+
+  @override
+  String get assistantMetricPortion => 'Geçmiş porsiyon';
+
+  @override
+  String get assistantMetricPortionKcal => 'Porsiyon enerjisi';
+
+  @override
+  String get assistantMetricPortionProtein => 'Porsiyon proteini';
+
+  @override
+  String insightMuscleBelowTen(String muscle, String sets, String level) {
+    return '$muscle: $sets set, araştırmadaki haftalık yaklaşık $level set düzeyinin altında.';
+  }
+
+  @override
+  String insightMuscleAtTen(String muscle, String sets, String level) {
+    return '$muscle: $sets set, araştırmadaki yaklaşık $level set düzeyinde veya üzerinde.';
+  }
+
+  @override
+  String insightMuscleBeyondTwenty(
+    String muscle,
+    String sets,
+    String limitedEvidenceAbove,
+  ) {
+    return '$muscle: $sets set. $limitedEvidenceAbove setin ötesinde ek kazanım kanıtı sınırlı.';
+  }
+
+  @override
+  String insightWeightNotEnoughData(
+    String count,
+    String spanDays,
+    String minDays,
+  ) {
+    return '$count ölçüm, $spanDays gün açıklık. Eğilim yorumu için en az iki ölçüm ve $minDays gün gerekir.';
+  }
+
+  @override
+  String insightWeightAgainstGoal(String weeklyChangeKg) {
+    return 'Haftalık değişim $weeklyChangeKg; seçtiğin hedef yönünün tersinde.';
+  }
+
+  @override
+  String insightWeightNoClearChange(String weeklyChangeKg) {
+    return 'Haftalık değişim $weeklyChangeKg; belirgin bir eğilim görünmüyor.';
+  }
+
+  @override
+  String insightWeightLossSlower(
+    String weeklyChangeKg,
+    String rangeMinKg,
+    String rangeMaxKg,
+  ) {
+    return 'Haftalık değişim $weeklyChangeKg; CDC’nin genel $rangeMinKg–$rangeMaxKg kayıp aralığından daha yavaş.';
+  }
+
+  @override
+  String insightWeightLossInRange(
+    String weeklyChangeKg,
+    String rangeMinKg,
+    String rangeMaxKg,
+  ) {
+    return 'Haftalık değişim $weeklyChangeKg; CDC’nin genel $rangeMinKg–$rangeMaxKg kayıp aralığında.';
+  }
+
+  @override
+  String insightWeightLossFaster(
+    String weeklyChangeKg,
+    String rangeMinKg,
+    String rangeMaxKg,
+  ) {
+    return 'Haftalık değişim $weeklyChangeKg; CDC’nin genel $rangeMinKg–$rangeMaxKg kayıp aralığından daha hızlı.';
+  }
+
+  @override
+  String insightWeightGainSlower(
+    String pctPerWeek,
+    String rangeMinPct,
+    String rangeMaxPct,
+  ) {
+    return 'Haftalık %$pctPerWeek artış; araştırmadaki %$rangeMinPct–%$rangeMaxPct düzeyinden daha yavaş.';
+  }
+
+  @override
+  String insightWeightGainInRange(
+    String pctPerWeek,
+    String rangeMinPct,
+    String rangeMaxPct,
+  ) {
+    return 'Haftalık %$pctPerWeek artış, araştırmadaki %$rangeMinPct–%$rangeMaxPct düzeyinde.';
+  }
+
+  @override
+  String insightWeightGainFaster(
+    String pctPerWeek,
+    String rangeMinPct,
+    String rangeMaxPct,
+  ) {
+    return 'Haftalık %$pctPerWeek artış; araştırmadaki %$rangeMinPct–%$rangeMaxPct düzeyinden daha hızlı.';
+  }
+
+  @override
+  String insightWeightStable(String totalChangePct, String stablePct) {
+    return 'Dönemde öngörülen değişim %$totalChangePct; ortalamanın ±%$stablePct aralığında.';
+  }
+
+  @override
+  String insightWeightDriftUp(String totalChangePct) {
+    return 'Dönemde öngörülen artış %$totalChangePct.';
+  }
+
+  @override
+  String insightWeightDriftDown(String totalChangePct) {
+    return 'Dönemde öngörülen değişim %$totalChangePct.';
+  }
+
+  @override
+  String insightWorkoutNotEnoughHistory(
+    String metric,
+    String value,
+    String minWeeks,
+    String baselineWeeks,
+  ) {
+    return '$metric: $value. Kendi geçmişinle karşılaştırmak için en az $minWeeks tamamlanmış hafta gerekir; $baselineWeeks var.';
+  }
+
+  @override
+  String insightWorkoutNoBaseline(String metric, String value) {
+    return '$metric: $value. Geçmiş medyanı 0; yüzde karşılaştırması yapılamaz.';
+  }
+
+  @override
+  String insightWorkoutSoFar(
+    String metric,
+    String value,
+    String baselineWeeks,
+    String median,
+  ) {
+    return '$metric: şu ana kadar $value. Önceki $baselineWeeks haftanın medyanı $median; devam eden hafta tam haftayla karşılaştırılmaz.';
+  }
+
+  @override
+  String insightWorkoutAboveMedian(
+    String metric,
+    String value,
+    String median,
+    String pct,
+  ) {
+    return '$metric: $value, geçmiş medyan $median; %$pct üzerinde.';
+  }
+
+  @override
+  String insightWorkoutAtMedian(String metric, String value, String median) {
+    return '$metric: $value, geçmiş medyanla ($median) aynı.';
+  }
+
+  @override
+  String insightWorkoutBelowMedian(
+    String metric,
+    String value,
+    String median,
+    String pct,
+  ) {
+    return '$metric: $value, geçmiş medyan $median; fark %$pct.';
+  }
+
+  @override
+  String get insightStrengthNotApplicable =>
+      'Uygun ağırlık/tekrar seti yok; tahmini tek tekrar maksimumu hesaplanamaz.';
+
+  @override
+  String insightStrengthNotEnoughData(String days) {
+    return '$days farklı günde uygun set var; gelişim için en az iki gün gerekir.';
+  }
+
+  @override
+  String insightStrengthUp(String firstE1rm, String lastE1rm, String pct) {
+    return 'Tahmini tek tekrar maksimumu $firstE1rm → $lastE1rm; %$pct artış.';
+  }
+
+  @override
+  String insightStrengthStable(String firstE1rm, String lastE1rm) {
+    return 'Tahmini tek tekrar maksimumu $firstE1rm → $lastE1rm; değişim ±%1 içinde.';
+  }
+
+  @override
+  String insightStrengthDown(String firstE1rm, String lastE1rm, String pct) {
+    return 'Tahmini tek tekrar maksimumu $firstE1rm → $lastE1rm; değişim %$pct.';
+  }
+
+  @override
+  String insightStrengthPlateau(String topKg, String weeks) {
+    return 'Son $weeks ardışık veri haftasında en ağır set $topKg.';
+  }
+
+  @override
+  String get insightNutritionNoLogs =>
+      'Bu dönem beslenme hesabı için veri yok.';
+
+  @override
+  String insightProteinGoalDays(
+    String goal,
+    String hitDays,
+    String loggedDays,
+  ) {
+    return '$hitDays/$loggedDays tamamlanan günde $goal g protein hedefine ulaşıldı.';
+  }
+
+  @override
+  String insightKcalVsGoal(
+    String loggedDays,
+    String avgKcal,
+    String goal,
+    String pctOfGoal,
+  ) {
+    return '$loggedDays gün ortalaması $avgKcal kcal; hedefin $goal kcal (%$pctOfGoal).';
+  }
+
+  @override
+  String insightProteinPerKgBelow(
+    String gPerKg,
+    String breakpoint,
+    String bodyWeightKg,
+    String bodyWeightDate,
+  ) {
+    return 'Kaydedilen ortalama $gPerKg g/kg; araştırmadaki yaklaşık $breakpoint g/kg düzeyinin altında. Kullanılan kilo: $bodyWeightKg ($bodyWeightDate).';
+  }
+
+  @override
+  String insightProteinPerKgInRange(
+    String gPerKg,
+    String breakpoint,
+    String upper,
+    String bodyWeightKg,
+    String bodyWeightDate,
+  ) {
+    return 'Kaydedilen ortalama $gPerKg g/kg; araştırmadaki $breakpoint–$upper g/kg aralığında. Kullanılan kilo: $bodyWeightKg ($bodyWeightDate).';
+  }
+
+  @override
+  String insightProteinPerKgAbove(
+    String gPerKg,
+    String breakpoint,
+    String bodyWeightKg,
+    String bodyWeightDate,
+  ) {
+    return 'Kaydedilen ortalama $gPerKg g/kg. Araştırmada yaklaşık $breakpoint g/kg üstünde ek yağsız kütle kazanımı görülmedi; bu bir güvenlik sınırı değildir. Kullanılan kilo: $bodyWeightKg ($bodyWeightDate).';
+  }
+
+  @override
+  String insightTodayNoGoal(String loggedKcal, String loggedProtein) {
+    return 'Enerji hedefi yok; bugün $loggedKcal kcal ve $loggedProtein g protein kaydedildi.';
+  }
+
+  @override
+  String insightTodayRemaining(String remainingKcal) {
+    return 'Enerji hedefine $remainingKcal kcal kaldı. Kayıtların eksik olabilir.';
+  }
+
+  @override
+  String insightTodayGoalReached(String remainingKcal) {
+    return 'Enerji hedefinden kalan $remainingKcal kcal; sıfır veya negatif değer hedefe ulaşıldığını gösterir.';
+  }
+
+  @override
+  String get assistantNoteGeneralGuideline =>
+      'Genel kılavuz; kişisel tıbbi tavsiye değildir.';
+
+  @override
+  String get assistantNoteConsultProfessional =>
+      'Tıbbi değerlendirme için uzmana danış.';
+
+  @override
+  String get assistantNoteSoFar =>
+      'Devam eden dönemin şu ana kadarki kayıtları.';
+
+  @override
+  String get assistantNoteCompletedSetsCounted =>
+      'Tamamlanan, ısınma dışı setler birincil kasa yazılır; araştırmalar zorlayıcı setleri inceler.';
+
+  @override
+  String get assistantNoteFastLossCaution =>
+      'Haftalık kayıp %1,5’i aştı. Bu dikkat eşiği ürün tercihidir.';
+
+  @override
+  String get assistantNoteLeanMassInfo =>
+      'Kuvvet sporcularındaki bir çalışmada haftalık yaklaşık %0,7 kayıp yağsız kütleyi daha iyi korudu.';
+
+  @override
+  String get assistantNoteBeginnerIntermediateRange =>
+      'Bu aralık başlangıç/orta seviye için araştırılmıştır.';
+
+  @override
+  String get assistantNoteLoggedOnly =>
+      'Yalnız kaydedilen miktarlar; eksik kayıt olabilir.';
+
+  @override
+  String get assistantNoteCompletedDaysOnly =>
+      'Yalnız tamamlanan günler hesaba katıldı.';
+
+  @override
+  String get assistantNoteChooseGoalDirection =>
+      'Hedef yönünü seçersen yönüne göre yorumlayabilirim.';
+
+  @override
+  String get assistantQualityUnavailable =>
+      'Yerel kalite kaydı yazılamadı. Sonuçlarını kullanmaya devam edebilirsin.';
+
+  @override
+  String get assistantDecisionAuto => 'Otomatik';
+
+  @override
+  String get assistantDecisionClarify => 'Netleştirme';
+
+  @override
+  String get assistantDecisionMulti => 'Çoklu konu';
+
+  @override
+  String get assistantDecisionFallback => 'Hazır sorulara dönüş';
+
+  @override
+  String get assistantDecisionError => 'Ağ / kota hatası';
+
+  @override
+  String get assistantMuscleChest => 'Göğüs';
+
+  @override
+  String get assistantMuscleUpperChest => 'Üst göğüs';
+
+  @override
+  String get assistantMuscleBack => 'Sırt';
+
+  @override
+  String get assistantMuscleShoulders => 'Omuz';
+
+  @override
+  String get assistantMuscleFrontDelt => 'Ön omuz';
+
+  @override
+  String get assistantMuscleRearDelt => 'Arka omuz';
+
+  @override
+  String get assistantMuscleBiceps => 'Ön kol';
+
+  @override
+  String get assistantMuscleTriceps => 'Arka kol';
+
+  @override
+  String get assistantMuscleForearms => 'Ön kol altı';
+
+  @override
+  String get assistantMuscleLegs => 'Bacak';
+
+  @override
+  String get assistantMuscleQuads => 'Ön bacak';
+
+  @override
+  String get assistantMuscleHamstrings => 'Arka bacak';
+
+  @override
+  String get assistantMuscleGlutes => 'Kalça';
+
+  @override
+  String get assistantMuscleCalves => 'Baldır';
+
+  @override
+  String get assistantMuscleCore => 'Karın';
+
+  @override
+  String get assistantMuscleFullBody => 'Tüm vücut';
+
+  @override
+  String get assistantMuscleOther => 'Diğer';
 }

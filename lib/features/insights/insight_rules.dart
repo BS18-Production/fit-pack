@@ -67,6 +67,9 @@ enum CommentNote {
   /// "Kaydedilen protein/kalori" — kayıt eksik olabilir (#8 yoksa).
   loggedOnly,
 
+  /// Ortalamaya yalnız kullanıcının tamamladığı günler girer (docs/37).
+  completedDaysOnly,
+
   /// Yön seçilmemiş: "hedef yönünü seçersen yorumlarım".
   chooseGoalDirection,
 }
@@ -612,24 +615,29 @@ List<InsightComment> interpretNutrition(
   DateTime? bodyWeightDate,
   bool windowComplete = true,
 }) {
-  if (s.loggedDays == 0) {
+  if (s.sampleDays == 0) {
     return const [InsightComment(CommentKey.nutritionNoLogs)];
   }
   final soFar = [if (!windowComplete) CommentNote.soFar];
   final out = <InsightComment>[];
-  if (s.proteinGoal > 0) {
+  if (s.proteinGoal > 0 && s.completedProteinGoalDays != null) {
     out.add(
       InsightComment(
         CommentKey.proteinGoalDays,
         params: {
           'hitDays': s.proteinGoalDays,
-          'loggedDays': s.loggedDays,
+          'loggedDays': s.sampleDays,
           'avgProtein': s.avgProtein,
           'goal': s.proteinGoal,
           'pctOfGoal': (s.avgProtein! * 100 / s.proteinGoal).round(),
         },
         basis: CommentBasis.ownHistory,
-        notes: [...soFar, CommentNote.loggedOnly],
+        notes: [
+          ...soFar,
+          s.basis == NutritionBasis.completedDays
+              ? CommentNote.completedDaysOnly
+              : CommentNote.loggedOnly,
+        ],
       ),
     );
   }
@@ -638,13 +646,18 @@ List<InsightComment> interpretNutrition(
       InsightComment(
         CommentKey.kcalVsGoal,
         params: {
-          'loggedDays': s.loggedDays,
+          'loggedDays': s.sampleDays,
           'avgKcal': s.avgKcal,
           'goal': s.kcalGoal,
           'pctOfGoal': (s.avgKcal! * 100 / s.kcalGoal).round(),
         },
         basis: CommentBasis.ownHistory,
-        notes: [...soFar, CommentNote.loggedOnly],
+        notes: [
+          ...soFar,
+          s.basis == NutritionBasis.completedDays
+              ? CommentNote.completedDaysOnly
+              : CommentNote.loggedOnly,
+        ],
       ),
     );
   }
@@ -660,7 +673,7 @@ List<InsightComment> interpretNutrition(
         params: {
           'gPerKg': gPerKg,
           'avgProtein': s.avgProtein,
-          'loggedDays': s.loggedDays,
+          'loggedDays': s.sampleDays,
           'bodyWeightKg': bodyWeightKg,
           'bodyWeightDate': bodyWeightDate,
           'breakpoint': kProteinBreakpointGPerKg,
@@ -670,7 +683,9 @@ List<InsightComment> interpretNutrition(
         sources: const [EvidenceSource.morton2018, EvidenceSource.iraki2019],
         notes: [
           ...soFar,
-          CommentNote.loggedOnly,
+          s.basis == NutritionBasis.completedDays
+              ? CommentNote.completedDaysOnly
+              : CommentNote.loggedOnly,
           CommentNote.generalGuideline,
           CommentNote.consultProfessional,
         ],

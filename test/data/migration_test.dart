@@ -27,10 +27,11 @@ void main() {
     'achievements',
     'user_profile',
     'nutrition_days',
+    'assistant_quality_events',
   };
 
-  group('Schema v15', () {
-    test('schemaVersion 15\'te (artırınca bu test bilinçli kırılır)',
+  group('Schema v16', () {
+    test('schemaVersion 16\'te (artırınca bu test bilinçli kırılır)',
         () async {
       // Bu assertion bir TRIPWIRE'dır: biri schemaVersion'ı artırınca
       // burası kırılır → onUpgrade adımı + yeni göç testi eklemeden
@@ -52,7 +53,7 @@ void main() {
       // Lossless göç testleri: migrations/migration_v*_to_v*_test.dart.
       final db = newTestDatabase();
       addTearDown(db.close);
-      expect(db.schemaVersion, 15);
+      expect(db.schemaVersion, 16);
     });
 
     test('temiz kurulum (onCreate) beklenen tabloları yaratır', () async {

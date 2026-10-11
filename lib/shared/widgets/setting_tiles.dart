@@ -17,6 +17,7 @@ class SettingTile extends StatelessWidget {
   final String? subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
 
   /// true → ikon/başlık hata renginde (yıkıcı aksiyonlar, örn. Hesabı Sil).
   final bool destructive;
@@ -29,6 +30,7 @@ class SettingTile extends StatelessWidget {
     this.subtitle,
     this.trailing,
     this.onTap,
+    this.onLongPress,
     this.destructive = false,
   });
 
@@ -38,6 +40,7 @@ class SettingTile extends StatelessWidget {
         destructive ? context.colors.error : context.colors.primary;
     return ListTile(
       onTap: onTap,
+      onLongPress: onLongPress,
       leading: Container(
         padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(

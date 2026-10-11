@@ -3,6 +3,10 @@ import 'dart:convert';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/workout_dao.dart';
 import '../home/dashboard_stats.dart';
+import 'insight_window.dart';
+import 'nutrition_summary.dart';
+
+export 'nutrition_summary.dart' show NutritionBasis;
 
 /// **Haftalık değerlendirme — hesap motoru** (docs/22 §3, A1).
 ///
@@ -24,11 +28,11 @@ enum GoalDirection {
   gain;
 
   static GoalDirection? tryParse(String? v) => switch (v) {
-        'lose' => lose,
-        'maintain' => maintain,
-        'gain' => gain,
-        _ => null,
-      };
+    'lose' => lose,
+    'maintain' => maintain,
+    'gain' => gain,
+    _ => null,
+  };
 }
 
 /// Kilo değişiminin hedef yönüne göre anlamı.
@@ -205,16 +209,6 @@ class ExerciseProgress {
     required this.bestReps,
     required this.deltaE1rm,
   });
-}
-
-/// Beslenme ortalamasının hangi günlerden alındığı (docs/37 §3).
-enum NutritionBasis {
-  /// Haftada ≥1 tamamlanmış gün var → yalnız onlar. Kayıtsız tamamlanmış gün
-  /// bilinçli beyandır, 0 kalori sayılır (Samet kararı).
-  completedDays,
-
-  /// Tamamlanmış gün yok → kayıt girilmiş günler (W-3, eski kural).
-  loggedDays,
 }
 
 class NutritionSection {
@@ -414,62 +408,43 @@ List<ExerciseProgress> _progress(WeeklyReviewInput i) {
     if (prev == null) return; // karşılaştırılacak kayıt yok
     final delta = p.e1rm! - prev.best;
     if (delta <= 0) return;
-    out.add(ExerciseProgress(
-      exerciseId: id,
-      name: p.name,
-      bestWeightKg: p.weightKg,
-      bestReps: p.reps,
-      deltaE1rm: delta,
-    ));
+    out.add(
+      ExerciseProgress(
+        exerciseId: id,
+        name: p.name,
+        bestWeightKg: p.weightKg,
+        bestReps: p.reps,
+        deltaE1rm: delta,
+      ),
+    );
   });
   out.sort((a, b) => b.deltaE1rm.compareTo(a.deltaE1rm));
   return out.take(3).toList();
 }
 
 NutritionSection _nutrition(WeeklyReviewInput i) {
-  final kcal = <DateTime, double>{};
-  final protein = <DateTime, double>{};
-  for (final l in i.foodLogs) {
-    if (l.date.isBefore(i.weekStart) || !l.date.isBefore(i.weekEnd)) continue;
-    final day = DateTime(l.date.year, l.date.month, l.date.day);
-    kcal[day] = (kcal[day] ?? 0) + l.computedKcal;
-    protein[day] = (protein[day] ?? 0) + l.computedProtein;
-  }
-  final n = kcal.length;
-  final done = {
-    for (final d in i.completedDays)
-      if (!d.isBefore(i.weekStart) && d.isBefore(i.weekEnd))
-        DateTime(d.year, d.month, d.day),
-  };
-  if (done.isEmpty) {
-    // Kayıtlı günlerin ortalaması — 7'ye bölünmez (Samet kuralı, W-3).
-    return NutritionSection(
-      loggedDays: n,
-      avgKcal:
-          n == 0 ? null : (kcal.values.reduce((a, b) => a + b) / n).round(),
-      avgProtein:
-          n == 0 ? null : (protein.values.reduce((a, b) => a + b) / n).round(),
-      kcalGoal: i.kcalGoal,
-      proteinGoal: i.proteinGoal,
-    );
-  }
-  // Tamamlanmış günler bilinen günlerdir (docs/37 §3): ortalama yalnız onlardan,
-  // kayıtsız tamamlanmış gün 0; protein hedefi yalnız bu günlerde yargılanır.
-  final kcalSum = done.fold<double>(0, (s, d) => s + (kcal[d] ?? 0));
-  final proteinSum = done.fold<double>(0, (s, d) => s + (protein[d] ?? 0));
-  return NutritionSection(
-    loggedDays: n,
-    basis: NutritionBasis.completedDays,
-    completedDays: done.length,
-    knownDays: {...kcal.keys, ...done}.length,
-    excludedLoggedDays: kcal.keys.where((d) => !done.contains(d)).length,
-    proteinHitDays: i.proteinGoal <= 0
-        ? null
-        : done.where((d) => (protein[d] ?? 0) >= i.proteinGoal).length,
-    avgKcal: (kcalSum / done.length).round(),
-    avgProtein: (proteinSum / done.length).round(),
+  final s = nutritionStats(
+    window: DateWindow(
+      start: i.weekStart,
+      end: i.weekEnd,
+      isComplete: !i.now.isBefore(i.weekEnd),
+    ),
+    logs: i.foodLogs,
+    completedDays: i.completedDays,
     kcalGoal: i.kcalGoal,
     proteinGoal: i.proteinGoal,
+  );
+  return NutritionSection(
+    loggedDays: s.loggedDays,
+    basis: s.basis,
+    completedDays: s.completedDays,
+    knownDays: s.knownDays,
+    excludedLoggedDays: s.excludedLoggedDays,
+    proteinHitDays: s.completedProteinGoalDays,
+    avgKcal: s.avgKcal?.round(),
+    avgProtein: s.avgProtein?.round(),
+    kcalGoal: s.kcalGoal,
+    proteinGoal: s.proteinGoal,
   );
 }
 
@@ -494,8 +469,10 @@ WeightSection _weight(WeeklyReviewInput i) {
         m,
   ];
   final avg = _weekAvg(i.measurements, i.weekStart);
-  final prev =
-      _weekAvg(i.measurements, i.weekStart.subtract(const Duration(days: 7)));
+  final prev = _weekAvg(
+    i.measurements,
+    i.weekStart.subtract(const Duration(days: 7)),
+  );
   final delta = (avg != null && prev != null) ? avg - prev : null;
   final single = buHafta.length == 1;
 
@@ -544,11 +521,23 @@ WeightMeaning _meaning(double delta, GoalDirection? dir) {
 /// Kas grubu → tamamlanmış set (A2). Hareketin birincil kası; yoksa kas
 /// listesinin ilki; o da yoksa "other".
 Map<String, int> _muscleSets(WeeklyReviewInput i) {
+  return countMuscleSets(
+    sessions: i.sessions,
+    setsBySession: i.setsBySession,
+    exercises: i.exercises,
+  );
+}
+
+Map<String, int> countMuscleSets({
+  required List<WorkoutSession> sessions,
+  required Map<int, List<WorkoutSet>> setsBySession,
+  required Map<int, Exercise> exercises,
+}) {
   final out = <String, int>{};
-  for (final s in i.sessions) {
-    for (final st in i.setsBySession[s.id] ?? const <WorkoutSet>[]) {
+  for (final s in sessions) {
+    for (final st in setsBySession[s.id] ?? const <WorkoutSet>[]) {
       if (!st.isComplete || st.isWarmup) continue;
-      final kas = _muscleOf(i.exercises[st.exerciseId]);
+      final kas = _muscleOf(exercises[st.exerciseId]);
       out[kas] = (out[kas] ?? 0) + 1;
     }
   }
@@ -581,8 +570,11 @@ ReviewFocus _focus(
   //    yalnız hafta bitince bakılır.
   final planned = workout.planned;
   if (period.isComplete && planned != null && workout.sessions < planned) {
-    return ReviewFocus(FocusKind.completePlan,
-        done: workout.sessions, planned: planned);
+    return ReviewFocus(
+      FocusKind.completePlan,
+      done: workout.sessions,
+      planned: planned,
+    );
   }
 
   // 2) Bir hareket 3 haftadır aynı kiloda ve aralığın üstünde.
@@ -647,10 +639,14 @@ bool _weightAgainstTwoWeeks(WeeklyReviewInput i) {
   final dir = _directionFor(i, i.weekStart);
   if (dir == null) return false;
   final w0 = _weekAvg(i.measurements, i.weekStart);
-  final w1 =
-      _weekAvg(i.measurements, i.weekStart.subtract(const Duration(days: 7)));
-  final w2 =
-      _weekAvg(i.measurements, i.weekStart.subtract(const Duration(days: 14)));
+  final w1 = _weekAvg(
+    i.measurements,
+    i.weekStart.subtract(const Duration(days: 7)),
+  );
+  final w2 = _weekAvg(
+    i.measurements,
+    i.weekStart.subtract(const Duration(days: 14)),
+  );
   if (w0 == null || w1 == null || w2 == null) return false;
   return _meaning(w0 - w1, dir) == WeightMeaning.against &&
       _meaning(w1 - w2, dir) == WeightMeaning.against;
@@ -673,10 +669,10 @@ DeltaTone countTone(num delta) =>
 
 /// Kilo değişiminin tonu hedef yönünden gelir; yön yoksa nötr.
 DeltaTone weightTone(WeightMeaning m) => switch (m) {
-      WeightMeaning.onTrack => DeltaTone.good,
-      WeightMeaning.against => DeltaTone.caution,
-      WeightMeaning.flat || WeightMeaning.unknown => DeltaTone.neutral,
-    };
+  WeightMeaning.onTrack => DeltaTone.good,
+  WeightMeaning.against => DeltaTone.caution,
+  WeightMeaning.flat || WeightMeaning.unknown => DeltaTone.neutral,
+};
 
 /// Yüzde değişim (yuvarlanmış). Önceki değer 0 ise `null` — "sonsuz artış"
 /// yazılmaz.

@@ -1,6 +1,8 @@
 import '../../data/database/app_database.dart';
 import 'insight_window.dart';
 
+export 'nutrition_summary.dart';
+
 /// **"Verime sor" — yeni hesaplar** (docs/36 §1).
 ///
 /// Saf Dart: veritabanı bilmez, metin üretmez; sonuç tipleri döner (docs/22
@@ -209,58 +211,4 @@ List<TopExercise> topExercises({
         return a.exerciseId.compareTo(b.exerciseId);
       });
   return out.take(limit).toList();
-}
-
-// ─────────────────────────── Beslenme penceresi ───────────────────────────
-
-class NutritionStats {
-  /// Kayıt girilmiş gün sayısı. **0 ise hiçbir yargı yok** (docs/22 W-4).
-  final int loggedDays;
-
-  /// Yalnız kayıtlı günlerin ortalaması; kayıt yoksa `null` (docs/22 W-3).
-  final double? avgKcal;
-  final double? avgProtein;
-
-  /// Kaydedilen proteinin hedefe ulaştığı (≥) gün sayısı.
-  final int proteinGoalDays;
-  final int kcalGoal;
-  final int proteinGoal;
-
-  const NutritionStats({
-    required this.loggedDays,
-    required this.avgKcal,
-    required this.avgProtein,
-    required this.proteinGoalDays,
-    required this.kcalGoal,
-    required this.proteinGoal,
-  });
-}
-
-/// Penceredeki beslenme özeti (hafta ya da son 30 gün). Kayıtsız gün sıfır
-/// sayılmaz, ortalamaya girmez.
-NutritionStats nutritionStats({
-  required DateWindow window,
-  required List<FoodLog> logs,
-  int kcalGoal = 0,
-  int proteinGoal = 0,
-}) {
-  final kcal = <DateTime, double>{};
-  final protein = <DateTime, double>{};
-  for (final l in logs) {
-    if (!window.contains(l.date)) continue;
-    final day = dayOf(l.date);
-    kcal[day] = (kcal[day] ?? 0) + l.computedKcal;
-    protein[day] = (protein[day] ?? 0) + l.computedProtein;
-  }
-  final n = kcal.length;
-  return NutritionStats(
-    loggedDays: n,
-    avgKcal: n == 0 ? null : kcal.values.reduce((a, b) => a + b) / n,
-    avgProtein: n == 0 ? null : protein.values.reduce((a, b) => a + b) / n,
-    proteinGoalDays: proteinGoal <= 0
-        ? 0
-        : protein.values.where((p) => p >= proteinGoal).length,
-    kcalGoal: kcalGoal,
-    proteinGoal: proteinGoal,
-  );
 }

@@ -57,6 +57,8 @@ class AppRoutes {
   /// Haftalık değerlendirme (docs/22 §4). Ana sayfa "Bu Hafta"dan ve haftalık
   /// bildirimden açılır.
   static const weeklyReview = '/insights/week';
+  static const assistant = '/assistant';
+  static const assistantQuality = '/settings/developer/assistant-quality';
 
   /// İlerleme fotoğrafları (docs/19). Karşılaştırma iki fotoğraf kimliğini
   /// sorgu parametresiyle alır.

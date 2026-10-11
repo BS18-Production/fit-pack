@@ -397,6 +397,8 @@ void main() {
       proteinGoalDays: 8,
       kcalGoal: 2000,
       proteinGoal: goal,
+      basis: NutritionBasis.completedDays,
+      completedDays: 20,
     );
 
     test('kayıt yoksa yalnız "kayıt yok"', () {
@@ -413,7 +415,7 @@ void main() {
       expect(r.single.key, CommentKey.nutritionNoLogs);
     });
 
-    test('hedef günleri + kalori/hedef: "kaydedilen" notu', () {
+    test('hedef günleri + kalori/hedef: yalnız tamamlanan günler', () {
       final r = interpretNutrition(st());
       expect(r.map((c) => c.key), [
         CommentKey.proteinGoalDays,
@@ -421,7 +423,7 @@ void main() {
       ]);
       expect(r.first.params['hitDays'], 8);
       expect(r.first.params['pctOfGoal'], 80);
-      expect(r.first.notes, contains(CommentNote.loggedOnly));
+      expect(r.first.notes, contains(CommentNote.completedDaysOnly));
       expect(r[1].params['pctOfGoal'], 105);
     });
 

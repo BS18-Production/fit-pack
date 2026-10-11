@@ -155,7 +155,12 @@ commit'te** (CLAUDE.md).
   doğrudan bağımlılık), DAO (`markDayComplete`, `reopenDay`,
   `getCompletedDays`, `watchDay`, `changedAfterComplete`), göç testi v14→v15,
   DAO testleri. Tüm paket yeşil.
-- 🔧 **Aşama 3** (sunucu): `supabase/migrations/20261010120000_nutrition_days.sql`
+- ✅ **Aşama 2** (senkron): ek kod gerekmedi — senkron katmanı tablo
+  listesinden ve sütun tiplerinden genel çalışıyor. İki cihaz testi
+  (`test/features/nutrition_day_sync_test.dart`): aynı gün → sunucuda ve iki
+  cihazda tek satır; geri al öteki cihaza `open` iner (silinmez); geri alınan
+  gün yeniden işaretlenebilir.
+- ✅ **Aşama 3** (sunucu): `supabase/migrations/20261010120000_nutrition_days.sql`
   — PK **(user_id, uid)** (gün kimliği kullanıcıdan bağımsız; diğer tablolarda
   PK hâlâ yalnız `uid`, docs/20 Aşama 6), `unique (user_id, day)`, RLS, yetki,
   imleç dizini, `sync_guard` + silme izi tetikleyicileri, `sync_delete` izin

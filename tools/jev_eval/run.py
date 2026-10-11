@@ -446,11 +446,11 @@ def validate_holdout(rows: list[dict], tuning_path: Path) -> list[str]:
 
 
 def verdict(m: dict) -> str:
-    """§5 + §8.6(a). Gözlenen ölçüt sağlanıp üst sınır %5'i aşıyorsa kanıt yetersiz;
-    sonuç görüldükten sonra soru eklenerek kabul aranmaz (Codex)."""
-    if not passes(m):
-        return "RET"
-    return "KABUL" if m["wrong_up95"] <= 0.05 else "YETERSİZ KANIT"
+    """§5 + §8.9 (Samet, 2026-10-11, seçenek 1): gözlenen yanlış ≤ %3, geri
+    dönüş ≤ %30, ret ≥ %95, kritik 0. %95 üst sınır **raporlanır, şart değil**:
+    120 soruda sıfır hata isterdi (gerçek oran ~%2 iken geçme şansı ~%22).
+    Güvence: her cevapta "Anladığım soru · değiştir" + gerçek kullanım ölçümü."""
+    return "KABUL" if passes(m) else "RET"
 
 
 # ------------------------------------------------------------------- rapor
@@ -525,7 +525,7 @@ def report(rows, results, args, cost, latencies, frozen=None) -> str:
                          f"{pct(m['oos_reject'])} ({m['oos']}) | {m['critical_wrong']}/{m['critical']} |")
         if frozen:
             out += [hdr, sep, fmt(pick), "",
-                    f"**Karar (docs/35 §5 + §8.6a: yanlış ≤ %3 ve üst sınır ≤ %5, geri dönüş ≤ %30, ret ≥ %95, kritik 0): "
+                    f"**Karar (docs/35 §5 + §8.9: gözlenen yanlış ≤ %3, geri dönüş ≤ %30, ret ≥ %95, kritik 0; üst sınır bilgi amaçlı): "
                     f"{verdict(pick)}**", ""]
         elif pick:
             out += ["Ölçütü (%3 / %30 / %95 / kritik 0) sağlayan, geri dönüşü en düşük eşik:", "", hdr, sep, fmt(pick), ""]

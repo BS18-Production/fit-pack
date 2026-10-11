@@ -414,6 +414,12 @@ Samet'te (§8 madde 9).
 6. ✅ **Kabul ölçütü okuması (a):** gözlenen yanlış otomatik cevap ≤ %3 **ve**
    %95 güven üst sınırı ≤ %5; kabul seti **120 soru** (30 Samet + 45'er iki
    taraf) — 100 soruda ~60 otomatik cevapla sıfır hatada bile sınırdaydı.
+9. ✅ **Kabul ölçütü gevşetildi (2026-10-11, seçenek 1):** gözlenen yanlış
+   otomatik ≤ %3, geri dönüş ≤ %30, kapsam dışı reddi ≥ %95, kritik 0; %95 üst
+   sınır **raporlanır, şart değil** (§12 istatistik uyarısı). Güvence: her
+   cevapta "Anladığım soru · değiştir" satırı + yayından sonra gerçek kullanım
+   ölçümü (metinsiz sayılar; ham metin yalnız açık rızayla — admin paneli
+   sorusu, Claude önerisi: tüm sohbetleri gösteren panel yerine kalite paneli).
 8. ✅ **Kabul seti Samet'in soruları olmadan** (2026-10-10, "beklemeyelim"):
    120 soru = 60 Claude + 60 Codex, kör. Bedeli: gerçek kullanıcı dilini daha
    zayıf temsil eder — rapor bunu yazar. Samet'in soruları gelince **ek

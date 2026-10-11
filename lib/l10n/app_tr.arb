@@ -1603,5 +1603,12 @@
   "privacySubtitle": "Hangi verileri, nerede işliyoruz; hakların",
   "privacyAuthLink": "Verilerini nasıl kullanıyoruz (gizlilik politikası)",
   "homeWeightTrend7d": "7 günlük trend",
-  "bmTrendLegend": "nokta: günlük · çizgi: trend"
+  "bmTrendLegend": "nokta: günlük · çizgi: trend",
+  "adaptiveTdeeTitle": "Gerçek harcaman (tahmin)",
+  "adaptiveTdeeValue": "~{kcal} kcal/gün · {days} tamamlanmış gün ve kilo eğiliminden",
+  "adaptiveTdeeAtGoal": "{goal} kcal hedefinle: haftada yaklaşık {change}",
+  "adaptiveTdeeNeedDays": "Son 4 haftada {need} gün 'tamamlandı' işaretli olmalı (şu an {have}).",
+  "adaptiveTdeeNeedWeighIns": "En az {count} tartı ölçümü, {days} güne yayılmış olmalı.",
+  "adaptiveTdeeInconsistent": "Tahmin için kayıtlar eksik görünüyor — tamamlandı işaretli günlerin tam girildiğini kontrol et.",
+  "adaptiveTdeeNote": "Tahmindir (1 kg ≈ 7.700 kcal). Hedefin kendiliğinden değişmez."
 }

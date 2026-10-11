@@ -4139,4 +4139,35 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get bmTrendLegend => 'nokta: günlük · çizgi: trend';
+
+  @override
+  String get adaptiveTdeeTitle => 'Gerçek harcaman (tahmin)';
+
+  @override
+  String adaptiveTdeeValue(int kcal, int days) {
+    return '~$kcal kcal/gün · $days tamamlanmış gün ve kilo eğiliminden';
+  }
+
+  @override
+  String adaptiveTdeeAtGoal(int goal, String change) {
+    return '$goal kcal hedefinle: haftada yaklaşık $change';
+  }
+
+  @override
+  String adaptiveTdeeNeedDays(int need, int have) {
+    return 'Son 4 haftada $need gün \'tamamlandı\' işaretli olmalı (şu an $have).';
+  }
+
+  @override
+  String adaptiveTdeeNeedWeighIns(int count, int days) {
+    return 'En az $count tartı ölçümü, $days güne yayılmış olmalı.';
+  }
+
+  @override
+  String get adaptiveTdeeInconsistent =>
+      'Tahmin için kayıtlar eksik görünüyor — tamamlandı işaretli günlerin tam girildiğini kontrol et.';
+
+  @override
+  String get adaptiveTdeeNote =>
+      'Tahmindir (1 kg ≈ 7.700 kcal). Hedefin kendiliğinden değişmez.';
 }

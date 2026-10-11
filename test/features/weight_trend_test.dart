@@ -5,7 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// docs/42 — trend kilo (T-1…T-4).
 void main() {
-  WeightPoint p(int day, double kg) => (date: DateTime(2026, 10, day, 7), kg: kg);
+  WeightPoint p(int day, double kg) =>
+      (date: DateTime(2026, 10, day, 7), kg: kg);
 
   test('sabit kilo → trend sabit', () {
     final t = weightTrendSeries([p(1, 80), p(2, 80), p(3, 80)]);
@@ -29,14 +30,19 @@ void main() {
       for (var i = 0; i < ham.length; i++) p(i + 1, ham[i]),
     ]);
     final hamFark = ham.reduce(math.max) - ham.reduce(math.min);
-    final trendFark = t.map((e) => e.kg).reduce(math.max) -
+    final trendFark =
+        t.map((e) => e.kg).reduce(math.max) -
         t.map((e) => e.kg).reduce(math.min);
     expect(trendFark, lessThan(hamFark / 4));
   });
 
   test('T-3: ≥3 ölçüm ve ≥7 gün', () {
     expect(trendReady([p(1, 80), p(8, 80)]), isFalse, reason: '2 ölçüm');
-    expect(trendReady([p(1, 80), p(3, 80), p(6, 80)]), isFalse, reason: '5 gün');
+    expect(
+      trendReady([p(1, 80), p(3, 80), p(6, 80)]),
+      isFalse,
+      reason: '5 gün',
+    );
     expect(trendReady([p(1, 80), p(4, 80), p(8, 80)]), isTrue);
   });
 

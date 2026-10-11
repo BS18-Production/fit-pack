@@ -7051,6 +7051,48 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'dots: daily · line: trend'**
   String get bmTrendLegend;
+
+  /// No description provided for @adaptiveTdeeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your actual expenditure (estimate)'**
+  String get adaptiveTdeeTitle;
+
+  /// No description provided for @adaptiveTdeeValue.
+  ///
+  /// In en, this message translates to:
+  /// **'~{kcal} kcal/day · from {days} completed days and your weight trend'**
+  String adaptiveTdeeValue(int kcal, int days);
+
+  /// No description provided for @adaptiveTdeeAtGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'With your {goal} kcal goal: about {change} per week'**
+  String adaptiveTdeeAtGoal(int goal, String change);
+
+  /// No description provided for @adaptiveTdeeNeedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs {need} days marked complete in the last 4 weeks (you have {have}).'**
+  String adaptiveTdeeNeedDays(int need, int have);
+
+  /// No description provided for @adaptiveTdeeNeedWeighIns.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs at least {count} weigh-ins spread over {days} days.'**
+  String adaptiveTdeeNeedWeighIns(int count, int days);
+
+  /// No description provided for @adaptiveTdeeInconsistent.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs look incomplete for an estimate — check that completed days are fully logged.'**
+  String get adaptiveTdeeInconsistent;
+
+  /// No description provided for @adaptiveTdeeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate (1 kg ≈ 7,700 kcal). Your goal is not changed automatically.'**
+  String get adaptiveTdeeNote;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

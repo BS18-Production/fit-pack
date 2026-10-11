@@ -18,6 +18,8 @@ import '../cloud/auth_service.dart';
 import '../home/providers/home_providers.dart';
 import '../workout/calorie_estimate.dart';
 import '../../shared/widgets/fitpack_icon.dart';
+import '../../core/utils/adaptive_tdee.dart';
+import 'adaptive_tdee_provider.dart';
 
 /// Profil (docs/16) — kullanıcının "kim olduğu": hedefler, vücut, kimlik,
 /// tahmini günlük harcama. Sık düzenlenen kişisel veri burada; uygulama
@@ -295,6 +297,8 @@ class _ProfileBody extends ConsumerWidget {
         ),
         AppSpacing.vGapLg,
         _DailyEnergyTile(profile: profile),
+        AppSpacing.vGapSm,
+        _AdaptiveEnergyTile(kcalGoal: profile.kcalGoal),
         AppSpacing.vGapLg,
         // Hesap — Ayarlar'daki "Veri & Gizlilik" bölümü kaldırılınca buraya
         // taşındı (docs/18 §1.2). Çıkış + Hesabı Sil buradan erişilir;
@@ -397,6 +401,82 @@ class _DailyEnergyTile extends ConsumerWidget {
                     style: context.texts.bodySmall?.copyWith(
                         color: c.onPrimaryContainer.withValues(alpha: 0.85)),
                   ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Gerçek harcama tahmini (docs/43): tamamlanmış beslenme günleri + kilo
+/// eğilimi. Hedefi DEĞİŞTİRMEZ — yalnız tahmin ve mevcut hedefin sonucu.
+class _AdaptiveEnergyTile extends ConsumerWidget {
+  final int kcalGoal;
+  const _AdaptiveEnergyTile({required this.kcalGoal});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final est = ref.watch(adaptiveTdeeProvider).valueOrNull;
+    if (est == null) return const SizedBox.shrink();
+    final l = AppL10n.of(context);
+    final c = context.colors;
+    final units = ref.watch(unitsProvider);
+    final String body;
+    switch (est.status) {
+      case TdeeStatus.ready:
+        final atGoal = est.weeklyChangeAtGoal(kcalGoal);
+        body = [
+          l.adaptiveTdeeValue(est.kcal!, est.completedDays),
+          if (atGoal != null)
+            l.adaptiveTdeeAtGoal(
+              kcalGoal,
+              '${atGoal >= 0 ? '+' : '−'}${units.weight(atGoal.abs())}',
+            ),
+        ].join('\n');
+      case TdeeStatus.needCompletedDays:
+        body = l.adaptiveTdeeNeedDays(
+            kTdeeMinCompletedDays, est.completedDays);
+      case TdeeStatus.needWeighIns:
+        body = l.adaptiveTdeeNeedWeighIns(
+            kTdeeMinWeighIns, kTdeeMinWeightSpanDays);
+      case TdeeStatus.inconsistent:
+        body = l.adaptiveTdeeInconsistent;
+    }
+    final ready = est.status == TdeeStatus.ready;
+    return Container(
+      key: const ValueKey('profile.adaptiveTdee'),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: c.secondaryContainer.withValues(alpha: ready ? 1 : 0.5),
+        borderRadius: AppRadius.brMd,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FitPackIcon.material(Icons.query_stats_rounded,
+              color: c.onSecondaryContainer, size: AppIconSize.lg),
+          AppSpacing.hGapMd,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.adaptiveTdeeTitle,
+                    style: context.texts.labelLarge?.copyWith(
+                        color: c.onSecondaryContainer,
+                        fontWeight: FontWeight.w700)),
+                AppSpacing.vGapXs,
+                Text(body,
+                    style: context.texts.bodyMedium?.copyWith(
+                        color: c.onSecondaryContainer.withValues(alpha: 0.85))),
+                if (ready) ...[
+                  AppSpacing.vGapXs,
+                  Text(l.adaptiveTdeeNote,
+                      style: context.texts.bodySmall?.copyWith(
+                          color:
+                              c.onSecondaryContainer.withValues(alpha: 0.7))),
+                ],
               ],
             ),
           ),

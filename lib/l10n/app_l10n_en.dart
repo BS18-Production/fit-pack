@@ -4189,4 +4189,35 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get bmTrendLegend => 'dots: daily · line: trend';
+
+  @override
+  String get adaptiveTdeeTitle => 'Your actual expenditure (estimate)';
+
+  @override
+  String adaptiveTdeeValue(int kcal, int days) {
+    return '~$kcal kcal/day · from $days completed days and your weight trend';
+  }
+
+  @override
+  String adaptiveTdeeAtGoal(int goal, String change) {
+    return 'With your $goal kcal goal: about $change per week';
+  }
+
+  @override
+  String adaptiveTdeeNeedDays(int need, int have) {
+    return 'Needs $need days marked complete in the last 4 weeks (you have $have).';
+  }
+
+  @override
+  String adaptiveTdeeNeedWeighIns(int count, int days) {
+    return 'Needs at least $count weigh-ins spread over $days days.';
+  }
+
+  @override
+  String get adaptiveTdeeInconsistent =>
+      'Logs look incomplete for an estimate — check that completed days are fully logged.';
+
+  @override
+  String get adaptiveTdeeNote =>
+      'Estimate (1 kg ≈ 7,700 kcal). Your goal is not changed automatically.';
 }

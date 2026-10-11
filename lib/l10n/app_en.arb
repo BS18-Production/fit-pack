@@ -2633,5 +2633,16 @@
   "privacySubtitle": "What data we process, where, and your rights",
   "privacyAuthLink": "How we use your data (privacy policy)",
   "homeWeightTrend7d": "7-day trend",
-  "bmTrendLegend": "dots: daily · line: trend"
+  "bmTrendLegend": "dots: daily · line: trend",
+  "adaptiveTdeeTitle": "Your actual expenditure (estimate)",
+  "adaptiveTdeeValue": "~{kcal} kcal/day · from {days} completed days and your weight trend",
+  "@adaptiveTdeeValue": {"placeholders": {"kcal": {"type": "int"}, "days": {"type": "int"}}},
+  "adaptiveTdeeAtGoal": "With your {goal} kcal goal: about {change} per week",
+  "@adaptiveTdeeAtGoal": {"placeholders": {"goal": {"type": "int"}, "change": {"type": "String"}}},
+  "adaptiveTdeeNeedDays": "Needs {need} days marked complete in the last 4 weeks (you have {have}).",
+  "@adaptiveTdeeNeedDays": {"placeholders": {"need": {"type": "int"}, "have": {"type": "int"}}},
+  "adaptiveTdeeNeedWeighIns": "Needs at least {count} weigh-ins spread over {days} days.",
+  "@adaptiveTdeeNeedWeighIns": {"placeholders": {"count": {"type": "int"}, "days": {"type": "int"}}},
+  "adaptiveTdeeInconsistent": "Logs look incomplete for an estimate — check that completed days are fully logged.",
+  "adaptiveTdeeNote": "Estimate (1 kg ≈ 7,700 kcal). Your goal is not changed automatically."
 }

@@ -160,8 +160,10 @@ commit'te** (CLAUDE.md).
   PK hâlâ yalnız `uid`, docs/20 Aşama 6), `unique (user_id, day)`, RLS, yetki,
   imleç dizini, `sync_guard` + silme izi tetikleyicileri, `sync_delete` izin
   listesi 13 tablo. **`Fit Pack Dev`'e uygulandı (2026-10-11)**; pgTAP
-  (`supabase/tests/nutrition_days.sql`, 9 test) Supabase bağlantısı aralıklı
-  koptuğu için **henüz koşulmadı**. Eski testlerde global tetikleyici sayıları
+  (`supabase/tests/nutrition_days.sql`) **9/9 yeşil** (2026-10-11): iki
+  kullanıcı aynı gün aynı uid, LWW, gün biçimi, RLS ve `sync_delete` gerçek
+  istemci rolüyle. Eski Aşama 3/5 testlerinin 13 tablo beklentisi henüz
+  yeniden koşulmadı. Eski testlerde global tetikleyici sayıları
   12 → 13. **Üretime UYGULANMADI.**
 - ⚠️ `changedAfterComplete` silinen kaydı görmez (satır kalmıyor); mezar taşı
   tablosundan okumak açık iş.

@@ -138,7 +138,7 @@ object WorkoutNotification {
             if (s.totalSets > 0) b.setProgress(s.totalSets, s.doneSets, false)
             if (s.canComplete) {
                 // En çok 3 eylem (Android sınırı): − · + · Seti tamamla.
-                if (s.stepDownLabel.isNotEmpty) {
+                if (s.stepDownLabel.isNotEmpty()) {
                     b.addAction(0, s.stepDownLabel, actionIntent(context, "stepDown", s.setKey))
                     b.addAction(0, s.stepUpLabel, actionIntent(context, "stepUp", s.setKey))
                 }
@@ -203,9 +203,9 @@ object WorkoutNotification {
         val nm = nm(context) ?: return
         nm.deleteNotificationChannel(OLD_CHANNEL)
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL, "Workout in progress",
+            NotificationChannel(CHANNEL, context.getString(R.string.channel_workout_name),
                 NotificationManager.IMPORTANCE_DEFAULT).apply {
-                description = "Current set and rest timer on the lock screen"
+                description = context.getString(R.string.channel_workout_desc)
                 setShowBadge(false)
                 setSound(null, null) // ses dinlenme servisinden gelir
                 enableVibration(false)

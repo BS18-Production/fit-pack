@@ -138,50 +138,75 @@ class NotificationService {
     } catch (_) {/* platform desteklemiyorsa sessiz geç */}
   }
 
-  /// Dinlenme bitince tek seferlik bildirim — [after] sonra (docs/12 + P-11).
+  // Mola bildirimi işlemleri sıralı (docs/45, Codex incelemesi): ses dosyası
+  // kopyalanırken gelen "Atla"/öne dönüş iptali, geç biten kurulum
+  // tarafından ezilmesin. Her kurulum/iptal nesli artırır; eski nesil
+  // kurulum hiçbir şey yazmadan çıkar.
+  Future<void> _restOps = Future.value();
+  int _restGen = 0;
+
+  Future<void> _restSerial(Future<void> Function() op) =>
+      _restOps = _restOps.then((_) => op()).catchError((Object _) {});
+
+  /// Dinlenme bitince tek seferlik bildirim — [at] anında (docs/12 + P-11).
   /// Dakik alarm izni yoksa inexact'e düşer (birkaç dk gecikebilir).
   ///
-  /// iOS'ta [sound] seçili mola sesinin bitiş parçasıdır (docs/45 §3).
-  /// Sistem bildirim sesi telefonun sessiz anahtarına ve Odaklanma'ya
-  /// uyar — bu bir uygulama hatası değil, iOS kuralı.
+  /// iOS'ta [sound] seçili mola sesinin bitiş parçasıdır (docs/45 §3);
+  /// `null` = kullanıcı mola sesini kapattı → sessiz bildirim. Ses dosyası
+  /// kurulamazsa sistem varsayılan sesi. Sistem bildirim sesi telefonun
+  /// sessiz anahtarına ve Odaklanma'ya uyar — uygulama hatası değil.
   Future<void> scheduleRestDone({
-    required Duration after,
+    required DateTime at,
     required String title,
     required String body,
     RestSound? sound,
-  }) async {
-    await init();
-    final when = tz.TZDateTime.now(tz.local).add(after);
-    final iosSound = sound == null ? null : await _installIosSound(sound);
-    final details = NotificationDetails(
-      android: _chRest,
-      iOS: iosSound == null
-          ? _iosRest
-          : DarwinNotificationDetails(
-              interruptionLevel: InterruptionLevel.timeSensitive,
-              sound: iosSound,
-            ),
-    );
-    try {
-      await _plugin.zonedSchedule(
-          id: idRest,
-          title: title,
-          body: body,
-          scheduledDate: when,
-          notificationDetails: details,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
-    } on PlatformException {
-      await _plugin.zonedSchedule(
-          id: idRest,
-          title: title,
-          body: body,
-          scheduledDate: when,
-          notificationDetails: details,
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle);
-    }
+  }) {
+    final gen = ++_restGen;
+    return _restSerial(() async {
+      await init();
+      final iosSound = sound == null ? null : await _installIosSound(sound);
+      if (gen != _restGen) return; // arada iptal ya da yeni kurulum geldi
+      final left = at.difference(DateTime.now());
+      if (left <= Duration.zero) return;
+      final when = tz.TZDateTime.now(tz.local).add(left);
+      final details = NotificationDetails(
+        android: _chRest,
+        iOS: sound == null
+            ? const DarwinNotificationDetails(
+                interruptionLevel: InterruptionLevel.timeSensitive,
+                presentSound: false,
+              )
+            : iosSound == null
+                ? _iosRest
+                : DarwinNotificationDetails(
+                    interruptionLevel: InterruptionLevel.timeSensitive,
+                    sound: iosSound,
+                  ),
+      );
+      try {
+        await _plugin.zonedSchedule(
+            id: idRest,
+            title: title,
+            body: body,
+            scheduledDate: when,
+            notificationDetails: details,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
+      } on PlatformException {
+        await _plugin.zonedSchedule(
+            id: idRest,
+            title: title,
+            body: body,
+            scheduledDate: when,
+            notificationDetails: details,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle);
+      }
+    });
   }
 
-  Future<void> cancelRestDone() => _plugin.cancel(id: idRest);
+  Future<void> cancelRestDone() {
+    _restGen++;
+    return _restSerial(() => _plugin.cancel(id: idRest));
+  }
 
   /// iOS bildirim sesi yalnız uygulama paketinden ya da kabın
   /// `Library/Sounds/` klasöründen çalınır; Flutter varlıkları ikisinde de

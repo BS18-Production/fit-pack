@@ -413,7 +413,7 @@ class _SilentFeedback extends FeedbackService {
 class _NoNotifications extends NotificationService {
   @override
   Future<void> scheduleRestDone({
-    required Duration after,
+    required DateTime at,
     required String title,
     required String body,
     RestSound? sound,

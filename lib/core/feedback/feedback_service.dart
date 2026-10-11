@@ -111,14 +111,25 @@ class FeedbackService {
       : _releaseSession = release;
 
   AudioPlayer? _countdown;
-  // Oynatıcıya yüklü ses ve istenen ses (Ayarlar'dan değişebilir).
+  // Geri sayım oynatıcısına yüklü ses (Ayarlar'dan değişebilir).
   RestSound _loaded = RestSound.fallback;
-  RestSound _wanted = RestSound.fallback;
-  AudioPlayer? _preview;
   Future<void>? _ready;
   StreamSubscription<void>? _completeSub;
-  // Her çalışta artar: eski bir "bırak" isteği yeni başlayan sesi kesmesin.
+  // Her çal/durdur isteğinde artar: bekleyen eski bir istek (yükleme
+  // sürerken "Atla" geldi) yeni durumu bozmasın — her beklemeden sonra
+  // kontrol edilir.
   int _playGen = 0;
+  // Geri sayım oynatıcısının işlemleri sırayla çalışır: eşzamanlı iki
+  // `setSource` (ses değişimi + mola başı) birbirini ezmesin (Codex
+  // incelemesi, 2026-10-12).
+  Future<void> _ops = Future.value();
+
+  Future<AudioPlayer>? _previewPlayer;
+  StreamSubscription<void>? _previewSub;
+  int _previewGen = 0;
+
+  Future<void> _serial(Future<void> Function() op) =>
+      _ops = _ops.then((_) => op()).catchError((Object _) {});
 
   // Kurulum başarısızsa bir sonraki denemede yeniden kurulsun.
   Future<void> _ensureReady() => _ready ??= _init().catchError((Object e) {
@@ -135,36 +146,34 @@ class FeedbackService {
     if (defaultTargetPlatform == TargetPlatform.android) {
       await p.setAudioContext(_audioContext);
     }
-    final sound = _wanted;
-    await p.setSource(AssetSource(sound.countdownSource));
-    _loaded = sound;
+    await p.setSource(AssetSource(_loaded.countdownSource));
     _completeSub = p.onPlayerComplete.listen((_) => _release(_playGen));
     _countdown = p;
   }
 
-  /// Seçili sesi oynatıcıya yükler (değiştiyse). Mola başlarken çağrılır —
-  /// geri sayım en erken 3 sn sonra çalar, yükleme o ana yetişir.
+  /// Sesi oynatıcıya yükler (değiştiyse). Yalnız [_serial] içinden.
   Future<void> _load(RestSound sound) async {
-    _wanted = sound;
     await _ensureReady();
     final p = _countdown;
-    if (p == null || _loaded == _wanted) return;
-    final next = _wanted;
-    await p.setSource(AssetSource(next.countdownSource));
-    _loaded = next;
+    if (p == null || _loaded == sound) return;
+    await p.setSource(AssetSource(sound.countdownSource));
+    _loaded = sound;
   }
 
   /// Seans ekranı açılınca çağrılır — ilk çalışta yükleme gecikmesi olmasın.
   void warmUp([RestSound sound = RestSound.fallback]) =>
-      unawaited(_load(sound).catchError((_) {}));
+      unawaited(_serial(() => _load(sound)));
 
   /// Ayarlar → Mola sesi: sesi baştan sona bir kez çalar (geri sayım +
   /// bitiş). Önceki önizlemeyi keser; seans geri sayımına dokunmaz.
   Future<void> preview(RestSound sound) async {
+    final gen = ++_previewGen;
     try {
       await _ensureReady(); // ses bağlamı (müziği kısma) kurulmuş olsun
-      final p = _preview ??= await _newPreviewPlayer();
+      final p = await (_previewPlayer ??= _newPreviewPlayer());
+      if (gen != _previewGen) return; // panel kapandı ya da yeni önizleme
       await p.stop();
+      if (gen != _previewGen) return;
       await p.play(AssetSource(sound.countdownSource));
     } catch (_) {
       // Önizleme en iyi çaba — ses servisi yoksa sessiz geçer.
@@ -172,20 +181,28 @@ class FeedbackService {
   }
 
   Future<void> stopPreview() async {
+    _previewGen++;
     try {
-      await _preview?.stop();
+      await (await _previewPlayer)?.stop();
     } catch (_) {}
     unawaited(_releaseSession());
   }
 
+  /// Önizleme oynatıcısı bir kez kurulur (hızlı iki dokunuşta iki oynatıcı
+  /// açılmasın); kurulum hatasında sonraki deneme yeniden kurar.
   Future<AudioPlayer> _newPreviewPlayer() async {
-    final p = AudioPlayer();
-    await p.setReleaseMode(ReleaseMode.stop);
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      await p.setAudioContext(_audioContext);
+    try {
+      final p = AudioPlayer();
+      await p.setReleaseMode(ReleaseMode.stop);
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        await p.setAudioContext(_audioContext);
+      }
+      _previewSub = p.onPlayerComplete.listen((_) => unawaited(_releaseSession()));
+      return p;
+    } catch (_) {
+      _previewPlayer = null;
+      rethrow;
     }
-    p.onPlayerComplete.listen((_) => unawaited(_releaseSession()));
-    return p;
   }
 
   /// Geri sayım sesini [offsetMs]'den başlatır (bkz. [countdownPlan]).
@@ -193,28 +210,32 @@ class FeedbackService {
   /// etkilenmez — eski "her saniye durdur/başlat" yolunda 2. ve 3. bip
   /// kayıyordu (Samet, 2026-09-30).
   void playCountdown({int offsetMs = 0, RestSound? sound}) {
-    _playGen++;
-    unawaited(() async {
+    final gen = ++_playGen;
+    unawaited(_serial(() async {
       try {
-        await _load(sound ?? _wanted);
+        await _load(sound ?? _loaded);
         final p = _countdown;
-        if (p == null) return;
+        if (p == null || gen != _playGen) return; // arada durduruldu
         await p.stop();
         if (offsetMs > 0) await p.seek(Duration(milliseconds: offsetMs));
+        if (gen != _playGen) return;
         await p.resume();
       } catch (_) {
         // Ses en iyi çaba: çalınamazsa (ses servisi yok, dosya açılamadı)
         // titreşim yine verilir; hata mesajı seansı bozar. Bilinçli sessiz.
       }
-    }());
+    }));
   }
 
-  /// Süre değişti ya da mola atlandı: çalan geri sayımı kes.
+  /// Süre değişti ya da mola atlandı: çalan (ya da yüklenmeyi bekleyen)
+  /// geri sayımı kes.
   void stopCountdown() {
-    final p = _countdown;
-    if (p == null) return;
-    final gen = _playGen;
-    unawaited(p.stop().catchError((_) {}).then((_) => _release(gen)));
+    if (_countdown == null && _ready == null) return;
+    final gen = ++_playGen;
+    unawaited(_serial(() async {
+      await _countdown?.stop();
+      _release(gen);
+    }));
   }
 
   /// Ses bitti/durdu: müziği geri aç — arada yeni çalış başlamadıysa.
@@ -234,8 +255,9 @@ class FeedbackService {
 
   Future<void> dispose() async {
     await _completeSub?.cancel();
+    await _previewSub?.cancel();
     await _countdown?.dispose();
-    await _preview?.dispose();
+    await (await _previewPlayer)?.dispose();
     await _releaseSession();
   }
 }

@@ -54,6 +54,7 @@ class _RestSoundSheetState extends ConsumerState<_RestSoundSheet> {
   }
 
   void _play(RestSound s) {
+    if (!mounted) return; // tercih yazılırken panel kapandı
     setState(() => _playing = s);
     _feedback.preview(s);
   }

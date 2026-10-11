@@ -68,8 +68,10 @@ enum WorkoutLiveActivityController {
     serial {
       var kept = false
       for activity in Activity<WorkoutActivityAttributes>.activities {
-        let same = !kept && activity.attributes.startedAt == attrs.startedAt
-          && activity.activityState == .active
+        // Dinlenme bitişinde kart `.stale` olur (staleDate) — o da aynı
+        // seansın kartıdır; kapatıp yenisini açmak titreme + kopya demek.
+        let live = activity.activityState == .active || activity.activityState == .stale
+        let same = !kept && activity.attributes.startedAt == attrs.startedAt && live
         if same {
           kept = true
           await activity.update(content)

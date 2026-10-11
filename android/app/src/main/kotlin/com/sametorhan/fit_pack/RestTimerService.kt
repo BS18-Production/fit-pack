@@ -353,16 +353,16 @@ class RestTimerService : Service() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val nm = getSystemService(NotificationManager::class.java) ?: return
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_LIVE, "Rest countdown",
+            NotificationChannel(CHANNEL_LIVE, getString(R.string.channel_rest_live_name),
                 NotificationManager.IMPORTANCE_LOW).apply {
-                description = "Shows the running rest timer"
+                description = getString(R.string.channel_rest_live_desc)
                 setShowBadge(false)
             }
         )
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_DONE, "Rest over",
+            NotificationChannel(CHANNEL_DONE, getString(R.string.channel_rest_done_name),
                 NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "Alerts when the rest between sets is over"
+                description = getString(R.string.channel_rest_done_desc)
                 setSound(null, null)
                 enableVibration(false) // titreşim servisten, deseniyle
             }

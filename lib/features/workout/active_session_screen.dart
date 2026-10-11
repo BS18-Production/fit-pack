@@ -251,6 +251,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   // ekran çalmaz; false ise (iOS, servis başlatılamadı) uygulama içi yol.
   bool _nativeRest = false;
   Timer? _countdownTimer; // uygulama içi yol: geri sayım sesinin başlangıcı
+  // Süren mola kurulumu (servis + bildirim). Kilit ekranı eylemi dönmeden
+  // beklenir — iOS ardından uygulamayı yeniden askıya alır.
+  Future<void>? _restSetup;
   // dispose'ta ref kullanılmaz — servisler baştan yakalanır.
   late final RestAlarm _restAlarm = ref.read(restAlarmProvider);
   late final FeedbackService _feedback = ref.read(feedbackServiceProvider);
@@ -326,8 +329,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   /// kurmak yetmiyordu: kilit ekranından "Seti tamamla" ile başlayan
   /// dinlenme uygulama zaten arkadayken başlar — o molanın bildirimi hiç
   /// kurulmazdı. Artık dinlenme başlarken/değişirken de çağrılır.
-  void _syncRestNotification() {
-    if (!mounted) return;
+  Future<void> _syncRestNotification() {
+    if (!mounted) return Future.value();
     final service = ref.read(notificationServiceProvider);
     final prefs = ref.read(notificationPrefsProvider);
     final deadline = _restDeadline;
@@ -337,12 +340,11 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         deadline == null ||
         !deadline.isAfter(now) ||
         !prefs.restEnabled) {
-      service.cancelRestDone();
-      return;
+      return service.cancelRestDone();
     }
     final l = AppL10n.of(context);
-    service.scheduleRestDone(
-      after: deadline.difference(now),
+    return service.scheduleRestDone(
+      at: deadline,
       title: l.notifRestDoneTitle,
       body: l.notifRestDoneBody,
       sound: prefs.restSoundEnabled ? prefs.restSound : null,
@@ -376,6 +378,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         if (_restDeadline == null) return false;
         _skipRest();
     }
+    // Taslak, mola sesi/bildirimi ve kart güncellemesi bitmeden dönme:
+    // perform() dönünce sistem uygulamayı uyutur, yarım iş kalırdı.
+    await Future.wait([_saveDraft(), _restSetup ?? Future<void>.value()]);
     await _live.flush();
     return true;
   }
@@ -987,7 +992,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _restDeadline = now.add(Duration(seconds: seconds));
     _tickRest();
     _scheduleRestTick();
-    _armRestAlarm();
+    _restSetup = _armRestAlarm();
     // İzin penceresi arka planda açılamaz (kilit ekranından tamamlanan set).
     if (_inForeground) _offerRestNotificationOnce();
     _syncLive();
@@ -1041,7 +1046,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     // Beklerken süre değiştiyse/atlandıysa bu çağrının sonucu eskidi.
     if (!mounted || _restDeadline != deadline) return;
     _nativeRest = native;
-    _syncRestNotification();
+    await _syncRestNotification();
     if (native || !prefs.restSoundEnabled) return;
     final plan = countdownPlan(deadline.difference(DateTime.now()).inMilliseconds);
     if (plan == null) return;
@@ -1095,7 +1100,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _tickRest();
     // Hedef değişti → sıradaki tık ve ses yeni hedefe göre yeniden kurulur.
     _scheduleRestTick();
-    _armRestAlarm();
+    _restSetup = _armRestAlarm();
     _saveDraft(); // kilit ekranı + taslaktaki bitiş anı (_syncLive dahil)
   }
 
@@ -1106,7 +1111,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _restStartedAt = null;
     _feedback.stopCountdown();
     _restAlarm.stop();
-    ref.read(notificationServiceProvider).cancelRestDone();
+    _restSetup = ref.read(notificationServiceProvider).cancelRestDone();
     setState(() => _restRemaining = 0);
     _saveDraft();
   }

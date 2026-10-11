@@ -48,6 +48,9 @@ String suggestedMeal(DateTime now) => switch (now.hour) {
 /// için ekleme paneli açılır. Görsel uygulamanın ikon-rozet dili (tonlu
 /// daire + Rounded ikon), koyu/açık temada aynı rollerle.
 class TodayMealsCard extends ConsumerWidget {
+  /// Bu okunur genişliğin altında (pt ÷ yazı ölçeği) dört öğün 2×2 dizilir.
+  static const _twoByTwoBelow = 300.0;
+
   /// Testler için "şimdi"; verilmezse gerçek saat.
   final DateTime? now;
 
@@ -74,7 +77,7 @@ class TodayMealsCard extends ConsumerWidget {
               ),
           ];
           // Dar ekran / büyük yazı: 2×2, metin kırpılmasın.
-          if (readable < 300) {
+          if (readable < _twoByTwoBelow) {
             return Column(
               children: [
                 Row(children: [
@@ -100,6 +103,13 @@ class TodayMealsCard extends ConsumerWidget {
 }
 
 class _MealTile extends ConsumerWidget {
+  // Öğün rozeti ölçüleri (yalnız bu kart) — ikon AppIconSize.md.
+  static const _badge = 48.0;
+  static const _check = 14.0;
+  static const _checkIcon = 10.0;
+  static const _ringWidth = 1.5;
+  static const _animation = Duration(milliseconds: 200);
+
   final String mealType;
   final double? kcal;
   final bool highlighted;
@@ -138,9 +148,9 @@ class _MealTile extends ConsumerWidget {
           child: Column(
             children: [
               AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 48,
-                height: 48,
+                duration: _animation,
+                width: _badge,
+                height: _badge,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: logged
@@ -148,7 +158,7 @@ class _MealTile extends ConsumerWidget {
                       : c.surfaceContainerHighest.withValues(alpha: 0.6),
                   border: Border.all(
                     color: highlighted ? c.primary : Colors.transparent,
-                    width: 1.5,
+                    width: _ringWidth,
                   ),
                 ),
                 child: Stack(
@@ -164,12 +174,12 @@ class _MealTile extends ConsumerWidget {
                         right: 2,
                         bottom: 2,
                         child: Container(
-                          width: 14,
-                          height: 14,
+                          width: _check,
+                          height: _check,
                           decoration: BoxDecoration(
                               color: tint, shape: BoxShape.circle),
                           child: FitPackIcon.material(Icons.check_rounded,
-                              size: 10, color: c.onSecondary),
+                              size: _checkIcon, color: c.onSecondary),
                         ),
                       ),
                   ],

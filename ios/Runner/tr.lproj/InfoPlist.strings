@@ -2,3 +2,5 @@
 "NSCameraUsageDescription" = "Ürün barkodunu okumak ve ilerleme fotoğrafı çekmek için kamerayı kullanır. Fotoğraflar bu cihazda kalır.";
 /* Galeri: ilerleme fotoğrafı seçimi (docs/19). */
 "NSPhotoLibraryUsageDescription" = "İlerleme fotoğrafını galeriden seçmek için kullanılır. Fotoğraf uygulamaya kopyalanır ve bu cihazda kalır.";
+/* Sağlık: Faz 1 yalnız adım okur (docs/39). */
+"NSHealthShareUsageDescription" = "Günlük adım sayını Ana Sayfa'da göstermek için okur. Adımlar bu cihazda kalır ve kalori hedefini değiştirmez.";

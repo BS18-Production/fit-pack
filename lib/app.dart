@@ -25,6 +25,7 @@ import 'features/sync/sync_providers.dart';
 import 'features/sync/sync_refresh.dart';
 import 'features/update/update_providers.dart';
 import 'features/auth/auth_gate.dart';
+import 'features/health/step_providers.dart';
 
 class FitPackApp extends ConsumerStatefulWidget {
   const FitPackApp({super.key});
@@ -237,6 +238,9 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
     _scheduleMealSync();
+    // Adımlar her öne gelişte tazelenir (docs/39 S-9); izin Ayarlar'dan
+    // kaldırıldıysa bağlantı durumu da yeniden hesaplanır.
+    ref.invalidate(stepLinkStateProvider);
     final today = _today();
     if (today == _day) return;
     _day = today;

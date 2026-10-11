@@ -1,10 +1,12 @@
 package com.sametorhan.fit_pack
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-class MainActivity : FlutterActivity() {
+// FlutterFragmentActivity: Health Connect izin penceresi (health paketi)
+// ActivityResult API ister; FlutterActivity ile açılmaz (docs/39).
+class MainActivity : FlutterFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         // Dinlenme sayacı servisi (docs/25) — Dart: core/feedback/rest_alarm.dart

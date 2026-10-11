@@ -5,6 +5,7 @@ import '../../data/database/daos/sync_meta_dao.dart';
 import '../../data/database/tables/sync_columns.dart';
 import '../../data/services/photo_storage.dart';
 import '../sync/sync_controller.dart' show syncLog;
+import '../health/health_prefs.dart';
 import '../workout/workout_draft.dart';
 
 /// Girişte hesap değişimi kontrolünün sonucu (docs/18 §5.1 Kural 3).
@@ -160,6 +161,8 @@ class AccountSwitchGuard {
     // Yarım kalmış seans taslağı da kullanıcı verisidir; prefs'te durduğu için
     // tablo silmesi ona dokunmaz.
     await WorkoutDraftService().clear();
+    // Sağlık bağlantısı ve adım hedefi de bu hesabındır (docs/39 S-8).
+    await HealthPrefs.clear();
     // İlerleme fotoğraflarının DOSYALARI da gider (docs/19 §6 kural 4). Satır
     // silmek yetmez: dosya diskte kalırsa bir sonraki hesabın galerisinde
     // görünmese bile önceki kullanıcının vücut fotoğrafı cihazda yaşar.

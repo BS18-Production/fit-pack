@@ -26,7 +26,9 @@ android {
         applicationId = "com.sametorhan.fit_pack"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 24
+        // 26: health paketi (Health Connect SDK) alt sınırı — Samet kararı
+        // 2026-10-11 (docs/39). Health Connect zaten Android 9+ (API 28).
+        minSdk = 26
         targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName

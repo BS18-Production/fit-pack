@@ -99,6 +99,10 @@ class WeeklyReviewInput {
   final int kcalGoal;
   final int proteinGoal;
 
+  /// Kullanıcının "kaydım tamamlandı" işaretlediği günler (docs/37, #8),
+  /// gün başına 00:00'a normalize. Boşsa beslenme bugünkü kuralla hesaplanır.
+  final Set<DateTime> completedDays;
+
   /// Kilo ölçümleri: önceki 2 hafta + bu hafta (trend için 3 hafta).
   final List<BodyMeasurement> measurements;
 
@@ -124,6 +128,7 @@ class WeeklyReviewInput {
     this.foodLogs = const [],
     this.kcalGoal = 0,
     this.proteinGoal = 0,
+    this.completedDays = const {},
     this.measurements = const [],
     this.bodyWeightKg,
     this.goalDirection,
@@ -202,11 +207,36 @@ class ExerciseProgress {
   });
 }
 
+/// Beslenme ortalamasının hangi günlerden alındığı (docs/37 §3).
+enum NutritionBasis {
+  /// Haftada ≥1 tamamlanmış gün var → yalnız onlar. Kayıtsız tamamlanmış gün
+  /// bilinçli beyandır, 0 kalori sayılır (Samet kararı).
+  completedDays,
+
+  /// Tamamlanmış gün yok → kayıt girilmiş günler (W-3, eski kural).
+  loggedDays,
+}
+
 class NutritionSection {
   /// Kayıt girilmiş gün sayısı. **0 ise hiçbir yargı yok** (W-4).
   final int loggedDays;
 
-  /// Yalnız kayıtlı günlerin ortalaması; kayıt yoksa `null` (W-3).
+  /// Ortalamanın günleri: tamamlanmış günler mi, kayıtlı günler mi.
+  final NutritionBasis basis;
+
+  /// Bu haftanın tamamlanmış gün sayısı.
+  final int completedDays;
+
+  /// Kaydı olup tamamlanmamış, ortalamaya **katılmayan** gün sayısı
+  /// ([basis] = completedDays iken; ekran "hesaba katılmadı" der).
+  final int excludedLoggedDays;
+
+  /// Protein hedefinin tutturulduğu gün sayısı — **yalnız tamamlanmış
+  /// günlerde bilinir**; tamamlanmış gün yoksa `null` (eksik kayıttan
+  /// başarısızlık çıkarılmaz, Samet kuralı).
+  final int? proteinHitDays;
+
+  /// [basis] günlerinin ortalaması; gün yoksa `null` (W-3).
   final int? avgKcal;
   final int? avgProtein;
   final int kcalGoal;
@@ -218,6 +248,10 @@ class NutritionSection {
     required this.avgProtein,
     required this.kcalGoal,
     required this.proteinGoal,
+    this.basis = NutritionBasis.loggedDays,
+    this.completedDays = 0,
+    this.excludedLoggedDays = 0,
+    this.proteinHitDays,
   });
 }
 
@@ -396,12 +430,37 @@ NutritionSection _nutrition(WeeklyReviewInput i) {
     protein[day] = (protein[day] ?? 0) + l.computedProtein;
   }
   final n = kcal.length;
-  // Kayıtlı günlerin ortalaması — 7'ye bölünmez (Samet kuralı, W-3).
+  final done = {
+    for (final d in i.completedDays)
+      if (!d.isBefore(i.weekStart) && d.isBefore(i.weekEnd))
+        DateTime(d.year, d.month, d.day),
+  };
+  if (done.isEmpty) {
+    // Kayıtlı günlerin ortalaması — 7'ye bölünmez (Samet kuralı, W-3).
+    return NutritionSection(
+      loggedDays: n,
+      avgKcal:
+          n == 0 ? null : (kcal.values.reduce((a, b) => a + b) / n).round(),
+      avgProtein:
+          n == 0 ? null : (protein.values.reduce((a, b) => a + b) / n).round(),
+      kcalGoal: i.kcalGoal,
+      proteinGoal: i.proteinGoal,
+    );
+  }
+  // Tamamlanmış günler bilinen günlerdir (docs/37 §3): ortalama yalnız onlardan,
+  // kayıtsız tamamlanmış gün 0; protein hedefi yalnız bu günlerde yargılanır.
+  final kcalSum = done.fold<double>(0, (s, d) => s + (kcal[d] ?? 0));
+  final proteinSum = done.fold<double>(0, (s, d) => s + (protein[d] ?? 0));
   return NutritionSection(
     loggedDays: n,
-    avgKcal: n == 0 ? null : (kcal.values.reduce((a, b) => a + b) / n).round(),
-    avgProtein:
-        n == 0 ? null : (protein.values.reduce((a, b) => a + b) / n).round(),
+    basis: NutritionBasis.completedDays,
+    completedDays: done.length,
+    excludedLoggedDays: kcal.keys.where((d) => !done.contains(d)).length,
+    proteinHitDays: i.proteinGoal <= 0
+        ? null
+        : done.where((d) => (protein[d] ?? 0) >= i.proteinGoal).length,
+    avgKcal: (kcalSum / done.length).round(),
+    avgProtein: (proteinSum / done.length).round(),
     kcalGoal: i.kcalGoal,
     proteinGoal: i.proteinGoal,
   );

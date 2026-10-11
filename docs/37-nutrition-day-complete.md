@@ -170,6 +170,13 @@ commit'te** (CLAUDE.md).
   istemci rolüyle. Eski Aşama 3/5 testlerinin 13 tablo beklentisi henüz
   yeniden koşulmadı. Eski testlerde global tetikleyici sayıları
   12 → 13. **Üretime UYGULANMADI.**
+- ✅ **Aşama 4** (hesap): `WeeklyReviewInput.completedDays`;
+  `NutritionSection` → `basis` (tamamlanmış/kayıtlı günler), `completedDays`,
+  `excludedLoggedDays`, `proteinHitDays` (yalnız tamamlanmış günlerde). Kayıtsız
+  tamamlanmış gün 0 kalori. Sağlayıcı `nutrition_days` tablosunu da izliyor
+  (işaretlenince değerlendirme kendiliğinden yenilenir — eksikti, düzeltildi).
+  Yol haritasındaki `dashboard_stats.dart:76-78` protein uyumu kodda artık yok;
+  ana ekranda değişecek hesap kalmadı. W-10 testleri (4) + paket 758 yeşil.
 - ⚠️ `changedAfterComplete` silinen kaydı görmez (satır kalmıyor); mezar taşı
   tablosundan okumak açık iş.
 - ⛔ **Dal sunucu göçünden (Aşama 3) önce `main`'e birleşmez / cihaza kurulmaz**:

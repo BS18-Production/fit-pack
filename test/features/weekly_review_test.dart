@@ -135,6 +135,57 @@ void main() {
     });
   });
 
+  group('W-10 tamamlanmış günler (docs/37 §3, #8)', () {
+    // Pzt yarım kayıt (tamamlanmadı), Çar tam gün (tamamlandı), Cum tamamlandı
+    // ama hiç kayıt yok (bilinçli beyan: 0 kalori).
+    final carsamba = pzt.add(const Duration(days: 2));
+    final cuma = pzt.add(const Duration(days: 4));
+    WeeklyReview hesap({Set<DateTime> done = const {}}) =>
+        buildWeeklyReview(WeeklyReviewInput(
+          weekStart: hafta,
+          now: pazarAksami,
+          kcalGoal: 3000,
+          proteinGoal: 150,
+          completedDays: done,
+          foodLogs: [
+            ogun(pzt, kcal: 800, protein: 30),
+            ogun(carsamba, kcal: 2800, protein: 160),
+          ],
+        ));
+
+    test('tamamlanmış gün yoksa eski kural aynen (kayıtlı günler)', () {
+      final n = hesap().nutrition;
+      expect(n.basis, NutritionBasis.loggedDays);
+      expect(n.avgKcal, 1800); // (800 + 2800) / 2
+      expect(n.proteinHitDays, isNull,
+          reason: 'tamamlanmış gün yokken başarı/başarısızlık çıkarılmaz');
+    });
+
+    test('tamamlanmış gün varsa ortalama YALNIZ onlardan; yarım gün dışarıda',
+        () {
+      final n = hesap(done: {carsamba}).nutrition;
+      expect(n.basis, NutritionBasis.completedDays);
+      expect(n.completedDays, 1);
+      expect(n.avgKcal, 2800);
+      expect(n.avgProtein, 160);
+      expect(n.excludedLoggedDays, 1, reason: 'pazartesi hesaba katılmadı');
+      expect(n.loggedDays, 2, reason: 'kayıt alışkanlığı sayısı değişmez');
+      expect(n.proteinHitDays, 1);
+    });
+
+    test('kayıtsız tamamlanmış gün 0 kalori sayılır (Samet kararı)', () {
+      final n = hesap(done: {carsamba, cuma}).nutrition;
+      expect(n.completedDays, 2);
+      expect(n.avgKcal, 1400); // (2800 + 0) / 2
+      expect(n.proteinHitDays, 1, reason: 'cuma 0 g < hedef');
+    });
+
+    test('hafta dışındaki tamamlanmış gün sayılmaz ([start, end))', () {
+      final n = hesap(done: {pzt.add(const Duration(days: 7))}).nutrition;
+      expect(n.basis, NutritionBasis.loggedDays);
+    });
+  });
+
   // ───────────────────────── W-5 / W-6: kilo ─────────────────────────
 
   group('W-5 kilo', () {

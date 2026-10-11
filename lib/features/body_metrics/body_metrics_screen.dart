@@ -17,6 +17,7 @@ import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/glass.dart';
+import '../../core/utils/daily_body.dart';
 import '../activity/activity_calendar.dart';
 import '../home/providers/home_providers.dart';
 import '../progress_photos/progress_photos_providers.dart';
@@ -26,7 +27,11 @@ import '../../shared/widgets/fitpack_icon.dart';
 final allMeasurementsProvider = StreamProvider<List<BodyMeasurement>>((ref) {
   final db = ref.watch(databaseProvider);
   return watchTables(db, [db.bodyMeasurements],
-      () => ref.read(bodyDaoProvider).getAllMeasurements());
+      () async => [
+            // Gizlenen tartı satırları listede de görünmez (docs/40 W-6).
+            for (final m in await ref.read(bodyDaoProvider).getAllMeasurements())
+              if (m.hidden != true) m,
+          ]);
 });
 
 class BodyMetricsScreen extends ConsumerWidget {
@@ -109,9 +114,12 @@ class BodyMetricsScreen extends ConsumerWidget {
           ];
         }
 
-        final latest = measurements.first;
+        // Özet ve grafik günde tek değerden (docs/40 W-4): aynı gün elle +
+        // tartı iki nokta çizmesin. Liste aşağıda tüm satırları gösterir.
+        final daily = dailyMeasurements(measurements);
+        final latest = daily.first;
         // Grafik için kilolu ölçümler, eskiden yeniye.
-        final weighted = measurements.where((m) => m.weightKg != null).toList()
+        final weighted = daily.where((m) => m.weightKg != null).toList()
           ..sort((a, b) => a.date.compareTo(b.date));
         final goalWeight =
             ref.watch(userProfileProvider).valueOrNull?.goalWeightKg;
@@ -141,14 +149,25 @@ class BodyMetricsScreen extends ConsumerWidget {
                   measurement: m,
                   units: units,
                   onDelete: () async {
+                    final imported = !isManualMeasurement(m);
+                    final day = context.dateFmt('d MMM yyyy').format(m.date);
                     final ok = await confirmAction(
                       context,
-                      title: AppL10n.of(context).bmDeleteTitle,
-                      message: AppL10n.of(context).bmDeleteMsg(
-                          context.dateFmt('d MMM yyyy').format(m.date)),
+                      title: imported
+                          ? AppL10n.of(context).bmHideTitle
+                          : AppL10n.of(context).bmDeleteTitle,
+                      message: imported
+                          ? AppL10n.of(context).bmHideMsg(day)
+                          : AppL10n.of(context).bmDeleteMsg(day),
                     );
                     if (!ok) return;
-                    await ref.read(bodyDaoProvider).deleteMeasurement(m.id);
+                    // Tartıdan gelen satır silinmez, gizlenir (docs/40 W-6):
+                    // silinseydi bir sonraki okumada geri gelirdi.
+                    if (imported) {
+                      await ref.read(bodyDaoProvider).hideMeasurement(m.id);
+                    } else {
+                      await ref.read(bodyDaoProvider).deleteMeasurement(m.id);
+                    }
                     // Kilo okuyan provider'lar reaktif (H-05) → silme sonrası
                     // Home "Son Kilo", TDEE, kalori tahmini kendiliğinden güncel.
                   },
@@ -550,17 +569,26 @@ class _MeasurementCard extends StatelessWidget {
           [
             if (measurement.weightKg != null)
               units.weight(measurement.weightKg!),
+            if (measurement.bodyFatPct != null)
+              '${l.bmBodyFat} %${measurement.bodyFatPct!.toStringAsFixed(1)}',
             if (measurement.waistCm != null)
               '${l.bmWaist} ${units.length(measurement.waistCm!)}',
             if (measurement.armCm != null)
               '${l.bmArm} ${units.length(measurement.armCm!)}',
             if (measurement.chestCm != null)
               '${l.bmChest} ${units.length(measurement.chestCm!)}',
-          ].join('  ·  '),
+          ].join('  ·  ') +
+              (isManualMeasurement(measurement)
+                  ? ''
+                  : '\n${l.bmFromHealth(measurement.sourceApp ?? l.healthSection)}'),
         ),
         trailing: IconButton(
-          tooltip: AppL10n.of(context).commonDelete,
-          icon: const FitPackIcon.material(Icons.delete_outline_rounded),
+          tooltip: isManualMeasurement(measurement)
+              ? AppL10n.of(context).commonDelete
+              : AppL10n.of(context).bmHideTitle,
+          icon: FitPackIcon.material(isManualMeasurement(measurement)
+              ? Icons.delete_outline_rounded
+              : Icons.visibility_off_outlined),
           onPressed: onDelete,
         ),
       ),

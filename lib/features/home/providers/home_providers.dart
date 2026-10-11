@@ -30,7 +30,7 @@ final todayNutritionProvider = StreamProvider<DailyNutrition>((ref) {
 final latestWeightProvider = StreamProvider<BodyMeasurement?>((ref) {
   final db = ref.watch(databaseProvider);
   return watchTables(db, [db.bodyMeasurements],
-      () => ref.read(bodyDaoProvider).getLatestWeight());
+      () => ref.read(bodyDaoProvider).getDailyLatestWeight());
 });
 
 /// Bugünün su tüketimi (ml). Home su kartı izler.
@@ -46,7 +46,7 @@ typedef WeightTrend = ({double? latest, double? delta});
 final weightTrendProvider = StreamProvider<WeightTrend>((ref) {
   final db = ref.watch(databaseProvider);
   return watchTables(db, [db.bodyMeasurements], () async {
-    final all = await ref.read(bodyDaoProvider).getAllMeasurements();
+    final all = await ref.read(bodyDaoProvider).getDailyMeasurements();
     final weighted = all.where((m) => m.weightKg != null).toList()
       ..sort((a, b) => b.date.compareTo(a.date)); // yeniden eskiye
     if (weighted.isEmpty) return (latest: null, delta: null);

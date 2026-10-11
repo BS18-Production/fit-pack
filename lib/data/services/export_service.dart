@@ -453,6 +453,10 @@ class ExportService {
                 'hipCm': m.hipCm,
                 'neckCm': m.neckCm,
                 'bodyFatPct': m.bodyFatPct,
+                // docs/40 W-11: tartıdan gelen ölçüm kaynağıyla (GDPR md. 20).
+                'source': m.source ?? 'manual',
+                'sourceApp': m.sourceApp,
+                'hidden': m.hidden ?? false,
               })
           .toList();
     }
@@ -568,7 +572,7 @@ class ExportService {
       final rows = <List<dynamic>>[
         [
           'date', 'weightKg', 'waistCm', 'chestCm', 'armCm',
-          'hipCm', 'neckCm', 'bodyFatPct',
+          'hipCm', 'neckCm', 'bodyFatPct', 'source', 'sourceApp',
         ],
       ];
       for (final m in snap.measurements) {
@@ -581,6 +585,8 @@ class ExportService {
           m.hipCm ?? '',
           m.neckCm ?? '',
           m.bodyFatPct ?? '',
+          m.source ?? 'manual',
+          m.sourceApp ?? '',
         ]);
       }
       buffer.writeln(converter.convert(rows));

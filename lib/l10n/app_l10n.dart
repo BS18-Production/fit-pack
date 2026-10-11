@@ -6907,6 +6907,120 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Other'**
   String get assistantMuscleOther;
+
+  /// No description provided for @bmFromHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health · {app}'**
+  String bmFromHealth(String app);
+
+  /// No description provided for @bmHideTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide measurement'**
+  String get bmHideTitle;
+
+  /// No description provided for @bmHideMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide the scale measurement from {date}? The record in your health app stays unchanged.'**
+  String bmHideMsg(String date);
+
+  /// No description provided for @healthWeightRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight and body fat'**
+  String get healthWeightRow;
+
+  /// No description provided for @healthWeightOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On · from your scale apps'**
+  String get healthWeightOn;
+
+  /// No description provided for @healthWeightOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get healthWeightOff;
+
+  /// No description provided for @healthConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bring in your scale measurements'**
+  String get healthConsentTitle;
+
+  /// No description provided for @healthConsentWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'Read: weight and body fat percentage that your scale apps write to Apple Health / Health Connect. Nothing else.'**
+  String get healthConsentWhat;
+
+  /// No description provided for @healthConsentWhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Stored in your Fit Pack account; servers are in the European Union (Germany).'**
+  String get healthConsentWhere;
+
+  /// No description provided for @healthConsentWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Used only for your progress chart, weight trend and weekly review.'**
+  String get healthConsentWhy;
+
+  /// No description provided for @healthConsentNoShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Never used for ads, never sold or shared with third parties.'**
+  String get healthConsentNoShare;
+
+  /// No description provided for @healthConsentWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'You can withdraw anytime in Settings → Health, and delete the imported measurements.'**
+  String get healthConsentWithdraw;
+
+  /// No description provided for @healthConsentLegal.
+  ///
+  /// In en, this message translates to:
+  /// **'This is your explicit consent to the processing of health data (GDPR Art. 9, KVKK Art. 6).'**
+  String get healthConsentLegal;
+
+  /// No description provided for @healthConsentAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree'**
+  String get healthConsentAccept;
+
+  /// No description provided for @healthConsentDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get healthConsentDecline;
+
+  /// No description provided for @healthWithdrawTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw consent'**
+  String get healthWithdrawTitle;
+
+  /// No description provided for @healthWithdrawMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing from your scale stops. Should the measurements already imported be kept or deleted?'**
+  String get healthWithdrawMsg;
+
+  /// No description provided for @healthWithdrawKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep measurements'**
+  String get healthWithdrawKeep;
+
+  /// No description provided for @healthWithdrawDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete measurements'**
+  String get healthWithdrawDelete;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

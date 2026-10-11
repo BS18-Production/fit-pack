@@ -22,7 +22,7 @@ final last30WorkoutStatsProvider = StreamProvider.autoDispose<WorkoutAggregate>(
       () async {
         final wo = ref.read(workoutDaoProvider);
         final bw =
-            (await ref.read(bodyDaoProvider).getLatestWeight())?.weightKg;
+            (await ref.read(bodyDaoProvider).getDailyLatestWeight())?.weightKg;
         final today = DateTime.now();
         final start = DateTime(
           today.year,
@@ -66,7 +66,7 @@ final recentWorkoutActivityProvider =
             sessions.map((s) => s.id).toList(),
           );
           final weight =
-              (await ref.read(bodyDaoProvider).getLatestWeight())?.weightKg;
+              (await ref.read(bodyDaoProvider).getDailyLatestWeight())?.weightKg;
           return workoutActivityDays(
             now: now,
             sessions: sessions,

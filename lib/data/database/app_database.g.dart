@@ -9011,6 +9011,49 @@ class $BodyMeasurementsTable extends BodyMeasurements
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceRefMeta = const VerificationMeta(
+    'sourceRef',
+  );
+  @override
+  late final GeneratedColumn<String> sourceRef = GeneratedColumn<String>(
+    'source_ref',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceAppMeta = const VerificationMeta(
+    'sourceApp',
+  );
+  @override
+  late final GeneratedColumn<String> sourceApp = GeneratedColumn<String>(
+    'source_app',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _hiddenMeta = const VerificationMeta('hidden');
+  @override
+  late final GeneratedColumn<bool> hidden = GeneratedColumn<bool>(
+    'hidden',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("hidden" IN (0, 1))',
+    ),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     uid,
@@ -9029,6 +9072,10 @@ class $BodyMeasurementsTable extends BodyMeasurements
     hipCm,
     neckCm,
     bodyFatPct,
+    source,
+    sourceRef,
+    sourceApp,
+    hidden,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -9143,6 +9190,30 @@ class $BodyMeasurementsTable extends BodyMeasurements
         ),
       );
     }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    if (data.containsKey('source_ref')) {
+      context.handle(
+        _sourceRefMeta,
+        sourceRef.isAcceptableOrUnknown(data['source_ref']!, _sourceRefMeta),
+      );
+    }
+    if (data.containsKey('source_app')) {
+      context.handle(
+        _sourceAppMeta,
+        sourceApp.isAcceptableOrUnknown(data['source_app']!, _sourceAppMeta),
+      );
+    }
+    if (data.containsKey('hidden')) {
+      context.handle(
+        _hiddenMeta,
+        hidden.isAcceptableOrUnknown(data['hidden']!, _hiddenMeta),
+      );
+    }
     return context;
   }
 
@@ -9216,6 +9287,22 @@ class $BodyMeasurementsTable extends BodyMeasurements
         DriftSqlType.double,
         data['${effectivePrefix}body_fat_pct'],
       ),
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      ),
+      sourceRef: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_ref'],
+      ),
+      sourceApp: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_app'],
+      ),
+      hidden: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}hidden'],
+      ),
     );
   }
 
@@ -9273,6 +9360,19 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
   final double? hipCm;
   final double? neckCm;
   final double? bodyFatPct;
+
+  /// `NULL`/`manual` = elle; `health` = Apple Sağlık / Health Connect.
+  final String? source;
+
+  /// Platform örnek kimliği (HealthKit UUID / Health Connect kayıt kimliği).
+  /// `_id` ile bitmez: senkron `*_id` kolonlarını yabancı anahtar sayar.
+  final String? sourceRef;
+
+  /// Ölçümü yazan uygulama (ör. "Withings"), kaynak simgesinde gösterilir.
+  final String? sourceApp;
+
+  /// İçe alınan satır silinmez, gizlenir (W-6): yeniden içe alınmasın.
+  final bool? hidden;
   const BodyMeasurement({
     this.uid,
     this.userId,
@@ -9290,6 +9390,10 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
     this.hipCm,
     this.neckCm,
     this.bodyFatPct,
+    this.source,
+    this.sourceRef,
+    this.sourceApp,
+    this.hidden,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -9338,6 +9442,18 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
     if (!nullToAbsent || bodyFatPct != null) {
       map['body_fat_pct'] = Variable<double>(bodyFatPct);
     }
+    if (!nullToAbsent || source != null) {
+      map['source'] = Variable<String>(source);
+    }
+    if (!nullToAbsent || sourceRef != null) {
+      map['source_ref'] = Variable<String>(sourceRef);
+    }
+    if (!nullToAbsent || sourceApp != null) {
+      map['source_app'] = Variable<String>(sourceApp);
+    }
+    if (!nullToAbsent || hidden != null) {
+      map['hidden'] = Variable<bool>(hidden);
+    }
     return map;
   }
 
@@ -9385,6 +9501,18 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
       bodyFatPct: bodyFatPct == null && nullToAbsent
           ? const Value.absent()
           : Value(bodyFatPct),
+      source: source == null && nullToAbsent
+          ? const Value.absent()
+          : Value(source),
+      sourceRef: sourceRef == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceRef),
+      sourceApp: sourceApp == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceApp),
+      hidden: hidden == null && nullToAbsent
+          ? const Value.absent()
+          : Value(hidden),
     );
   }
 
@@ -9410,6 +9538,10 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
       hipCm: serializer.fromJson<double?>(json['hipCm']),
       neckCm: serializer.fromJson<double?>(json['neckCm']),
       bodyFatPct: serializer.fromJson<double?>(json['bodyFatPct']),
+      source: serializer.fromJson<String?>(json['source']),
+      sourceRef: serializer.fromJson<String?>(json['sourceRef']),
+      sourceApp: serializer.fromJson<String?>(json['sourceApp']),
+      hidden: serializer.fromJson<bool?>(json['hidden']),
     );
   }
   @override
@@ -9432,6 +9564,10 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
       'hipCm': serializer.toJson<double?>(hipCm),
       'neckCm': serializer.toJson<double?>(neckCm),
       'bodyFatPct': serializer.toJson<double?>(bodyFatPct),
+      'source': serializer.toJson<String?>(source),
+      'sourceRef': serializer.toJson<String?>(sourceRef),
+      'sourceApp': serializer.toJson<String?>(sourceApp),
+      'hidden': serializer.toJson<bool?>(hidden),
     };
   }
 
@@ -9452,6 +9588,10 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
     Value<double?> hipCm = const Value.absent(),
     Value<double?> neckCm = const Value.absent(),
     Value<double?> bodyFatPct = const Value.absent(),
+    Value<String?> source = const Value.absent(),
+    Value<String?> sourceRef = const Value.absent(),
+    Value<String?> sourceApp = const Value.absent(),
+    Value<bool?> hidden = const Value.absent(),
   }) => BodyMeasurement(
     uid: uid.present ? uid.value : this.uid,
     userId: userId.present ? userId.value : this.userId,
@@ -9469,6 +9609,10 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
     hipCm: hipCm.present ? hipCm.value : this.hipCm,
     neckCm: neckCm.present ? neckCm.value : this.neckCm,
     bodyFatPct: bodyFatPct.present ? bodyFatPct.value : this.bodyFatPct,
+    source: source.present ? source.value : this.source,
+    sourceRef: sourceRef.present ? sourceRef.value : this.sourceRef,
+    sourceApp: sourceApp.present ? sourceApp.value : this.sourceApp,
+    hidden: hidden.present ? hidden.value : this.hidden,
   );
   BodyMeasurement copyWithCompanion(BodyMeasurementsCompanion data) {
     return BodyMeasurement(
@@ -9492,6 +9636,10 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
       bodyFatPct: data.bodyFatPct.present
           ? data.bodyFatPct.value
           : this.bodyFatPct,
+      source: data.source.present ? data.source.value : this.source,
+      sourceRef: data.sourceRef.present ? data.sourceRef.value : this.sourceRef,
+      sourceApp: data.sourceApp.present ? data.sourceApp.value : this.sourceApp,
+      hidden: data.hidden.present ? data.hidden.value : this.hidden,
     );
   }
 
@@ -9513,7 +9661,11 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
           ..write('armCm: $armCm, ')
           ..write('hipCm: $hipCm, ')
           ..write('neckCm: $neckCm, ')
-          ..write('bodyFatPct: $bodyFatPct')
+          ..write('bodyFatPct: $bodyFatPct, ')
+          ..write('source: $source, ')
+          ..write('sourceRef: $sourceRef, ')
+          ..write('sourceApp: $sourceApp, ')
+          ..write('hidden: $hidden')
           ..write(')'))
         .toString();
   }
@@ -9536,6 +9688,10 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
     hipCm,
     neckCm,
     bodyFatPct,
+    source,
+    sourceRef,
+    sourceApp,
+    hidden,
   );
   @override
   bool operator ==(Object other) =>
@@ -9556,7 +9712,11 @@ class BodyMeasurement extends DataClass implements Insertable<BodyMeasurement> {
           other.armCm == this.armCm &&
           other.hipCm == this.hipCm &&
           other.neckCm == this.neckCm &&
-          other.bodyFatPct == this.bodyFatPct);
+          other.bodyFatPct == this.bodyFatPct &&
+          other.source == this.source &&
+          other.sourceRef == this.sourceRef &&
+          other.sourceApp == this.sourceApp &&
+          other.hidden == this.hidden);
 }
 
 class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
@@ -9576,6 +9736,10 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
   final Value<double?> hipCm;
   final Value<double?> neckCm;
   final Value<double?> bodyFatPct;
+  final Value<String?> source;
+  final Value<String?> sourceRef;
+  final Value<String?> sourceApp;
+  final Value<bool?> hidden;
   const BodyMeasurementsCompanion({
     this.uid = const Value.absent(),
     this.userId = const Value.absent(),
@@ -9593,6 +9757,10 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
     this.hipCm = const Value.absent(),
     this.neckCm = const Value.absent(),
     this.bodyFatPct = const Value.absent(),
+    this.source = const Value.absent(),
+    this.sourceRef = const Value.absent(),
+    this.sourceApp = const Value.absent(),
+    this.hidden = const Value.absent(),
   });
   BodyMeasurementsCompanion.insert({
     this.uid = const Value.absent(),
@@ -9611,6 +9779,10 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
     this.hipCm = const Value.absent(),
     this.neckCm = const Value.absent(),
     this.bodyFatPct = const Value.absent(),
+    this.source = const Value.absent(),
+    this.sourceRef = const Value.absent(),
+    this.sourceApp = const Value.absent(),
+    this.hidden = const Value.absent(),
   }) : date = Value(date);
   static Insertable<BodyMeasurement> custom({
     Expression<String>? uid,
@@ -9629,6 +9801,10 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
     Expression<double>? hipCm,
     Expression<double>? neckCm,
     Expression<double>? bodyFatPct,
+    Expression<String>? source,
+    Expression<String>? sourceRef,
+    Expression<String>? sourceApp,
+    Expression<bool>? hidden,
   }) {
     return RawValuesInsertable({
       if (uid != null) 'uid': uid,
@@ -9647,6 +9823,10 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
       if (hipCm != null) 'hip_cm': hipCm,
       if (neckCm != null) 'neck_cm': neckCm,
       if (bodyFatPct != null) 'body_fat_pct': bodyFatPct,
+      if (source != null) 'source': source,
+      if (sourceRef != null) 'source_ref': sourceRef,
+      if (sourceApp != null) 'source_app': sourceApp,
+      if (hidden != null) 'hidden': hidden,
     });
   }
 
@@ -9667,6 +9847,10 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
     Value<double?>? hipCm,
     Value<double?>? neckCm,
     Value<double?>? bodyFatPct,
+    Value<String?>? source,
+    Value<String?>? sourceRef,
+    Value<String?>? sourceApp,
+    Value<bool?>? hidden,
   }) {
     return BodyMeasurementsCompanion(
       uid: uid ?? this.uid,
@@ -9685,6 +9869,10 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
       hipCm: hipCm ?? this.hipCm,
       neckCm: neckCm ?? this.neckCm,
       bodyFatPct: bodyFatPct ?? this.bodyFatPct,
+      source: source ?? this.source,
+      sourceRef: sourceRef ?? this.sourceRef,
+      sourceApp: sourceApp ?? this.sourceApp,
+      hidden: hidden ?? this.hidden,
     );
   }
 
@@ -9739,6 +9927,18 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
     if (bodyFatPct.present) {
       map['body_fat_pct'] = Variable<double>(bodyFatPct.value);
     }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (sourceRef.present) {
+      map['source_ref'] = Variable<String>(sourceRef.value);
+    }
+    if (sourceApp.present) {
+      map['source_app'] = Variable<String>(sourceApp.value);
+    }
+    if (hidden.present) {
+      map['hidden'] = Variable<bool>(hidden.value);
+    }
     return map;
   }
 
@@ -9760,7 +9960,11 @@ class BodyMeasurementsCompanion extends UpdateCompanion<BodyMeasurement> {
           ..write('armCm: $armCm, ')
           ..write('hipCm: $hipCm, ')
           ..write('neckCm: $neckCm, ')
-          ..write('bodyFatPct: $bodyFatPct')
+          ..write('bodyFatPct: $bodyFatPct, ')
+          ..write('source: $source, ')
+          ..write('sourceRef: $sourceRef, ')
+          ..write('sourceApp: $sourceApp, ')
+          ..write('hidden: $hidden')
           ..write(')'))
         .toString();
   }
@@ -11017,6 +11221,28 @@ class $UserProfileTable extends UserProfile
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _healthConsentAtMeta = const VerificationMeta(
+    'healthConsentAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> healthConsentAt =
+      GeneratedColumn<DateTime>(
+        'health_consent_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _healthConsentVersionMeta =
+      const VerificationMeta('healthConsentVersion');
+  @override
+  late final GeneratedColumn<int> healthConsentVersion = GeneratedColumn<int>(
+    'health_consent_version',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     uid,
@@ -11042,6 +11268,8 @@ class $UserProfileTable extends UserProfile
     activityLevel,
     goalDirection,
     goalDirectionSince,
+    healthConsentAt,
+    healthConsentVersion,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -11219,6 +11447,24 @@ class $UserProfileTable extends UserProfile
         ),
       );
     }
+    if (data.containsKey('health_consent_at')) {
+      context.handle(
+        _healthConsentAtMeta,
+        healthConsentAt.isAcceptableOrUnknown(
+          data['health_consent_at']!,
+          _healthConsentAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('health_consent_version')) {
+      context.handle(
+        _healthConsentVersionMeta,
+        healthConsentVersion.isAcceptableOrUnknown(
+          data['health_consent_version']!,
+          _healthConsentVersionMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -11320,6 +11566,14 @@ class $UserProfileTable extends UserProfile
         DriftSqlType.dateTime,
         data['${effectivePrefix}goal_direction_since'],
       ),
+      healthConsentAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}health_consent_at'],
+      ),
+      healthConsentVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}health_consent_version'],
+      ),
     );
   }
 
@@ -11384,6 +11638,8 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
   final String? activityLevel;
   final String? goalDirection;
   final DateTime? goalDirectionSince;
+  final DateTime? healthConsentAt;
+  final int? healthConsentVersion;
   const UserProfileData({
     this.uid,
     this.userId,
@@ -11408,6 +11664,8 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     this.activityLevel,
     this.goalDirection,
     this.goalDirectionSince,
+    this.healthConsentAt,
+    this.healthConsentVersion,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -11465,6 +11723,12 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     if (!nullToAbsent || goalDirectionSince != null) {
       map['goal_direction_since'] = Variable<DateTime>(goalDirectionSince);
     }
+    if (!nullToAbsent || healthConsentAt != null) {
+      map['health_consent_at'] = Variable<DateTime>(healthConsentAt);
+    }
+    if (!nullToAbsent || healthConsentVersion != null) {
+      map['health_consent_version'] = Variable<int>(healthConsentVersion);
+    }
     return map;
   }
 
@@ -11521,6 +11785,12 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       goalDirectionSince: goalDirectionSince == null && nullToAbsent
           ? const Value.absent()
           : Value(goalDirectionSince),
+      healthConsentAt: healthConsentAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(healthConsentAt),
+      healthConsentVersion: healthConsentVersion == null && nullToAbsent
+          ? const Value.absent()
+          : Value(healthConsentVersion),
     );
   }
 
@@ -11555,6 +11825,10 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       goalDirectionSince: serializer.fromJson<DateTime?>(
         json['goalDirectionSince'],
       ),
+      healthConsentAt: serializer.fromJson<DateTime?>(json['healthConsentAt']),
+      healthConsentVersion: serializer.fromJson<int?>(
+        json['healthConsentVersion'],
+      ),
     );
   }
   @override
@@ -11584,6 +11858,8 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       'activityLevel': serializer.toJson<String?>(activityLevel),
       'goalDirection': serializer.toJson<String?>(goalDirection),
       'goalDirectionSince': serializer.toJson<DateTime?>(goalDirectionSince),
+      'healthConsentAt': serializer.toJson<DateTime?>(healthConsentAt),
+      'healthConsentVersion': serializer.toJson<int?>(healthConsentVersion),
     };
   }
 
@@ -11611,6 +11887,8 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     Value<String?> activityLevel = const Value.absent(),
     Value<String?> goalDirection = const Value.absent(),
     Value<DateTime?> goalDirectionSince = const Value.absent(),
+    Value<DateTime?> healthConsentAt = const Value.absent(),
+    Value<int?> healthConsentVersion = const Value.absent(),
   }) => UserProfileData(
     uid: uid.present ? uid.value : this.uid,
     userId: userId.present ? userId.value : this.userId,
@@ -11641,6 +11919,12 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     goalDirectionSince: goalDirectionSince.present
         ? goalDirectionSince.value
         : this.goalDirectionSince,
+    healthConsentAt: healthConsentAt.present
+        ? healthConsentAt.value
+        : this.healthConsentAt,
+    healthConsentVersion: healthConsentVersion.present
+        ? healthConsentVersion.value
+        : this.healthConsentVersion,
   );
   UserProfileData copyWithCompanion(UserProfileCompanion data) {
     return UserProfileData(
@@ -11687,6 +11971,12 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
       goalDirectionSince: data.goalDirectionSince.present
           ? data.goalDirectionSince.value
           : this.goalDirectionSince,
+      healthConsentAt: data.healthConsentAt.present
+          ? data.healthConsentAt.value
+          : this.healthConsentAt,
+      healthConsentVersion: data.healthConsentVersion.present
+          ? data.healthConsentVersion.value
+          : this.healthConsentVersion,
     );
   }
 
@@ -11715,7 +12005,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           ..write('gender: $gender, ')
           ..write('activityLevel: $activityLevel, ')
           ..write('goalDirection: $goalDirection, ')
-          ..write('goalDirectionSince: $goalDirectionSince')
+          ..write('goalDirectionSince: $goalDirectionSince, ')
+          ..write('healthConsentAt: $healthConsentAt, ')
+          ..write('healthConsentVersion: $healthConsentVersion')
           ..write(')'))
         .toString();
   }
@@ -11745,6 +12037,8 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
     activityLevel,
     goalDirection,
     goalDirectionSince,
+    healthConsentAt,
+    healthConsentVersion,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -11772,7 +12066,9 @@ class UserProfileData extends DataClass implements Insertable<UserProfileData> {
           other.gender == this.gender &&
           other.activityLevel == this.activityLevel &&
           other.goalDirection == this.goalDirection &&
-          other.goalDirectionSince == this.goalDirectionSince);
+          other.goalDirectionSince == this.goalDirectionSince &&
+          other.healthConsentAt == this.healthConsentAt &&
+          other.healthConsentVersion == this.healthConsentVersion);
 }
 
 class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
@@ -11799,6 +12095,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
   final Value<String?> activityLevel;
   final Value<String?> goalDirection;
   final Value<DateTime?> goalDirectionSince;
+  final Value<DateTime?> healthConsentAt;
+  final Value<int?> healthConsentVersion;
   const UserProfileCompanion({
     this.uid = const Value.absent(),
     this.userId = const Value.absent(),
@@ -11823,6 +12121,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     this.activityLevel = const Value.absent(),
     this.goalDirection = const Value.absent(),
     this.goalDirectionSince = const Value.absent(),
+    this.healthConsentAt = const Value.absent(),
+    this.healthConsentVersion = const Value.absent(),
   });
   UserProfileCompanion.insert({
     this.uid = const Value.absent(),
@@ -11848,6 +12148,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     this.activityLevel = const Value.absent(),
     this.goalDirection = const Value.absent(),
     this.goalDirectionSince = const Value.absent(),
+    this.healthConsentAt = const Value.absent(),
+    this.healthConsentVersion = const Value.absent(),
   }) : startDate = Value(startDate);
   static Insertable<UserProfileData> custom({
     Expression<String>? uid,
@@ -11873,6 +12175,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     Expression<String>? activityLevel,
     Expression<String>? goalDirection,
     Expression<DateTime>? goalDirectionSince,
+    Expression<DateTime>? healthConsentAt,
+    Expression<int>? healthConsentVersion,
   }) {
     return RawValuesInsertable({
       if (uid != null) 'uid': uid,
@@ -11899,6 +12203,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
       if (goalDirection != null) 'goal_direction': goalDirection,
       if (goalDirectionSince != null)
         'goal_direction_since': goalDirectionSince,
+      if (healthConsentAt != null) 'health_consent_at': healthConsentAt,
+      if (healthConsentVersion != null)
+        'health_consent_version': healthConsentVersion,
     });
   }
 
@@ -11926,6 +12233,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
     Value<String?>? activityLevel,
     Value<String?>? goalDirection,
     Value<DateTime?>? goalDirectionSince,
+    Value<DateTime?>? healthConsentAt,
+    Value<int?>? healthConsentVersion,
   }) {
     return UserProfileCompanion(
       uid: uid ?? this.uid,
@@ -11951,6 +12260,8 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
       activityLevel: activityLevel ?? this.activityLevel,
       goalDirection: goalDirection ?? this.goalDirection,
       goalDirectionSince: goalDirectionSince ?? this.goalDirectionSince,
+      healthConsentAt: healthConsentAt ?? this.healthConsentAt,
+      healthConsentVersion: healthConsentVersion ?? this.healthConsentVersion,
     );
   }
 
@@ -12028,6 +12339,12 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
         goalDirectionSince.value,
       );
     }
+    if (healthConsentAt.present) {
+      map['health_consent_at'] = Variable<DateTime>(healthConsentAt.value);
+    }
+    if (healthConsentVersion.present) {
+      map['health_consent_version'] = Variable<int>(healthConsentVersion.value);
+    }
     return map;
   }
 
@@ -12056,7 +12373,9 @@ class UserProfileCompanion extends UpdateCompanion<UserProfileData> {
           ..write('gender: $gender, ')
           ..write('activityLevel: $activityLevel, ')
           ..write('goalDirection: $goalDirection, ')
-          ..write('goalDirectionSince: $goalDirectionSince')
+          ..write('goalDirectionSince: $goalDirectionSince, ')
+          ..write('healthConsentAt: $healthConsentAt, ')
+          ..write('healthConsentVersion: $healthConsentVersion')
           ..write(')'))
         .toString();
   }
@@ -20031,6 +20350,10 @@ typedef $$BodyMeasurementsTableCreateCompanionBuilder =
       Value<double?> hipCm,
       Value<double?> neckCm,
       Value<double?> bodyFatPct,
+      Value<String?> source,
+      Value<String?> sourceRef,
+      Value<String?> sourceApp,
+      Value<bool?> hidden,
     });
 typedef $$BodyMeasurementsTableUpdateCompanionBuilder =
     BodyMeasurementsCompanion Function({
@@ -20050,6 +20373,10 @@ typedef $$BodyMeasurementsTableUpdateCompanionBuilder =
       Value<double?> hipCm,
       Value<double?> neckCm,
       Value<double?> bodyFatPct,
+      Value<String?> source,
+      Value<String?> sourceRef,
+      Value<String?> sourceApp,
+      Value<bool?> hidden,
     });
 
 class $$BodyMeasurementsTableFilterComposer
@@ -20138,6 +20465,26 @@ class $$BodyMeasurementsTableFilterComposer
 
   ColumnFilters<double> get bodyFatPct => $composableBuilder(
     column: $table.bodyFatPct,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceRef => $composableBuilder(
+    column: $table.sourceRef,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceApp => $composableBuilder(
+    column: $table.sourceApp,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get hidden => $composableBuilder(
+    column: $table.hidden,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -20230,6 +20577,26 @@ class $$BodyMeasurementsTableOrderingComposer
     column: $table.bodyFatPct,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceRef => $composableBuilder(
+    column: $table.sourceRef,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceApp => $composableBuilder(
+    column: $table.sourceApp,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get hidden => $composableBuilder(
+    column: $table.hidden,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$BodyMeasurementsTableAnnotationComposer
@@ -20292,6 +20659,18 @@ class $$BodyMeasurementsTableAnnotationComposer
     column: $table.bodyFatPct,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceRef =>
+      $composableBuilder(column: $table.sourceRef, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceApp =>
+      $composableBuilder(column: $table.sourceApp, builder: (column) => column);
+
+  GeneratedColumn<bool> get hidden =>
+      $composableBuilder(column: $table.hidden, builder: (column) => column);
 }
 
 class $$BodyMeasurementsTableTableManager
@@ -20347,6 +20726,10 @@ class $$BodyMeasurementsTableTableManager
                 Value<double?> hipCm = const Value.absent(),
                 Value<double?> neckCm = const Value.absent(),
                 Value<double?> bodyFatPct = const Value.absent(),
+                Value<String?> source = const Value.absent(),
+                Value<String?> sourceRef = const Value.absent(),
+                Value<String?> sourceApp = const Value.absent(),
+                Value<bool?> hidden = const Value.absent(),
               }) => BodyMeasurementsCompanion(
                 uid: uid,
                 userId: userId,
@@ -20364,6 +20747,10 @@ class $$BodyMeasurementsTableTableManager
                 hipCm: hipCm,
                 neckCm: neckCm,
                 bodyFatPct: bodyFatPct,
+                source: source,
+                sourceRef: sourceRef,
+                sourceApp: sourceApp,
+                hidden: hidden,
               ),
           createCompanionCallback:
               ({
@@ -20383,6 +20770,10 @@ class $$BodyMeasurementsTableTableManager
                 Value<double?> hipCm = const Value.absent(),
                 Value<double?> neckCm = const Value.absent(),
                 Value<double?> bodyFatPct = const Value.absent(),
+                Value<String?> source = const Value.absent(),
+                Value<String?> sourceRef = const Value.absent(),
+                Value<String?> sourceApp = const Value.absent(),
+                Value<bool?> hidden = const Value.absent(),
               }) => BodyMeasurementsCompanion.insert(
                 uid: uid,
                 userId: userId,
@@ -20400,6 +20791,10 @@ class $$BodyMeasurementsTableTableManager
                 hipCm: hipCm,
                 neckCm: neckCm,
                 bodyFatPct: bodyFatPct,
+                source: source,
+                sourceRef: sourceRef,
+                sourceApp: sourceApp,
+                hidden: hidden,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -20942,6 +21337,8 @@ typedef $$UserProfileTableCreateCompanionBuilder =
       Value<String?> activityLevel,
       Value<String?> goalDirection,
       Value<DateTime?> goalDirectionSince,
+      Value<DateTime?> healthConsentAt,
+      Value<int?> healthConsentVersion,
     });
 typedef $$UserProfileTableUpdateCompanionBuilder =
     UserProfileCompanion Function({
@@ -20968,6 +21365,8 @@ typedef $$UserProfileTableUpdateCompanionBuilder =
       Value<String?> activityLevel,
       Value<String?> goalDirection,
       Value<DateTime?> goalDirectionSince,
+      Value<DateTime?> healthConsentAt,
+      Value<int?> healthConsentVersion,
     });
 
 class $$UserProfileTableFilterComposer
@@ -21091,6 +21490,16 @@ class $$UserProfileTableFilterComposer
 
   ColumnFilters<DateTime> get goalDirectionSince => $composableBuilder(
     column: $table.goalDirectionSince,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get healthConsentAt => $composableBuilder(
+    column: $table.healthConsentAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get healthConsentVersion => $composableBuilder(
+    column: $table.healthConsentVersion,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -21218,6 +21627,16 @@ class $$UserProfileTableOrderingComposer
     column: $table.goalDirectionSince,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get healthConsentAt => $composableBuilder(
+    column: $table.healthConsentAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get healthConsentVersion => $composableBuilder(
+    column: $table.healthConsentVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$UserProfileTableAnnotationComposer
@@ -21317,6 +21736,16 @@ class $$UserProfileTableAnnotationComposer
     column: $table.goalDirectionSince,
     builder: (column) => column,
   );
+
+  GeneratedColumn<DateTime> get healthConsentAt => $composableBuilder(
+    column: $table.healthConsentAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get healthConsentVersion => $composableBuilder(
+    column: $table.healthConsentVersion,
+    builder: (column) => column,
+  );
 }
 
 class $$UserProfileTableTableManager
@@ -21373,6 +21802,8 @@ class $$UserProfileTableTableManager
                 Value<String?> activityLevel = const Value.absent(),
                 Value<String?> goalDirection = const Value.absent(),
                 Value<DateTime?> goalDirectionSince = const Value.absent(),
+                Value<DateTime?> healthConsentAt = const Value.absent(),
+                Value<int?> healthConsentVersion = const Value.absent(),
               }) => UserProfileCompanion(
                 uid: uid,
                 userId: userId,
@@ -21397,6 +21828,8 @@ class $$UserProfileTableTableManager
                 activityLevel: activityLevel,
                 goalDirection: goalDirection,
                 goalDirectionSince: goalDirectionSince,
+                healthConsentAt: healthConsentAt,
+                healthConsentVersion: healthConsentVersion,
               ),
           createCompanionCallback:
               ({
@@ -21423,6 +21856,8 @@ class $$UserProfileTableTableManager
                 Value<String?> activityLevel = const Value.absent(),
                 Value<String?> goalDirection = const Value.absent(),
                 Value<DateTime?> goalDirectionSince = const Value.absent(),
+                Value<DateTime?> healthConsentAt = const Value.absent(),
+                Value<int?> healthConsentVersion = const Value.absent(),
               }) => UserProfileCompanion.insert(
                 uid: uid,
                 userId: userId,
@@ -21447,6 +21882,8 @@ class $$UserProfileTableTableManager
                 activityLevel: activityLevel,
                 goalDirection: goalDirection,
                 goalDirectionSince: goalDirectionSince,
+                healthConsentAt: healthConsentAt,
+                healthConsentVersion: healthConsentVersion,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

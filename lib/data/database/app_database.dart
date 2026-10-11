@@ -115,7 +115,10 @@ class AppDatabase extends _$AppDatabase {
   /// tablo henüz yok. Sunucu tablosu istemciden ÖNCE uygulanır (docs/37 §4).
   @override
   // v15 → v16: yerel/metinsiz asistan kalite olayları (docs/38). Senkron yok.
-  int get schemaVersion => 16;
+  // v16 → v17: body_measurements kaynak kolonları + user_profile sağlık rızası
+  // (docs/40, docs/41). Sunucuya aynı kolonlar ÖNCE eklenir
+  // (`supabase/migrations/20261011180000_health_weight_consent.sql`).
+  int get schemaVersion => 17;
 
   /// v5→v6 gibi ARA göç adımları `m.createTable()` ile GÜNCEL tanımı kullanır —
   /// yani o adımda doğan tablo (routines, routine_exercises, water_intake)
@@ -217,6 +220,7 @@ class AppDatabase extends _$AppDatabase {
           await m.database.customStatement(createUpdateTriggerSql(t));
           await m.database.customStatement(createDeleteTriggerSql(t));
         }
+        await m.database.customStatement(bodySourceRefIndexSql);
       },
 
       // Sürümden sürüme göç. Her `from` için bir sonraki adıma yol tarif edilir.
@@ -485,6 +489,18 @@ class AppDatabase extends _$AppDatabase {
         }
         if (from < 16 && to >= 16) {
           await m.createTable(assistantQualityEvents);
+        }
+        if (from < 17 && to >= 17) {
+          await _addColumnIfMissing(m, bodyMeasurements, bodyMeasurements.source);
+          await _addColumnIfMissing(
+              m, bodyMeasurements, bodyMeasurements.sourceRef);
+          await _addColumnIfMissing(
+              m, bodyMeasurements, bodyMeasurements.sourceApp);
+          await _addColumnIfMissing(m, bodyMeasurements, bodyMeasurements.hidden);
+          await _addColumnIfMissing(m, userProfile, userProfile.healthConsentAt);
+          await _addColumnIfMissing(
+              m, userProfile, userProfile.healthConsentVersion);
+          await m.database.customStatement(bodySourceRefIndexSql);
         }
       },
 

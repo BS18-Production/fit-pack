@@ -4106,4 +4106,72 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get assistantMuscleOther => 'Other';
+
+  @override
+  String bmFromHealth(String app) {
+    return 'Health · $app';
+  }
+
+  @override
+  String get bmHideTitle => 'Hide measurement';
+
+  @override
+  String bmHideMsg(String date) {
+    return 'Hide the scale measurement from $date? The record in your health app stays unchanged.';
+  }
+
+  @override
+  String get healthWeightRow => 'Weight and body fat';
+
+  @override
+  String get healthWeightOn => 'On · from your scale apps';
+
+  @override
+  String get healthWeightOff => 'Off';
+
+  @override
+  String get healthConsentTitle => 'Bring in your scale measurements';
+
+  @override
+  String get healthConsentWhat =>
+      'Read: weight and body fat percentage that your scale apps write to Apple Health / Health Connect. Nothing else.';
+
+  @override
+  String get healthConsentWhere =>
+      'Stored in your Fit Pack account; servers are in the European Union (Germany).';
+
+  @override
+  String get healthConsentWhy =>
+      'Used only for your progress chart, weight trend and weekly review.';
+
+  @override
+  String get healthConsentNoShare =>
+      'Never used for ads, never sold or shared with third parties.';
+
+  @override
+  String get healthConsentWithdraw =>
+      'You can withdraw anytime in Settings → Health, and delete the imported measurements.';
+
+  @override
+  String get healthConsentLegal =>
+      'This is your explicit consent to the processing of health data (GDPR Art. 9, KVKK Art. 6).';
+
+  @override
+  String get healthConsentAccept => 'I agree';
+
+  @override
+  String get healthConsentDecline => 'Not now';
+
+  @override
+  String get healthWithdrawTitle => 'Withdraw consent';
+
+  @override
+  String get healthWithdrawMsg =>
+      'Importing from your scale stops. Should the measurements already imported be kept or deleted?';
+
+  @override
+  String get healthWithdrawKeep => 'Keep measurements';
+
+  @override
+  String get healthWithdrawDelete => 'Delete measurements';
 }

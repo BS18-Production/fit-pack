@@ -54,7 +54,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Used to scan product barcodes and to take progress photos. Photos stay on this device.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Reads your daily step count to show it on the Home screen. Steps stay on this device and do not change your calorie goal.</string>
+	<string>Reads your daily steps (kept on this device) and, with your consent, weight and body fat written by your scale apps (saved to your Fit Pack account). Never used for ads or shared.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Used to pick progress photos from your library. Photos are copied into the app and stay on this device.</string>
 	<key>NSSupportsLiveActivities</key>

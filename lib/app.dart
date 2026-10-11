@@ -25,6 +25,7 @@ import 'features/sync/sync_providers.dart';
 import 'features/sync/sync_refresh.dart';
 import 'features/update/update_providers.dart';
 import 'features/auth/auth_gate.dart';
+import 'features/health/body_providers.dart';
 import 'features/health/step_providers.dart';
 
 class FitPackApp extends ConsumerStatefulWidget {
@@ -223,7 +224,10 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     ref.listenManual(notificationPrefsProvider, (prev, next) {
       if (prev?.mealEnabled != next.mealEnabled) _scheduleMealSync();
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scheduleMealSync());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scheduleMealSync();
+      unawaited(runBodyImportFrom(ref)); // docs/40: açılışta da
+    });
   }
 
   @override
@@ -241,6 +245,9 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     // Adımlar her öne gelişte tazelenir (docs/39 S-9); izin Ayarlar'dan
     // kaldırıldıysa bağlantı durumu da yeniden hesaplanır.
     ref.invalidate(stepLinkStateProvider);
+    // Tartıdan kilo (docs/40): rıza varsa son günler içe alınır. Satırlar
+    // body_measurements'a yazılır → kilo okuyan ekranlar kendiliğinden tazelenir.
+    unawaited(runBodyImportFrom(ref));
     final today = _today();
     if (today == _day) return;
     _day = today;

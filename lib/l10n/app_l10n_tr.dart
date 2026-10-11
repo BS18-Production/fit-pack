@@ -4055,4 +4055,72 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get assistantMuscleOther => 'Diğer';
+
+  @override
+  String bmFromHealth(String app) {
+    return 'Sağlık · $app';
+  }
+
+  @override
+  String get bmHideTitle => 'Ölçümü gizle';
+
+  @override
+  String bmHideMsg(String date) {
+    return '$date tarihli tartı ölçümü gizlensin mi? Sağlık uygulamasındaki kayıt değişmez.';
+  }
+
+  @override
+  String get healthWeightRow => 'Kilo ve yağ oranı';
+
+  @override
+  String get healthWeightOn => 'Açık · tartı uygulamalarından';
+
+  @override
+  String get healthWeightOff => 'Kapalı';
+
+  @override
+  String get healthConsentTitle => 'Tartı ölçümlerin Fit Pack\'e gelsin';
+
+  @override
+  String get healthConsentWhat =>
+      'Okunan: tartı uygulamalarının Apple Sağlık / Health Connect\'e yazdığı kilo ve vücut yağ oranı. Başka bir şey değil.';
+
+  @override
+  String get healthConsentWhere =>
+      'Fit Pack hesabında saklanır; sunucular Avrupa Birliği\'nde (Almanya).';
+
+  @override
+  String get healthConsentWhy =>
+      'Yalnız ilerleme grafiğin, kilo eğilimin ve haftalık değerlendirmen için kullanılır.';
+
+  @override
+  String get healthConsentNoShare =>
+      'Reklamda kullanılmaz, satılmaz, üçüncü taraflarla paylaşılmaz.';
+
+  @override
+  String get healthConsentWithdraw =>
+      'Rızanı istediğin an Ayarlar → Sağlık\'tan geri alabilir, içe alınan ölçümleri silebilirsin.';
+
+  @override
+  String get healthConsentLegal =>
+      'Bu, sağlık verilerinin işlenmesine ilişkin açık rızandır (KVKK md. 6, GDPR md. 9).';
+
+  @override
+  String get healthConsentAccept => 'Kabul ediyorum';
+
+  @override
+  String get healthConsentDecline => 'Şimdi değil';
+
+  @override
+  String get healthWithdrawTitle => 'Rızayı geri al';
+
+  @override
+  String get healthWithdrawMsg =>
+      'Tartıdan içe aktarma durur. Şimdiye kadar içe alınan ölçümler tutulsun mu, silinsin mi?';
+
+  @override
+  String get healthWithdrawKeep => 'Ölçümleri tut';
+
+  @override
+  String get healthWithdrawDelete => 'Ölçümleri sil';
 }

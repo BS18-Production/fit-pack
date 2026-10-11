@@ -371,6 +371,34 @@ kural → yeni ayar + yeni 120 soruluk kabul seti; (b) Jev'i bırakıp aynı set
 Claude Haiku sınıflandırmasını ölçmek (§5); (c) asistanı yapay zekâsız hazır
 sorularla başlatmak, eşlemeyi sonraya bırakmak.
 
+## 12. v3: yerel süzgeç + "ağırlık" kuralı (2026-10-11, Samet: "a")
+
+- **Yerel enjeksiyon süzgeci** (`prefilter`): JSON/süslü parantez, iç kimlikler
+  (`workout_summary`…), `query=`/`period:` gibi anahtarlar, "sistem:/yönetici:"
+  ile başlama, "talimat/kural … unut/boşver" kalıpları → soru Jev'e gitmez,
+  hazır sorular gösterilir. Ayar + yanmış kabul setindeki kapsam içi soruların
+  **hiçbirini** yanlış engellemiyor.
+- **Hareket geçen soruda kilo sorgusu yok** (`mentions_exercise`): soruda
+  kullanıcının bir hareket kelimesi geçiyorsa ("latta", "benchte")
+  `weight_trend` otomatik cevaplanmaz. Hareket kelimeleri `exercises.json`
+  `keywords` alanında (Jev'e gitmez; uygulamada kullanıcının kendi hareketleri).
+- **Ayar seti 232 soru** (112 + yanmış v2 kabul setinin 120'si).
+
+| Ayar (A, Türkçe) | Değer |
+|---|---|
+| Yanlış otomatik / geri dönüş | **%1,9 / %5,5** |
+| Kapsam dışı reddi · kritik | %96,7 · 0/45 |
+| Süzgeç: engellenen · kapsam içi yanlış engelleme | 15 · 0 |
+
+✅ **Donduruldu (v3):** A — Y 0,60 · Yp 0 · Ye 0,2 · M 0,90 · G 0,70,
+parmak izi `b2cee7a9`.
+
+**İstatistik uyarısı (kabul setinden önce):** gerçek hata oranı ayardaki gibi
+~%1,9 ise, 120 soruluk kabul setinde (~80 otomatik cevap) "gözlenen ≤ %3 ve
+%95 üst sınır ≤ %5" ölçütü **sıfır hata** ister → Jev gerçekten iyi olsa bile
+geçme olasılığı **~%22**. 200 otomatik cevapta ~%67, 300'de ~%88. Karar
+Samet'te (§8 madde 9).
+
 ## 8. Samet'in kararları (2026-10-10)
 
 1. ✅ **TypeSafe hesabı** açıldı; anahtar `~/.config/fitpack/typesafe.env`

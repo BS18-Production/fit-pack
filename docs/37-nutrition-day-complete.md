@@ -155,6 +155,14 @@ commit'te** (CLAUDE.md).
   doğrudan bağımlılık), DAO (`markDayComplete`, `reopenDay`,
   `getCompletedDays`, `watchDay`, `changedAfterComplete`), göç testi v14→v15,
   DAO testleri. Tüm paket yeşil.
+- 🔧 **Aşama 3** (sunucu): `supabase/migrations/20261010120000_nutrition_days.sql`
+  — PK **(user_id, uid)** (gün kimliği kullanıcıdan bağımsız; diğer tablolarda
+  PK hâlâ yalnız `uid`, docs/20 Aşama 6), `unique (user_id, day)`, RLS, yetki,
+  imleç dizini, `sync_guard` + silme izi tetikleyicileri, `sync_delete` izin
+  listesi 13 tablo. **`Fit Pack Dev`'e uygulandı (2026-10-11)**; pgTAP
+  (`supabase/tests/nutrition_days.sql`, 9 test) Supabase bağlantısı aralıklı
+  koptuğu için **henüz koşulmadı**. Eski testlerde global tetikleyici sayıları
+  12 → 13. **Üretime UYGULANMADI.**
 - ⚠️ `changedAfterComplete` silinen kaydı görmez (satır kalmıyor); mezar taşı
   tablosundan okumak açık iş.
 - ⛔ **Dal sunucu göçünden (Aşama 3) önce `main`'e birleşmez / cihaza kurulmaz**:

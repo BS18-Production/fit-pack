@@ -40,7 +40,8 @@ begin
   -- ═══ Yapı ═══
   select count(*)::int into v_sayi from pg_trigger
     where tgname = 'sync_mark_deleted_trg' and not tgisinternal;
-  return next extensions.is(v_sayi, 12, '12 tabloda silme izi tetikleyicisi var');
+  -- 13: v15 nutrition_days eklendi (docs/37, migrations/20261010120000).
+  return next extensions.is(v_sayi, 13, '13 tabloda silme izi tetikleyicisi var');
 
   return next extensions.has_function('public'::name, 'sync_delete'::name,
     'sync_delete fonksiyonu var');

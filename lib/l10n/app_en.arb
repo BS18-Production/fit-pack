@@ -2644,5 +2644,7 @@
   "adaptiveTdeeNeedWeighIns": "Needs at least {count} weigh-ins spread over {days} days.",
   "@adaptiveTdeeNeedWeighIns": {"placeholders": {"count": {"type": "int"}, "days": {"type": "int"}}},
   "adaptiveTdeeInconsistent": "Logs look incomplete for an estimate — check that completed days are fully logged.",
-  "adaptiveTdeeNote": "Estimate (1 kg ≈ 7,700 kcal). Your goal is not changed automatically."
+  "adaptiveTdeeNote": "Estimate (1 kg ≈ 7,700 kcal). Your goal is not changed automatically.",
+  "healthWriteWorkouts": "Save workouts to Health",
+  "healthWriteWorkoutsNote": "Live sessions appear in Apple Health / Health Connect (time and name; no calories)."
 }

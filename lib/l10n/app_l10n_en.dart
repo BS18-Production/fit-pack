@@ -4220,4 +4220,11 @@ class AppL10nEn extends AppL10n {
   @override
   String get adaptiveTdeeNote =>
       'Estimate (1 kg ≈ 7,700 kcal). Your goal is not changed automatically.';
+
+  @override
+  String get healthWriteWorkouts => 'Save workouts to Health';
+
+  @override
+  String get healthWriteWorkoutsNote =>
+      'Live sessions appear in Apple Health / Health Connect (time and name; no calories).';
 }

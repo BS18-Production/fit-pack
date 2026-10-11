@@ -248,6 +248,7 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     // Tartıdan kilo (docs/40): rıza varsa son günler içe alınır. Satırlar
     // body_measurements'a yazılır → kilo okuyan ekranlar kendiliğinden tazelenir.
     unawaited(runBodyImportFrom(ref));
+    unawaited(flushWorkoutOutbox(ref).catchError((_) {})); // docs/44 H-5
     final today = _today();
     if (today == _day) return;
     _day = today;

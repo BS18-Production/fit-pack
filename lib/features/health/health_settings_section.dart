@@ -108,6 +108,27 @@ class _HealthSettingsSectionState extends ConsumerState<HealthSettingsSection> {
                       ? showBodyConsentWithdrawDialog(context, ref)
                       : showBodyConsentSheet(context),
           ),
+        if (link != StepLinkState.needsInstall)
+          SettingTile(
+            key: const ValueKey('health.writeWorkouts'),
+            icon: Icons.fitness_center_rounded,
+            title: l.healthWriteWorkouts,
+            subtitle: l.healthWriteWorkoutsNote,
+            trailing: Switch(
+              value: ref.watch(healthPrefsProvider).writeWorkouts,
+              onChanged: _busy
+                  ? null
+                  : (v) async {
+                      // Açarken yazma izni istenir (docs/44 H-4).
+                      if (v) {
+                        await ref.read(workoutSinkProvider).requestWriteAccess();
+                      }
+                      await ref
+                          .read(healthPrefsProvider.notifier)
+                          .setWriteWorkouts(v);
+                    },
+            ),
+          ),
         SettingTile(
           key: const ValueKey('health.goalSetting'),
           icon: Icons.flag_outlined,

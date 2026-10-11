@@ -21,6 +21,8 @@
     <!-- Faz 1b (docs/40): tartıdan kilo + yağ oranı OKUMA. -->
     <uses-permission android:name="android.permission.health.READ_WEIGHT"/>
     <uses-permission android:name="android.permission.health.READ_BODY_FAT"/>
+    <!-- Faz 2 (docs/44): canlı seansı Health Connect'e YAZMA (okuma yok). -->
+    <uses-permission android:name="android.permission.health.WRITE_EXERCISE"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
     <application

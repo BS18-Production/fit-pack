@@ -7093,6 +7093,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Estimate (1 kg ≈ 7,700 kcal). Your goal is not changed automatically.'**
   String get adaptiveTdeeNote;
+
+  /// No description provided for @healthWriteWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Save workouts to Health'**
+  String get healthWriteWorkouts;
+
+  /// No description provided for @healthWriteWorkoutsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Live sessions appear in Apple Health / Health Connect (time and name; no calories).'**
+  String get healthWriteWorkoutsNote;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

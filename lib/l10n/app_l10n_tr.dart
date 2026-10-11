@@ -4170,4 +4170,11 @@ class AppL10nTr extends AppL10n {
   @override
   String get adaptiveTdeeNote =>
       'Tahmindir (1 kg ≈ 7.700 kcal). Hedefin kendiliğinden değişmez.';
+
+  @override
+  String get healthWriteWorkouts => 'Antrenmanları Sağlık\'a yaz';
+
+  @override
+  String get healthWriteWorkoutsNote =>
+      'Canlı seanslar Apple Sağlık / Health Connect\'te görünür (saat ve ad; kalori yazılmaz).';
 }

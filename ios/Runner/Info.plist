@@ -55,6 +55,8 @@
 	<string>Used to scan product barcodes and to take progress photos. Photos stay on this device.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Reads your daily steps (kept on this device) and, with your consent, weight and body fat written by your scale apps (saved to your Fit Pack account). Never used for ads or shared.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>If you turn it on, saves your live Fit Pack workouts (time and name, no calories) to Apple Health.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Used to pick progress photos from your library. Photos are copied into the app and stay on this device.</string>
 	<key>NSSupportsLiveActivities</key>

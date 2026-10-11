@@ -1610,5 +1610,7 @@
   "adaptiveTdeeNeedDays": "Son 4 haftada {need} gün 'tamamlandı' işaretli olmalı (şu an {have}).",
   "adaptiveTdeeNeedWeighIns": "En az {count} tartı ölçümü, {days} güne yayılmış olmalı.",
   "adaptiveTdeeInconsistent": "Tahmin için kayıtlar eksik görünüyor — tamamlandı işaretli günlerin tam girildiğini kontrol et.",
-  "adaptiveTdeeNote": "Tahmindir (1 kg ≈ 7.700 kcal). Hedefin kendiliğinden değişmez."
+  "adaptiveTdeeNote": "Tahmindir (1 kg ≈ 7.700 kcal). Hedefin kendiliğinden değişmez.",
+  "healthWriteWorkouts": "Antrenmanları Sağlık'a yaz",
+  "healthWriteWorkoutsNote": "Canlı seanslar Apple Sağlık / Health Connect'te görünür (saat ve ad; kalori yazılmaz)."
 }

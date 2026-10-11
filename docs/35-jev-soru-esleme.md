@@ -306,6 +306,35 @@ hatada **≥99 bağımsız otomatik cevap** ister; 100 soruluk sette çoklu niye
 kapsam dışı sorular otomatik cevaplanmayacağı için ~90 kalır → sıfır hatada
 bile üst sınır %3'ün üstünde. Karar Samet'te (§8 madde 6).
 
+## 10. Sözleşme v2 ayarı ve dondurma (2026-10-11)
+
+Ayar seti v2: **112 soru** (72 v1 + Claude 15 + Codex 15 kör + Samet'in 5
+keşif sorusu + 5 karşı örnek: dün/yarın, hastalık bağlamı). Codex 6. tur
+bulguları işlendi: parmak izi artık karar bağımlılıklarını ve ölçüm
+kurallarını kapsıyor (değişince parmak izinin değiştiği doğrulandı);
+`multi_intent` "ayrı konular" üzerinden; `advice` hastalık/belirti bağlamını
+kapsıyor; dönemlere `today` / `other_day` eklendi ("yarın akşam ne yiyeyim"
+artık "bugün kalan"a gitmiyor); kabul setinde yorum etiketleri ve `not_today`,
+`illness_context` türleri zorunlu.
+
+| Ayar sonucu (A, Türkçe) | Değer |
+|---|---|
+| Sorgu doğruluğu — kapsam içi | %95,3 |
+| Gerekli alanların hepsi doğru | %94,3 |
+| Seçilen eşikte yanlış otomatik / geri dönüş | **%2,2 / %4,7** |
+| Kapsam dışı reddi · kritik hata | %100 · 0/18 |
+| Kapsam dışı soruda "hangi dönem?" | 0/72 |
+| Yorum isteyen soruyu yakalama | %89,5 |
+| Çoklu niyet doğru ele alınan | %73,3 (kaçanların hepsi geri dönüşe düşüyor, yanlış cevap yok) |
+
+Kalan hatalar: olumsuz cümle (bilinen Jev sınırı) ve iki gerçekten belirsiz
+soru ("antrenman yapmadığım gün var mı", "en çok nereyi çalıştırmışım").
+
+✅ **Donduruldu (v2):** A — Y 0,70 · Yp 0 · Ye 0,2 · M 0,90 · G 0,50
+(`frozen.json`, sözleşme 2). Bundan sonra istem/seçenek/karar/ölçüm kodu
+değişirse kabul çalıştırması reddedilir. Sırada: kabul seti (60 Claude + 60
+Codex, kör) → tek seferlik kabul ölçümü.
+
 ## 8. Samet'in kararları (2026-10-10)
 
 1. ✅ **TypeSafe hesabı** açıldı; anahtar `~/.config/fitpack/typesafe.env`

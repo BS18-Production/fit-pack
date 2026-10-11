@@ -1,7 +1,7 @@
 {
-  "contract": 1,
-  "fingerprint": "96a24edc30881156",
-  "frozen_at": "2026-10-10 15:22",
+  "contract": 2,
+  "fingerprint": "3e837661e45517ed",
+  "frozen_at": "2026-10-11 03:03",
   "variant": "A",
   "model": "jev-1.13.0",
   "seed": "fitpack-jev-1",
@@ -38,11 +38,16 @@
     "muscle_balance": [
       "last_week",
       "this_week"
+    ],
+    "top_exercises": [
+      "all_time",
+      "last_30_days",
+      "this_week"
     ]
   },
-  "Y": 0.97,
+  "Y": 0.7,
   "Yp": 0.0,
   "Ye": 0.2,
   "M": 0.9,
-  "G": 0.7
+  "G": 0.5
 }

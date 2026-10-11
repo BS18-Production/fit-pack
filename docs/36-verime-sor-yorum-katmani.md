@@ -70,18 +70,28 @@ dikkat notu dilinde (docs/22 ile aynı ton).
 
 | Sorgu | Yorum kuralı | Kaynak | Not |
 |---|---|---|---|
-| `muscle_balance` (kas grubu set) | Haftalık set: <10 "araştırmalarda daha fazla kas kazanımıyla ilişkilendirilen ~10 set/hafta düzeyinin altında"; ≥10 "bu düzeyde"; >20 "bu düzeyin ötesi için kanıt sınırlı" (uyarı değil, bilgi) | Schoenfeld, Ogborn, Krieger, *J Sports Sci* 2017;35:1073–82 (çevrim içi 2016): 15 çalışma; ≥10 set/kas/hafta, <5 ve 5–9'a göre daha fazla kazanım **eğilimi** (P = 0,074); set başına ~%0,37 ek kazanım | Bizim sayımız **birincil kasa yazılan tamamlanmış set**; çalışmalar zorlayıcı set sayar → kartta yazılır. "Yeterli" kelimesi kullanılmaz; kanıt bir eğilim |
-| `weight_trend` + hedef yönü "ver" | Haftalık değişim, vücut ağırlığının yüzdesi: %0,5–1 "genel önerilen aralıkta"; >%1 "önerilenden hızlı"; <%0,25 "yavaş" | CDC: haftada ~1–2 pound (~0,45–0,9 kg), yavaş ve istikrarlı kayıp kalıcılıkla ilişkili. Garthe ve ark., *IJSNEM* 2011: 24 sporcu, kuvvet antrenmanıyla %0,7/hafta kaybeden grup diyet süresince %1,4'e göre daha çok yağsız kütle ve güç kazandı (12 ayda fark kalmadı) | | ≥2 ölçüm ve ≥14 gün yoksa yorum yok ("tek ölçüm trend sayılmaz", docs/22 kuralı) |
+| `muscle_balance` (kas grubu set) — **yalnız tamamlanmış hafta** ya da devam eden haftada "şu ana kadar" notuyla | Haftalık set: <10 "araştırmalarda daha fazla kas kazanımıyla ilişkilendirilen ~10 set/hafta düzeyinin altında"; ≥10 "bu düzeyde"; >20 "bu düzeyin ötesi için kanıt sınırlı" (uyarı değil, bilgi) | Schoenfeld, Ogborn, Krieger, *J Sports Sci* 2017;35:1073–82 (çevrim içi 2016): 15 çalışma; ≥10 set/kas/hafta, <5 ve 5–9'a göre daha fazla kazanım **eğilimi** (P = 0,074); set başına ~%0,37 ek kazanım | Bizim sayımız **birincil kasa yazılan tamamlanmış set**; çalışmalar zorlayıcı set sayar → kartta yazılır. "Yeterli" kelimesi kullanılmaz; kanıt bir eğilim |
+| `weight_trend` + hedef yönü "ver" | Haftalık kayıp **kg olarak** CDC aralığıyla (~0,45–0,9 kg/hafta) karşılaştırılır: içinde "genel önerilen aralıkta", üstünde "önerilenden hızlı", altında "önerilenden yavaş". Ek bilgi (yargı değil): "kuvvet sporcularında ~%0,7/hafta kayıp yağsız kütleyi daha iyi korudu". **Kilo artışı** varsa "hedefinin tersi" (docs/22 dili), "yavaş kayıp" denmez. %1,5/hafta üstü uyarı notu **ürün tercihidir**, kaynak değil | CDC (kg aralığı). Garthe ve ark., *IJSNEM* 2011 (PMID 21558571): hedeflenen %0,7 ve %1,4/hafta, gerçekleşen ~%0,7 ve ~%1,0; yavaş grup diyet süresince daha çok yağsız kütle ve güç kazandı. 12 aylık takip **ayrı yayın** (PMID 21896944): gruplar arasında fark kalmadı | Yüzde aralığı (%0,5–1) kaynakla doğrudan gerekçelenmediği için kullanılmaz (Codex) | ≥2 ölçüm ve ≥14 gün yoksa yorum yok ("tek ölçüm trend sayılmaz", docs/22 kuralı) |
 | `weight_trend` + yön "al" | %0,25–0,5/hafta "önerilen aralıkta"; üstü "önerilenden hızlı" | Iraki, Fitschen, Espinar, Helms, *Sports* 2019;7(7):154 (PMID 31247944, anlatı derlemesi): başlangıç/orta seviye için %0,25–0,5/hafta; ileri seviye daha temkinli | Seviye bilgisi yok → aralık "başlangıç/orta için" diye yazılır |
 | `weight_trend` + yön "koru" / yok | Kendi ortalamasına göre ±%1 içinde "sabit" | — (kendi geçmişi) | Yön yoksa "hedef yönünü seçersen yorumlarım" |
-| `workout_summary` (hacim, set, seans) | **Mutlak norm yok.** Kendi son 8 haftasının medyanına göre: "%X üstünde/altında" | — (kendi geçmişi) | "50k tek başına anlamlı değil; senin ortalaman 42k" |
+| `workout_summary` (hacim, set, seans) | **Mutlak norm yok.** Önceki **8 tamamlanmış haftanın medyanına** göre: "%X üstünde/altında". Devam eden hafta "şu ana kadar" diye yazılır, tam haftayla yargılanmaz | — (kendi geçmişi) | "50k tek başına anlamlı değil; son 8 haftanın medyanı 42k" — "ortalama" yazılmaz |
 | `strength_progress` / `exercise_history` | e1RM eğilimi: artıyor / sabit (3 hafta aynı = plato, A1 odak kuralı) / düşüyor | — (kendi geçmişi; docs/22 §3.3) | Hareketler arası norm ("bench'in iyi mi") yok |
 | `protein_goal`, `nutrition_summary` | Hedefe göre: tutturulan gün oranı; ortalama/hedef. **İsteğe bağlı (§5):** ortalama g/kg, "~1,6 g/kg civarı ve üstü" ile karşılaştırma | Kendi hedefi; Morton ve ark., *Br J Sports Med* 2018;52:376–84 (49 çalışma, 1.863 kişi): ~1,6 g/kg/gün üstünde ek yağsız kütle kazanımı görülmedi (kırılma noktası, güven aralığı geniş); Iraki 2019: 1,6–2,2 g/kg | Kayıtsız gün ortalamaya girmez (docs/22 kuralı) |
 | `today_remaining` | Kalan kalori/protein; **öneri:** son 30 günde o öğünde (ör. akşam) yediği yemeklerden kalan makroya sığanlar, en çok 3 | — (kendi geçmişi, deterministik) | Yeni yemek önermez; kayıt yoksa yalnız kalan miktar |
 
-**Sağlık sınırı:** "sağlıklı mı" sorusu genel kılavuzla cevaplanır, her zaman
-"tıbbi değerlendirme için uzmana danış" notu eklenir; haftalık kayıp %1,5'i
-aşarsa not öne çıkar. Ağrı, sakatlık, ilaç, takviye → ret (değişmedi).
+**Sağlık sınırı:** "sağlıklı mı" sorusu genel kılavuz **karşılaştırmasıyla**
+cevaplanır, asla "sağlıklısın" sonucu üretilmez; her zaman "tıbbi
+değerlendirme için uzmana danış" notu eklenir; haftalık kayıp %1,5'i aşarsa
+not öne çıkar (ürün tercihi). **Hastalık/semptom bağlamı önceliklidir:**
+"böbrek hastasıyım, bu protein sağlıklı mı?" → ret. Ağrı, sakatlık, ilaç,
+takviye → ret (değişmedi).
+
+**Hesap dili (Codex):** kilo yorumu ≥14 günlük pencere ister — kullanılan
+pencere ve ölçüm sayısı kartta yazılır; yalnız bu haftanın verisiyle kilo
+yorumu yapılmaz. Kısmi beslenme kayıtları "kaydedilen protein" diye
+adlandırılır (#8 tamamlanmış gün yoksa). g/kg hesabında kullanılan kilo ve
+tarihi görünür. Morton ~1,6 g/kg kişisel yeterlilik ya da güvenlik sınırı
+olarak sunulmaz: "araştırmada bu düzeyin üstünde ek kazanım görülmedi".
 
 ## 3. Jev'e etkisi (docs/35 sözleşme v2)
 
@@ -89,10 +99,17 @@ aşarsa not öne çıkar. Ağrı, sakatlık, ilaç, takviye → ret (değişmedi
   açıklaması daralır (yorum artık kapsam içi).
 - Yeni `noul` `wants_interpretation`; `advice` açıklaması "reçete/eylem/tıbbi"
   diye daralır.
+- `multi_intent` tanımı **ayrı hazır sorgular** üzerinden: aynı özetteki
+  kalori+protein ya da set+hacim tek niyettir (Codex).
+- `advice` tanımına hastalık/semptom bağlamı eklenir ("böbrek hastasıyım…").
 - Karar sırası: çoklu niyet → reçete/eylem/kapsam dışı/düşük güven (geri
   dönüş) → eksik alan (netleştirme) → otomatik (**veri + yorum isteniyorsa yorum**).
 - Yorum isteğinin yanlış algılanması zararsız tarafta kalır (fazladan yorum
   ya da eksik yorum; sayı yine doğru) — kabul ölçütüne girmez, ayrıca raporlanır.
+- **Ölçüm (Codex):** yorum algılamada toplam doğruluğa ek olarak **yorum
+  isteyen soruları yakalama oranı** (özellikle sağlık soruları); "dün / yarın"
+  karşı örnekleri (`today_remaining`'e yanlış gitmesin); kabul setinde iki
+  yorum etiketi de zorunlu.
 - **Ayar seti v2:** mevcut 72 soru yeniden etiketlenir (`interp: true/false`);
   iki taraftan 15'er yeni "veri + yorum", `today_remaining`, `top_exercises`
   sorusu (kör). Samet'in 5 keşif sorusu ayar setine **girebilir** (tasarım
@@ -113,5 +130,5 @@ aşarsa not öne çıkar. Ağrı, sakatlık, ilaç, takviye → ret (değişmedi
 1. ✅ Kurallar ve dil (§2) uygun — "yeterli" denmez, kaynak ve "genel bilgi" notu her kartta.
 2. ✅ Protein g/kg yorumu **eklenir** (Morton 2018; kayıtsız gün ortalamaya girmez).
 3. ✅ Akşam yemeği önerisi **yalnız kendi geçmişinden** (o öğünde daha önce yedikleri); yeni yemek önerisi ayrı karar.
-4. ✅ Kabul seti **120 soru** (30 Samet + 45'er Claude/Codex).
+4. ✅ Kabul seti **120 soru** — sonradan (docs/35 §8.8) Samet'in soruları beklenmeden **60 Claude + 60 Codex**.
 5. Antrenman hedefi türü profilde yok; set yorumu hipertrofi araştırmasıyla yapılır (hedef türü alanı ileride ayrı iş).

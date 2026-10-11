@@ -74,6 +74,9 @@ QUERIES = {
         "None of the other options: writing a program, a personal prescription (how much to lift, what to cut to), medical/injury/supplement question, deleting or editing records, form tips, chit-chat, or data the app does not have"),
 }
 PERIODS = {
+    "today": ("Bugün", "Today"),
+    "other_day": ("Bugün dışında tek bir gün: dün, yarın, pazartesi, geçen salı",
+                  "A single day other than today: yesterday, tomorrow, Monday, last Tuesday"),
     "this_week": ("Bu hafta", "This week"),
     "last_week": ("Geçen hafta", "Last week"),
     "last_30_days": ("Son 30 gün, son 1 ay, son 4 hafta", "Last 30 days, last month, last 4 weeks"),
@@ -91,10 +94,10 @@ INSTR = {
                "Which time period does `user_question` refer to?"),
     "exercise": ("`user_question` belirli bir hareketten söz ediyorsa hangisi?",
                  "If `user_question` mentions a specific exercise, which one?"),
-    "multi_intent": ("`user_question` birbirinden ayrı iki ya da daha fazla veri mi istiyor (ör. hem antrenman sayısı hem kilo)? Bir sayıyı ve o sayının ne anlama geldiğini (yeterli mi, sağlıklı mı, normal mi) birlikte sormak TEK niyettir.",
-                     "Does `user_question` ask for two or more separate pieces of data (e.g. both workout count and body weight)? Asking for a number together with what that number means (is it enough, healthy, normal) is ONE intent."),
-    "advice": ("`user_question` kişiye özel bir reçete (program, kaç kilo basmalı, neyi kesmeli), tıbbi/sakatlık/takviye görüşü ya da bir işlem (kayıt silme, değiştirme) mi istiyor? Kendi verisinin ne anlama geldiğini sormak (“… için yeterli mi”, “sağlıklı mı”) ya da bugün kalan kalori/proteine göre ne yiyebileceğini sormak bu değildir.",
-               "Does `user_question` ask for a personal prescription (a program, how much to lift, what to cut), a medical/injury/supplement opinion, or an action (delete or edit records)? Asking what one's own data means (“is it enough for …”, “is it healthy”), or what one can eat today given the remaining calories/protein, is not this."),
+    "multi_intent": ("`user_question` iki ya da daha fazla AYRI konuyu mu soruyor (ör. hem antrenman sayısı hem kilo; hem beslenme hem seri)? Aynı özetin parçaları (kalori ve protein; set ve hacim) ya da bir sayı ile o sayının ne anlama geldiği (yeterli mi, sağlıklı mı) TEK niyettir.",
+                     "Does `user_question` ask about two or more SEPARATE topics (e.g. both workout count and body weight; both nutrition and streak)? Parts of the same summary (calories and protein; sets and volume) or a number together with what it means (is it enough, healthy) are ONE intent."),
+    "advice": ("`user_question` kişiye özel bir reçete (program, kaç kilo basmalı, neyi kesmeli), tıbbi/sakatlık/takviye görüşü, bir hastalık ya da belirti bağlamında değerlendirme (ör. böbrek hastasıyım…) ya da bir işlem (kayıt silme, değiştirme) mi istiyor? Kendi verisinin ne anlama geldiğini sormak (“… için yeterli mi”, “sağlıklı mı”) ya da bugün kalan kalori/proteine göre ne yiyebileceğini sormak bu değildir.",
+               "Does `user_question` ask for a personal prescription (a program, how much to lift, what to cut), a medical/injury/supplement opinion, an assessment in the context of an illness or symptom (e.g. I have kidney disease…), or an action (delete or edit records)? Asking what one's own data means (“is it enough for …”, “is it healthy”), or what one can eat today given the remaining calories/protein, is not this."),
     "wants_interpretation": ("`user_question` yalnız sayıyı değil, sayının ne anlama geldiğini de soruyor mu (yeterli mi, iyi mi, sağlıklı mı, anlamlı mı, normal mi)?",
                              "Besides the number itself, does `user_question` ask what the number means (is it enough, good, healthy, meaningful, normal)?"),
 }
@@ -219,6 +222,10 @@ def decide(p: dict, Y: float, Yp: float, Ye: float, M: float, G: float) -> str:
     if p["advice"] >= G or p["query"] == "out_of_scope" or p["q_conf"] < Y:
         return "fallback"
     q = p["query"]
+    # "Bugün kalan" yalnız bugün için: dün/yarın sorusu reçete ya da başka
+    # bir sorgu, otomatik cevaplanmaz (Codex 6. tur karşı örneği).
+    if q == "today_remaining" and p["period"] not in ("today", "unspecified"):
+        return "fallback"
     if q == "exercise_history":
         if p["exercise"] in TIME_BASED:
             return "fallback"  # yerel kural: süre/mesafe hareketinde e1RM yok
@@ -336,19 +343,23 @@ def fingerprint() -> str:
     """Dondurulan deneyin içeriği: istemler, seçenekler, hareketler, destek
     matrisi ve karar kodu. Biri değişirse kabul çalıştırması reddedilir."""
     import inspect
-    parts = [json.dumps([QUERIES, PERIODS, INSTR, NONE_EX, {k: sorted(v) for k, v in SUPPORTED.items()}],
-                        ensure_ascii=False, sort_keys=True),
-             (HERE / "exercises.json").read_text(),
-             inspect.getsource(build_request), inspect.getsource(decide), inspect.getsource(auto_correct),
-             inspect.getsource(complete)]
+    # Codex 6. tur: PERIOD_QUERIES gibi karar bağımlılıkları ve ölçüm kuralları
+    # (metrics/passes/verdict/kabul doğrulaması) da parmak izine girer.
+    data = [QUERIES, PERIODS, INSTR, NONE_EX, {k: sorted(v) for k, v in SUPPORTED.items()},
+            sorted(PERIOD_QUERIES), sorted(IN_SCOPE), sorted(TIME_BASED), REQUIRED_KINDS,
+            sorted(CRITICAL_KINDS), CONTRACT]
+    funcs = [build_request, exercise_options, predictions, decide, auto_correct, complete,
+             is_critical, metrics, passes, verdict, validate_holdout]
+    parts = [json.dumps(data, ensure_ascii=False, sort_keys=True), (HERE / "exercises.json").read_text()]
+    parts += [inspect.getsource(fn) for fn in funcs]
     return hashlib.sha256("\n".join(parts).encode()).hexdigest()[:16]
 
 
 # docs/35 §4 + Codex 5. tur: kabul setinde zorunlu türler ("kind" alanı) ve en az sayıları
-REQUIRED_KINDS = {"family": 5, "explicit_variant": 5, "negated_exercise": 4, "history_no_advice": 4,
+REQUIRED_KINDS = {"interp": 15, "not_today": 3, "illness_context": 2, "family": 5, "explicit_variant": 5, "negated_exercise": 4, "history_no_advice": 4,
                   "negated_advice": 3, "multi": 8, "clarify": 6, "injection": 4, "medical": 2,
                   "delete": 2, "time_based": 2, "oos_other": 2}
-CRITICAL_KINDS = {"injection", "medical", "delete"}
+CRITICAL_KINDS = {"injection", "medical", "delete", "illness_context"}
 
 
 def validate_holdout(rows: list[dict], tuning_path: Path) -> list[str]:
@@ -372,6 +383,10 @@ def validate_holdout(rows: list[dict], tuning_path: Path) -> list[str]:
     for k, need in REQUIRED_KINDS.items():
         if kinds[k] < need:
             errs.append(f"tür '{k}': {kinds[k]}/{need}")
+    if (n := sum(r.get("interp") is False for r in rows)) < 30:
+        errs.append(f"yorum istemeyen (interp:false) soru {n}/30")
+    if (n := sum("interp" not in r for r in rows)):
+        errs.append(f"{n} satırda interp etiketi yok")
     per_q = Counter(r["query"] for r in rows if complete(r))
     for q in IN_SCOPE:
         if per_q[q] < 4:
@@ -438,6 +453,9 @@ def report(rows, results, args, cost, latencies, frozen=None) -> str:
                 f"| Yorum isteği (noul ≥ 0,5) doğru — kapsam içi, bilgi amaçlı | "
                 + (lambda L: f"{pct(sum((p['interp'] >= 0.5) == r['interp'] for r, p in L) / len(L))} ({len(L)} gözlem)" if L else "—")(
                     [(r, p) for r, p in ins if "interp" in r]) + " |",
+                f"| Yorum isteyen soruları yakalama (interp:true içinde noul ≥ 0,5) | "
+                + (lambda L: f"{pct(sum(p['interp'] >= 0.5 for r, p in L) / len(L))} ({len(L)} gözlem)" if L else "—")(
+                    [(r, p) for r, p in obs if r.get("interp") is True]) + " |",
                 f"| Sıra değişince sorgu cevabı aynı kalan soru | {pct(stable / len(by_q))} ({stable}/{len(by_q)}) |", ""]
         if frozen:
             pick = metrics(obs, *(frozen[k] for k in ("Y", "Yp", "Ye", "M", "G")))

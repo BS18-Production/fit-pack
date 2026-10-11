@@ -14,6 +14,10 @@ import WidgetKit
 /// sayacıyla karışmaz. Tahmini bitiş süresi uydurulmaz.
 /// Sayaçlar sistem tarafından çizilir (`timerInterval`) — uygulama uyurken
 /// de akar. Düğmeler iOS 17+; altında yalnız görüntü (dokununca uygulama).
+///
+/// **Yükseklik bütçesi:** kilit ekranı kartı en çok ~160 pt; fazlası sistem
+/// tarafından KESİLİR (iPhone'da düğmeler alttan kesildi, 2026-10-11). Kart
+/// ~145 pt'ye göre ölçülü: kenar 12, sayaç 36 pt, düğme 32 pt.
 @available(iOS 16.2, *)
 struct WorkoutLiveActivityWidget: Widget {
   var body: some WidgetConfiguration {
@@ -158,7 +162,7 @@ private struct PillStyle: ButtonStyle {
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
       .font(.subheadline.weight(.bold))
-      .padding(.vertical, 10)
+      .padding(.vertical, 7)
       .foregroundStyle(prominent ? Color.black : Color.white)
       .background(
         Capsule().fill(prominent ? Palette.lime : Palette.track))
@@ -175,7 +179,7 @@ private struct LockScreenView: View {
   var body: some View {
     let s = context.state
     let l = context.attributes.labels
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 6) {
       // Üst satır: seans adı + toplam süre (etiketli — dinlenmeyle karışmaz).
       HStack(spacing: 6) {
         Image(systemName: "dumbbell.fill")
@@ -205,7 +209,7 @@ private struct LockScreenView: View {
       if isResting(context), let end = s.restEndsAt {
         RestBlock(context: context, end: end)
       } else {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 6) {
           if restJustEnded(context) {
             Text(l.restOverOrNext)
               .font(.caption.weight(.bold))
@@ -221,7 +225,8 @@ private struct LockScreenView: View {
         }
       }
     }
-    .padding(16)
+    .padding(.horizontal, 14)
+    .padding(.vertical, 12)
   }
 }
 
@@ -234,7 +239,7 @@ private struct RestBlock: View {
     let s = context.state
     let l = context.attributes.labels
     let start = min(s.restStartedAt ?? Date(), end)
-    VStack(alignment: .leading, spacing: 10) {
+    VStack(alignment: .leading, spacing: 6) {
       HStack(alignment: .lastTextBaseline) {
         VStack(alignment: .leading, spacing: 0) {
           Text(l.rest)
@@ -242,7 +247,7 @@ private struct RestBlock: View {
             .textCase(.uppercase)
             .foregroundStyle(Palette.lime)
           Text(timerInterval: Date()...end, countsDown: true)
-            .font(.system(size: 44, weight: .heavy, design: .rounded))
+            .font(.system(size: 36, weight: .heavy, design: .rounded))
             .monospacedDigit()
             .foregroundStyle(Palette.lime)
         }

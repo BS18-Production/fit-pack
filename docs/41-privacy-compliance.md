@@ -1,6 +1,7 @@
 # 41 — Kişisel veri uyumu: KVKK (Türkiye) + GDPR (global)
 
-> **Durum:** Taslak — envanter + eksikler + iş listesi. **Hukuki görüş değildir;**
+> **Durum:** Uygulanıyor (2026-10-11) — P-1 kısmen, P-2 ✅ (tartı), P-3 metin ✅,
+> hesap silme düzeltmesi Dev ✅ / üretim onayda. Envanter + eksikler + iş listesi. **Hukuki görüş değildir;**
 > "⚖️" işaretli her madde bir KVKK/GDPR hukukçusuna doğrulatılmalı.
 > **Tarih:** 2026-10-11 · **Sahip:** Claude-2
 > **Samet kararı (2026-10-11):** "Ne yapıyorsak Türkiye'de KVKK'ya, globalde
@@ -68,8 +69,17 @@ kontrolü, (5) mağaza beyanları.
 9. **Yaş sınırı:** GDPR md. 8 (çocuk rızası 13–16 yaş, ülkeye göre);
    onboarding'de doğum tarihi var ama alt sınır yok.
 
-**Zaten var olanlar:** hesap silme (`delete_user` RPC — sunucudaki verinin
-tamamen silindiği ⚖️ test edilmeli), dışa aktarma (CSV/JSON — erişim ve
+10. **Hesap silme çalışmıyordu (2026-10-11 tespit):** uygulama
+    `rpc('delete_user')` çağırıyor; fonksiyon docs/16 §4'te yazılmış ama
+    üretimde **hiç kurulmamış** → "Hesap silinemedi". Göç
+    `20261011190000_delete_user.sql`: Dev'de kuruldu ve geri alınan işlemle
+    denendi (kullanıcı + verisi silindi, diğerleri durdu); 14 kullanıcı tablosu
+    `on delete cascade`. Üretime Samet onayıyla.
+11. **Destek e-postası iş adresi** (`AppConstants.supportEmail` =
+    samet.orhan@inveon.com): kişisel projede iş adresi; politikadaki iletişim
+    adresi de bekliyor (Samet: "şimdilik es geç").
+
+**Zaten var olanlar:** hesap silme düğmesi (sunucu fonksiyonu yukarıda, madde 10), dışa aktarma (CSV/JSON — erişim ve
 taşınabilirlik hakkı), fotoğraf ve adımın cihazda kalması, asistanda
 gönderim öncesi onay, metinsiz kalite paneli.
 
@@ -92,11 +102,11 @@ gönderim öncesi onay, metinsiz kalite paneli.
 
 | # | İş | Kim | Öncelik |
 |---|---|---|---|
-| P-1 | Gizlilik politikası + aydınlatma metni (TR/EN), uygulamada ve web'de bağlantı | Claude taslak → ⚖️ hukukçu | Yüksek |
-| P-2 | Sağlık açık rıza ekranı + kayıt (§3) | Claude (docs/40 ile) | Yüksek |
-| P-3 | Asistan İngilizce izin metnini düzelt; Gemini koşullarını doğrula, gerekirse ücretli katman / AB kullanıcılarına kapat | Claude + Samet kararı | Yüksek |
+| P-1 | Gizlilik politikası + aydınlatma metni (TR/EN) — ✅ uygulama içinde (Ayarlar, giriş, rıza ekranı; `assets/legal/`). Bekleyen: iletişim adresi, web bağlantısı (mağaza öncesi), ⚖️ hukukçu | Claude taslak → ⚖️ hukukçu | Yüksek |
+| P-2 | Sağlık açık rıza ekranı + kayıt (§3) — ✅ tartı verisi için. ⚖️ Açık soru: elle girilen kilo/ölçüm için de rıza istenmeli mi (mevcut kullanıcılar dahil)? | Claude (docs/40 ile) | Yüksek |
+| P-3 | ✅ Asistan İngilizce izin metni düzeltildi. Bekleyen: Gemini koşullarını doğrula, gerekirse ücretli katman / AB kullanıcılarına kapat | Claude + Samet kararı | Yüksek |
 | P-4 | Supabase DPA + KVKK standart sözleşme / Kurul bildirimi | Samet (⚖️) | Orta |
-| P-5 | Saklama süresi + hesap silmede sunucu temizliği testi | Claude | Orta |
+| P-5 | Saklama süresi + hesap silme — sunucu fonksiyonu eksikti, düzeltildi (madde 10); üretim onayda | Claude | **Yüksek** |
 | P-6 | İhlal bildirimi kısa prosedürü | Claude taslak | Orta |
 | P-7 | Yaş alt sınırı (onboarding) | Claude | Orta |
 | P-8 | VERBİS gerekliliği | ⚖️ hukukçu | Orta |

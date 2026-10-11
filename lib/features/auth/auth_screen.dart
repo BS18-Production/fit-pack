@@ -7,6 +7,7 @@ import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../cloud/auth_service.dart';
 import '../../shared/widgets/fitpack_icon.dart';
+import '../legal/privacy_policy_sheet.dart';
 
 /// Hangi giriş yolu çalışıyor — doğru butonda yükleniyor göstergesi için.
 enum _Busy { none, email, google }
@@ -233,6 +234,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 onPressed: _busy != _Busy.none ? null : _forgotPassword,
                 child: Text(l.cloudForgot),
               ),
+            // Aydınlatma (KVKK md. 10, GDPR md. 13): veri toplanmadan önce
+            // metne ulaşılabilir (docs/41 P-1).
+            TextButton(
+              key: const ValueKey('auth.privacy'),
+              onPressed: () => showPrivacyPolicy(context),
+              child: Text(l.privacyAuthLink),
+            ),
             AppSpacing.vGapLg,
             TextButton(
               onPressed: _busy != _Busy.none

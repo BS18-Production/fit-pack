@@ -2027,7 +2027,7 @@
   "assistantMeal": "Choose a meal for food examples",
   "assistantNoMeal": "Remaining amounts only",
   "assistantPrivacyTitle": "Your question will be sent to Google",
-  "assistantPrivacy": "Only your question and fixed routing definitions go to Gemini; workout, nutrition and measurement records stay on your device. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.",
+  "assistantPrivacy": "Only your question and fixed routing definitions go to Gemini; your workout, nutrition and measurement records are not sent to Google. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.",
   "assistantPrivacyAccept": "I understand, send question",
   "assistantPrivacyCancel": "Use ready questions",
   "assistantUnavailable": "Free-text routing is unavailable. You can continue with ready questions.",
@@ -2628,5 +2628,8 @@
   "healthWithdrawTitle": "Withdraw consent",
   "healthWithdrawMsg": "Importing from your scale stops. Should the measurements already imported be kept or deleted?",
   "healthWithdrawKeep": "Keep measurements",
-  "healthWithdrawDelete": "Delete measurements"
+  "healthWithdrawDelete": "Delete measurements",
+  "privacyTitle": "Privacy policy",
+  "privacySubtitle": "What data we process, where, and your rights",
+  "privacyAuthLink": "How we use your data (privacy policy)"
 }

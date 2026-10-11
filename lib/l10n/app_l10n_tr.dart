@@ -4123,4 +4123,14 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get healthWithdrawDelete => 'Ölçümleri sil';
+
+  @override
+  String get privacyTitle => 'Gizlilik politikası';
+
+  @override
+  String get privacySubtitle => 'Hangi verileri, nerede işliyoruz; hakların';
+
+  @override
+  String get privacyAuthLink =>
+      'Verilerini nasıl kullanıyoruz (gizlilik politikası)';
 }

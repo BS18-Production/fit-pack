@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/fitpack_icon.dart';
+import '../legal/privacy_policy_sheet.dart';
 import 'body_providers.dart';
 
 /// Tartıdan kilo — **açık rıza** ekranı (docs/41 §3, KVKK md. 6, GDPR md.
@@ -117,6 +118,13 @@ class _BodyConsentSheetState extends ConsumerState<_BodyConsentSheet> {
               l.healthConsentLegal,
               style: context.texts.bodySmall?.copyWith(
                 color: context.colors.onSurfaceVariant,
+              ),
+            ),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton(
+                onPressed: () => showPrivacyPolicy(context),
+                child: Text(l.privacyTitle),
               ),
             ),
             if (_error != null) ...[

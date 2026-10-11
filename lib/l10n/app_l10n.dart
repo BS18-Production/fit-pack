@@ -5908,7 +5908,7 @@ abstract class AppL10n {
   /// No description provided for @assistantPrivacy.
   ///
   /// In en, this message translates to:
-  /// **'Only your question and fixed routing definitions go to Gemini; workout, nutrition and measurement records stay on your device. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.'**
+  /// **'Only your question and fixed routing definitions go to Gemini; your workout, nutrition and measurement records are not sent to Google. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.'**
   String get assistantPrivacy;
 
   /// No description provided for @assistantPrivacyAccept.
@@ -7021,6 +7021,24 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Delete measurements'**
   String get healthWithdrawDelete;
+
+  /// No description provided for @privacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get privacyTitle;
+
+  /// No description provided for @privacySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What data we process, where, and your rights'**
+  String get privacySubtitle;
+
+  /// No description provided for @privacyAuthLink.
+  ///
+  /// In en, this message translates to:
+  /// **'How we use your data (privacy policy)'**
+  String get privacyAuthLink;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -3462,7 +3462,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get assistantPrivacy =>
-      'Only your question and fixed routing definitions go to Gemini; workout, nutrition and measurement records stay on your device. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.';
+      'Only your question and fixed routing definitions go to Gemini; your workout, nutrition and measurement records are not sent to Google. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.';
 
   @override
   String get assistantPrivacyAccept => 'I understand, send question';
@@ -4174,4 +4174,13 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get healthWithdrawDelete => 'Delete measurements';
+
+  @override
+  String get privacyTitle => 'Privacy policy';
+
+  @override
+  String get privacySubtitle => 'What data we process, where, and your rights';
+
+  @override
+  String get privacyAuthLink => 'How we use your data (privacy policy)';
 }

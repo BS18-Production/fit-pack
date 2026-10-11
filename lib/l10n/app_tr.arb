@@ -1598,5 +1598,8 @@
   "healthWithdrawTitle": "Rızayı geri al",
   "healthWithdrawMsg": "Tartıdan içe aktarma durur. Şimdiye kadar içe alınan ölçümler tutulsun mu, silinsin mi?",
   "healthWithdrawKeep": "Ölçümleri tut",
-  "healthWithdrawDelete": "Ölçümleri sil"
+  "healthWithdrawDelete": "Ölçümleri sil",
+  "privacyTitle": "Gizlilik politikası",
+  "privacySubtitle": "Hangi verileri, nerede işliyoruz; hakların",
+  "privacyAuthLink": "Verilerini nasıl kullanıyoruz (gizlilik politikası)"
 }

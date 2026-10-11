@@ -187,6 +187,7 @@ def to_pred(resp: dict) -> dict:
 
 
 def main() -> None:
+    global MODEL
     ap = argparse.ArgumentParser()
     ap.add_argument("--set", default=str(HERE / "tuning_set.jsonl"))
     ap.add_argument("--limit", type=int, default=0)
@@ -195,7 +196,9 @@ def main() -> None:
     ap.add_argument("--freeze-out")
     ap.add_argument("--frozen")
     ap.add_argument("--pace", type=float, default=6.5, help="istekler arası saniye (dakikalık limit)")
+    ap.add_argument("--model", default=MODEL, help="ör. gemini-3.5-flash-lite (ücretsiz günlük limiti yüksek)")
     args = ap.parse_args()
+    MODEL = args.model  # istek, parmak izi ve rapor bu modeli kullanır
 
     if args.freeze_out:
         Path(args.freeze_out).write_text(json.dumps(

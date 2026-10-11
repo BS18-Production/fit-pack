@@ -182,9 +182,14 @@ commit'te** (CLAUDE.md).
   `DayCompleteCard` (öğünlerin altında; işaretsiz → "Bugünkü kaydım
   tamamlandı"/"Bu günün kaydı tamamlandı" + açıklama; işaretli → ✓ "Kaydın
   tamam", gerekirse "Tamamlandıktan sonra değişti", "Geri al"). Çeviri: 6
-  anahtar (tr/en), biçim korunarak eklendi. Widget testi 2/2. **Kalan:** takvim
-  ✓ rozeti (5b), haftalık değerlendirme ekranında "N tamamlanmış gün · M gün
-  hesaba katılmadı" metni (5c), Codex iOS Simulator görsel kontrolü.
+  anahtar (tr/en), biçim korunarak eklendi. Widget testi 2/2.
+- ✅ **Aşama 5b** (takvim): `DayActivity.dayComplete`, takvim sağlayıcısı
+  `nutrition_days`'i izliyor, gün hücresinin köşesinde küçük ✓; kayıtsız
+  tamamlanmış gün de takvimde görünür.
+- ✅ **Aşama 5c** (değerlendirme ekranı): tamamlanmış gün varken "N tamamlanmış
+  gün · M gün hesaba katılmadı" ve "Protein hedefi K/N gün". Paket 762 yeşil.
+- ⏳ **Kalan:** Codex iOS Simulator görsel kontrolü; Aşama 6 (üretim:
+  sunucu göçü önce, sonra istemci) — Samet onayı.
 - ⚠️ `changedAfterComplete` silinen kaydı görmez (satır kalmıyor); mezar taşı
   tablosundan okumak açık iş.
 - ⛔ **Dal sunucu göçünden (Aşama 3) önce `main`'e birleşmez / cihaza kurulmaz**:

@@ -21,6 +21,9 @@ class DayActivity {
   final int volumeKg; // o günkü toplam hacim (Σ kg×tekrar)
   final int setCount;
 
+  /// Kullanıcı bu günü "kaydım tamamlandı" işaretledi (docs/37 — takvimde ✓).
+  final bool dayComplete;
+
   const DayActivity({
     this.kcal = 0,
     this.protein = 0,
@@ -32,11 +35,16 @@ class DayActivity {
     this.sessionCount = 0,
     this.volumeKg = 0,
     this.setCount = 0,
+    this.dayComplete = false,
   });
 
   /// Hiç kayıt yok (boş gün → takvimde gri halkalar).
   bool get isEmpty =>
-      kcal == 0 && protein == 0 && waterMl == 0 && !hasWorkout;
+      kcal == 0 &&
+      protein == 0 &&
+      waterMl == 0 &&
+      !hasWorkout &&
+      !dayComplete;
 }
 
 /// DAO sonuçlarını ayın günü (1..31) → [DayActivity] haritasına birleştirir.
@@ -48,6 +56,7 @@ Map<int, DayActivity> buildMonthActivity({
   required Map<DateTime, int> water,
   required List<WorkoutSession> sessions,
   required Map<int, List<WorkoutSet>> setsBySession,
+  Set<int> completedDays = const {}, // ayın günleri (1..31), docs/37
 }) {
   DateTime keyOf(DateTime d) => DateTime(d.year, d.month, d.day);
 
@@ -89,6 +98,7 @@ Map<int, DayActivity> buildMonthActivity({
       sessionCount: daySessions.length,
       volumeKg: volume,
       setCount: setCount,
+      dayComplete: completedDays.contains(day),
     );
     if (!act.isEmpty) result[day] = act;
   }
@@ -116,6 +126,7 @@ final monthActivityProvider = StreamProvider.autoDispose
     db.waterIntake,
     db.workoutSessions,
     db.workoutSets,
+    db.nutritionDays, // takvim ✓ (docs/37)
   ], () async {
     // Aralık kuralı [start, end): bitiş = sonraki ayın ilk günü, HARİÇ tutulur
     // (DAO sorguları H-01 gereği < end kullanır — eski -1ms hilesi gereksiz).
@@ -138,6 +149,10 @@ final monthActivityProvider = StreamProvider.autoDispose
       water: water,
       sessions: sessions,
       setsBySession: setsBySession,
+      completedDays: {
+        for (final k in await nut.getCompletedDays(start, end))
+          DateTime.parse(k).day,
+      },
     );
   });
 });

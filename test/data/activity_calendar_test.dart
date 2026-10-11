@@ -151,5 +151,22 @@ void main() {
       );
       expect(map, isEmpty);
     });
+
+    test('tamamlanmış gün (docs/37): kaydı olmasa da haritada, ✓ bayrağıyla',
+        () {
+      final map = buildMonthActivity(
+        year: 2026,
+        month: 10,
+        totals: const {},
+        water: const {},
+        sessions: const [],
+        setsBySession: const {},
+        completedDays: {10},
+      );
+      expect(map.keys, [10],
+          reason: 'kayıtsız tamamlanmış gün boş sayılmaz (bilinçli beyan)');
+      expect(map[10]!.dayComplete, isTrue);
+      expect(map[10]!.kcal, 0);
+    });
   });
 }

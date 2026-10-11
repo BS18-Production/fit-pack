@@ -1601,5 +1601,7 @@
   "healthWithdrawDelete": "Ölçümleri sil",
   "privacyTitle": "Gizlilik politikası",
   "privacySubtitle": "Hangi verileri, nerede işliyoruz; hakların",
-  "privacyAuthLink": "Verilerini nasıl kullanıyoruz (gizlilik politikası)"
+  "privacyAuthLink": "Verilerini nasıl kullanıyoruz (gizlilik politikası)",
+  "homeWeightTrend7d": "7 günlük trend",
+  "bmTrendLegend": "nokta: günlük · çizgi: trend"
 }

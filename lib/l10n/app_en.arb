@@ -2631,5 +2631,7 @@
   "healthWithdrawDelete": "Delete measurements",
   "privacyTitle": "Privacy policy",
   "privacySubtitle": "What data we process, where, and your rights",
-  "privacyAuthLink": "How we use your data (privacy policy)"
+  "privacyAuthLink": "How we use your data (privacy policy)",
+  "homeWeightTrend7d": "7-day trend",
+  "bmTrendLegend": "dots: daily · line: trend"
 }

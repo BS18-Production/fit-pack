@@ -4183,4 +4183,10 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get privacyAuthLink => 'How we use your data (privacy policy)';
+
+  @override
+  String get homeWeightTrend7d => '7-day trend';
+
+  @override
+  String get bmTrendLegend => 'dots: daily · line: trend';
 }

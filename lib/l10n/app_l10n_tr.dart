@@ -4133,4 +4133,10 @@ class AppL10nTr extends AppL10n {
   @override
   String get privacyAuthLink =>
       'Verilerini nasıl kullanıyoruz (gizlilik politikası)';
+
+  @override
+  String get homeWeightTrend7d => '7 günlük trend';
+
+  @override
+  String get bmTrendLegend => 'nokta: günlük · çizgi: trend';
 }

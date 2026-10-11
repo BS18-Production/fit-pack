@@ -5,6 +5,7 @@ import '../../../data/reactive.dart';
 import '../../../data/database/app_database.dart';
 import '../../../data/database/daos/nutrition_dao.dart';
 import '../streak_calc.dart';
+import '../../../core/utils/weight_trend.dart';
 
 /// Ana Sayfa okuma provider'ları — hepsi **reaktif** (H-05, `watchTables`):
 /// dokundukları tablo değişince kendiliğinden tazelenir, elle invalidate yok.
@@ -40,20 +41,30 @@ final todayWaterProvider = StreamProvider<int>((ref) {
       () => ref.read(nutritionDaoProvider).getWaterForDay(DateTime.now()));
 });
 
-/// Son kilo + bir önceki ölçüme göre değişim (kg). Home "↓0.4" rozeti için.
-typedef WeightTrend = ({double? latest, double? delta});
+/// Ana Sayfa kilo hücresi. [delta]: trend hazırsa **7 günlük trend
+/// değişimi** ([isTrend] = true, docs/42 T-4); değilse son iki günün farkı.
+typedef WeightTrend = ({double? latest, double? delta, bool isTrend});
 
 final weightTrendProvider = StreamProvider<WeightTrend>((ref) {
   final db = ref.watch(databaseProvider);
   return watchTables(db, [db.bodyMeasurements], () async {
-    final all = await ref.read(bodyDaoProvider).getDailyMeasurements();
-    final weighted = all.where((m) => m.weightKg != null).toList()
+    final daily = await ref.read(bodyDaoProvider).getDailyMeasurements();
+    final weighted = daily.where((m) => m.weightKg != null).toList()
       ..sort((a, b) => b.date.compareTo(a.date)); // yeniden eskiye
-    if (weighted.isEmpty) return (latest: null, delta: null);
+    if (weighted.isEmpty) return (latest: null, delta: null, isTrend: false);
     final latest = weighted.first.weightKg;
+    final points = [
+      for (final m in weighted.reversed) (date: m.date, kg: m.weightKg!),
+    ];
+    if (trendReady(points)) {
+      final change = trendChange(weightTrendSeries(points));
+      if (change != null) {
+        return (latest: latest, delta: change, isTrend: true);
+      }
+    }
     final delta =
         weighted.length > 1 ? latest! - weighted[1].weightKg! : null;
-    return (latest: latest, delta: delta);
+    return (latest: latest, delta: delta, isTrend: false);
   });
 });
 

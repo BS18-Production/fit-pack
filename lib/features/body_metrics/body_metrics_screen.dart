@@ -22,6 +22,7 @@ import '../activity/activity_calendar.dart';
 import '../home/providers/home_providers.dart';
 import '../progress_photos/progress_photos_providers.dart';
 import '../../shared/widgets/fitpack_icon.dart';
+import '../../core/utils/weight_trend.dart';
 
 /// **Reaktif** (H-05): ölçüm eklenince/silinince kendiliğinden tazelenir.
 final allMeasurementsProvider = StreamProvider<List<BodyMeasurement>>((ref) {
@@ -252,6 +253,20 @@ class _WeightChartCard extends StatelessWidget {
             units.weightFromKg(m.weightKg!)))
         .toList();
 
+    // Trend çizgisi (docs/42): ham ölçümler soluk nokta, trend kalın çizgi.
+    // Trend hazır değilse (T-3) eskisi gibi tek çizgi.
+    final points = [
+      for (final m in measurements) (date: m.date, kg: m.weightKg!),
+    ];
+    final showTrend = trendReady(points);
+    final trendSpots = showTrend
+        ? [
+            for (final p in weightTrendSeries(points))
+              FlSpot(p.date.millisecondsSinceEpoch.toDouble(),
+                  units.weightFromKg(p.kg)),
+          ]
+        : const <FlSpot>[];
+
     final weights =
         measurements.map((m) => units.weightFromKg(m.weightKg!)).toList();
     var minY = weights.reduce((a, b) => a < b ? a : b);
@@ -280,6 +295,15 @@ class _WeightChartCard extends StatelessWidget {
               children: [
                 Text(AppL10n.of(context).bmWeightTrend,
                     style: context.texts.titleSmall),
+                if (showTrend) ...[
+                  AppSpacing.hGapSm,
+                  Flexible(
+                    child: Text(AppL10n.of(context).bmTrendLegend,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.texts.labelSmall?.copyWith(
+                            color: context.colors.onSurfaceVariant)),
+                  ),
+                ],
                 const Spacer(),
                 if (goalWeight != null)
                   Text(
@@ -376,8 +400,24 @@ class _WeightChartCard extends StatelessWidget {
                     ),
                   ),
                   lineBarsData: [
+                    if (showTrend)
+                      // Ham günlük ölçümler: yalnız soluk nokta.
+                      LineChartBarData(
+                        spots: spots,
+                        barWidth: 0,
+                        color: Colors.transparent,
+                        dotData: FlDotData(
+                          show: true,
+                          getDotPainter: (spot, _, _, index) =>
+                              FlDotCirclePainter(
+                            radius: 2.5,
+                            color: color.withValues(alpha: 0.35),
+                            strokeWidth: 0,
+                          ),
+                        ),
+                      ),
                     LineChartBarData(
-                      spots: spots,
+                      spots: showTrend ? trendSpots : spots,
                       isCurved: true,
                       curveSmoothness: 0.3,
                       preventCurveOverShooting: true,
@@ -389,6 +429,8 @@ class _WeightChartCard extends StatelessWidget {
                         getDotPainter: (spot, _, _, index) =>
                             FlDotCirclePainter(
                           radius: index == spots.length - 1 ? 4 : 2.5,
+                          // Trend modunda çizginin üstüne nokta konmaz (ham
+                          // noktalar ayrı katmanda); yalnız son değer.
                           color: color,
                           strokeWidth: 0,
                         ),

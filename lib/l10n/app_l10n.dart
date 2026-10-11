@@ -7039,6 +7039,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'How we use your data (privacy policy)'**
   String get privacyAuthLink;
+
+  /// No description provided for @homeWeightTrend7d.
+  ///
+  /// In en, this message translates to:
+  /// **'7-day trend'**
+  String get homeWeightTrend7d;
+
+  /// No description provided for @bmTrendLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'dots: daily · line: trend'**
+  String get bmTrendLegend;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

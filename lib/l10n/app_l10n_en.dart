@@ -3407,4 +3407,703 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get healthDisconnectError => 'Couldn’t disconnect. Try again.';
+
+  @override
+  String get assistantTitle => 'Ask my data';
+
+  @override
+  String get assistantSubtitle =>
+      'Answers from your records. Pick a question to explore.';
+
+  @override
+  String get assistantQuestionHint => 'How were my workouts this week?';
+
+  @override
+  String get assistantAsk => 'Ask';
+
+  @override
+  String get assistantReady => 'Ready questions';
+
+  @override
+  String get assistantAll => 'All questions';
+
+  @override
+  String get assistantLess => 'Show less';
+
+  @override
+  String get assistantUnderstood => 'My understanding';
+
+  @override
+  String get assistantChange => 'Change';
+
+  @override
+  String get assistantApply => 'Show result';
+
+  @override
+  String get assistantPeriod => 'Period';
+
+  @override
+  String get assistantExercise => 'Exercise';
+
+  @override
+  String get assistantChooseExercise => 'Choose an exercise';
+
+  @override
+  String get assistantInterpretation => 'Explain the numbers too';
+
+  @override
+  String get assistantMeal => 'Choose a meal for food examples';
+
+  @override
+  String get assistantNoMeal => 'Remaining amounts only';
+
+  @override
+  String get assistantPrivacyTitle => 'Your question will be sent to Google';
+
+  @override
+  String get assistantPrivacy =>
+      'Only your question and fixed routing definitions go to Gemini; workout, nutrition and measurement records stay on your device. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.';
+
+  @override
+  String get assistantPrivacyAccept => 'I understand, send question';
+
+  @override
+  String get assistantPrivacyCancel => 'Use ready questions';
+
+  @override
+  String get assistantUnavailable =>
+      'Free-text routing is unavailable. You can continue with ready questions.';
+
+  @override
+  String get assistantSignedOut =>
+      'Sign in to ask a free-text question. Ready questions run on your device.';
+
+  @override
+  String get assistantPrivateBlocked =>
+      'This question may contain private information. Remove identity, contact or health details, or choose a ready question.';
+
+  @override
+  String get assistantFallback =>
+      'I could not reliably route this question. Choose a ready question to explore your records.';
+
+  @override
+  String get assistantClarify =>
+      'Choose a period or exercise before opening the result.';
+
+  @override
+  String get assistantMulti =>
+      'There are several topics. Which one should we explore first?';
+
+  @override
+  String assistantQuota(String time) {
+    return 'Question limit reached. Resets: $time. Ready questions remain available.';
+  }
+
+  @override
+  String get assistantError => 'Could not read records. Try again.';
+
+  @override
+  String get assistantRetry => 'Try again';
+
+  @override
+  String get assistantOpenRecords => 'Open records';
+
+  @override
+  String assistantRecords(String count) {
+    return '$count records';
+  }
+
+  @override
+  String get assistantSoFar => 'So far';
+
+  @override
+  String get assistantUnknownStart => 'Since the first record';
+
+  @override
+  String get assistantNoData =>
+      'No records in this period. Missing data is not a zero result.';
+
+  @override
+  String get assistantInsufficient =>
+      'Numbers are available; there is not enough data for a trend interpretation yet.';
+
+  @override
+  String get assistantNoGoal => 'No goal has been set for this calculation.';
+
+  @override
+  String get assistantNoPlan => 'No workout days are scheduled.';
+
+  @override
+  String get assistantIncompleteDays =>
+      'No completed days; protein-goal success cannot be calculated.';
+
+  @override
+  String get assistantLoggedBasis =>
+      'Logged days only; records may be incomplete.';
+
+  @override
+  String get assistantCompletedBasis =>
+      'Average uses completed days only; a completed empty day counts as zero.';
+
+  @override
+  String get assistantCurrentPlan =>
+      'Uses your current plan; past plan changes are unknown.';
+
+  @override
+  String get assistantFoodBasis =>
+      'Examples use past portions for the selected meal. Filtered by remaining calories only; nothing is logged automatically.';
+
+  @override
+  String get assistantUnknownExercise => 'Unknown exercise';
+
+  @override
+  String get assistantOwnHistory => 'Your own history';
+
+  @override
+  String get assistantGuideline => 'General research finding';
+
+  @override
+  String get assistantSources => 'Sources';
+
+  @override
+  String get assistantDeveloper => 'Developer';
+
+  @override
+  String get assistantQuality => 'Assistant quality';
+
+  @override
+  String get assistantQualityInfo =>
+      'Text-free events on this device only. Correction rate is not accuracy; no correction does not prove a correct route.';
+
+  @override
+  String get assistantQualityAuto => 'Automatic answers';
+
+  @override
+  String get assistantQualityCorrections => 'Changed selections';
+
+  @override
+  String get assistantQualityLatency => 'Latency: median / 95th percentile';
+
+  @override
+  String get assistantQualityTokens => 'Input / output tokens';
+
+  @override
+  String get assistantQualityFree => 'Gemini free tier · cost \$0';
+
+  @override
+  String get assistantQualityClear => 'Clear local quality events';
+
+  @override
+  String get assistantQualityClearConfirm =>
+      'Delete assistant quality events? Your fitness records are preserved.';
+
+  @override
+  String get assistantQualitySmall =>
+      'Small sample; interpret the rate cautiously.';
+
+  @override
+  String get assistantQualityWarning =>
+      'Correction rate exceeded 3% in two consecutive weeks. Review routing.';
+
+  @override
+  String get assistantQualityTransitions => 'Query changes';
+
+  @override
+  String get assistantQualityDays => 'Last 7 days';
+
+  @override
+  String get assistantNotAvailable => 'Unknown';
+
+  @override
+  String get assistantPeriodToday => 'Today';
+
+  @override
+  String get assistantPeriodThisWeek => 'This week';
+
+  @override
+  String get assistantPeriodLastWeek => 'Last week';
+
+  @override
+  String get assistantPeriodLast30Days => 'Last 30 days';
+
+  @override
+  String get assistantPeriodAllTime => 'All time';
+
+  @override
+  String get assistantQueryWorkoutSummary => 'How were my workouts?';
+
+  @override
+  String get assistantQueryPlanAdherence =>
+      'How closely did I follow scheduled days?';
+
+  @override
+  String get assistantQueryStrengthProgress => 'Which exercises improved?';
+
+  @override
+  String get assistantQueryExerciseHistory =>
+      'How did I progress in this exercise?';
+
+  @override
+  String get assistantQueryNutritionSummary =>
+      'What do my nutrition records show?';
+
+  @override
+  String get assistantQueryProteinGoal =>
+      'How many days did I reach my protein goal?';
+
+  @override
+  String get assistantQueryWeightTrend => 'How did my weight change?';
+
+  @override
+  String get assistantQueryMuscleBalance => 'How many sets per muscle group?';
+
+  @override
+  String get assistantQueryStreak => 'How many consistent weeks?';
+
+  @override
+  String get assistantQueryTodayRemaining => 'What remains of my goals today?';
+
+  @override
+  String get assistantQueryTopExercises => 'Which exercises did I do most?';
+
+  @override
+  String get assistantMetricSessions => 'Sessions';
+
+  @override
+  String get assistantMetricSets => 'Completed sets';
+
+  @override
+  String get assistantMetricMinutes => 'Duration';
+
+  @override
+  String get assistantMetricVolume => 'Volume';
+
+  @override
+  String get assistantMetricPlannedDays => 'Scheduled days';
+
+  @override
+  String get assistantMetricDoneDays => 'Scheduled days completed';
+
+  @override
+  String get assistantMetricLoggedDays => 'Logged days';
+
+  @override
+  String get assistantMetricCompletedDays => 'Completed days';
+
+  @override
+  String get assistantMetricExcludedDays => 'Excluded days';
+
+  @override
+  String get assistantMetricAvgKcal => 'Average energy';
+
+  @override
+  String get assistantMetricAvgProtein => 'Average protein';
+
+  @override
+  String get assistantMetricProteinGoal => 'Protein goal';
+
+  @override
+  String get assistantMetricHitDays => 'Completed days reaching goal';
+
+  @override
+  String get assistantMetricMeasurements => 'Measurements';
+
+  @override
+  String get assistantMetricFirstWeight => 'First weight';
+
+  @override
+  String get assistantMetricLastWeight => 'Last weight';
+
+  @override
+  String get assistantMetricChange => 'Change';
+
+  @override
+  String get assistantMetricWeeks => 'Weekly streak';
+
+  @override
+  String get assistantMetricWeeklyGoal => 'Weekly day goal';
+
+  @override
+  String get assistantMetricRemainingKcal => 'Remaining energy';
+
+  @override
+  String get assistantMetricRemainingProtein => 'Remaining protein';
+
+  @override
+  String get assistantMetricFirstE1rm => 'First estimated one-rep maximum';
+
+  @override
+  String get assistantMetricLastE1rm => 'Last estimated one-rep maximum';
+
+  @override
+  String get assistantMetricPortion => 'Past portion';
+
+  @override
+  String get assistantMetricPortionKcal => 'Portion energy';
+
+  @override
+  String get assistantMetricPortionProtein => 'Portion protein';
+
+  @override
+  String insightMuscleBelowTen(String muscle, String sets, String level) {
+    return '$muscle: $sets sets, below the roughly $level weekly-set level studied.';
+  }
+
+  @override
+  String insightMuscleAtTen(String muscle, String sets, String level) {
+    return '$muscle: $sets sets, at or above the roughly $level-set level studied.';
+  }
+
+  @override
+  String insightMuscleBeyondTwenty(
+    String muscle,
+    String sets,
+    String limitedEvidenceAbove,
+  ) {
+    return '$muscle: $sets sets. Evidence for added gains beyond $limitedEvidenceAbove sets is limited.';
+  }
+
+  @override
+  String insightWeightNotEnoughData(
+    String count,
+    String spanDays,
+    String minDays,
+  ) {
+    return '$count measurements spanning $spanDays days. Trend interpretation needs at least two measurements over $minDays days.';
+  }
+
+  @override
+  String insightWeightAgainstGoal(String weeklyChangeKg) {
+    return 'Weekly change is $weeklyChangeKg, opposite your selected goal direction.';
+  }
+
+  @override
+  String insightWeightNoClearChange(String weeklyChangeKg) {
+    return 'Weekly change is $weeklyChangeKg; no clear trend is visible.';
+  }
+
+  @override
+  String insightWeightLossSlower(
+    String weeklyChangeKg,
+    String rangeMinKg,
+    String rangeMaxKg,
+  ) {
+    return 'Weekly change is $weeklyChangeKg; slower than the CDC general loss range of $rangeMinKg–$rangeMaxKg.';
+  }
+
+  @override
+  String insightWeightLossInRange(
+    String weeklyChangeKg,
+    String rangeMinKg,
+    String rangeMaxKg,
+  ) {
+    return 'Weekly change is $weeklyChangeKg; within the CDC general loss range of $rangeMinKg–$rangeMaxKg.';
+  }
+
+  @override
+  String insightWeightLossFaster(
+    String weeklyChangeKg,
+    String rangeMinKg,
+    String rangeMaxKg,
+  ) {
+    return 'Weekly change is $weeklyChangeKg; faster than the CDC general loss range of $rangeMinKg–$rangeMaxKg.';
+  }
+
+  @override
+  String insightWeightGainSlower(
+    String pctPerWeek,
+    String rangeMinPct,
+    String rangeMaxPct,
+  ) {
+    return 'Weekly gain is $pctPerWeek%, slower than the $rangeMinPct–$rangeMaxPct% level studied.';
+  }
+
+  @override
+  String insightWeightGainInRange(
+    String pctPerWeek,
+    String rangeMinPct,
+    String rangeMaxPct,
+  ) {
+    return 'Weekly gain is $pctPerWeek%, within the $rangeMinPct–$rangeMaxPct% level studied.';
+  }
+
+  @override
+  String insightWeightGainFaster(
+    String pctPerWeek,
+    String rangeMinPct,
+    String rangeMaxPct,
+  ) {
+    return 'Weekly gain is $pctPerWeek%, faster than the $rangeMinPct–$rangeMaxPct% level studied.';
+  }
+
+  @override
+  String insightWeightStable(String totalChangePct, String stablePct) {
+    return 'Estimated change over the period is $totalChangePct%, within ±$stablePct% of the mean.';
+  }
+
+  @override
+  String insightWeightDriftUp(String totalChangePct) {
+    return 'Estimated increase over the period is $totalChangePct%.';
+  }
+
+  @override
+  String insightWeightDriftDown(String totalChangePct) {
+    return 'Estimated change over the period is $totalChangePct%.';
+  }
+
+  @override
+  String insightWorkoutNotEnoughHistory(
+    String metric,
+    String value,
+    String minWeeks,
+    String baselineWeeks,
+  ) {
+    return '$metric: $value. Comparison with your history needs at least $minWeeks complete weeks; you have $baselineWeeks.';
+  }
+
+  @override
+  String insightWorkoutNoBaseline(String metric, String value) {
+    return '$metric: $value. Historical median is 0; percentage comparison is unavailable.';
+  }
+
+  @override
+  String insightWorkoutSoFar(
+    String metric,
+    String value,
+    String baselineWeeks,
+    String median,
+  ) {
+    return '$metric: $value so far. Median of the prior $baselineWeeks weeks is $median; an ongoing week is not compared as a full week.';
+  }
+
+  @override
+  String insightWorkoutAboveMedian(
+    String metric,
+    String value,
+    String median,
+    String pct,
+  ) {
+    return '$metric: $value, historical median $median; $pct% above.';
+  }
+
+  @override
+  String insightWorkoutAtMedian(String metric, String value, String median) {
+    return '$metric: $value, equal to the historical median ($median).';
+  }
+
+  @override
+  String insightWorkoutBelowMedian(
+    String metric,
+    String value,
+    String median,
+    String pct,
+  ) {
+    return '$metric: $value, historical median $median; difference $pct%.';
+  }
+
+  @override
+  String get insightStrengthNotApplicable =>
+      'No suitable weight/repetition sets; estimated one-rep maximum is unavailable.';
+
+  @override
+  String insightStrengthNotEnoughData(String days) {
+    return 'Suitable sets on $days distinct days; progress needs at least two days.';
+  }
+
+  @override
+  String insightStrengthUp(String firstE1rm, String lastE1rm, String pct) {
+    return 'Estimated one-rep maximum: $firstE1rm → $lastE1rm; $pct% increase.';
+  }
+
+  @override
+  String insightStrengthStable(String firstE1rm, String lastE1rm) {
+    return 'Estimated one-rep maximum: $firstE1rm → $lastE1rm; change within ±1%.';
+  }
+
+  @override
+  String insightStrengthDown(String firstE1rm, String lastE1rm, String pct) {
+    return 'Estimated one-rep maximum: $firstE1rm → $lastE1rm; change $pct%.';
+  }
+
+  @override
+  String insightStrengthPlateau(String topKg, String weeks) {
+    return 'Heaviest set was $topKg in each of the last $weeks consecutive data weeks.';
+  }
+
+  @override
+  String get insightNutritionNoLogs => 'No nutrition data for this period.';
+
+  @override
+  String insightProteinGoalDays(
+    String goal,
+    String hitDays,
+    String loggedDays,
+  ) {
+    return 'Protein goal of $goal g reached on $hitDays/$loggedDays completed days.';
+  }
+
+  @override
+  String insightKcalVsGoal(
+    String loggedDays,
+    String avgKcal,
+    String goal,
+    String pctOfGoal,
+  ) {
+    return 'Average across $loggedDays days: $avgKcal kcal; goal $goal kcal ($pctOfGoal%).';
+  }
+
+  @override
+  String insightProteinPerKgBelow(
+    String gPerKg,
+    String breakpoint,
+    String bodyWeightKg,
+    String bodyWeightDate,
+  ) {
+    return 'Recorded average is $gPerKg g/kg, below the roughly $breakpoint g/kg level studied. Weight used: $bodyWeightKg ($bodyWeightDate).';
+  }
+
+  @override
+  String insightProteinPerKgInRange(
+    String gPerKg,
+    String breakpoint,
+    String upper,
+    String bodyWeightKg,
+    String bodyWeightDate,
+  ) {
+    return 'Recorded average is $gPerKg g/kg, within the $breakpoint–$upper g/kg range studied. Weight used: $bodyWeightKg ($bodyWeightDate).';
+  }
+
+  @override
+  String insightProteinPerKgAbove(
+    String gPerKg,
+    String breakpoint,
+    String bodyWeightKg,
+    String bodyWeightDate,
+  ) {
+    return 'Recorded average is $gPerKg g/kg. Research found no additional lean-mass gains above roughly $breakpoint g/kg; this is not a safety limit. Weight used: $bodyWeightKg ($bodyWeightDate).';
+  }
+
+  @override
+  String insightTodayNoGoal(String loggedKcal, String loggedProtein) {
+    return 'No energy goal; $loggedKcal kcal and $loggedProtein g protein recorded today.';
+  }
+
+  @override
+  String insightTodayRemaining(String remainingKcal) {
+    return '$remainingKcal kcal remain to your energy goal. Records may be incomplete.';
+  }
+
+  @override
+  String insightTodayGoalReached(String remainingKcal) {
+    return 'Remaining energy is $remainingKcal kcal; zero or a negative value means the recorded goal has been reached.';
+  }
+
+  @override
+  String get assistantNoteGeneralGuideline =>
+      'General guidance, not personal medical advice.';
+
+  @override
+  String get assistantNoteConsultProfessional =>
+      'Consult a professional for medical assessment.';
+
+  @override
+  String get assistantNoteSoFar => 'Records so far in the ongoing period.';
+
+  @override
+  String get assistantNoteCompletedSetsCounted =>
+      'Completed non-warm-up sets count toward the primary muscle; studies examine challenging sets.';
+
+  @override
+  String get assistantNoteFastLossCaution =>
+      'Weekly loss exceeded 1.5%. This caution threshold is a product choice.';
+
+  @override
+  String get assistantNoteLeanMassInfo =>
+      'In one study of strength athletes, roughly 0.7% weekly loss preserved lean mass better.';
+
+  @override
+  String get assistantNoteBeginnerIntermediateRange =>
+      'This range was studied for beginner/intermediate athletes.';
+
+  @override
+  String get assistantNoteLoggedOnly =>
+      'Recorded amounts only; records may be incomplete.';
+
+  @override
+  String get assistantNoteCompletedDaysOnly =>
+      'Only completed days were included.';
+
+  @override
+  String get assistantNoteChooseGoalDirection =>
+      'Select a goal direction for direction-specific interpretation.';
+
+  @override
+  String get assistantQualityUnavailable =>
+      'Could not write local quality event. You can still use your results.';
+
+  @override
+  String get assistantDecisionAuto => 'Automatic';
+
+  @override
+  String get assistantDecisionClarify => 'Clarification';
+
+  @override
+  String get assistantDecisionMulti => 'Multiple topics';
+
+  @override
+  String get assistantDecisionFallback => 'Fallback to ready questions';
+
+  @override
+  String get assistantDecisionError => 'Network / quota error';
+
+  @override
+  String get assistantMuscleChest => 'Chest';
+
+  @override
+  String get assistantMuscleUpperChest => 'Upper chest';
+
+  @override
+  String get assistantMuscleBack => 'Back';
+
+  @override
+  String get assistantMuscleShoulders => 'Shoulders';
+
+  @override
+  String get assistantMuscleFrontDelt => 'Front delts';
+
+  @override
+  String get assistantMuscleRearDelt => 'Rear delts';
+
+  @override
+  String get assistantMuscleBiceps => 'Biceps';
+
+  @override
+  String get assistantMuscleTriceps => 'Triceps';
+
+  @override
+  String get assistantMuscleForearms => 'Forearms';
+
+  @override
+  String get assistantMuscleLegs => 'Legs';
+
+  @override
+  String get assistantMuscleQuads => 'Quads';
+
+  @override
+  String get assistantMuscleHamstrings => 'Hamstrings';
+
+  @override
+  String get assistantMuscleGlutes => 'Glutes';
+
+  @override
+  String get assistantMuscleCalves => 'Calves';
+
+  @override
+  String get assistantMuscleCore => 'Core';
+
+  @override
+  String get assistantMuscleFullBody => 'Full body';
+
+  @override
+  String get assistantMuscleOther => 'Other';
 }

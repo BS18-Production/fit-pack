@@ -981,5 +981,603 @@
   "healthDisconnectNote": "İzni ayrıca Sağlık veya Health Connect ayarlarından kaldırabilirsin.",
   "healthNoGoal": "Hedef yok",
   "healthInstallError": "Health Connect açılamadı. Yeniden dene.",
-  "healthDisconnectError": "Bağlantı kesilemedi. Yeniden dene."
+  "healthDisconnectError": "Bağlantı kesilemedi. Yeniden dene.",
+  "assistantTitle": "Verime sor",
+  "assistantSubtitle": "Sayılar senin kayıtlarından. Sorunu seç, birlikte bakalım.",
+  "assistantQuestionHint": "Bu hafta antrenmanlarım nasıldı?",
+  "assistantAsk": "Sor",
+  "assistantReady": "Hazır sorular",
+  "assistantAll": "Tüm sorular",
+  "assistantLess": "Daha az göster",
+  "assistantUnderstood": "Anladığım soru",
+  "assistantChange": "Değiştir",
+  "assistantApply": "Sonucu göster",
+  "assistantPeriod": "Dönem",
+  "assistantExercise": "Hareket",
+  "assistantChooseExercise": "Hareket seç",
+  "assistantInterpretation": "Sayıların anlamını da göster",
+  "assistantMeal": "Yemek örnekleri için öğün seç",
+  "assistantNoMeal": "Yalnız kalan miktar",
+  "assistantPrivacyTitle": "Sorun Google’a gönderilecek",
+  "assistantPrivacy": "Yalnız yazdığın soru ve sabit soru tanımları Gemini’ye gider; antrenman, beslenme ve ölçüm kayıtların gönderilmez. Ücretsiz Gemini’de Google metni ve model çıktısını ürün geliştirme için kullanabilir; insan incelemesi olabilir. Kimlik, iletişim veya özel sağlık bilgisi yazma. Hazır sorular cihazda çalışır.",
+  "assistantPrivacyAccept": "Anladım, soruyu gönder",
+  "assistantPrivacyCancel": "Hazır soruları kullan",
+  "assistantUnavailable": "Serbest soru şu an kullanılamıyor. Hazır sorularla devam edebilirsin.",
+  "assistantSignedOut": "Serbest soru için hesabına giriş yap. Hazır sorular cihazda çalışır.",
+  "assistantPrivateBlocked": "Bu soruda özel bilgi olabilir. Kimlik, iletişim veya sağlık bilgilerini kaldır ya da hazır bir soru seç.",
+  "assistantFallback": "Bu soruyu güvenle eşleyemedim. Kayıtlarını incelemek için hazır bir soru seç.",
+  "assistantClarify": "Hesabı açmadan önce dönem veya hareketi seç.",
+  "assistantMulti": "Birden fazla konu var. Önce hangisine bakalım?",
+  "assistantQuota": "Soru sınırına ulaşıldı. Yenilenme: {time}. Hazır sorular açık.",
+  "@assistantQuota": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "assistantError": "Kayıtlar okunamadı. Tekrar dene.",
+  "assistantRetry": "Tekrar dene",
+  "assistantOpenRecords": "Kayıtları aç",
+  "assistantRecords": "{count} kayıt",
+  "@assistantRecords": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "assistantSoFar": "Şu ana kadar",
+  "assistantUnknownStart": "İlk kayıttan beri",
+  "assistantNoData": "Bu dönemde kayıt yok. Veri yokluğunu sıfır sonuç olarak değerlendirmiyorum.",
+  "assistantInsufficient": "Sayılar görünür; eğilim yorumu için henüz yeterli veri yok.",
+  "assistantNoGoal": "Bu hesap için hedef belirlenmemiş.",
+  "assistantNoPlan": "Planlı antrenman günü yok.",
+  "assistantIncompleteDays": "Tamamlanan gün yok; protein hedefi başarısı hesaplanmaz.",
+  "assistantLoggedBasis": "Yalnız kaydedilen günler; eksik kayıt olabilir.",
+  "assistantCompletedBasis": "Ortalama yalnız tamamlanan günlerden; boş tamamlanan gün 0 sayılır.",
+  "assistantCurrentPlan": "Bugünkü plan kullanılır; geçmiş plan değişiklikleri bilinmiyor.",
+  "assistantFoodBasis": "Örnekler seçtiğin öğündeki geçmiş porsiyonların. Yalnız kalan kaloriye göre süzülür; otomatik kaydedilmez.",
+  "assistantUnknownExercise": "Bilinmeyen hareket",
+  "assistantOwnHistory": "Kendi geçmişin",
+  "assistantGuideline": "Genel araştırma bulgusu",
+  "assistantSources": "Kaynaklar",
+  "assistantDeveloper": "Geliştirici",
+  "assistantQuality": "Asistan kalitesi",
+  "assistantQualityInfo": "Yalnız bu cihazdaki metinsiz olaylar. Düzeltme oranı doğruluk oranı değildir; hiç düzeltmemen doğru eşleme kanıtı sayılmaz.",
+  "assistantQualityAuto": "Otomatik cevaplar",
+  "assistantQualityCorrections": "Değiştirilen seçimler",
+  "assistantQualityLatency": "Gecikme: medyan / %95",
+  "assistantQualityTokens": "Girdi / çıktı tokenı",
+  "assistantQualityFree": "Gemini ücretsiz katmanı · maliyet $0",
+  "assistantQualityClear": "Yerel kalite kayıtlarını temizle",
+  "assistantQualityClearConfirm": "Asistan kalite kayıtları silinsin mi? Fitness kayıtların korunur.",
+  "assistantQualitySmall": "Az örnek; oranı temkinli oku.",
+  "assistantQualityWarning": "İki hafta üst üste düzeltme oranı %3’ü aştı. Eşlemeleri gözden geçir.",
+  "assistantQualityTransitions": "Sorgu değişiklikleri",
+  "assistantQualityDays": "Son 7 gün",
+  "assistantNotAvailable": "Bilinmiyor",
+  "assistantPeriodToday": "Bugün",
+  "assistantPeriodThisWeek": "Bu hafta",
+  "assistantPeriodLastWeek": "Geçen hafta",
+  "assistantPeriodLast30Days": "Son 30 gün",
+  "assistantPeriodAllTime": "Tüm zamanlar",
+  "assistantQueryWorkoutSummary": "Antrenmanlarım nasıldı?",
+  "assistantQueryPlanAdherence": "Planlı günlere ne kadar uydum?",
+  "assistantQueryStrengthProgress": "Hangi hareketlerde ilerledim?",
+  "assistantQueryExerciseHistory": "Bu harekette nasıl ilerledim?",
+  "assistantQueryNutritionSummary": "Beslenme kayıtlarım ne söylüyor?",
+  "assistantQueryProteinGoal": "Protein hedefine kaç gün ulaştım?",
+  "assistantQueryWeightTrend": "Kilom nasıl değişti?",
+  "assistantQueryMuscleBalance": "Kas gruplarına kaç set yaptım?",
+  "assistantQueryStreak": "Kaç haftadır düzenliyim?",
+  "assistantQueryTodayRemaining": "Bugün hedefime ne kaldı?",
+  "assistantQueryTopExercises": "En çok hangi hareketleri yaptım?",
+  "assistantMetricSessions": "Seans",
+  "assistantMetricSets": "Tamamlanan set",
+  "assistantMetricMinutes": "Süre",
+  "assistantMetricVolume": "Hacim",
+  "assistantMetricPlannedDays": "Planlı gün",
+  "assistantMetricDoneDays": "Yapılan planlı gün",
+  "assistantMetricLoggedDays": "Kayıtlı gün",
+  "assistantMetricCompletedDays": "Tamamlanan gün",
+  "assistantMetricExcludedDays": "Hesaba katılmayan gün",
+  "assistantMetricAvgKcal": "Ortalama enerji",
+  "assistantMetricAvgProtein": "Ortalama protein",
+  "assistantMetricProteinGoal": "Protein hedefi",
+  "assistantMetricHitDays": "Hedefe ulaşan tamamlanmış gün",
+  "assistantMetricMeasurements": "Ölçüm",
+  "assistantMetricFirstWeight": "İlk kilo",
+  "assistantMetricLastWeight": "Son kilo",
+  "assistantMetricChange": "Değişim",
+  "assistantMetricWeeks": "Haftalık seri",
+  "assistantMetricWeeklyGoal": "Haftalık gün hedefi",
+  "assistantMetricRemainingKcal": "Kalan enerji",
+  "assistantMetricRemainingProtein": "Kalan protein",
+  "assistantMetricFirstE1rm": "İlk tahmini tek tekrar maksimumu",
+  "assistantMetricLastE1rm": "Son tahmini tek tekrar maksimumu",
+  "assistantMetricPortion": "Geçmiş porsiyon",
+  "assistantMetricPortionKcal": "Porsiyon enerjisi",
+  "assistantMetricPortionProtein": "Porsiyon proteini",
+  "insightMuscleBelowTen": "{muscle}: {sets} set, araştırmadaki haftalık yaklaşık {level} set düzeyinin altında.",
+  "@insightMuscleBelowTen": {
+    "placeholders": {
+      "muscle": {
+        "type": "String"
+      },
+      "sets": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "insightMuscleAtTen": "{muscle}: {sets} set, araştırmadaki yaklaşık {level} set düzeyinde veya üzerinde.",
+  "@insightMuscleAtTen": {
+    "placeholders": {
+      "muscle": {
+        "type": "String"
+      },
+      "sets": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "insightMuscleBeyondTwenty": "{muscle}: {sets} set. {limitedEvidenceAbove} setin ötesinde ek kazanım kanıtı sınırlı.",
+  "@insightMuscleBeyondTwenty": {
+    "placeholders": {
+      "muscle": {
+        "type": "String"
+      },
+      "sets": {
+        "type": "String"
+      },
+      "limitedEvidenceAbove": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightNotEnoughData": "{count} ölçüm, {spanDays} gün açıklık. Eğilim yorumu için en az iki ölçüm ve {minDays} gün gerekir.",
+  "@insightWeightNotEnoughData": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "spanDays": {
+        "type": "String"
+      },
+      "minDays": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightAgainstGoal": "Haftalık değişim {weeklyChangeKg}; seçtiğin hedef yönünün tersinde.",
+  "@insightWeightAgainstGoal": {
+    "placeholders": {
+      "weeklyChangeKg": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightNoClearChange": "Haftalık değişim {weeklyChangeKg}; belirgin bir eğilim görünmüyor.",
+  "@insightWeightNoClearChange": {
+    "placeholders": {
+      "weeklyChangeKg": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightLossSlower": "Haftalık değişim {weeklyChangeKg}; CDC’nin genel {rangeMinKg}–{rangeMaxKg} kayıp aralığından daha yavaş.",
+  "@insightWeightLossSlower": {
+    "placeholders": {
+      "weeklyChangeKg": {
+        "type": "String"
+      },
+      "rangeMinKg": {
+        "type": "String"
+      },
+      "rangeMaxKg": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightLossInRange": "Haftalık değişim {weeklyChangeKg}; CDC’nin genel {rangeMinKg}–{rangeMaxKg} kayıp aralığında.",
+  "@insightWeightLossInRange": {
+    "placeholders": {
+      "weeklyChangeKg": {
+        "type": "String"
+      },
+      "rangeMinKg": {
+        "type": "String"
+      },
+      "rangeMaxKg": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightLossFaster": "Haftalık değişim {weeklyChangeKg}; CDC’nin genel {rangeMinKg}–{rangeMaxKg} kayıp aralığından daha hızlı.",
+  "@insightWeightLossFaster": {
+    "placeholders": {
+      "weeklyChangeKg": {
+        "type": "String"
+      },
+      "rangeMinKg": {
+        "type": "String"
+      },
+      "rangeMaxKg": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightGainSlower": "Haftalık %{pctPerWeek} artış; araştırmadaki %{rangeMinPct}–%{rangeMaxPct} düzeyinden daha yavaş.",
+  "@insightWeightGainSlower": {
+    "placeholders": {
+      "pctPerWeek": {
+        "type": "String"
+      },
+      "rangeMinPct": {
+        "type": "String"
+      },
+      "rangeMaxPct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightGainInRange": "Haftalık %{pctPerWeek} artış, araştırmadaki %{rangeMinPct}–%{rangeMaxPct} düzeyinde.",
+  "@insightWeightGainInRange": {
+    "placeholders": {
+      "pctPerWeek": {
+        "type": "String"
+      },
+      "rangeMinPct": {
+        "type": "String"
+      },
+      "rangeMaxPct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightGainFaster": "Haftalık %{pctPerWeek} artış; araştırmadaki %{rangeMinPct}–%{rangeMaxPct} düzeyinden daha hızlı.",
+  "@insightWeightGainFaster": {
+    "placeholders": {
+      "pctPerWeek": {
+        "type": "String"
+      },
+      "rangeMinPct": {
+        "type": "String"
+      },
+      "rangeMaxPct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightStable": "Dönemde öngörülen değişim %{totalChangePct}; ortalamanın ±%{stablePct} aralığında.",
+  "@insightWeightStable": {
+    "placeholders": {
+      "totalChangePct": {
+        "type": "String"
+      },
+      "stablePct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightDriftUp": "Dönemde öngörülen artış %{totalChangePct}.",
+  "@insightWeightDriftUp": {
+    "placeholders": {
+      "totalChangePct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightDriftDown": "Dönemde öngörülen değişim %{totalChangePct}.",
+  "@insightWeightDriftDown": {
+    "placeholders": {
+      "totalChangePct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWorkoutNotEnoughHistory": "{metric}: {value}. Kendi geçmişinle karşılaştırmak için en az {minWeeks} tamamlanmış hafta gerekir; {baselineWeeks} var.",
+  "@insightWorkoutNotEnoughHistory": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "minWeeks": {
+        "type": "String"
+      },
+      "baselineWeeks": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWorkoutNoBaseline": "{metric}: {value}. Geçmiş medyanı 0; yüzde karşılaştırması yapılamaz.",
+  "@insightWorkoutNoBaseline": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWorkoutSoFar": "{metric}: şu ana kadar {value}. Önceki {baselineWeeks} haftanın medyanı {median}; devam eden hafta tam haftayla karşılaştırılmaz.",
+  "@insightWorkoutSoFar": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "baselineWeeks": {
+        "type": "String"
+      },
+      "median": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWorkoutAboveMedian": "{metric}: {value}, geçmiş medyan {median}; %{pct} üzerinde.",
+  "@insightWorkoutAboveMedian": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "median": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWorkoutAtMedian": "{metric}: {value}, geçmiş medyanla ({median}) aynı.",
+  "@insightWorkoutAtMedian": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "median": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWorkoutBelowMedian": "{metric}: {value}, geçmiş medyan {median}; fark %{pct}.",
+  "@insightWorkoutBelowMedian": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "median": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightStrengthNotApplicable": "Uygun ağırlık/tekrar seti yok; tahmini tek tekrar maksimumu hesaplanamaz.",
+  "insightStrengthNotEnoughData": "{days} farklı günde uygun set var; gelişim için en az iki gün gerekir.",
+  "@insightStrengthNotEnoughData": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "insightStrengthUp": "Tahmini tek tekrar maksimumu {firstE1rm} → {lastE1rm}; %{pct} artış.",
+  "@insightStrengthUp": {
+    "placeholders": {
+      "firstE1rm": {
+        "type": "String"
+      },
+      "lastE1rm": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightStrengthStable": "Tahmini tek tekrar maksimumu {firstE1rm} → {lastE1rm}; değişim ±%1 içinde.",
+  "@insightStrengthStable": {
+    "placeholders": {
+      "firstE1rm": {
+        "type": "String"
+      },
+      "lastE1rm": {
+        "type": "String"
+      }
+    }
+  },
+  "insightStrengthDown": "Tahmini tek tekrar maksimumu {firstE1rm} → {lastE1rm}; değişim %{pct}.",
+  "@insightStrengthDown": {
+    "placeholders": {
+      "firstE1rm": {
+        "type": "String"
+      },
+      "lastE1rm": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "insightStrengthPlateau": "Son {weeks} ardışık veri haftasında en ağır set {topKg}.",
+  "@insightStrengthPlateau": {
+    "placeholders": {
+      "weeks": {
+        "type": "String"
+      },
+      "topKg": {
+        "type": "String"
+      }
+    }
+  },
+  "insightNutritionNoLogs": "Bu dönem beslenme hesabı için veri yok.",
+  "insightProteinGoalDays": "{hitDays}/{loggedDays} tamamlanan günde {goal} g protein hedefine ulaşıldı.",
+  "@insightProteinGoalDays": {
+    "placeholders": {
+      "hitDays": {
+        "type": "String"
+      },
+      "loggedDays": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "insightKcalVsGoal": "{loggedDays} gün ortalaması {avgKcal} kcal; hedefin {goal} kcal (%{pctOfGoal}).",
+  "@insightKcalVsGoal": {
+    "placeholders": {
+      "loggedDays": {
+        "type": "String"
+      },
+      "avgKcal": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      },
+      "pctOfGoal": {
+        "type": "String"
+      }
+    }
+  },
+  "insightProteinPerKgBelow": "Kaydedilen ortalama {gPerKg} g/kg; araştırmadaki yaklaşık {breakpoint} g/kg düzeyinin altında. Kullanılan kilo: {bodyWeightKg} ({bodyWeightDate}).",
+  "@insightProteinPerKgBelow": {
+    "placeholders": {
+      "gPerKg": {
+        "type": "String"
+      },
+      "breakpoint": {
+        "type": "String"
+      },
+      "bodyWeightKg": {
+        "type": "String"
+      },
+      "bodyWeightDate": {
+        "type": "String"
+      }
+    }
+  },
+  "insightProteinPerKgInRange": "Kaydedilen ortalama {gPerKg} g/kg; araştırmadaki {breakpoint}–{upper} g/kg aralığında. Kullanılan kilo: {bodyWeightKg} ({bodyWeightDate}).",
+  "@insightProteinPerKgInRange": {
+    "placeholders": {
+      "gPerKg": {
+        "type": "String"
+      },
+      "breakpoint": {
+        "type": "String"
+      },
+      "upper": {
+        "type": "String"
+      },
+      "bodyWeightKg": {
+        "type": "String"
+      },
+      "bodyWeightDate": {
+        "type": "String"
+      }
+    }
+  },
+  "insightProteinPerKgAbove": "Kaydedilen ortalama {gPerKg} g/kg. Araştırmada yaklaşık {breakpoint} g/kg üstünde ek yağsız kütle kazanımı görülmedi; bu bir güvenlik sınırı değildir. Kullanılan kilo: {bodyWeightKg} ({bodyWeightDate}).",
+  "@insightProteinPerKgAbove": {
+    "placeholders": {
+      "gPerKg": {
+        "type": "String"
+      },
+      "breakpoint": {
+        "type": "String"
+      },
+      "bodyWeightKg": {
+        "type": "String"
+      },
+      "bodyWeightDate": {
+        "type": "String"
+      }
+    }
+  },
+  "insightTodayNoGoal": "Enerji hedefi yok; bugün {loggedKcal} kcal ve {loggedProtein} g protein kaydedildi.",
+  "@insightTodayNoGoal": {
+    "placeholders": {
+      "loggedKcal": {
+        "type": "String"
+      },
+      "loggedProtein": {
+        "type": "String"
+      }
+    }
+  },
+  "insightTodayRemaining": "Enerji hedefine {remainingKcal} kcal kaldı. Kayıtların eksik olabilir.",
+  "@insightTodayRemaining": {
+    "placeholders": {
+      "remainingKcal": {
+        "type": "String"
+      }
+    }
+  },
+  "insightTodayGoalReached": "Enerji hedefinden kalan {remainingKcal} kcal; sıfır veya negatif değer hedefe ulaşıldığını gösterir.",
+  "@insightTodayGoalReached": {
+    "placeholders": {
+      "remainingKcal": {
+        "type": "String"
+      }
+    }
+  },
+  "assistantNoteGeneralGuideline": "Genel kılavuz; kişisel tıbbi tavsiye değildir.",
+  "assistantNoteConsultProfessional": "Tıbbi değerlendirme için uzmana danış.",
+  "assistantNoteSoFar": "Devam eden dönemin şu ana kadarki kayıtları.",
+  "assistantNoteCompletedSetsCounted": "Tamamlanan, ısınma dışı setler birincil kasa yazılır; araştırmalar zorlayıcı setleri inceler.",
+  "assistantNoteFastLossCaution": "Haftalık kayıp %1,5’i aştı. Bu dikkat eşiği ürün tercihidir.",
+  "assistantNoteLeanMassInfo": "Kuvvet sporcularındaki bir çalışmada haftalık yaklaşık %0,7 kayıp yağsız kütleyi daha iyi korudu.",
+  "assistantNoteBeginnerIntermediateRange": "Bu aralık başlangıç/orta seviye için araştırılmıştır.",
+  "assistantNoteLoggedOnly": "Yalnız kaydedilen miktarlar; eksik kayıt olabilir.",
+  "assistantNoteCompletedDaysOnly": "Yalnız tamamlanan günler hesaba katıldı.",
+  "assistantNoteChooseGoalDirection": "Hedef yönünü seçersen yönüne göre yorumlayabilirim.",
+  "assistantQualityUnavailable": "Yerel kalite kaydı yazılamadı. Sonuçlarını kullanmaya devam edebilirsin.",
+  "assistantDecisionAuto": "Otomatik",
+  "assistantDecisionClarify": "Netleştirme",
+  "assistantDecisionMulti": "Çoklu konu",
+  "assistantDecisionFallback": "Hazır sorulara dönüş",
+  "assistantDecisionError": "Ağ / kota hatası",
+  "assistantMuscleChest": "Göğüs",
+  "assistantMuscleUpperChest": "Üst göğüs",
+  "assistantMuscleBack": "Sırt",
+  "assistantMuscleShoulders": "Omuz",
+  "assistantMuscleFrontDelt": "Ön omuz",
+  "assistantMuscleRearDelt": "Arka omuz",
+  "assistantMuscleBiceps": "Ön kol",
+  "assistantMuscleTriceps": "Arka kol",
+  "assistantMuscleForearms": "Ön kol altı",
+  "assistantMuscleLegs": "Bacak",
+  "assistantMuscleQuads": "Ön bacak",
+  "assistantMuscleHamstrings": "Arka bacak",
+  "assistantMuscleGlutes": "Kalça",
+  "assistantMuscleCalves": "Baldır",
+  "assistantMuscleCore": "Karın",
+  "assistantMuscleFullBody": "Tüm vücut",
+  "assistantMuscleOther": "Diğer"
 }

@@ -24,6 +24,21 @@ kalır (Supabase'e gitmez), hiçbir hesaba (kalori hedefi, TDEE) girmez. 0 adım
 Ücretsiz Apple hesabı HealthKit'i destekliyor. iPhone 17'de doğrulandı.
 840 test, analiz temiz.
 
+## #10 Asistan "Verime sor" — üretimde · 2026-10-11
+
+- **Ne:** Ana Sayfa'da "Ritmin" kartının altında **Verime sor** kartı → hazır
+  sorular (internetsiz, kendi kayıtlarından sayı + docs/36 yorumları) ve serbest
+  soru (ücretsiz Gemini 3.5 Flash-Lite yalnız eşler; her cevap "Anladığım soru ·
+  değiştir"). Gizli kalite paneli K1 (Ayarlar). Ayrıntı: [docs/38](docs/38-assistant.md).
+- **Kim:** Codex yazdı (kullanım limitine takıldı), Claude devraldı: yarım kalan
+  yenileme testi düzeltildi, 938 → birleşik main **974 test** yeşil.
+- **Üretim:** `assistant_quota` göçü (kişi 20/gün, uygulama 400/gün, 10/dk);
+  `ask-route` Supabase CLI ile yayınlandı; `GEMINI_API_KEY` dosyadan,
+  `ASSISTANT_ENABLED=true` (özetle doğrulandı); oturumsuz istek 401. iPhone'a
+  kuruldu, push `1fbe736`.
+- **Açık:** kota istek kimliği tablosu temizlenmiyor (20 satır/kişi/gün);
+  Gerçek kullanımda düzeltme oranı kalite panelinden izlenecek.
+
 ## #8 Beslenme günü tamamlandı — üretimde · 2026-10-11
 
 - **Ne:** Beslenme ekranında "Bugünkü kaydım tamamlandı" (ikincil düğme) →

@@ -103,7 +103,7 @@ gönderim öncesi onay, metinsiz kalite paneli.
 | # | İş | Kim | Öncelik |
 |---|---|---|---|
 | P-1 | Gizlilik politikası + aydınlatma metni (TR/EN) — ✅ uygulama içinde (Ayarlar, giriş, rıza ekranı; `assets/legal/`). Bekleyen: iletişim adresi, web bağlantısı (mağaza öncesi), ⚖️ hukukçu | Claude taslak → ⚖️ hukukçu | Yüksek |
-| P-2 | Sağlık açık rıza ekranı + kayıt (§3) — ✅ tartı verisi için. ⚖️ Açık soru: elle girilen kilo/ölçüm için de rıza istenmeli mi (mevcut kullanıcılar dahil)? | Claude (docs/40 ile) | Yüksek |
+| P-2 | Sağlık açık rıza ekranı + kayıt (§3) — ✅ tartı verisi için. ⚖️ **Elle girilen kilo/ölçüm için rıza: Samet kararı (2026-10-11) hukukçuya sorulana kadar bekliyor**; politika metni (sürüm 2) elle girişte rıza iddia etmiyor. Seçenekler: tek seferlik sağlık rızası (önerilen) / elle ölçümler yalnız cihazda | ⚖️ hukukçu → Samet | Yüksek |
 | P-3 | ✅ Asistan İngilizce izin metni düzeltildi. Bekleyen: Gemini koşullarını doğrula, gerekirse ücretli katman / AB kullanıcılarına kapat | Claude + Samet kararı | Yüksek |
 | P-4 | Supabase DPA + KVKK standart sözleşme / Kurul bildirimi | Samet (⚖️) | Orta |
 | P-5 | Saklama süresi + hesap silme — sunucu fonksiyonu eksikti, düzeltildi (madde 10); üretim onayda | Claude | **Yüksek** |
@@ -111,6 +111,17 @@ gönderim öncesi onay, metinsiz kalite paneli.
 | P-7 | Yaş alt sınırı (onboarding) | Claude | Orta |
 | P-8 | VERBİS gerekliliği | ⚖️ hukukçu | Orta |
 | P-9 | App Store gizlilik etiketleri / Play veri güvenliği formu | Yayın öncesi | Yayınla birlikte |
+
+## 4b. Codex incelemesi düzeltmeleri (2026-10-11)
+
+- Rıza zamana göre ilerler (sunucu `health_consent_monotonic`); geri alma da
+  zamanla yazılır. Gizleme kalıcı (`health_hidden_sticky`).
+- Geri almada içe alınan ölçümler **her zaman** silinir ("tut" seçeneği
+  kaldırıldı — rızayla alınan veri rıza gidince başka dayanakla işlenmez);
+  yeniden rızada yalnız yeni örnekler (Samet kararı).
+- Hesap değişimi / geri alma "sağlık dönemi"ni artırır: süren içe aktarma ve
+  antrenman yazma eski hesaba ait veriyi yeni hesaba yazamaz.
+- `delete_user` asistan kota sayaçlarını da siler (`20261011200000`).
 
 ## 5. Kaynaklar
 

@@ -27,6 +27,7 @@ import 'features/update/update_providers.dart';
 import 'features/auth/auth_gate.dart';
 import 'features/health/body_providers.dart';
 import 'features/health/step_providers.dart';
+import 'features/profile/adaptive_tdee_provider.dart';
 
 class FitPackApp extends ConsumerStatefulWidget {
   const FitPackApp({super.key});
@@ -260,6 +261,8 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     ref.invalidate(recentWorkoutActivityProvider);
     ref.invalidate(weeklyStreakProvider);
     ref.invalidate(weekWorkoutStatsProvider);
+    // docs/43: dün tamamlanan gün yeni yazma beklemeden hesaba girsin.
+    ref.invalidate(adaptiveTdeeProvider);
     ref.read(selectedDateProvider.notifier).state = DateTime.now();
   }
 

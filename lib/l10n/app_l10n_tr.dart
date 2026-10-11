@@ -4099,7 +4099,7 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get healthConsentWithdraw =>
-      'Rızanı istediğin an Ayarlar → Sağlık\'tan geri alabilir, içe alınan ölçümleri silebilirsin.';
+      'Rızanı istediğin an Ayarlar → Sağlık\'tan geri alabilirsin; içe alınan ölçümler o zaman silinir.';
 
   @override
   String get healthConsentLegal =>
@@ -4116,10 +4116,7 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get healthWithdrawMsg =>
-      'Tartıdan içe aktarma durur. Şimdiye kadar içe alınan ölçümler tutulsun mu, silinsin mi?';
-
-  @override
-  String get healthWithdrawKeep => 'Ölçümleri tut';
+      'Tartıdan içe aktarma durur ve şimdiye kadar içe alınan ölçümler silinir (buluttan da). Sonra yeniden rıza verirsen yalnız yeni ölçümler gelir.';
 
   @override
   String get healthWithdrawDelete => 'Ölçümleri sil';

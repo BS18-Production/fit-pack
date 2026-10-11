@@ -30,15 +30,23 @@ Future<int> runBodyImport({
   required BodyDao body,
   required BodySource source,
 }) async {
-  try {
+  final epoch = healthEpoch.value; // Codex P1: başlangıç dönemi
+  Future<bool> consentNow() async {
     final p = await profiles.getProfile();
+    return p?.healthConsentAt != null &&
+        p?.healthConsentVersion == kHealthConsentVersion;
+  }
+
+  try {
     return await importBodySamples(
       source: source,
       dao: body,
-      consentGiven:
-          p?.healthConsentAt != null &&
-          p?.healthConsentVersion == kHealthConsentVersion,
+      consentGiven: await consentNow(),
       now: DateTime.now(),
+      floor: await HealthPrefs.importFloor(),
+      // Okuma sürerken hesap değiştiyse ya da rıza geri alındıysa dur.
+      stillAllowed: () async =>
+          healthEpoch.value == epoch && await consentNow(),
     );
   } catch (_) {
     return 0;
@@ -65,16 +73,26 @@ Future<void> grantHealthConsentAndImport(WidgetRef ref) async {
   await runBodyImport(profiles: profiles, body: body, source: source);
 }
 
-/// Rızayı geri al (GDPR md. 7/3 — vermek kadar kolay): içe aktarma durur;
-/// [deleteImported] ise içe alınmış tüm ölçümler silinir (buluttan da).
-Future<void> withdrawHealthConsent(
-  WidgetRef ref, {
-  required bool deleteImported,
-}) async {
+/// Rızayı geri al (GDPR md. 7/3 — vermek kadar kolay): içe aktarma durur ve
+/// içe alınmış tüm ölçümler silinir (buluttan da). "Tut" seçeneği yok: rızayla
+/// alınan veri, rıza gidince başka dayanakla işlenemez (Codex P1, docs/41).
+/// Yeniden rıza verilirse yalnız bundan SONRAKİ ölçümler gelir (Samet kararı).
+Future<void> withdrawHealthConsent(WidgetRef ref) =>
+    withdrawHealthConsentAction(ref)();
+
+/// Bağımlılıkları ŞİMDİ yakalayıp sonra çalıştırılacak geri alma işi.
+Future<void> Function() withdrawHealthConsentAction(WidgetRef ref) {
   final profiles = ref.read(userProfileDaoProvider);
   final body = ref.read(bodyDaoProvider);
-  await profiles.setHealthConsent(null);
-  if (deleteImported) await body.deleteImportedMeasurements();
+  return () => _withdraw(profiles, body);
+}
+
+Future<void> _withdraw(UserProfileDao profiles, BodyDao body) async {
+  final now = DateTime.now();
+  healthEpoch.value++; // süren içe aktarma dursun
+  await profiles.setHealthConsent(null, now: now);
+  await body.deleteImportedMeasurements();
+  await HealthPrefs.setImportFloor(now);
 }
 
 // ───────────────────── Antrenmanı Sağlık'a yazma (docs/44) ─────────────────────
@@ -85,10 +103,13 @@ final workoutSinkProvider = Provider<WorkoutSink>((ref) => HealthWorkoutSink());
 /// (elle girilen seans) ya da seans bulunamazsa bir şey yapmaz (H-1).
 /// Bağımlılıklar ilk await'ten önce yakalanır (ekran kapanabilir).
 Future<void> exportFinishedSession(WidgetRef ref, int sessionId) async {
-  if (!ref.read(healthPrefsProvider).writeWorkouts) return;
   final dao = ref.read(workoutDaoProvider);
   final sink = ref.read(workoutSinkProvider);
+  final epoch = healthEpoch.value;
+  // Bellekteki tercihe değil diske bak (hesap değişimi sonrası eski değer).
+  if (!await HealthPrefs.writeWorkoutsOnDisk()) return;
   final s = await dao.getSessionById(sessionId);
+  if (healthEpoch.value != epoch) return;
   if (s == null || s.uid == null || s.startedAt == null || s.endedAt == null) {
     return;
   }
@@ -101,11 +122,19 @@ Future<void> exportFinishedSession(WidgetRef ref, int sessionId) async {
       isCardio: s.workoutType == 'Cardio',
     ),
   );
-  await WorkoutOutbox.flush(sink);
+  await WorkoutOutbox.flush(
+    sink,
+    stillAllowed: () => healthEpoch.value == epoch,
+  );
 }
 
 /// Öne gelişte bekleyenleri yeniden dener (H-5).
 Future<void> flushWorkoutOutbox(WidgetRef ref) async {
-  if (!ref.read(healthPrefsProvider).writeWorkouts) return;
-  await WorkoutOutbox.flush(ref.read(workoutSinkProvider));
+  final sink = ref.read(workoutSinkProvider);
+  final epoch = healthEpoch.value;
+  if (!await HealthPrefs.writeWorkoutsOnDisk()) return;
+  await WorkoutOutbox.flush(
+    sink,
+    stillAllowed: () => healthEpoch.value == epoch,
+  );
 }

@@ -6977,7 +6977,7 @@ abstract class AppL10n {
   /// No description provided for @healthConsentWithdraw.
   ///
   /// In en, this message translates to:
-  /// **'You can withdraw anytime in Settings → Health, and delete the imported measurements.'**
+  /// **'You can withdraw anytime in Settings → Health; imported measurements are then deleted.'**
   String get healthConsentWithdraw;
 
   /// No description provided for @healthConsentLegal.
@@ -7007,14 +7007,8 @@ abstract class AppL10n {
   /// No description provided for @healthWithdrawMsg.
   ///
   /// In en, this message translates to:
-  /// **'Importing from your scale stops. Should the measurements already imported be kept or deleted?'**
+  /// **'Importing from your scale stops and the measurements already imported are deleted (also from the cloud). If you consent again later, only new measurements are imported.'**
   String get healthWithdrawMsg;
-
-  /// No description provided for @healthWithdrawKeep.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep measurements'**
-  String get healthWithdrawKeep;
 
   /// No description provided for @healthWithdrawDelete.
   ///

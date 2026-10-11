@@ -4150,7 +4150,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get healthConsentWithdraw =>
-      'You can withdraw anytime in Settings → Health, and delete the imported measurements.';
+      'You can withdraw anytime in Settings → Health; imported measurements are then deleted.';
 
   @override
   String get healthConsentLegal =>
@@ -4167,10 +4167,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get healthWithdrawMsg =>
-      'Importing from your scale stops. Should the measurements already imported be kept or deleted?';
-
-  @override
-  String get healthWithdrawKeep => 'Keep measurements';
+      'Importing from your scale stops and the measurements already imported are deleted (also from the cloud). If you consent again later, only new measurements are imported.';
 
   @override
   String get healthWithdrawDelete => 'Delete measurements';

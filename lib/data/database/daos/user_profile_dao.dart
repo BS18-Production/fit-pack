@@ -32,14 +32,14 @@ class UserProfileDao extends DatabaseAccessor<AppDatabase>
       (select(userProfile)..limit(1)).watchSingleOrNull();
 
   /// Sağlık verisi açık rızası (docs/41 §3). [version] = kabul edilen metin
-  /// sürümü; `null` = rıza geri alındı. Zaman damgası senkronlanır (ispat).
+  /// sürümü; `null` = rıza geri alındı. Her iki kararda zaman yazılır (ispat).
   Future<void> setHealthConsent(int? version, {DateTime? now}) async {
     await ensureProfile();
     await (update(userProfile)).write(
       UserProfileCompanion(
-        healthConsentAt: Value(
-          version == null ? null : (now ?? DateTime.now()),
-        ),
+        // Geri alma da zamanla yazılır: sunucu rızayı zamana göre ilerletir
+        // (health_consent_monotonic) — eski profil kopyası ezemez (Codex P1).
+        healthConsentAt: Value(now ?? DateTime.now()),
         healthConsentVersion: Value(version),
       ),
     );

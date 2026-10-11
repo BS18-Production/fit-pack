@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Version 1 · Last updated: 11 October 2026
+Version 2 · Last updated: 11 October 2026
 
 This notice explains how Fit Pack processes your personal data under the EU General Data Protection Regulation (GDPR) and Turkey's Personal Data Protection Law No. 6698 (KVKK).
 
@@ -20,7 +20,8 @@ Fit Pack is a personal app developed by Samet Orhan, who is the data controller.
 ## Why, and on what legal basis
 
 - Creating your account, storing your logs and syncing them across your devices: performance of the service (GDPR Art. 6(1)(b), KVKK Art. 5(2)(c)).
-- Health data (weight, body fat, measurements, scale data): your explicit consent (GDPR Art. 9(2)(a), KVKK Art. 6). Importing from your scale never starts without it.
+- Weight and body fat imported from your scale: your explicit consent (GDPR Art. 9(2)(a), KVKK Art. 6). Importing never starts without it.
+- Weight, body fat and measurements you enter yourself: processed only to show your progress to you, as far as you enter them; never used for anything else.
 - A free-text question in the assistant: finding which built-in calculation answers it; you confirm before each question is sent.
 
 Your data is never used for advertising, profiling or sale.
@@ -30,7 +31,7 @@ Your data is never used for advertising, profiling or sale.
 - Server: Supabase (data centre in Germany, European Union), storing data only on our behalf. This is also why data leaves Turkey.
 - Google sign-in: Google authentication is used only while signing in.
 - Assistant: only the question text you type is sent to Google Gemini; your workout, nutrition and measurement records are not sent. On free Gemini, Google may use the text to improve its products. Ready-made questions run on your phone and never reach Google.
-- Apple Health / Health Connect: Fit Pack reads only the types you allow (steps; with consent, weight and body fat).
+- Apple Health / Health Connect: Fit Pack reads only the types you allow (steps; with consent, weight and body fat). If you turn on "Save workouts to Health", the start, end and name of your live workouts are written to Health; calories are not.
 
 ## Retention
 
@@ -43,7 +44,7 @@ You can exercise several of your rights (GDPR Art. 15–22, KVKK Art. 11) direct
 - Access and portability: Settings → Export (CSV / JSON).
 - Rectification: edit or delete measurements, meals and workouts in the app.
 - Erasure: Account → Delete account.
-- Withdraw health data consent: Settings → Health → Weight and body fat. Importing stops; you can choose to delete imported measurements. Withdrawal does not affect processing before it.
+- Withdraw health data consent: Settings → Health → Weight and body fat. Importing stops and imported measurements are deleted; if you consent again, only new measurements are imported. Withdrawal does not affect processing before it.
 - Complaint: the data protection authority of your EU country, or Turkey's Personal Data Protection Authority.
 
 ## Security

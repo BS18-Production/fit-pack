@@ -130,20 +130,30 @@ String bodySampleUid(String platform, String ref) =>
     const Uuid().v5(Namespace.url.value, 'fitpack:health:$platform:$ref');
 
 /// Okuma + yazma. Dönen: yeni eklenen satır sayısı. Rıza yoksa 0 ve okuma yok.
+///
+/// [stillAllowed] platform okumasından SONRA ve her satırdan önce sorulur:
+/// okuma sürerken rıza geri alındıysa ya da hesap değiştiyse (Codex P1)
+/// hiçbir satır yazılmaz. [floor]: bu andan önce ölçülmüş örnekler alınmaz
+/// (rıza geri alınıp silinenler yeniden gelmesin).
 Future<int> importBodySamples({
   required BodySource source,
   required BodyDao dao,
   required bool consentGiven,
   required DateTime now,
+  Future<bool> Function()? stillAllowed,
+  DateTime? floor,
 }) async {
   if (!consentGiven) return 0;
   final days = source.platform == 'ios'
       ? kBodyImportDaysIos
       : kBodyImportDaysAndroid;
-  final start = DateTime(now.year, now.month, now.day - days);
+  var start = DateTime(now.year, now.month, now.day - days);
+  if (floor != null && floor.isAfter(start)) start = floor;
   final samples = await source.read(start, now);
   var added = 0;
   for (final s in samples) {
+    if (stillAllowed != null && !await stillAllowed()) break;
+    if (floor != null && !s.measuredAt.isAfter(floor)) continue;
     if (_ownSourceIds.contains(s.sourceId)) continue; // W-3
     final isWeight = s.kind == BodySampleKind.weight;
     final value = isWeight ? s.value : normalizeBodyFat(s.value);

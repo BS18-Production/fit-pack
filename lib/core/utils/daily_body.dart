@@ -30,16 +30,26 @@ List<BodyMeasurement> dailyMeasurements(List<BodyMeasurement> rows) {
   for (final dayRows in byDay.values) {
     final weight = _pick(dayRows, (r) => r.weightKg);
     final fat = _pick(dayRows, (r) => r.bodyFatPct);
-    final base = weight ?? fat;
-    if (base == null) {
-      // Yalnız çevre ölçüsü olan gün: en son elle satır aynen kalır.
-      out.add(_latest(dayRows));
-      continue;
+    final base = weight ?? fat ?? _latest(dayRows);
+    // Çevre ölçüleri: her alan için o günün en son ELLE girilmiş değeri —
+    // kilo tartıdan, bel elle ayrı girildiyse ikisi de özette kalır (Codex P2).
+    double? lastManual(double? Function(BodyMeasurement) f) {
+      final m = [
+        for (final r in dayRows)
+          if (isManualMeasurement(r) && f(r) != null) r,
+      ];
+      return m.isEmpty ? f(base) : f(_latest(m));
     }
+
     out.add(
-      fat == null || identical(fat, base)
-          ? base
-          : base.copyWith(bodyFatPct: Value(fat.bodyFatPct)),
+      base.copyWith(
+        bodyFatPct: Value(fat?.bodyFatPct),
+        waistCm: Value(lastManual((r) => r.waistCm)),
+        chestCm: Value(lastManual((r) => r.chestCm)),
+        armCm: Value(lastManual((r) => r.armCm)),
+        hipCm: Value(lastManual((r) => r.hipCm)),
+        neckCm: Value(lastManual((r) => r.neckCm)),
+      ),
     );
   }
   out.sort((a, b) => b.date.compareTo(a.date));
@@ -60,16 +70,26 @@ BodyMeasurement? _pick(
   final manual = withValue.where(isManualMeasurement).toList();
   if (manual.isNotEmpty) return _latest(manual);
   if (withValue.isEmpty) return null;
+  // Tartı: günün İLK ölçümü (ölçüm saati); eşitlikte cihazdan bağımsız uid.
   return withValue.reduce((a, b) {
     final c = a.date.compareTo(b.date);
     if (c != 0) return c < 0 ? a : b;
-    return a.id <= b.id ? a : b;
+    return _uidOf(a).compareTo(_uidOf(b)) <= 0 ? a : b;
   });
 }
 
-/// En son kaydedilen: önce ölçüm zamanı, eşitse yerel kayıt sırası (`id`).
+/// "En son kaydedilen" (Codex P2): ölçüm saati değil KAYIT zamanı —
+/// `changedAtMs` (ekleme/düzenlemede tetikleyici damgalar, milisaniye,
+/// senkronla taşınır); yoksa `updatedAt`, o da yoksa ölçüm tarihi.
+int _recordedMs(BodyMeasurement r) =>
+    r.changedAtMs ?? (r.updatedAt ?? r.date).millisecondsSinceEpoch;
+
 BodyMeasurement _latest(List<BodyMeasurement> rows) => rows.reduce((a, b) {
-  final c = a.date.compareTo(b.date);
+  final c = _recordedMs(a).compareTo(_recordedMs(b));
   if (c != 0) return c > 0 ? a : b;
+  // Aynı milisaniye (pratikte yalnız aynı cihazda art arda kayıt): yerel
+  // ekleme sırası — son eklenen kazanır.
   return a.id >= b.id ? a : b;
 });
+
+String _uidOf(BodyMeasurement r) => r.uid ?? r.id.toString().padLeft(12, '0');

@@ -25,26 +25,24 @@ Future<void> showBodyConsentSheet(BuildContext context) =>
       builder: (_) => const _BodyConsentSheet(),
     );
 
-/// Rızayı geri alma (GDPR md. 7/3 — vermek kadar kolay): içe alınanlar
-/// tutulsun mu, silinsin mi?
+/// Rızayı geri alma (GDPR md. 7/3 — vermek kadar kolay). Rızayla içe alınan
+/// ölçümler de silinir (docs/41 — rıza gidince başka dayanak yok). Bağımlılık
+/// `await`'ten önce yakalanır (Codex P2: diyalog kapanınca `ref` ölebilir).
 Future<void> showBodyConsentWithdrawDialog(
   BuildContext context,
   WidgetRef ref,
 ) async {
   final l = AppL10n.of(context);
-  final choice = await showDialog<bool>(
+  final withdraw = withdrawHealthConsentAction(ref);
+  final ok = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
       title: Text(l.healthWithdrawTitle),
       content: Text(l.healthWithdrawMsg),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: Text(l.commonCancel),
-        ),
-        TextButton(
           onPressed: () => Navigator.pop(ctx, false),
-          child: Text(l.healthWithdrawKeep),
+          child: Text(l.commonCancel),
         ),
         TextButton(
           onPressed: () => Navigator.pop(ctx, true),
@@ -53,8 +51,7 @@ Future<void> showBodyConsentWithdrawDialog(
       ],
     ),
   );
-  if (choice == null) return;
-  await withdrawHealthConsent(ref, deleteImported: choice);
+  if (ok == true) await withdraw();
 }
 
 class _BodyConsentSheet extends ConsumerStatefulWidget {

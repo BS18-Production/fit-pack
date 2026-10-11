@@ -80,4 +80,22 @@ void main() {
     SharedPreferences.setMockInitialValues({'health_workout_outbox': '{bozuk'});
     expect(await WorkoutOutbox.flush(_Sink()), 0);
   });
+
+  test('eşzamanlı iki flush aynı seansı iki kez yazmaz (Codex P1)', () async {
+    final sink = _Sink();
+    await WorkoutOutbox.enqueue(_seans('a'));
+    final r = await Future.wait([
+      WorkoutOutbox.flush(sink),
+      WorkoutOutbox.flush(sink),
+    ]);
+    expect(r.reduce((x, y) => x + y), 1);
+    expect(sink.written, ['a']);
+  });
+
+  test('izin düşünce (hesap değişti) yazmaz, kutuda bırakır', () async {
+    final sink = _Sink();
+    await WorkoutOutbox.enqueue(_seans('a'));
+    expect(await WorkoutOutbox.flush(sink, stillAllowed: () => false), 0);
+    expect(sink.written, isEmpty);
+  });
 }

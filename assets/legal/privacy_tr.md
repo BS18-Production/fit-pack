@@ -1,6 +1,6 @@
 # Gizlilik Politikası ve Aydınlatma Metni
 
-Sürüm 1 · Son güncelleme: 11 Ekim 2026
+Sürüm 2 · Son güncelleme: 11 Ekim 2026
 
 Bu metin, Fit Pack uygulamasında kişisel verilerinin nasıl işlendiğini 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) ve Avrupa Birliği Genel Veri Koruma Tüzüğü (GDPR) kapsamında açıklar.
 
@@ -20,7 +20,8 @@ Fit Pack, Samet Orhan tarafından geliştirilen kişisel bir uygulamadır. Veri 
 ## Neden işliyoruz ve hukuki dayanak
 
 - Hesabını açmak, kayıtlarını saklamak ve cihazların arasında eşitlemek: uygulamanın sana sunulması (KVKK md. 5/2-c, GDPR md. 6/1-b).
-- Sağlık verileri (kilo, yağ oranı, ölçüler, tartı verisi): açık rızan (KVKK md. 6, GDPR md. 9/2-a). Tartıdan içe aktarma, rıza vermeden başlamaz.
+- Tartıdan içe aktarılan kilo ve yağ oranı: açık rızan (KVKK md. 6, GDPR md. 9/2-a). İçe aktarma rıza vermeden başlamaz.
+- Elle girdiğin kilo, yağ oranı ve ölçüler: yalnız sana ilerlemeni göstermek için, girdiğin kadarıyla işlenir; başka bir amaçla kullanılmaz.
 - Asistanda yazdığın serbest soru: sorunun hangi hesaba karşılık geldiğini bulmak; her gönderimden önce onay alınır.
 
 Verilerin reklam, profil çıkarma ya da satış için kullanılmaz.
@@ -30,7 +31,7 @@ Verilerin reklam, profil çıkarma ya da satış için kullanılmaz.
 - Sunucu: Supabase (veri merkezi Almanya, Avrupa Birliği). Supabase verileri yalnız bizim adımıza saklar. Türkiye dışına aktarım bu nedenle gerçekleşir.
 - Google ile giriş: yalnız giriş sırasında Google kimlik doğrulaması kullanılır.
 - Asistan: yalnız yazdığın soru metni Google Gemini'ye gönderilir; antrenman, beslenme ve ölçüm kayıtların gönderilmez. Ücretsiz Gemini'de Google metni ürün geliştirmek için kullanabilir. Hazır sorular telefonda çalışır, Google'a gitmez.
-- Apple Sağlık / Health Connect: Fit Pack yalnız izin verdiğin türleri okur (adım; rızanla kilo ve yağ oranı).
+- Apple Sağlık / Health Connect: Fit Pack yalnız izin verdiğin türleri okur (adım; rızanla kilo ve yağ oranı). "Antrenmanları Sağlık'a yaz"ı açarsan canlı kaydettiğin antrenmanların başlangıç, bitiş ve adı Sağlık'a yazılır; kalori yazılmaz.
 
 ## Ne kadar saklıyoruz
 
@@ -43,7 +44,7 @@ KVKK md. 11 ve GDPR md. 15–22 kapsamındaki haklarının bir kısmını uygula
 - Verilerine erişmek ve taşımak: Ayarlar → Dışa aktar (CSV / JSON).
 - Düzeltmek: ölçüm, öğün ve antrenmanları uygulamada düzenleyebilir ya da silebilirsin.
 - Silinmesini istemek: Hesap → Hesabı sil.
-- Sağlık verisi rızasını geri almak: Ayarlar → Sağlık → Kilo ve yağ oranı. Geri aldığında içe aktarma durur; içe alınan ölçümleri silmeyi seçebilirsin. Rızayı geri almak, o ana kadar yapılan işlemeyi geçersiz kılmaz.
+- Sağlık verisi rızasını geri almak: Ayarlar → Sağlık → Kilo ve yağ oranı. Geri aldığında içe aktarma durur ve içe alınan ölçümler silinir; yeniden rıza verirsen yalnız yeni ölçümler gelir. Rızayı geri almak, o ana kadar yapılan işlemeyi geçersiz kılmaz.
 - Şikâyet: Türkiye'de Kişisel Verileri Koruma Kurumu'na, AB'de bulunduğun ülkenin veri koruma otoritesine başvurabilirsin.
 
 ## Güvenlik

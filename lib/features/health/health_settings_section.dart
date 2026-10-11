@@ -119,13 +119,12 @@ class _HealthSettingsSectionState extends ConsumerState<HealthSettingsSection> {
               onChanged: _busy
                   ? null
                   : (v) async {
+                      // Bağımlılıklar await'ten ÖNCE (Codex P2).
+                      final sink = ref.read(workoutSinkProvider);
+                      final prefs = ref.read(healthPrefsProvider.notifier);
                       // Açarken yazma izni istenir (docs/44 H-4).
-                      if (v) {
-                        await ref.read(workoutSinkProvider).requestWriteAccess();
-                      }
-                      await ref
-                          .read(healthPrefsProvider.notifier)
-                          .setWriteWorkouts(v);
+                      if (v) await sink.requestWriteAccess();
+                      await prefs.setWriteWorkouts(v);
                     },
             ),
           ),

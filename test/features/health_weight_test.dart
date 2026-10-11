@@ -4,6 +4,7 @@ import 'package:fit_pack/data/database/app_database.dart';
 import 'package:fit_pack/features/health/body_import.dart';
 import 'package:fit_pack/features/health/body_providers.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/test_database.dart';
 
@@ -53,7 +54,10 @@ BodySample _yag(String ref, DateTime t, double v) => BodySample(
 
 void main() {
   late AppDatabase db;
-  setUp(() => db = newTestDatabase());
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    db = newTestDatabase();
+  });
   tearDown(() => db.close());
 
   final now = DateTime(2026, 10, 11, 20);
@@ -248,5 +252,63 @@ void main() {
       );
       expect(dailyMeasurements([m]), isEmpty);
     });
+  });
+
+  group('Codex P1/P2 düzeltmeleri', () {
+    test(
+      'tarih sınırı: rıza geri alınıp silinince eski örnekler gelmez',
+      () async {
+        final floor = DateTime(2026, 10, 11, 12);
+        final src = _FakeBody([
+          _kilo('eski', bugun7, 80), // sınırdan önce
+          _kilo('yeni', DateTime(2026, 10, 11, 18), 79.6),
+        ]);
+        final n = await importBodySamples(
+          source: src,
+          dao: db.bodyDao,
+          consentGiven: true,
+          now: now,
+          floor: floor,
+        );
+        expect(n, 1);
+        expect(
+          (await db.bodyDao.getAllMeasurements()).single.sourceRef,
+          'yeni',
+        );
+      },
+    );
+
+    test('okuma sürerken izin düşerse hiçbir satır yazılmaz', () async {
+      final src = _FakeBody([_kilo('a', bugun7, 80), _kilo('b', bugun7, 81)]);
+      final n = await importBodySamples(
+        source: src,
+        dao: db.bodyDao,
+        consentGiven: true,
+        now: now,
+        stillAllowed: () async => false,
+      );
+      expect(n, 0);
+      expect(await db.bodyDao.getAllMeasurements(), isEmpty);
+    });
+
+    test('tartıdan kilo + aynı gün elle bel → özette ikisi de var', () async {
+      await iceAl(_FakeBody([_kilo('t1', bugun7, 80.0)]));
+      await elle(DateTime(2026, 10, 11, 9), bel: 88);
+      final g = (await db.bodyDao.getDailyMeasurements()).single;
+      expect(g.weightKg, 80.0);
+      expect(g.waistCm, 88);
+    });
+
+    test(
+      'geri alma rızayı zamanla yazar (sunucu zamana göre ilerletir)',
+      () async {
+        await db.userProfileDao.setHealthConsent(kHealthConsentVersion);
+        final t = DateTime(2026, 10, 12, 9);
+        await db.userProfileDao.setHealthConsent(null, now: t);
+        final p = await db.userProfileDao.getProfile();
+        expect(p!.healthConsentVersion, isNull);
+        expect(p.healthConsentAt, t);
+      },
+    );
   });
 }

@@ -95,13 +95,25 @@ class HealthWorkoutSink implements WorkoutSink {
 }
 
 /// Giden kutusu (H-3) — `SharedPreferences`'ta, hesap değişiminde silinir.
+///
+/// Codex P1 (2026-10-11): `enqueue` / `flush` / `clear` tek sıraya alınır
+/// ([_serial]) — iki `flush` aynı seansı iki kez yazamaz, eski kutu kopyası yeni
+/// kaydı ezemez, temizlikten sonra süren iş kutuyu diriltmez. `writing`
+/// işaretine bu çalıştırmanın kimliği ([_runId]) yazılır: başka çalıştırmadan
+/// kalan `writing` = yazma sırasında kapanmış → atlanır (eksik > çift).
 class WorkoutOutbox {
   static const _key = 'health_workout_outbox';
+  static final _runId = DateTime.now().microsecondsSinceEpoch.toString();
+  static Future<void> _tail = Future.value();
 
-  /// uid → {durum: pending|writing, seans}
-  static Future<Map<String, Map<String, dynamic>>> _load(
-    SharedPreferences p,
-  ) async {
+  static Future<T> _serial<T>(Future<T> Function() job) {
+    final run = _tail.then((_) => job());
+    _tail = run.then((_) {}, onError: (_) {});
+    return run;
+  }
+
+  /// uid → {state: pending|writing, run, w: seans}
+  static Map<String, Map<String, dynamic>> _load(SharedPreferences p) {
     final raw = p.getString(_key);
     if (raw == null) return {};
     try {
@@ -118,46 +130,53 @@ class WorkoutOutbox {
     Map<String, Map<String, dynamic>> box,
   ) => p.setString(_key, jsonEncode(box));
 
-  static Future<void> enqueue(WorkoutExport w) async {
+  static Future<void> enqueue(WorkoutExport w) => _serial(() async {
     final p = await SharedPreferences.getInstance();
-    final box = await _load(p);
+    final box = _load(p);
     box.putIfAbsent(w.uid, () => {'state': 'pending', 'w': w.toJson()});
     await _save(p, box);
-  }
+  });
 
-  /// Bekleyenleri yazar. Dönen: başarıyla yazılan sayısı. `writing`te kalmış
-  /// (önceki denemede yazma sırasında kapanmış) olanlar atlanıp silinir —
-  /// eksik kayıt, çift kayıttan iyidir.
-  static Future<int> flush(WorkoutSink sink) async {
-    final p = await SharedPreferences.getInstance();
-    final box = await _load(p);
-    var written = 0;
-    for (final uid in box.keys.toList()) {
-      final entry = box[uid]!;
-      if (entry['state'] == 'writing') {
-        box.remove(uid);
-        await _save(p, box);
-        continue;
-      }
-      entry['state'] = 'writing';
-      await _save(p, box); // yazmadan ÖNCE işaretle
-      final ok = await sink.write(
-        WorkoutExport.fromJson(Map<String, dynamic>.from(entry['w'] as Map)),
-      );
-      if (ok) {
-        box.remove(uid);
-        written++;
-      } else {
-        entry['state'] = 'pending'; // net başarısızlık: sonra yeniden dene
-      }
-      await _save(p, box);
-    }
-    return written;
-  }
+  /// Bekleyenleri yazar. Dönen: başarıyla yazılan sayısı. [stillAllowed]
+  /// her yazmadan önce sorulur (hesap değiştiyse dur).
+  static Future<int> flush(WorkoutSink sink, {bool Function()? stillAllowed}) =>
+      _serial(() async {
+        final p = await SharedPreferences.getInstance();
+        var written = 0;
+        for (final uid in _load(p).keys.toList()) {
+          if (stillAllowed != null && !stillAllowed()) break;
+          // Her adımda kutu diskten yeniden okunur — eski kopya kaydedilmez.
+          final box = _load(p);
+          final entry = box[uid];
+          if (entry == null) continue;
+          if (entry['state'] == 'writing' && entry['run'] != _runId) {
+            box.remove(uid); // önceki çalıştırmada yazma sırasında kapanmış
+            await _save(p, box);
+            continue;
+          }
+          entry['state'] = 'writing';
+          entry['run'] = _runId;
+          await _save(p, box); // yazmadan ÖNCE işaretle
+          final ok = await sink.write(
+            WorkoutExport.fromJson(
+              Map<String, dynamic>.from(entry['w'] as Map),
+            ),
+          );
+          final after = _load(p);
+          if (ok) {
+            after.remove(uid);
+            written++;
+          } else if (after[uid] != null) {
+            after[uid]!['state'] = 'pending'; // net başarısızlık: sonra dene
+          }
+          await _save(p, after);
+        }
+        return written;
+      });
 
-  static Future<int> pendingCount() async =>
-      (await _load(await SharedPreferences.getInstance())).length;
+  static Future<int> pendingCount() =>
+      _serial(() async => _load(await SharedPreferences.getInstance()).length);
 
-  static Future<void> clear() async =>
-      (await SharedPreferences.getInstance()).remove(_key);
+  static Future<void> clear() =>
+      _serial(() async => (await SharedPreferences.getInstance()).remove(_key));
 }

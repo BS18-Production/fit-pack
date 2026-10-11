@@ -1,137 +1,115 @@
-# 40 — Sağlık entegrasyonu Faz 1b: akıllı tartıdan kilo
+# 40 — Sağlık entegrasyonu Faz 1b: akıllı tartıdan kilo ve yağ oranı
 
-> **Durum:** Taslak, incelendi (§6 — Codex kotası dolu, inceleme Claude-2) ·
-> Samet kararı bekliyor (§5). Kod yok.
-> **Tarih:** 2026-10-11 · **Sahip:** Claude-2 · **İnceleyen:** Codex
-> **İlgili:** [docs/39 — adım](39-health-steps.md) · araştırma raporu §3, §7
+> **Durum:** Samet kararları alındı (2026-10-11, §5) → uygulanıyor.
+> **Tarih:** 2026-10-11 · **Sahip:** Claude-2 · **İnceleyen:** Codex (kota
+> 21:52'ye kadar dolu; ilk inceleme Claude-2, §6)
+> **İlgili:** [docs/39 — adım](39-health-steps.md) ·
+> [docs/41 — KVKK / GDPR uyumu](41-privacy-compliance.md) · araştırma raporu
 > ([FitPack Sağlık Verisi Entegrasyonu](https://claude.ai/code/artifact/47047c15-7754-46fb-87df-294b300de472))
 
 ---
 
 ## 0. Karar özeti
 
-**Ne değişecek.** Akıllı tartının Apple Sağlık'a / Health Connect'e yazdığı
-**kilo ve vücut yağ oranı** Fit Pack'e kendiliğinden gelir. Elle kilo girmek
-gerekmez; Ana Sayfa'daki son kilo, kilo eğilimi, haftalık değerlendirme, TDEE
-(Toplam Günlük Enerji Harcaması) ve yorum katmanı (docs/36) bu değerleri kullanır.
+**Ne değişecek.** Tartı uygulamalarının Apple Sağlık'a / Health Connect'e
+yazdığı **kilo ve vücut yağ oranı** Fit Pack'e kendiliğinden gelir, elle
+girilen ölçümlerle **aynı tabloda** (`body_measurements`) durur ve **buluta
+senkronlanır** (Samet kararı). Kullanıcı aynı gün istediği kadar elle kilo
+girebilir; hesaplar günde tek değer kullanır.
 
-**Neden.** Samet akıllı tartı kullanıyor. Sık ölçüm kilo eğilimini güvenilir
-yapar; docs/36'daki kilo yorumu ≥2 ölçüm ve ≥14 gün istiyor, tartı bunu
-kendiliğinden sağlar.
+**Tek tek tartı markası yok.** Withings, Renpho, Xiaomi (Zepp Life / Mi
+Fitness), Eufy, Garmin, Fitbit, Samsung Health… hepsi ölçümü telefonun sağlık
+deposuna yazar; Fit Pack depoyu okuyarak **hepsinden** alır. Markaların kendi
+bulut API'leri gereksiz: her biri ayrı hesap, ayrı sözleşme, ayrı gizlilik
+yükü demek. Depoya yazmayan bir uygulama varsa kullanıcı o uygulamanın
+"Apple Sağlık / Health Connect ile eşitle" ayarını açar.
 
-**Asıl risk ve çözümü.** Aynı gün hem elle hem tartıdan kilo gelirse bugünkü
-hesaplar **satır başına** ortaladığı için haftalık ortalama kayar ve "tek
-ölçüm trend değildir" koruması aşılır (Codex incelemesi). Çözüm: hesaplar tek
-bir **"kullanılacak kilo serisi"**nden okur — **günde bir değer, elle giriş
-kazanır**.
+**Yalnız gerekli veri (KVKK md. 4 / GDPR md. 5 "veri en aza indirme").**
+Okunan türler: kilo, yağ oranı. BMI ve yağsız kütle bunlardan hesaplanır;
+kas kütlesi, su oranı, kemik kütlesi gibi tartı tahminleri **alınmaz** —
+Fit Pack'te bunları kullanan özellik yok.
 
-**Önerilen yol (A):** tartı ölçümleri **ayrı, yalnız cihazda duran** bir
-tabloda (`health_samples`) tutulur. `BodyDao`'ya **yeni** bir sorgu eklenir
-(`getEffectiveWeights`): elle girilenlerle tartıyı birleştirip günde tek değer
-döndürür. Hesap yapan dört yer (Ana Sayfa son kilo + eğilim, panolar, haftalık
-değerlendirme, TDEE) bu sorguya geçer. Mevcut üç sorgu **değişmez** — vücut
-ölçümü ekranı satırları `id` ile siliyor; birleşik seri o sorgulardan dönseydi
-tartı satırına "sil" denince başka tablodan aynı numaralı elle ölçüm silinirdi
-(§6 bulgu 1).
+**Açık rıza kapısı.** Sağlık verisi buluta gittiği için içe aktarma
+kullanıcının **açık rızası** olmadan başlamaz (KVKK md. 6, GDPR md. 9/2-a);
+rıza kaydedilir, geri alınabilir. Ayrıntı docs/41.
 
-*Elenen (B):* tartı ölçümünü mevcut `body_measurements` tablosuna "kaynak"
-kolonuyla yazmak. Tek tablo daha basit görünür ama tablo Supabase'e
-senkronlanıyor: yeni kolon = **sunucu göçü + senkron değişikliği**, sağlık
-verisi buluta çıkar (rapor §7–8'e aykırı) ve iki cihaz aynı ölçümü iki kez
-içe aktarabilir.
+**Seçilen yol (B):** `body_measurements`'a üç kolon: `source` (`manual` /
+`health`), `external_id` (platform örnek kimliği), `source_app` (ör. "Withings").
+Senkron kendiliğinden taşır. *Elenen (A, ilk taslak):* yalnız cihazda duran
+ayrı tablo — Samet bulutu seçti.
 
-**Gerçek veriye etkisi.** Mevcut elle girilmiş ölçümler **değişmez**, buluta
-gidişleri aynı kalır. Yeni tablo yalnız yerel; silinirse Sağlık'tan yeniden
-okunur (iOS'ta sınırsız geçmiş, Android'de son 30 gün). Şema v15 → v16
-(yeni tablo, yıkıcı değil — ADR-007). Senkron koduna dokunulmaz (§6 bulgu 2).
+**Gerçek veriye etkisi.** Mevcut satırlar `source = manual` olur (NULL =
+manual), değerleri değişmez. Şema v16 → v17 (yalnız kolon ekleme, ADR-007);
+Supabase'e aynı kolonları ekleyen göç (önce Dev, üretim Samet onayıyla).
 
 ## 1. Kurallar
 
 | # | Kural | Neden |
 |---|---|---|
-| W-1 | Okunan türler: `WEIGHT`, `BODY_FAT_PERCENTAGE`. Başka tür yok | En az veri; BMI ve yağsız kütle hesaplanır, içe alınmaz (rapor §3) |
-| W-2 | Her örnek platform kimliğiyle (`externalId` = HealthKit örnek UUID'si / Health Connect kayıt kimliği) **tek** tutulur; tekrar okuma kopya üretmez | Yeniden okuma ve öne gelişte tazeleme |
-| W-3 | **Fit Pack'in kendi yazdığı** kayıtlar okunurken elenir (kaynak uygulama = Fit Pack) | Yankı (Faz 2'de Fit Pack Sağlık'a yazmaya başlarsa) |
-| W-4 | Kullanılacak seri: **gün başına tek kilo**. O gün **kilosu dolu** elle giriş varsa onun **en son kaydedileni**; yoksa tartının **o günkü ilk** (sabah) ölçümü | Elle giriş bilinçli kayıt (MacroFactor ile aynı); aynı gün ikinci elle giriş düzeltme sayılır; yalnız bel çevresi girilmiş satır tartıyı engellemez (§6 bulgu 3) |
-| W-5 | Yağ oranı aynı kurala **ayrı** uyar (kilosu olan satır yağ oranı içermeyebilir). iOS yüzdeyi 0–1 kesir verir → ×100 (§6 bulgu 5) | Tek doğruluk kaynağı, tek birim |
-| W-6 | Tartı ölçümü Fit Pack'te **silinmez, gizlenir** (gizlenen `externalId` defteri); Sağlık'taki kaydı kullanıcı Sağlık uygulamasından siler | Fit Pack başkasının verisini silmez |
-| W-7 | `health_samples` senkron listelerinde **hiç yok** (`syncPushOrder`'a eklenmez, senkron kolonu/tetikleyicisi yok); hesap değişiminde `account_switch.dart` açıkça siler (docs/39 `HealthPrefs.clear` gibi) | Rapor §7: buluta gitmez. Fotoğraf kalıbı (`syncRemoteExcluded`) tetikleyici ve mezar taşı üretiyor (§6 bulgu 2) |
-| W-8 | Dışa aktarma (CSV) yalnız elle girilenleri içerir | Sağlık verisi dışarı çıkmaz (docs/39 S-7) |
-| W-9 | İlk bağlanışta geçmiş: iOS son 90 gün, Android 30 gün (ek "geçmiş" izni istenmez) | 8 haftalık yorum tabanı için yeterli; en az izin |
-| W-11 | Kiloyu okuyan reaktif sağlayıcılar `watchTables` listesine `healthSamples`'ı da ekler | İçe alma sonrası ekran kendiliğinden tazelenir (CONVENTIONS §2) |
-| W-10 | Vücut ölçümü ekranında tartı satırı kaynak simgesiyle görünür ("Sağlık · <uygulama>"); düzenlenemez, gizlenebilir | Kullanıcı neyin nereden geldiğini görür |
+| W-1 | Okunan türler yalnız `WEIGHT`, `BODY_FAT_PERCENTAGE` | Veri en aza indirme |
+| W-2 | İçe alınan satırın `uid`'i platform kimliğinden **türetilir** (UUID v5: `health:<platform>:<örnek kimliği>`) | İki cihaz aynı örneği alırsa aynı `uid` → sunucu üzerine yazar, kopya olmaz (senkron zaten `uid` ile upsert yapıyor). Yerelde `external_id` tekil |
+| W-3 | Fit Pack'in kendi yazdığı örnekler okunurken elenir (kaynak = Fit Pack paket kimliği) | Faz 2'de yazma başlarsa yankı olmasın |
+| W-4 | Hesaplar için **günde tek kilo**: o gün kilosu dolu elle giriş varsa **en son kaydedilen** elle giriş; yoksa günün **ilk** tartı ölçümü | Kullanıcı aynı gün düzeltme girebilir (Samet: "belki yanlış girdi"); sabah ölçümü tutarlı; satır başına ortalama haftalık değeri kaydırıyordu |
+| W-5 | Yağ oranı aynı kurala **ayrı** uyar. iOS yüzdeyi 0–1 kesir verir → ×100 | Tek kural, tek birim |
+| W-6 | İçe alınan satır **düzenlenemez**; silinince `hidden = true` olur (senkronlanır), yeniden içe alınmaz | Tekrar içe almada geri gelmesin; kaynak veriyi kullanıcı Sağlık'ta yönetir |
+| W-7 | İçe aktarma ancak **açık rıza** kaydı varsa çalışır; rıza geri alınınca içe aktarma durur ve kullanıcıya "içe alınan ölçümleri sil" seçeneği sunulur | KVKK md. 6, GDPR md. 7/3 (rızayı geri almak vermek kadar kolay) |
+| W-8 | İlk bağlanışta geçmiş: son 90 gün (Android'de platform sınırı 30 gün; ek geçmiş izni istenmez) | 8 haftalık yorum tabanı; en az izin |
+| W-9 | Kiloyu okuyan reaktif sağlayıcılar içe almadan sonra kendiliğinden tazelenir (aynı tablo → `watchTables` değişmez) | CONVENTIONS §2 |
+| W-10 | Vücut ölçümü ekranında içe alınan satır kaynak simgesiyle görünür ("Sağlık · Withings") | Kullanıcı neyin nereden geldiğini görür |
+| W-11 | Dışa aktarma (CSV/JSON) içe alınan satırları **kaynak kolonuyla** içerir | GDPR md. 20 taşınabilirlik: kullanıcının verisi eksiksiz |
 
-## 2. Uygulama (onaydan sonra)
+## 2. Uygulama
 
-1. **Şema v16** (şema kilidi gerekir — şu an asistan işinde): `health_samples`
-   (id, `externalId` UNIQUE, tür, değer, birim, `measuredAt`, kaynak uygulama,
-   `importedAt`, `hidden`), `onUpgrade` adımı + göç testi aynı commit'te.
-2. `step_source.dart` yanına `body_source.dart` (W-1, W-3) + içe alma servisi
-   (W-2, W-9); docs/39'daki gibi öne gelişte çalışır.
-3. `BodyDao.getEffectiveWeights` (W-4, W-5) + saf birleştirme fonksiyonu
-   (birim testli). Hesap yapan sağlayıcılar buna geçer; saf motorlar
-   (`weekly_review`, `interpretWeightTrend`) girdi tipi değişmeden sentetik
-   satır alır — **asistan dalı da `insights/`e dokunduğu için Claude-1 ile
-   sıra konuşulur**. Vücut ölçümü ekranı: grafik birleşik seriden, liste elle
-   girilenler + tartı satırları ayrı (W-10).
-4. Ekran: Ayarlar → Sağlık'a "Kilo ve yağ oranı" anahtarı (ayrı izin), vücut
-   ölçümü ekranında kaynak simgesi + gizle (çeviri kilidi gerekir).
+1. **Şema v17:** `body_measurements` + `source`, `external_id`, `source_app`,
+   `hidden` (hepsi nullable / varsayılanlı); `external_id` için tekil indeks;
+   `onUpgrade` + göç testi aynı commit'te. Senkron kolon listeleri
+   (`sync_columns.dart`) gerekiyorsa güncellenir.
+2. **Supabase göçü:** aynı dört kolon (Dev'de uygulanır + pgTAP/SQL testi);
+   üretime Samet onayıyla.
+3. **Rıza:** docs/41 §3 — rıza kaydı (`user_profile`'a `health_consent_at`,
+   `health_consent_version`; senkronlanır = rıza kanıtı).
+4. `body_source.dart` (W-1, W-3, W-5) + içe alma servisi (W-2, W-6, W-8);
+   öne gelişte çalışır (docs/39 S-9).
+5. **Günde tek değer** saf fonksiyonu (W-4, W-5) + kilo okuyan hesap
+   sağlayıcıları bunu kullanır: son kilo, kilo eğilimi, haftalık
+   değerlendirme, TDEE, yorum katmanı. Vücut ölçümü listesi tüm satırları
+   gösterir (W-10), grafik günde-tek seriden çizer.
+6. Ekran: Ayarlar → Sağlık → "Kilo ve yağ oranı" (rıza ekranıyla), vücut
+   ölçümü ekranında kaynak simgesi, içe alınanı silince gizleme.
 
 ## 3. Doğrulama
 
-- Birim: W-2 (aynı örnek iki kez → tek satır), W-4 (elle + iki tartı aynı gün
-  → elle; yalnız tartı → ilk), W-3, W-7 (senkron kuyruğuna satır girmez).
-- Göç testi v15 → v16, mevcut ölçümler aynı.
-- Mevcut testler: haftalık değerlendirme, kilo eğilimi, yorum katmanı yeşil.
-- iPhone: tartı ölçümü Sağlık'ta görünür → Fit Pack'te aynı gün aynı değer;
-  elle giriş yapınca o gün elle değer kullanılır.
+- Birim: W-2 (aynı örnek iki kez / iki cihaz → tek `uid`), W-4 (elle + iki
+  tartı aynı gün → son elle; yalnız tartı → ilk; yalnız bel girilmiş elle
+  satır tartıyı engellemez), W-5 birim dönüşümü, W-6, W-7 (rıza yokken içe
+  alma çağrısı hiçbir satır yazmaz).
+- Göç testi v16 → v17; mevcut ölçümler aynı, `source` = manual.
+- Senkron: içe alınan satır Dev Supabase'e gider, ikinci cihaz aynı satırı
+  çeker, kopya yok.
+- iPhone: tartı ölçümü Sağlık'ta → Fit Pack'te aynı gün aynı değer.
 
 ## 4. Açık riskler
 
-- Tartı uygulaması Sağlık'a geç yazarsa (ör. tartı uygulaması açılmadan) Fit
-  Pack o günü elle girilmemiş sanabilir → "son okuma" saati görünür.
-- Birden çok tartı uygulaması aynı ölçümü yazarsa farklı `externalId` ile iki
-  örnek gelir → W-4 yine günde tek değer seçer, sorun olmaz.
+- Tartı uygulaması Sağlık'a geç yazarsa o gün Fit Pack'te geç görünür → "son
+  okuma" saati.
+- İki tartı uygulaması aynı tartıyı ayrı örnek olarak yazarsa iki satır gelir;
+  W-4 hesapta günde tek değer seçer, listede iki satır görünür (gizlenebilir).
 
-## 5. Samet'ten gereken kararlar
+## 5. Samet'in kararları (2026-10-11)
 
-1. [ ] Yol A (ayrı yerel tablo, buluta gitmez) — önerilen. B istenirse sunucu
-   göçü + senkron işi ve KVKK etkisi ayrıca yazılır.
-2. [ ] Aynı gün kuralı: **elle giriş kazanır** (aynı gün birden çok elle
-   girişte **en son kaydedilen**), yoksa **sabah (ilk) tartı ölçümü** — uygun
-   mu? Not: bu, yalnız elle giriş yapanlar için de küçük bir değişiklik — bugün
-   aynı gün iki elle giriş haftalık ortalamaya iki kez giriyor.
-3. [ ] Hangi tartı / uygulama? (ör. Withings Health Mate, Xiaomi Zepp Life,
-   Eufy) — Sağlık'a kilo ve yağ oranı yazıyor mu, Samet kontrol etsin.
-4. [ ] Şema kilidi asistan işinde (Claude-1). Faz 1b asistan birleşince mi
-   başlasın, yoksa kilit sırası değişsin mi?
+1. ✅ İçe alınan kilo **bulutta** tutulur.
+2. ✅ Kullanıcı aynı gün birden çok kez kilo girebilir; hesapta **son elle
+   giriş** geçerli, elle giriş yoksa **ilk tartı ölçümü**.
+3. ✅ **Tüm tartı uygulamaları** — sağlık deposu üzerinden (marka API'si yok);
+   gerekli veri = kilo + yağ oranı.
+4. ✅ Hemen başla (asistan main'e birleşti, kilitler boş).
+5. ✅ Her şey **KVKK** (Türkiye) ve **GDPR** (global) uyumlu → docs/41.
 
-## 6. İnceleme (2026-10-11, Claude-2 — Codex kotası 21:52'ye kadar dolu)
+## 6. İnceleme notları (ilk taslak, A yolu — 2026-10-11)
 
-1. **Kritik — yanlış satır silme:** `body_metrics_screen.dart:151` listeyi
-   `getAllMeasurements`'tan alıp `deleteMeasurement(m.id)` ile siliyor. İlk
-   taslaktaki "üç sorgu birleşik seri döndürsün" yolu, tartı satırına başka
-   tablonun `id`'sini taşırdı → aynı numaralı **elle ölçüm silinirdi**. Düzeltme:
-   üç sorgu değişmez; yeni `getEffectiveWeights` (§0, §2.3).
-2. **Senkron sızıntısı:** `syncRemoteExcluded` (`sync_columns.dart:126`) tabloyu
-   yalnız gönderimden çıkarır; tablo `syncPushOrder`'da kaldığı için tetikleyici
-   kurulur (`app_database.dart:188`), silmede mezar taşı yazılır
-   (`sync_columns.dart:349`). Düzeltme: tablo senkron listelerinde hiç yok,
-   hesap değişiminde açıkça silinir (W-7). Senkron kilidi gerekmez.
-3. **Kilosuz elle satır:** ölçüm formu yalnız bel çevresiyle kaydedebiliyor
-   (`body_dao.dart:15`). "Elle giriş kazanır" yalnız **kilosu dolu** satır için
-   geçerli olmalı (W-4).
-4. **Tazelenmeme:** kilo okuyan sağlayıcılar yalnız `bodyMeasurements`'ı
-   izliyor (`home_providers.dart:32,48`, `body_metrics_screen.dart:28`) →
-   içe almadan sonra ekran eski kalırdı (W-11).
-5. **Yağ oranı birimi:** paket iOS'ta `HKUnit.percent()` kullanıyor
-   (`SwiftHealthPlugin.swift:232`) → değer 0–1 kesir; Health Connect yüzde
-   verir. Normalize edilmeli; cihazda doğrulanacak (W-5).
-6. **Dal çakışması:** haftalık değerlendirme ve yorum motoru (`insights/`)
-   asistan dalında da değişiyor; Faz 1b'nin sağlayıcı değişikliği asistan
-   birleştikten sonra yapılmalı (§5.4).
-
-Doğrulanan, sorun olmayanlar: paket her örnek için tekil kimlik veriyor
-(iOS `sample.uuid`, Health Connect `metadata.id`) → W-2 uygulanabilir;
-kaynak uygulama (`sourceId`) okunabiliyor → W-3 uygulanabilir; dışa aktarma
-ham sorguyla kalır → W-8 kendiliğinden sağlanır.
+İlk taslağın incelemesinde bulunanlardan B yolunda geçerli kalanlar:
+- Yağ oranı birimi (iOS kesir) → W-5.
+- Yalnız bel girilmiş elle satır tartıyı engellememeli → W-4 "kilosu dolu".
+- Haftalık değerlendirme satır başına ortalıyor → W-4 hesap sağlayıcılarında.
+- Vücut ölçümü ekranı `id` ile siliyor → B yolunda içe alınan satır aynı
+  tablodadır, `id` doğrudur; silme W-6'ya göre gizlemeye çevrilir.

@@ -12,7 +12,26 @@
 > kodlandı)
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
-> **Şema:** v14 · **Sahibi:** Samet Orhan (kişisel proje)
+> **Şema:** v15 · **Sahibi:** Samet Orhan (kişisel proje)
+
+## #8 Beslenme günü tamamlandı — üretimde · 2026-10-11
+
+- **Ne:** Beslenme ekranında "Bugünkü kaydım tamamlandı" (ikincil düğme) →
+  ✓ "Kaydın tamam" / "Geri al"; takvimde ✓; haftalık değerlendirme tamamlanmış
+  günleri kullanır ("N tamamlanmış gün · M gün hesaba katılmadı", "Protein
+  hedefi K/N gün"); kayıtsız tamamlanmış gün 0 kalori (Samet kararı).
+- **Teknik:** şema **v15** `nutrition_days` (13. senkron tablosu), gün kimliği
+  UUIDv5 (iki cihaz → tek satır), geri al = `status=open` (silinmez). Sunucu PK
+  `(user_id, uid)`. Ayrıntı: [docs/37](docs/37-nutrition-day-complete.md).
+- **Doğrulama:** 804 test; Dev'de pgTAP 9/9; Android emülatörü + Dev hesabıyla
+  uçtan uca görsel kontrol (3 bulgu düzeltildi).
+- **Üretim (Samet onayı):** göç üretim Supabase'e uygulandı (13 tetikleyici,
+  RLS, yetki doğrulandı); `main`'e birleşti; iPhone'a `devicectl` ile kuruldu
+  (veri yerinde: 27 yemek kaydı, fotoğraflar). **Telefonda göç v14→v15
+  uygulama ilk açılınca çalışacak** (kurulum anında cihaz kilitliydi).
+  **Push edilmedi.**
+- **Soru eşleme:** Jev iki kabulde RET; **Gemini 3.5 Flash-Lite (ücretsiz)
+  KABUL** (docs/35 §14). Sıradaki: asistan (#10) öne alındı → docs/38.
 
 ## Verime sor — yorum katmanı · 2026-10-11
 

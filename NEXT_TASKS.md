@@ -472,7 +472,12 @@ bağlı).
    **kodlandı 2026-09-19**, cihazda görsel kontrol bekliyor.
    ✅ **#2 "geçmişten öğün kopyala" küçük sürümü** — **kodlandı 2026-09-22**
    (ayrıntı aşağıda "Geçmişten öğün kopyala").
-5. Diğerleri (docs/21 sırası): #8 → #5 → #7 → #2 tam → #10, #9, #13, #12.
+5. ✅ **#8 Beslenme günü tamamlandı** — üretimde (2026-10-11, docs/37).
+6. **#10 asistan ÖNE ALINDI** (Samet, 2026-10-11): eşleyici Gemini 3.5
+   Flash-Lite kabul aldı (docs/35 §14), yorum katmanı birleşti (docs/36) →
+   sıradaki iş docs/38 (Supabase fonksiyonu, kota, "Anladığım soru ·
+   değiştir", kalite paneli K1, onay metni). Sonra: #5 → #7 → #2 tam → #9,
+   #13, #12.
 
 ## 🍽️ Geçmişten öğün kopyala — kodlandı (2026-09-22, docs/21 #2 küçük sürüm)
 

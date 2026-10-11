@@ -11,7 +11,7 @@ Beklenen: saf Dart motoru, kaynaklı kurallar, cümle yerine çeviri anahtarı.
       kas grubu set / kilo eğilimi / medyan karşılaştırma / e1RM (tahmini tek
       tekrar maksimumu) / protein g/kg yorumları.
 - [x] 41 yeni birim testi; analiz temiz, 783 test. main'e birleşti (`e910426`).
-- [ ] Docs/36'da sayısı olmayan eşikler Samet onayında: medyan için en az 4
+- [x] Docs/36'da sayısı olmayan eşikler Samet onayladı (2026-10-11, docs/36 §5.6): medyan için en az 4
       hafta, e1RM ±%1 "sabit", kilo 0,1 kg/hafta gürültü, öneri sırası.
 - [ ] Yorum cümleleri `.arb`'ye (çeviri kilidi) + provider'lar + ekran.
 

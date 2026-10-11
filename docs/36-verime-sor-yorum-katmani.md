@@ -132,6 +132,11 @@ olarak sunulmaz: "araştırmada bu düzeyin üstünde ek kazanım görülmedi".
 3. ✅ Akşam yemeği önerisi **yalnız kendi geçmişinden** (o öğünde daha önce yedikleri); yeni yemek önerisi ayrı karar.
 4. ✅ Kabul seti **120 soru** — sonradan (docs/35 §8.8) Samet'in soruları beklenmeden **60 Claude + 60 Codex**.
 5. Antrenman hedefi türü profilde yok; set yorumu hipertrofi araştırmasıyla yapılır (hedef türü alanı ileride ayrı iş).
+6. ✅ (2026-10-11) Uygulamada seçilen eşikler (kodda sabit, `insight_rules.dart` / `insight_queries.dart`):
+   antrenman medyanı için en az **4** geçmiş hafta (ilk seanstan önceki haftalar sayılmaz, sonraki boş haftalar 0);
+   e1RM farkı **±%1** içinde "sabit"; kilo eğimi en küçük kareler, **0,1 kg/hafta** altı "belirgin değişim yok";
+   yön yoksa ±%1 kendi ortalaması + "yön seçersen" notu; "al"da %0,25 altı "önerilenden yavaş";
+   akşam önerisi sırası: o öğünde en sık yenen → protein ↓.
 
 ---
 

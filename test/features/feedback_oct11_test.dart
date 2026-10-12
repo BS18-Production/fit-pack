@@ -21,6 +21,7 @@ void main() {
       for (final s in RestSound.values) {
         expect(File(s.countdownAsset).existsSync(), isTrue, reason: s.id);
         expect(File(s.endAsset).existsSync(), isTrue, reason: s.id);
+        expect(File(s.countdownNotifAsset).existsSync(), isTrue, reason: s.id);
         expect(s.countdownSource, 'sounds/rest_${s.id}.m4a');
       }
     });

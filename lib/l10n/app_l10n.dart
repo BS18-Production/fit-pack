@@ -3265,6 +3265,18 @@ abstract class AppL10n {
   /// **'Time for the next set'**
   String get notifRestDoneBody;
 
+  /// No description provided for @notifRestEndingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest ends in 3 seconds'**
+  String get notifRestEndingTitle;
+
+  /// No description provided for @notifRestEndingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Get ready for the next set'**
+  String get notifRestEndingBody;
+
   /// No description provided for @notifWorkoutTitle.
   ///
   /// In en, this message translates to:

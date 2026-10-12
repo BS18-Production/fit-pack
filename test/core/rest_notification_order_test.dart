@@ -59,4 +59,15 @@ void main() {
         body: 'b');
     expect(restCalls(), isEmpty);
   });
+
+  test('son 3 saniye: süre yeterliyse bildirim 3 sn önce (geri sayım sesi)', () {
+    expect(restNotifLeadMs(left: const Duration(seconds: 90), countdownSound: true),
+        3000);
+    // Kurulum + teslim payı yoksa tam bitişte (3-2-1 yarım kalmasın).
+    expect(restNotifLeadMs(left: const Duration(milliseconds: 3800), countdownSound: true),
+        0);
+    // Ses kapalı / Android (ses servisten) → tam bitişte.
+    expect(restNotifLeadMs(left: const Duration(seconds: 90), countdownSound: false),
+        0);
+  });
 }

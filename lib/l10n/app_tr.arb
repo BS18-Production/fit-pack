@@ -533,6 +533,8 @@
   "notifPermissionDenied": "Bildirim izni verilmedi — sistem ayarlarından açabilirsin.",
   "notifRestDoneTitle": "Dinlenme bitti",
   "notifRestDoneBody": "Sıradaki set zamanı",
+  "notifRestEndingTitle": "Dinlenme 3 saniyede bitiyor",
+  "notifRestEndingBody": "Sıradaki sete hazırlan",
   "notifWorkoutTitle": "Antrenman zamanı",
   "notifWorkoutBody": "Planın seni bekliyor — kısa bir seans da sayılır.",
   "notifWaterTitle": "Su molası",

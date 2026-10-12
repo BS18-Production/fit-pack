@@ -416,6 +416,8 @@ class _NoNotifications extends NotificationService {
     required DateTime at,
     required String title,
     required String body,
+    String? earlyTitle,
+    String? earlyBody,
     RestSound? sound,
   }) async {}
 

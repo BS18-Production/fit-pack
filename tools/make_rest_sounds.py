@@ -19,8 +19,11 @@ Kullanım:
 için iki dosya:
 - `rest_<id>.m4a` — geri sayım (tık + bitiş). Uygulama içi (iOS/Android) ve
   Android dinlenme servisi aynı dosyayı çalar. AAC: WAV'ın ~1/8'i.
-- `rest_<id>_end.caf` — yalnız bitiş, iOS bildirim sesi. iOS bildirim sesi
-  AAC kabul etmez (doğrusal PCM / IMA4 ister) → IMA4 (4:1 sıkıştırma).
+- `rest_<id>_countdown.caf` — tam geri sayım, iOS bildirim sesi. Bildirim
+  bitişten 3 sn önce kurulur: uygulama arkadayken de 3-2-1 + bitiş duyulur
+  (2026-10-12; yalnız bitiş sesi çalınca son 3 saniye kayboluyordu).
+- `rest_<id>_end.caf` — yalnız bitiş: 3 sn'den az kalmışken kurulan bildirim.
+  iOS bildirim sesi AAC kabul etmez (doğrusal PCM / IMA4 ister) → IMA4.
 Dönüştürme macOS'taki `afconvert` ile yapılır.
 
 Tasarım notları:
@@ -230,9 +233,11 @@ def main():
             _yaz_wav(son, _olcekle(bitis(), tepe))
             _afconvert(tam, os.path.join(hedef, f"rest_{sid}.m4a"),
                        "-f", "m4af", "-d", "aac", "-b", "64000")
+            _afconvert(tam, os.path.join(hedef, f"rest_{sid}_countdown.caf"),
+                       "-f", "caff", "-d", "ima4")
             _afconvert(son, os.path.join(hedef, f"rest_{sid}_end.caf"),
                        "-f", "caff", "-d", "ima4")
-            print(f"yazıldı: rest_{sid}.m4a + rest_{sid}_end.caf")
+            print(f"yazıldı: rest_{sid}.m4a + _countdown.caf + _end.caf")
 
 
 if __name__ == "__main__":

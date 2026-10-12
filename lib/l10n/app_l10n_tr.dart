@@ -1796,6 +1796,12 @@ class AppL10nTr extends AppL10n {
   String get notifRestDoneBody => 'Sıradaki set zamanı';
 
   @override
+  String get notifRestEndingTitle => 'Dinlenme 3 saniyede bitiyor';
+
+  @override
+  String get notifRestEndingBody => 'Sıradaki sete hazırlan';
+
+  @override
   String get notifWorkoutTitle => 'Antrenman zamanı';
 
   @override

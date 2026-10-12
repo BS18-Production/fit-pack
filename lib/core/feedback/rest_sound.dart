@@ -4,8 +4,8 @@
 /// Her ses için iki dosya:
 /// - geri sayım (`rest_<id>.m4a`): 3 tık + bitiş — uygulama içi ve Android
 ///   dinlenme servisi çalar,
-/// - bitiş (`rest_<id>_end.caf`): iOS bildirim sesi (iOS bildirimi AAC
-///   kabul etmez; IMA4).
+/// - iOS bildirim sesleri (`rest_<id>_countdown.caf`, `rest_<id>_end.caf`):
+///   uygulama paketinde, IMA4 (iOS bildirimi AAC kabul etmez).
 ///
 /// [id] kalıcıdır (tercihte saklanır) — değiştirme, yeni ses ekle.
 enum RestSound {
@@ -33,13 +33,11 @@ enum RestSound {
   /// audioplayers `AssetSource` öneki `assets/` olmadan ister.
   String get countdownSource => 'sounds/rest_$id.m4a';
 
-  String get endAsset => 'assets/sounds/$endFileName';
-
-  /// iOS bildirim sesi — tam geri sayım (3 tık + bitiş); bitişten
-  /// [restCountdownLeadMs] önce çalınır (docs/45 §3b).
-  String get countdownNotifAsset => 'assets/sounds/$countdownNotifFileName';
+  /// iOS bildirim sesi — tam geri sayım (3 tık + bitiş); bitişten 3 sn
+  /// önce çalınır (docs/45 §3b). Uygulama paketinde (`ios/Runner/Sounds/`).
   String get countdownNotifFileName => 'rest_${id}_countdown.caf';
 
-  /// iOS bildirim sesi dosya adı (`Library/Sounds/` altına kopyalanır).
+  /// iOS bildirim sesi — yalnız bitiş (3 sn'den az kalmışken kurulan
+  /// bildirim). Uygulama paketinde (`ios/Runner/Sounds/`).
   String get endFileName => 'rest_${id}_end.caf';
 }

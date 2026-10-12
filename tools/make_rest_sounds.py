@@ -19,10 +19,11 @@ Kullanım:
 için iki dosya:
 - `rest_<id>.m4a` — geri sayım (tık + bitiş). Uygulama içi (iOS/Android) ve
   Android dinlenme servisi aynı dosyayı çalar. AAC: WAV'ın ~1/8'i.
-- `rest_<id>_countdown.caf` — tam geri sayım, iOS bildirim sesi. Bildirim
+- `ios/Runner/Sounds/rest_<id>_countdown.caf` — tam geri sayım, iOS
+  bildirim sesi (uygulama paketinde; çalışma anında kopyalama yok). Bildirim
   bitişten 3 sn önce kurulur: uygulama arkadayken de 3-2-1 + bitiş duyulur
   (2026-10-12; yalnız bitiş sesi çalınca son 3 saniye kayboluyordu).
-- `rest_<id>_end.caf` — yalnız bitiş: 3 sn'den az kalmışken kurulan bildirim.
+- `ios/Runner/Sounds/rest_<id>_end.caf` — yalnız bitiş: 3 sn'den az kalmışken kurulan bildirim.
   iOS bildirim sesi AAC kabul etmez (doğrusal PCM / IMA4 ister) → IMA4.
 Dönüştürme macOS'taki `afconvert` ile yapılır.
 
@@ -223,8 +224,13 @@ def main():
         print(f"yazıldı: {args.demo}")
         return
 
-    hedef = os.path.join(os.path.dirname(__file__), "..", "assets", "sounds")
+    kok = os.path.join(os.path.dirname(__file__), "..")
+    hedef = os.path.join(kok, "assets", "sounds")
+    # iOS bildirim sesleri uygulama paketinde (Xcode Runner kaynakları) —
+    # Flutter varlığı değil; Dart bunları çalmaz.
+    ios = os.path.join(kok, "ios", "Runner", "Sounds")
     os.makedirs(hedef, exist_ok=True)
+    os.makedirs(ios, exist_ok=True)
     with tempfile.TemporaryDirectory() as gecici:
         for sid, (tik, bitis, tepe) in SESLER.items():
             tam = os.path.join(gecici, f"{sid}.wav")
@@ -233,9 +239,9 @@ def main():
             _yaz_wav(son, _olcekle(bitis(), tepe))
             _afconvert(tam, os.path.join(hedef, f"rest_{sid}.m4a"),
                        "-f", "m4af", "-d", "aac", "-b", "64000")
-            _afconvert(tam, os.path.join(hedef, f"rest_{sid}_countdown.caf"),
+            _afconvert(tam, os.path.join(ios, f"rest_{sid}_countdown.caf"),
                        "-f", "caff", "-d", "ima4")
-            _afconvert(son, os.path.join(hedef, f"rest_{sid}_end.caf"),
+            _afconvert(son, os.path.join(ios, f"rest_{sid}_end.caf"),
                        "-f", "caff", "-d", "ima4")
             print(f"yazıldı: rest_{sid}.m4a + _countdown.caf + _end.caf")
 

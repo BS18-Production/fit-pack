@@ -52,11 +52,8 @@ class NotificationService {
     priority: Priority.defaultPriority,
   );
 
-  /// iOS karşılıkları. Dinlenme bitişi zamana duyarlı — Odaklanma modunda da
-  /// görünsün (Android'deki Importance.high dengi); hatırlatıcılar sıradan.
-  static const _iosRest = DarwinNotificationDetails(
-    interruptionLevel: InterruptionLevel.timeSensitive,
-  );
+  /// iOS hatırlatıcıları sıradan; mola bildiriminin ayarları
+  /// [scheduleRestDone] içinde (ses + ön planda sessiz sunum).
   static const _iosReminders = DarwinNotificationDetails();
 
   final _plugin = FlutterLocalNotificationsPlugin();
@@ -103,6 +100,26 @@ class NotificationService {
       },
     );
     _inited = true;
+    unawaited(_removeCopiedSounds());
+  }
+
+  /// 2026-10-11 sürümü mola seslerini `Library/Sounds/`a kopyalıyordu. iOS
+  /// bildirim sesini önce orada arar — kalan kopyalar paketteki (yeniden
+  /// üretilmiş) sesleri gölgelerdi. Ses artık yalnız paketten; kopyalar
+  /// silinir (yoksa iş yok).
+  Future<void> _removeCopiedSounds() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
+    try {
+      final dir =
+          Directory(p.join((await getLibraryDirectory()).path, 'Sounds'));
+      if (!await dir.exists()) return;
+      await for (final f in dir.list()) {
+        final name = p.basename(f.path);
+        if (name.startsWith('rest_') && name.endsWith('.caf')) await f.delete();
+      }
+    } catch (_) {
+      // En iyi çaba: silinemezse paketteki sesle aynı içerik çalar.
+    }
   }
 
   /// Uygulama KAPALIYKEN bir bildirime dokunularak açıldıysa o bildirimin
@@ -153,15 +170,20 @@ class NotificationService {
   /// Dakik alarm izni yoksa inexact'e düşer (birkaç dk gecikebilir).
   ///
   /// iOS'ta [sound] seçili mola sesidir (docs/45 §3); `null` = kullanıcı
-  /// mola sesini kapattı → sessiz bildirim. Ses dosyası kurulamazsa sistem
-  /// varsayılan sesi. Sistem bildirim sesi telefonun sessiz anahtarına ve
-  /// Odaklanma'ya uyar — uygulama hatası değil.
+  /// mola sesini kapattı → sessiz bildirim. Sistem bildirim sesi telefonun
+  /// sessiz anahtarına ve Odaklanma'ya uyar — uygulama hatası değil.
   ///
   /// **Son 3 saniye (iOS, docs/45 §3b).** Uygulama arkadayken iOS onu
   /// askıya alır; uygulama içi tık-tık-tık çalamaz. Yeterli süre varsa
   /// bildirim bitişten [restCountdownLeadMs] ÖNCE, tam geri sayım sesiyle
   /// ([earlyTitle]/[earlyBody]) kurulur: 3-2-1 + bitiş arka planda da duyulur.
   /// Süre azsa tam bitişte yalnız bitiş sesi.
+  ///
+  /// **Hiçbir zaman iki kez çalmaz (Samet, 2026-10-12).** Ses dosyaları
+  /// uygulama paketinde (`ios/Runner/Sounds/`) — çalışma anında kopyalama
+  /// ve "kopyalanamazsa varsayılan ses" yolu yok. Ön planda sunum her
+  /// zaman sessiz (`presentSound: false`): uygulama açıkken sesi yalnız
+  /// uygulama içi geri sayım çalar; bildirimin sesi yalnız arka planda.
   Future<void> scheduleRestDone({
     required DateTime at,
     required String title,
@@ -173,7 +195,8 @@ class NotificationService {
     final gen = ++_restGen;
     return _restSerial(() async {
       await init();
-      final early = restNotifLeadMs(
+      if (gen != _restGen) return; // arada iptal ya da yeni kurulum geldi
+      final countdown = restNotifLeadMs(
             left: at.difference(DateTime.now()),
             countdownSound: sound != null &&
                 earlyTitle != null &&
@@ -181,54 +204,26 @@ class NotificationService {
                 defaultTargetPlatform == TargetPlatform.iOS,
           ) >
           0;
-      var iosSound = sound == null
-          ? null
-          : await _installIosSound(
-              asset: early ? sound.countdownNotifAsset : sound.endAsset,
-              fileName: early ? sound.countdownNotifFileName : sound.endFileName,
-            );
-      if (gen != _restGen) return; // arada iptal ya da yeni kurulum geldi
-      // Kurulum sonrası yeniden bak: dosya yoksa ya da kopyalama sürerken
-      // erken hedef kaçtıysa bitişte, bitiş sesiyle — bildirim hiç
-      // kurulmadan kalmasın (Codex, 2026-10-12).
-      final countdown = early &&
-          restNotifLeadMs(
-                left: at.difference(DateTime.now()),
-                countdownSound: iosSound != null,
-              ) >
-              0;
-      if (early && !countdown && sound != null) {
-        iosSound = await _installIosSound(
-            asset: sound.endAsset, fileName: sound.endFileName);
-        if (gen != _restGen) return;
-      }
       final fireAt = countdown
           ? at.subtract(const Duration(milliseconds: restCountdownLeadMs))
           : at;
       final left = fireAt.difference(DateTime.now());
       if (left <= Duration.zero) return;
-      final shownTitle = countdown ? earlyTitle : title;
-      final shownBody = countdown ? (earlyBody ?? body) : body;
       final when = tz.TZDateTime.now(tz.local).add(left);
       final details = NotificationDetails(
         android: _chRest,
-        iOS: sound == null
-            ? const DarwinNotificationDetails(
-                interruptionLevel: InterruptionLevel.timeSensitive,
-                presentSound: false,
-              )
-            : iosSound == null
-                ? _iosRest
-                // Ses arka planda dosyadan çalar; ön planda sunum sessiz:
-                // uygulama tam o an öne dönerse uygulama içi geri sayımla
-                // üst üste binmesin (Codex). Varsayılan ses yolunda
-                // (dosya kurulamadı) bu ayrım eklentide yok.
-                : DarwinNotificationDetails(
-                    interruptionLevel: InterruptionLevel.timeSensitive,
-                    sound: iosSound,
-                    presentSound: false,
-                  ),
+        iOS: DarwinNotificationDetails(
+          interruptionLevel: InterruptionLevel.timeSensitive,
+          presentSound: false,
+          sound: sound == null
+              ? null
+              : (countdown
+                  ? sound.countdownNotifFileName
+                  : sound.endFileName),
+        ),
       );
+      final shownTitle = countdown ? earlyTitle! : title;
+      final shownBody = countdown ? (earlyBody ?? body) : body;
       try {
         await _plugin.zonedSchedule(
             id: idRest,
@@ -252,32 +247,6 @@ class NotificationService {
   Future<void> cancelRestDone() {
     _restGen++;
     return _restSerial(() => _plugin.cancel(id: idRest));
-  }
-
-  /// iOS bildirim sesi yalnız uygulama paketinden ya da kabın
-  /// `Library/Sounds/` klasöründen çalınır; Flutter varlıkları ikisinde de
-  /// değil. Ses dosyası oraya bir kez kopyalanır (boyut değiştiyse — ses
-  /// yeniden üretildiyse — üzerine yazılır). Başarısızsa `null` → sistem
-  /// varsayılan sesi.
-  Future<String?> _installIosSound({
-    required String asset,
-    required String fileName,
-  }) async {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return null;
-    try {
-      final data = await rootBundle.load(asset);
-      final dir = Directory(p.join((await getLibraryDirectory()).path, 'Sounds'));
-      final file = File(p.join(dir.path, fileName));
-      if (!await file.exists() || await file.length() != data.lengthInBytes) {
-        await dir.create(recursive: true);
-        await file.writeAsBytes(
-            data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
-            flush: true);
-      }
-      return fileName;
-    } catch (_) {
-      return null;
-    }
   }
 
   /// iOS: bu uygulamanın bildirim sesi sistem ayarlarında açık mı. Ayarlar

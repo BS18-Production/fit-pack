@@ -7,15 +7,23 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		10224E4CBAFF38DAA167430D /* rest_boxing_bell_end.caf in Resources */ = {isa = PBXBuildFile; fileRef = AA9E87929D458AB1E5C86178 /* rest_boxing_bell_end.caf */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		25016AF15DA53ED4D14747E3 /* rest_classic_bell_countdown.caf in Resources */ = {isa = PBXBuildFile; fileRef = EC6BD78DAB0A8DCBD3C3948C /* rest_classic_bell_countdown.caf */; };
+		262FE0A252A42CF0C85702FF /* rest_soft_chime_countdown.caf in Resources */ = {isa = PBXBuildFile; fileRef = B7A2D34ACC2155ECA414961E /* rest_soft_chime_countdown.caf */; };
 		2EDFD9BFE83CFD64A29AEEC8 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 479FF52FB437CA42D050EF7B /* Pods_Runner.framework */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
+		3A8EE3D3EC6270775DEF93AF /* rest_strong_alert_end.caf in Resources */ = {isa = PBXBuildFile; fileRef = 55073B80D1C9AAB1F884B096 /* rest_strong_alert_end.caf */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
+		441538539A09E2FC9B472707 /* rest_classic_bell_end.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4A32F4E8C088E99C4D4FE6D0 /* rest_classic_bell_end.caf */; };
 		475D743970AB34A500A7E557 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9C12C1EDFAEC7EF74EDCC75 /* WidgetKit.framework */; };
 		49F59A6CC0D5A30E7A11ED13 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52011E4D35FDEEBDF3E9F93F /* SwiftUI.framework */; };
+		4B24C17FCB66FACAE0499FCD /* rest_boxing_bell_countdown.caf in Resources */ = {isa = PBXBuildFile; fileRef = D66B1F2D527FE6D0184F7129 /* rest_boxing_bell_countdown.caf */; };
 		5244633887812F3CBA23E1CA /* WorkoutLiveActivity.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 059299590A2CC026616801AC /* WorkoutLiveActivity.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		54071DE1BA0A487682B78693 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FDF9428FCE1B44168D503A2 /* Pods_RunnerTests.framework */; };
 		5511E7DCB22E6243CF87F31A /* WorkoutLiveActivityIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 398ECFA7069E60EAF9B36742 /* WorkoutLiveActivityIntents.swift */; };
+		55484CD810158F60804A8AC0 /* rest_soft_chime_end.caf in Resources */ = {isa = PBXBuildFile; fileRef = ECDC19FC9C34E2417F8EF022 /* rest_soft_chime_end.caf */; };
+		5AA8B9C23DB4B75BCD6A1D6A /* rest_digital_beep_end.caf in Resources */ = {isa = PBXBuildFile; fileRef = 127B63A0BC0B635C1FDFEC9C /* rest_digital_beep_end.caf */; };
 		5CF41EE23E66DCE81E920D90 /* ActivityKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26A877007D80BE830D3D178A /* ActivityKit.framework */; };
 		72E54B7BA06D465C9E46124C /* WorkoutLiveActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F3C821AB0A44D2CF1D41CB /* WorkoutLiveActivityWidget.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
@@ -25,7 +33,9 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		C3C27E9D14BAC5531404587D /* rest_strong_alert_countdown.caf in Resources */ = {isa = PBXBuildFile; fileRef = 9B7D2E98762E27329F3F9DED /* rest_strong_alert_countdown.caf */; };
 		C549FCDEE0AFE37754E62FC3 /* WorkoutLiveActivityBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4852EFE94ED9756706EFE76C /* WorkoutLiveActivityBundle.swift */; };
+		D4D4778E41508E67D504048F /* rest_digital_beep_countdown.caf in Resources */ = {isa = PBXBuildFile; fileRef = 40286C9193CBC006ABA3CFAD /* rest_digital_beep_countdown.caf */; };
 		D69D88778121ACB9D4944F6A /* WorkoutActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D7FD4D3299807B5B7E4842E /* WorkoutActivityAttributes.swift */; };
 		DA12A86DCD88C55C0E1132E0 /* WorkoutLiveActivityIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 398ECFA7069E60EAF9B36742 /* WorkoutLiveActivityIntents.swift */; };
 		FA9C1A0000000000000000E4 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FA9C1A0000000000000000E3 /* InfoPlist.strings */; };
@@ -75,6 +85,7 @@
 
 /* Begin PBXFileReference section */
 		059299590A2CC026616801AC /* WorkoutLiveActivity.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WorkoutLiveActivity.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		127B63A0BC0B635C1FDFEC9C /* rest_digital_beep_end.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = rest_digital_beep_end.caf; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		16C17ABE1E238927E0EA4FA6 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
@@ -89,9 +100,12 @@
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		398ECFA7069E60EAF9B36742 /* WorkoutLiveActivityIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivityIntents.swift; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
+		40286C9193CBC006ABA3CFAD /* rest_digital_beep_countdown.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = rest_digital_beep_countdown.caf; sourceTree = "<group>"; };
 		479FF52FB437CA42D050EF7B /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4852EFE94ED9756706EFE76C /* WorkoutLiveActivityBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutLiveActivityBundle.swift; sourceTree = "<group>"; };
+		4A32F4E8C088E99C4D4FE6D0 /* rest_classic_bell_end.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = rest_classic_bell_end.caf; sourceTree = "<group>"; };
 		52011E4D35FDEEBDF3E9F93F /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/SwiftUI.framework; sourceTree = DEVELOPER_DIR; };
+		55073B80D1C9AAB1F884B096 /* rest_strong_alert_end.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = rest_strong_alert_end.caf; sourceTree = "<group>"; };
 		6F595E75D325A9746BDDE2F3 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -107,8 +121,14 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9B7D2E98762E27329F3F9DED /* rest_strong_alert_countdown.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = rest_strong_alert_countdown.caf; sourceTree = "<group>"; };
 		A6BF0F340478D06150B882FF /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
+		AA9E87929D458AB1E5C86178 /* rest_boxing_bell_end.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = rest_boxing_bell_end.caf; sourceTree = "<group>"; };
+		B7A2D34ACC2155ECA414961E /* rest_soft_chime_countdown.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = rest_soft_chime_countdown.caf; sourceTree = "<group>"; };
+		D66B1F2D527FE6D0184F7129 /* rest_boxing_bell_countdown.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = rest_boxing_bell_countdown.caf; sourceTree = "<group>"; };
 		D9C12C1EDFAEC7EF74EDCC75 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/WidgetKit.framework; sourceTree = DEVELOPER_DIR; };
+		EC6BD78DAB0A8DCBD3C3948C /* rest_classic_bell_countdown.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = rest_classic_bell_countdown.caf; sourceTree = "<group>"; };
+		ECDC19FC9C34E2417F8EF022 /* rest_soft_chime_end.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = rest_soft_chime_end.caf; sourceTree = "<group>"; };
 		FA9C1A0000000000000000E1 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		FA9C1A0000000000000000E2 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -150,6 +170,24 @@
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
 			);
 			path = RunnerTests;
+			sourceTree = "<group>";
+		};
+		41227D6AF5F0599C493ECB76 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				D66B1F2D527FE6D0184F7129 /* rest_boxing_bell_countdown.caf */,
+				AA9E87929D458AB1E5C86178 /* rest_boxing_bell_end.caf */,
+				EC6BD78DAB0A8DCBD3C3948C /* rest_classic_bell_countdown.caf */,
+				4A32F4E8C088E99C4D4FE6D0 /* rest_classic_bell_end.caf */,
+				40286C9193CBC006ABA3CFAD /* rest_digital_beep_countdown.caf */,
+				127B63A0BC0B635C1FDFEC9C /* rest_digital_beep_end.caf */,
+				B7A2D34ACC2155ECA414961E /* rest_soft_chime_countdown.caf */,
+				ECDC19FC9C34E2417F8EF022 /* rest_soft_chime_end.caf */,
+				9B7D2E98762E27329F3F9DED /* rest_strong_alert_countdown.caf */,
+				55073B80D1C9AAB1F884B096 /* rest_strong_alert_end.caf */,
+			);
+			name = Sounds;
+			path = Sounds;
 			sourceTree = "<group>";
 		};
 		5FCCD5E560FA693138F6234A /* WorkoutLiveActivity */ = {
@@ -237,6 +275,7 @@
 				2D7FD4D3299807B5B7E4842E /* WorkoutActivityAttributes.swift */,
 				2064FF51197936305ACF664E /* WorkoutLiveActivityController.swift */,
 				398ECFA7069E60EAF9B36742 /* WorkoutLiveActivityIntents.swift */,
+				41227D6AF5F0599C493ECB76 /* Sounds */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -381,6 +420,16 @@
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 				FA9C1A0000000000000000E4 /* InfoPlist.strings in Resources */,
+				4B24C17FCB66FACAE0499FCD /* rest_boxing_bell_countdown.caf in Resources */,
+				10224E4CBAFF38DAA167430D /* rest_boxing_bell_end.caf in Resources */,
+				25016AF15DA53ED4D14747E3 /* rest_classic_bell_countdown.caf in Resources */,
+				441538539A09E2FC9B472707 /* rest_classic_bell_end.caf in Resources */,
+				D4D4778E41508E67D504048F /* rest_digital_beep_countdown.caf in Resources */,
+				5AA8B9C23DB4B75BCD6A1D6A /* rest_digital_beep_end.caf in Resources */,
+				262FE0A252A42CF0C85702FF /* rest_soft_chime_countdown.caf in Resources */,
+				55484CD810158F60804A8AC0 /* rest_soft_chime_end.caf in Resources */,
+				C3C27E9D14BAC5531404587D /* rest_strong_alert_countdown.caf in Resources */,
+				3A8EE3D3EC6270775DEF93AF /* rest_strong_alert_end.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

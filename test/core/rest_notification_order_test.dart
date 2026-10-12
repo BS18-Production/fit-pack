@@ -1,3 +1,4 @@
+import 'package:fit_pack/core/feedback/rest_sound.dart';
 import 'package:fit_pack/core/notifications/notification_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -10,9 +11,11 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final calls = <String>[];
+  final args = <Map<Object?, Object?>>[];
 
   setUp(() {
     calls.clear();
+    args.clear();
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     FlutterLocalNotificationsPlatform.instance =
         AndroidFlutterLocalNotificationsPlugin();
@@ -21,6 +24,7 @@ void main() {
         const MethodChannel('dexterous.com/flutter/local_notifications'),
         (c) async {
       calls.add(c.method);
+      if (c.method == 'zonedSchedule') args.add(c.arguments as Map);
       return c.method == 'initialize' ? true : null;
     });
     m.setMockMethodCallHandler(const MethodChannel('flutter_timezone'),
@@ -69,5 +73,50 @@ void main() {
     // Ses kapalı / Android (ses servisten) → tam bitişte.
     expect(restNotifLeadMs(left: const Duration(seconds: 90), countdownSound: false),
         0);
+  });
+
+  group('iOS: bildirim hiçbir zaman ön planda çalmaz (çift ses yok)', () {
+    setUp(() {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      FlutterLocalNotificationsPlatform.instance =
+          IOSFlutterLocalNotificationsPlugin();
+    });
+
+    Map<Object?, Object?> ios() =>
+        args.single['platformSpecifics'] as Map<Object?, Object?>;
+
+    test('geri sayımlı: 3 sn önce, paketteki geri sayım sesi', () async {
+      final at = DateTime.now().add(const Duration(seconds: 60));
+      await NotificationService().scheduleRestDone(
+          at: at,
+          title: 'bitti',
+          body: 'b',
+          earlyTitle: '3 sn',
+          sound: RestSound.boxingBell);
+      expect(ios()['presentSound'], isFalse);
+      expect(ios()['sound'], 'rest_boxing_bell_countdown.caf');
+      expect(args.single['title'], '3 sn');
+    });
+
+    test('süre az: bitişte, bitiş sesi', () async {
+      await NotificationService().scheduleRestDone(
+          at: DateTime.now().add(const Duration(milliseconds: 3500)),
+          title: 'bitti',
+          body: 'b',
+          earlyTitle: '3 sn',
+          sound: RestSound.boxingBell);
+      expect(ios()['presentSound'], isFalse);
+      expect(ios()['sound'], 'rest_boxing_bell_end.caf');
+      expect(args.single['title'], 'bitti');
+    });
+
+    test('ses kapalı: sessiz', () async {
+      await NotificationService().scheduleRestDone(
+          at: DateTime.now().add(const Duration(seconds: 60)),
+          title: 'bitti',
+          body: 'b');
+      expect(ios()['presentSound'], isFalse);
+      expect(ios()['sound'], isNull);
+    });
   });
 }

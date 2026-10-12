@@ -20,8 +20,12 @@ void main() {
     test('her sesin iki dosyası da varlıklarda', () {
       for (final s in RestSound.values) {
         expect(File(s.countdownAsset).existsSync(), isTrue, reason: s.id);
-        expect(File(s.endAsset).existsSync(), isTrue, reason: s.id);
-        expect(File(s.countdownNotifAsset).existsSync(), isTrue, reason: s.id);
+        // iOS bildirim sesleri uygulama paketinde (çalışma anında kopyalama
+        // yok → "varsayılan ses" yolu ve çift ses imkânsız).
+        expect(File('ios/Runner/Sounds/${s.endFileName}').existsSync(), isTrue,
+            reason: s.id);
+        expect(File('ios/Runner/Sounds/${s.countdownNotifFileName}').existsSync(),
+            isTrue, reason: s.id);
         expect(s.countdownSource, 'sounds/rest_${s.id}.m4a');
       }
     });

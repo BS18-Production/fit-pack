@@ -127,9 +127,19 @@ class FeedbackService {
   Future<AudioPlayer>? _previewPlayer;
   StreamSubscription<void>? _previewSub;
   int _previewGen = 0;
+  // Önizleme işlemleri de sıralı: A yüklenirken B seçilirse A geç bitip
+  // B'yi ezmesin.
+  Future<void> _previewOps = Future.value();
+  bool _disposed = false;
 
-  Future<void> _serial(Future<void> Function() op) =>
-      _ops = _ops.then((_) => op()).catchError((Object _) {});
+  Future<void> _serial(Future<void> Function() op) => _ops = _ops
+      .then((_) => _disposed ? null : op())
+      .catchError((Object _) {});
+
+  Future<void> _previewSerial(Future<void> Function() op) => _previewOps =
+      _previewOps
+          .then((_) => _disposed ? null : op())
+          .catchError((Object _) {});
 
   // Kurulum başarısızsa bir sonraki denemede yeniden kurulsun.
   Future<void> _ensureReady() => _ready ??= _init().catchError((Object e) {
@@ -147,6 +157,11 @@ class FeedbackService {
       await p.setAudioContext(_audioContext);
     }
     await p.setSource(AssetSource(_loaded.countdownSource));
+    if (_disposed) {
+      // Kurulum sürerken servis kapandı: oynatıcı açık kalmasın.
+      await p.dispose();
+      return;
+    }
     _completeSub = p.onPlayerComplete.listen((_) => _release(_playGen));
     _countdown = p;
   }
@@ -166,26 +181,26 @@ class FeedbackService {
 
   /// Ayarlar → Mola sesi: sesi baştan sona bir kez çalar (geri sayım +
   /// bitiş). Önceki önizlemeyi keser; seans geri sayımına dokunmaz.
-  Future<void> preview(RestSound sound) async {
+  /// Hata en iyi çaba — ses servisi yoksa sessiz geçer.
+  Future<void> preview(RestSound sound) {
     final gen = ++_previewGen;
-    try {
+    return _previewSerial(() async {
       await _ensureReady(); // ses bağlamı (müziği kısma) kurulmuş olsun
       final p = await (_previewPlayer ??= _newPreviewPlayer());
       if (gen != _previewGen) return; // panel kapandı ya da yeni önizleme
       await p.stop();
+      await p.setSource(AssetSource(sound.countdownSource));
       if (gen != _previewGen) return;
-      await p.play(AssetSource(sound.countdownSource));
-    } catch (_) {
-      // Önizleme en iyi çaba — ses servisi yoksa sessiz geçer.
-    }
+      await p.resume();
+    });
   }
 
-  Future<void> stopPreview() async {
+  Future<void> stopPreview() {
     _previewGen++;
-    try {
+    return _previewSerial(() async {
       await (await _previewPlayer)?.stop();
-    } catch (_) {}
-    unawaited(_releaseSession());
+      unawaited(_releaseSession());
+    });
   }
 
   /// Önizleme oynatıcısı bir kez kurulur (hızlı iki dokunuşta iki oynatıcı
@@ -230,8 +245,10 @@ class FeedbackService {
   /// Süre değişti ya da mola atlandı: çalan (ya da yüklenmeyi bekleyen)
   /// geri sayımı kes.
   void stopCountdown() {
-    if (_countdown == null && _ready == null) return;
+    // Nesil her durumda artar: kuyrukta bekleyen (henüz başlamamış) çalma
+    // da iptal olsun (Codex 2. tur).
     final gen = ++_playGen;
+    if (_countdown == null && _ready == null) return;
     unawaited(_serial(() async {
       await _countdown?.stop();
       _release(gen);
@@ -254,6 +271,15 @@ class FeedbackService {
   void record() => HapticFeedback.heavyImpact();
 
   Future<void> dispose() async {
+    // Bekleyen kurulum/çalma kaynak açık bırakmasın: önce iptal, sonra bekle.
+    _disposed = true;
+    _playGen++;
+    _previewGen++;
+    await _ops;
+    await _previewOps;
+    try {
+      await _ready;
+    } catch (_) {}
     await _completeSub?.cancel();
     await _previewSub?.cancel();
     await _countdown?.dispose();

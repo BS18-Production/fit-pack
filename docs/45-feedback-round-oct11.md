@@ -72,6 +72,29 @@ eski taslak alanları yoksa null. Yeni tercih: `notif_rest_sound_id`
 **Samet'ten gereken.** iPhone'da §Doğrulama listesi; sesleri Ayarlar →
 Bildirimler → Mola sesi'nden dinleyip beğenmediğini söylemek.
 
+## 0b. Ek: kilit ekranında ± (2026-10-12)
+
+Samet sordu: "Seti tamamla tek başına yeterli mi?" Claude + Codex ortak
+önerisi, Samet karar yetkisini devretti → uygulandı:
+- Set durumunda **− · + · Seti tamamla** (kilolu: kilo adımı; kilosuz:
+  ±1 tekrar; süre/mesafe: yalnız tamamla). Android 3 eylem sınırına sığar.
+- ± yalnız kartın gösterdiği setin tek alanı; boşsa öneriden başlar.
+- Her eylem kartın **set kimliğiyle** döner (`hareketId:sıra`); arada set
+  değiştiyse yok sayılır (gecikmiş/çift dokunuş sıradaki seti tamamlamaz).
+- Kart "girilen değer önce, boşsa öneri" gösterir — ✓ tam olarak bunu kaydeder.
+- Eklenmeyenler: "Seti atla" (makine dolu ≠ set atlamak; yanlış atlama kaydı
+  bozar), dinlenme bitince +15 sn (sonraya).
+- Kart yüksekliği: iOS kilit ekranı ~160 pt'de keser; kart ~145 pt'ye
+  sığdırıldı (iPhone'da alttan kesiliyordu).
+
+**Codex kod incelemesi (2 tur, 2026-10-12):** 1. tur 1 P1 + 7 P2 + 1 P3,
+2. tur 3 P2 — hepsi düzeltildi: Kotlin derleme hatası; kilit ekranı eylemi
+taslak/mola kurulumunu bekler; mola bildirimi kurma/iptal sıralı + nesil;
+ses kapalıyken bildirim sessiz; `.stale` kart yeniden açılmaz; ses
+oynatıcısı/önizleme işlemleri sıralı, kuyruktaki çalma durdurulabilir,
+kapanışta kaynak sızmaz; Android kanal adları çeviride; ham ölçüler sabit.
+Yeni testler: bildirim sırası, çal→durdur yarışı, seans ekranında set kimliği.
+
 ## 1. "Kaydın tamam" incelemesi
 
 1. **Amaç:** "hiç yenmedi" ile "girilmedi"yi ayırmak. İşaretli gün "bilinen
@@ -115,16 +138,16 @@ satırı "Bugünün tüm öğünlerini girdim" + altında etkisi; işaretlenince
 **Otomatik:** `live_activity_test` (art arda gösterim tek başlatma — kök neden
 testi; Android köprüsü; hata sonrası yeniden başlatma; eylem yönlendirme),
 `workout_calendar_test` (gerçek DB: iki seanslı gün, boş gün, tarih değişimi,
-gece yarısına 10 dk kala seans), `feedback_oct11_test` (ses kimliği/dosyalar,
+gece yarısına 10 dk kala seans), `rest_notification_order_test`, `feedback_order_test`, `feedback_oct11_test` (ses kimliği/dosyalar,
 tercih kalıcılığı, taslakta dinlenme, sıradaki öğün), güncellenen beslenme
-testleri. Tümü: **987 test, analiz temiz.**
+testleri. Tümü: **993 test, analiz temiz.**
 
 **Android emülatör (Android 14, Dev hesabı, 2026-10-11):** rutin başlat →
 tek bildirim · uygulama alttayken "Seti tamamla" → dinlenme 1:30, düğmeler
 +15 sn/Atla · +15 sn bitişi tam 15 000 ms ileri · Atla → set durumu · kurulum
 sonrası taslaktan devam (Set 2/3) · **kilit ekranında** kart görünür, kilit
 açılmadan "Seti tamamla" · ekran kapalı/kilitli dinlenme bitişi: seçili ses
-çaldı (ses odağı kaydı), kart "Dinlenme bitti · …" · seans atılınca kart kalkar.
+çaldı (ses odağı kaydı), kart "Dinlenme bitti · …" · seans atılınca kart kalkar · (12 Eki) bildirimden +2.5 kg iki kez → 60 kg, Seti tamamla → uygulamada Set 1 = 60×10 ✓, dinlenme başladı.
 
 **iPhone (Samet):**
 1. Rutin başlat → kilitle: kilit ekranında **tek** kart.

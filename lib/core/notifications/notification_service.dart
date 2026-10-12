@@ -181,15 +181,27 @@ class NotificationService {
                 defaultTargetPlatform == TargetPlatform.iOS,
           ) >
           0;
-      final iosSound = sound == null
+      var iosSound = sound == null
           ? null
           : await _installIosSound(
               asset: early ? sound.countdownNotifAsset : sound.endAsset,
               fileName: early ? sound.countdownNotifFileName : sound.endFileName,
             );
       if (gen != _restGen) return; // arada iptal ya da yeni kurulum geldi
-      // Ses kurulamadıysa geri sayım dosyası da yok: bitişte varsayılan ses.
-      final countdown = early && iosSound != null;
+      // Kurulum sonrası yeniden bak: dosya yoksa ya da kopyalama sürerken
+      // erken hedef kaçtıysa bitişte, bitiş sesiyle — bildirim hiç
+      // kurulmadan kalmasın (Codex, 2026-10-12).
+      final countdown = early &&
+          restNotifLeadMs(
+                left: at.difference(DateTime.now()),
+                countdownSound: iosSound != null,
+              ) >
+              0;
+      if (early && !countdown && sound != null) {
+        iosSound = await _installIosSound(
+            asset: sound.endAsset, fileName: sound.endFileName);
+        if (gen != _restGen) return;
+      }
       final fireAt = countdown
           ? at.subtract(const Duration(milliseconds: restCountdownLeadMs))
           : at;
@@ -207,9 +219,14 @@ class NotificationService {
               )
             : iosSound == null
                 ? _iosRest
+                // Ses arka planda dosyadan çalar; ön planda sunum sessiz:
+                // uygulama tam o an öne dönerse uygulama içi geri sayımla
+                // üst üste binmesin (Codex). Varsayılan ses yolunda
+                // (dosya kurulamadı) bu ayrım eklentide yok.
                 : DarwinNotificationDetails(
                     interruptionLevel: InterruptionLevel.timeSensitive,
                     sound: iosSound,
+                    presentSound: false,
                   ),
       );
       try {

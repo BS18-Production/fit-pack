@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../feedback/feedback_service.dart' show restCountdownLeadMs;
 import '../feedback/rest_sound.dart';
 
 /// Yerel bildirimler (docs/16 §5 — B6, P-11).
@@ -151,23 +152,51 @@ class NotificationService {
   /// Dinlenme bitince tek seferlik bildirim — [at] anında (docs/12 + P-11).
   /// Dakik alarm izni yoksa inexact'e düşer (birkaç dk gecikebilir).
   ///
-  /// iOS'ta [sound] seçili mola sesinin bitiş parçasıdır (docs/45 §3);
-  /// `null` = kullanıcı mola sesini kapattı → sessiz bildirim. Ses dosyası
-  /// kurulamazsa sistem varsayılan sesi. Sistem bildirim sesi telefonun
-  /// sessiz anahtarına ve Odaklanma'ya uyar — uygulama hatası değil.
+  /// iOS'ta [sound] seçili mola sesidir (docs/45 §3); `null` = kullanıcı
+  /// mola sesini kapattı → sessiz bildirim. Ses dosyası kurulamazsa sistem
+  /// varsayılan sesi. Sistem bildirim sesi telefonun sessiz anahtarına ve
+  /// Odaklanma'ya uyar — uygulama hatası değil.
+  ///
+  /// **Son 3 saniye (iOS, docs/45 §3b).** Uygulama arkadayken iOS onu
+  /// askıya alır; uygulama içi tık-tık-tık çalamaz. Yeterli süre varsa
+  /// bildirim bitişten [restCountdownLeadMs] ÖNCE, tam geri sayım sesiyle
+  /// ([earlyTitle]/[earlyBody]) kurulur: 3-2-1 + bitiş arka planda da duyulur.
+  /// Süre azsa tam bitişte yalnız bitiş sesi.
   Future<void> scheduleRestDone({
     required DateTime at,
     required String title,
     required String body,
+    String? earlyTitle,
+    String? earlyBody,
     RestSound? sound,
   }) {
     final gen = ++_restGen;
     return _restSerial(() async {
       await init();
-      final iosSound = sound == null ? null : await _installIosSound(sound);
+      final early = restNotifLeadMs(
+            left: at.difference(DateTime.now()),
+            countdownSound: sound != null &&
+                earlyTitle != null &&
+                !kIsWeb &&
+                defaultTargetPlatform == TargetPlatform.iOS,
+          ) >
+          0;
+      final iosSound = sound == null
+          ? null
+          : await _installIosSound(
+              asset: early ? sound.countdownNotifAsset : sound.endAsset,
+              fileName: early ? sound.countdownNotifFileName : sound.endFileName,
+            );
       if (gen != _restGen) return; // arada iptal ya da yeni kurulum geldi
-      final left = at.difference(DateTime.now());
+      // Ses kurulamadıysa geri sayım dosyası da yok: bitişte varsayılan ses.
+      final countdown = early && iosSound != null;
+      final fireAt = countdown
+          ? at.subtract(const Duration(milliseconds: restCountdownLeadMs))
+          : at;
+      final left = fireAt.difference(DateTime.now());
       if (left <= Duration.zero) return;
+      final shownTitle = countdown ? earlyTitle : title;
+      final shownBody = countdown ? (earlyBody ?? body) : body;
       final when = tz.TZDateTime.now(tz.local).add(left);
       final details = NotificationDetails(
         android: _chRest,
@@ -186,16 +215,16 @@ class NotificationService {
       try {
         await _plugin.zonedSchedule(
             id: idRest,
-            title: title,
-            body: body,
+            title: shownTitle,
+            body: shownBody,
             scheduledDate: when,
             notificationDetails: details,
             androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
       } on PlatformException {
         await _plugin.zonedSchedule(
             id: idRest,
-            title: title,
-            body: body,
+            title: shownTitle,
+            body: shownBody,
             scheduledDate: when,
             notificationDetails: details,
             androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle);
@@ -210,22 +239,25 @@ class NotificationService {
 
   /// iOS bildirim sesi yalnız uygulama paketinden ya da kabın
   /// `Library/Sounds/` klasöründen çalınır; Flutter varlıkları ikisinde de
-  /// değil. Seçili sesin bitiş dosyası oraya bir kez kopyalanır (boyut
-  /// değiştiyse — ses yeniden üretildiyse — üzerine yazılır). Başarısızsa
-  /// `null` → sistem varsayılan sesi.
-  Future<String?> _installIosSound(RestSound sound) async {
+  /// değil. Ses dosyası oraya bir kez kopyalanır (boyut değiştiyse — ses
+  /// yeniden üretildiyse — üzerine yazılır). Başarısızsa `null` → sistem
+  /// varsayılan sesi.
+  Future<String?> _installIosSound({
+    required String asset,
+    required String fileName,
+  }) async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return null;
     try {
-      final data = await rootBundle.load(sound.endAsset);
+      final data = await rootBundle.load(asset);
       final dir = Directory(p.join((await getLibraryDirectory()).path, 'Sounds'));
-      final file = File(p.join(dir.path, sound.endFileName));
+      final file = File(p.join(dir.path, fileName));
       if (!await file.exists() || await file.length() != data.lengthInBytes) {
         await dir.create(recursive: true);
         await file.writeAsBytes(
             data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
             flush: true);
       }
-      return sound.endFileName;
+      return fileName;
     } catch (_) {
       return null;
     }
@@ -332,6 +364,21 @@ class NotificationService {
 
   Future<void> cancel(int id) => _plugin.cancel(id: id);
 }
+
+/// Geri sayımlı bildirim için en az bu kadar pay (ms): kurulum + iOS teslim
+/// gecikmesi son 3 saniyeyi yemesin.
+const restNotifEarlyMarginMs = 1000;
+
+/// Mola bildirimi bitişten kaç ms ÖNCE kurulsun (docs/45 §3b): geri sayım
+/// sesi varsa ve yeterli süre kaldıysa [restCountdownLeadMs] (3-2-1 + bitiş),
+/// yoksa 0 (tam bitişte, yalnız bitiş sesi).
+int restNotifLeadMs({required Duration left, required bool countdownSound}) =>
+    countdownSound &&
+            left >
+                const Duration(
+                    milliseconds: restCountdownLeadMs + restNotifEarlyMarginMs)
+        ? restCountdownLeadMs
+        : 0;
 
 /// [now]'dan SONRAKİ ilk [weekday] günü, [hour]:[minute] anı. Tam o an
 /// geçmişse bir sonraki haftaya atılır.

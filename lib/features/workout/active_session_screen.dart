@@ -347,6 +347,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       at: deadline,
       title: l.notifRestDoneTitle,
       body: l.notifRestDoneBody,
+      earlyTitle: l.notifRestEndingTitle,
+      earlyBody: l.notifRestEndingBody,
       sound: prefs.restSoundEnabled ? prefs.restSound : null,
     );
   }

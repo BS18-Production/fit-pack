@@ -944,6 +944,8 @@
   "notifPermissionDenied": "Notification permission denied — enable it in system settings.",
   "notifRestDoneTitle": "Rest over",
   "notifRestDoneBody": "Time for the next set",
+  "notifRestEndingTitle": "Rest ends in 3 seconds",
+  "notifRestEndingBody": "Get ready for the next set",
   "notifWorkoutTitle": "Workout time",
   "notifWorkoutBody": "Your plan is waiting — a short session counts too.",
   "notifWaterTitle": "Water break",

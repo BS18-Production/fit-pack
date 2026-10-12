@@ -1806,6 +1806,12 @@ class AppL10nEn extends AppL10n {
   String get notifRestDoneBody => 'Time for the next set';
 
   @override
+  String get notifRestEndingTitle => 'Rest ends in 3 seconds';
+
+  @override
+  String get notifRestEndingBody => 'Get ready for the next set';
+
+  @override
   String get notifWorkoutTitle => 'Workout time';
 
   @override

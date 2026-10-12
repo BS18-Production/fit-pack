@@ -35,6 +35,11 @@ enum RestSound {
 
   String get endAsset => 'assets/sounds/$endFileName';
 
+  /// iOS bildirim sesi — tam geri sayım (3 tık + bitiş); bitişten
+  /// [restCountdownLeadMs] önce çalınır (docs/45 §3b).
+  String get countdownNotifAsset => 'assets/sounds/$countdownNotifFileName';
+  String get countdownNotifFileName => 'rest_${id}_countdown.caf';
+
   /// iOS bildirim sesi dosya adı (`Library/Sounds/` altına kopyalanır).
   String get endFileName => 'rest_${id}_end.caf';
 }

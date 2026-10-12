@@ -1,5 +1,30 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## Geri bildirim turu (8 madde) — 2026-10-11/12 · [docs/45](docs/45-feedback-round-oct11.md)
+
+Problem: kilit ekranında aynı antrenmandan iki kart; mola sesi arkadayken
+çalmıyor; takvimden geçmiş gün boş; öğün kartı stok fotoğraf; makro anahtarı
+ve "Kaydın tamam" gereksiz/anlaşılmaz. Sahip Claude-3, inceleyen Codex (2 tur).
+
+- [x] Çift kart kök nedeni (aynı karede iki `start`) — Dart kuyruk + Swift
+      seri/tekil; test.
+- [x] Kilit ekranı etkileşimi: iOS 17 düğmeleri + Android tek bildirim:
+      − · + · Seti tamamla, dinlenmede +15 sn / Atla, "Dinlenme bitti"
+      durumu; set kimliği koruması. Kart ~145 pt (iOS 160 pt'de kesiyordu).
+- [x] Mola sesi: bildirim dinlenme başlarken de kurulur, seçili ses; 5 ses
+      + Ayarlar'da önizleme; taslakta dinlenme. iOS sessiz mod/Odaklanma =
+      sistem kuralı (Time Sensitive ücretsiz hesapta yok).
+- [x] Antrenman takvimi (eski ikon boş "geçmiş ekle" formuydu).
+- [x] Makrolar hep görünür; "Kaydın tamam" sade onay satırı (kaldırılmadı:
+      asistan + haftalık değerlendirme kullanıyor); öğün kartı = bugünün 4 öğünü.
+- [x] 993 test, analiz temiz; Android emülatörde kilit ekranı uçtan uca;
+      iPhone'a kuruldu. main'e birleşti (`520a2d9`), push yok.
+- [ ] **Samet: iPhone kontrol listesi** (docs/45 §3) + sesleri seç.
+- [ ] Samsung SM A075F'de kilit ekranı + arka plan sesi.
+- [ ] `assets/images/salmon_salad.jpg` + pubspec satırı silinecek
+      (bağımlılık kilidi Claude-2'de — onun birleştirmesinde).
+- [ ] Sonraya: dinlenme bitince +15 sn (dokunduğu andan), seti atla (karar: hayır).
+
 ## Sağlık entegrasyonu — Faz 0–1: adım (docs/39) · 2026-10-11
 
 Problem: hareket verisi elle girilmiyor, uygulamada yoktu. Beklenen: Apple
@@ -95,8 +120,9 @@ cihazda görsel kontrol; iPhone'a uygulamayı kaldırmadan yerinde kurulum.
 - [x] **#3 Kilit ekranı, faz 1 (iOS)** — Canlı Etkinlik: hareket, set,
       hedef, dinlenme geri sayımı ([docs/32](docs/32-lock-screen-live-activity.md)).
       **Samet: rutin başlat → kilitle → kilit ekranı/Dynamic Island.**
-- [ ] **#3 faz 2** — kilit ekranından "Seti tamamla / +15 sn" düğmeleri
-      (iOS 17 LiveActivityIntent) + Android'de seans boyu bildirim + eylemler.
+- [x] **#3 faz 2** — kilit ekranından "Seti tamamla / ± / +15 sn / Atla"
+      (iOS 17 LiveActivityIntent) + Android'de seans boyu bildirim + eylemler
+      ([docs/45](docs/45-feedback-round-oct11.md), 2026-10-12).
 - [ ] **docs/28 F2 — rutinde set planı** (ısınma/drop setleri planlama;
       `set_plan` JSON kolonu, karar 1 açık).
 - [ ] Katman (ücretsiz/ücretli) kararı satıştan önce (docs/27).

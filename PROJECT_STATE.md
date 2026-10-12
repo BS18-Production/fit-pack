@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-10-11
+> **Son güncelleme:** 2026-10-12
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -13,6 +13,21 @@
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v15 · **Sahibi:** Samet Orhan (kişisel proje)
+
+## Geri bildirim turu — kilit ekranı, mola sesi, takvim · 2026-10-12
+
+[docs/45](docs/45-feedback-round-oct11.md). Kilit ekranında antrenman başına
+**tek** kart (çift kartın kök nedeni: seans açılışında aynı karede iki
+`start`); iOS 17+ ve Android'de kart üstünden − · + · Seti tamamla, dinlenmede
++15 sn / Atla; dinlenme bitince kart kendiliğinden "Dinlenme bitti". Mola
+sesi: 5 sentetik ses (Ayarlar'da önizlemeli), bildirim dinlenme başlarken de
+kurulur. iOS'ta arka plan sesi bildirime bağlı → sessiz mod/Odaklanma'da
+sessiz (sistem kuralı; Time Sensitive ücretsiz hesapta imzalanmıyor).
+Antrenman sekmesinde gerçek takvim (eski ikon boş kayıt formuydu). Beslenme:
+makrolar hep görünür, "Kaydın tamam" sade onay satırı; Ana Sayfa öğün kartı
+bugünün 4 öğünü. Codex 2 tur inceleme (P1 dahil 12 bulgu düzeltildi).
+993 test; Android emülatörde uçtan uca; iPhone'a kuruldu — cihaz kontrolü
+Samet'te. Şema değişmedi. main `520a2d9`, push yok.
 
 ## Sağlık entegrasyonu — adım · 2026-10-11
 

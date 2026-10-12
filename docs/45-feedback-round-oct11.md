@@ -95,6 +95,17 @@ oynatıcısı/önizleme işlemleri sıralı, kuyruktaki çalma durdurulabilir,
 kapanışta kaynak sızmaz; Android kanal adları çeviride; ham ölçüler sabit.
 Yeni testler: bildirim sırası, çal→durdur yarışı, seans ekranında set kimliği.
 
+## 0c. Ek: iOS'ta arka planda son 3 saniye (2026-10-12)
+
+Samet iPhone'da test etti: tek kart ✓, ses seçimi ✓; **başka uygulama
+açıkken son 3 saniye sayacı çalmıyor** (sesli ve sessiz modda).
+Kök neden: iOS uygulamayı askıya alır, 3-2-1 uygulama içinden çalınıyordu;
+bildirim yalnız bitişte ve yalnız bitiş sesiyle kuruluyordu.
+Çözüm: süre yeterliyse bildirim bitişten **3 sn önce**, tam geri sayım
+sesiyle (`rest_<ses>_countdown.caf`, IMA4) — başlık "Dinlenme 3 saniyede
+bitiyor". Süre 4 sn'den azsa eskisi gibi bitişte. **Sessiz modda** bildirim
+sesi iOS kuralı gereği çalmaz; tek yol arka plan ses oturumu (aşağıda karar).
+
 ## 1. "Kaydın tamam" incelemesi
 
 1. **Amaç:** "hiç yenmedi" ile "girilmedi"yi ayırmak. İşaretli gün "bilinen

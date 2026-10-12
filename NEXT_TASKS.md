@@ -19,7 +19,11 @@ ve "Kaydın tamam" gereksiz/anlaşılmaz. Sahip Claude-3, inceleyen Codex (2 tur
       asistan + haftalık değerlendirme kullanıyor); öğün kartı = bugünün 4 öğünü.
 - [x] 993 test, analiz temiz; Android emülatörde kilit ekranı uçtan uca;
       iPhone'a kuruldu. main'e birleşti (`520a2d9`), push yok.
-- [ ] **Samet: iPhone kontrol listesi** (docs/45 §3) + sesleri seç.
+- [x] Samet iPhone'da doğruladı (2026-10-12): tek kart, düğmeler, ses seçimi.
+- [x] iOS arka planda son 3 sn: bildirim 3 sn önce + tam geri sayım sesi
+      (`869ebca`). **Samet: telefon SESLİYKEN başka uygulama açıkken dene.**
+- [ ] Sessiz modda arka plan geri sayımı — yalnız arka plan ses oturumuyla
+      mümkün (pil + App Store 2.5.4 riski); Samet kararı bekliyor.
 - [ ] Samsung SM A075F'de kilit ekranı + arka plan sesi.
 - [ ] `assets/images/salmon_salad.jpg` + pubspec satırı silinecek
       (bağımlılık kilidi Claude-2'de — onun birleştirmesinde).

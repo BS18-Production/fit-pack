@@ -52,3 +52,23 @@ final workoutHistoryProvider = StreamProvider<WorkoutHistory>((ref) {
     );
   });
 });
+
+/// Bir takvim gününün seansları (docs/45 §4), yeniden eskiye. Gün yerel
+/// saatle karşılaştırılır — seans tarihi yerel saatle yazılır
+/// (`active_session_screen` `_finish`); gece yarısına yakın seans kendi
+/// gününde kalır.
+List<HistoryEntry> entriesOnDay(List<HistoryEntry> entries, DateTime day) => [
+      for (final e in entries)
+        if (_sameDay(e.session.date.toLocal(), day)) e,
+    ];
+
+/// Ayın antrenman yapılan günleri (1..31) — takvim işaretleri.
+Set<int> workoutDaysInMonth(List<HistoryEntry> entries, DateTime month) => {
+      for (final e in entries)
+        if (e.session.date.toLocal().year == month.year &&
+            e.session.date.toLocal().month == month.month)
+          e.session.date.toLocal().day,
+    };
+
+bool _sameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;

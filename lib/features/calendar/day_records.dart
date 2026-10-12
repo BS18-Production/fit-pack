@@ -17,12 +17,15 @@ import '../../shared/widgets/fitpack_icon.dart';
 /// Yalnız GERÇEKTEN olanı gösterir: kaydı olmayan başlık hiç çizilmez; hiç
 /// kayıt yoksa tek cümle. Hedefe göre "başarısız" yorumu yapılmaz.
 class DayRecords extends ConsumerWidget {
+  /// Gösterilen gün — "Aç" o günün antrenman takvimine gider.
+  final DateTime day;
   final DayActivity? activity;
 
   /// "Aç"a basılınca, gezinmeden ÖNCE çağrılır (panel kendini kapatsın diye).
   final VoidCallback? beforeOpen;
 
-  const DayRecords({super.key, required this.activity, this.beforeOpen});
+  const DayRecords(
+      {super.key, required this.day, required this.activity, this.beforeOpen});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -64,7 +67,9 @@ class DayRecords extends ConsumerWidget {
                     TextButton(
                       onPressed: () {
                         beforeOpen?.call();
-                        context.push(AppRoutes.workoutHistory);
+                        // O günün seansları (docs/45 §4) — eskiden tüm
+                        // geçmiş listesi açılıyordu, gün kayboluyordu.
+                        context.push(AppRoutes.workoutCalendarAt(day));
                       },
                       child: Text('${l.calOpen} ›'),
                     ),
@@ -140,6 +145,7 @@ Future<void> showDayRecordsSheet(
             Text(title, style: context.texts.titleLarge),
             AppSpacing.vGapMd,
             DayRecords(
+              day: day,
               activity: activity,
               beforeOpen: () => Navigator.of(sheetContext).pop(),
             ),

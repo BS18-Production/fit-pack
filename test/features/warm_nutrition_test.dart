@@ -86,14 +86,9 @@ void main() {
       await settle(tester);
       expect((await db.nutritionDao.getLogsForDate(DateTime.now())).length, 3);
       expect(find.text('Yoğurt'), findsNWidgets(2));
-      final macros = find.byKey(const ValueKey('nutrition.macros'));
-      await tester.ensureVisible(macros);
-      await tester.tap(macros);
-      await settle(tester);
+      // Makrolar hep görünür; görünüm anahtarı yok (2026-10-11).
+      expect(find.byKey(const ValueKey('nutrition.macros')), findsNothing);
       expect(find.byType(MacroInlineText), findsNWidgets(2));
-      await tester.tap(macros);
-      await settle(tester);
-      expect(find.byType(MacroInlineText), findsNothing);
       await tester.drag(find.byType(ListView).first, const Offset(0, -500));
       await settle(tester);
       expect(

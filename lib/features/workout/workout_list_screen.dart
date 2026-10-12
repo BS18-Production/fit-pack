@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/i18n/formatting.dart';
+import '../../core/live_activity/workout_live_activity.dart';
 import '../../core/onboarding/first_run_hints.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
@@ -212,10 +213,14 @@ class _Header extends StatelessWidget {
           onPressed: () => context.push(AppRoutes.exercises),
         ),
         AppSpacing.hGapXs,
+        // Takvim = geçmişi gün gün gör (docs/45 §4). "Geçmiş antrenman
+        // ekle" takvimin içinde (gün seçili açılır) — eskiden bu düğme
+        // doğrudan boş kayıt formu açıyordu, kayıtlar görünmüyordu.
         IconButton(
-          tooltip: l.workoutAddPast,
-          icon: const FitPackIcon.material(Icons.edit_calendar_rounded),
-          onPressed: () => context.push(AppRoutes.workoutLogPast),
+          key: const ValueKey('workout.calendar'),
+          tooltip: l.wcalTitle,
+          icon: const FitPackIcon.material(Icons.calendar_month_rounded),
+          onPressed: () => context.push(AppRoutes.workoutCalendar),
         ),
         AppSpacing.hGapXs,
         IconButton(
@@ -752,6 +757,7 @@ class _ResumeBanner extends ConsumerWidget {
                     );
                     if (ok) {
                       await ref.read(workoutDraftServiceProvider).clear();
+                      WorkoutLiveActivity.endAll(); // sahipsiz kilit ekranı kartı
                       ref.invalidate(activeDraftProvider);
                     }
                   },

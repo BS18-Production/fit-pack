@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:fit_pack/core/feedback/feedback_service.dart';
+import 'package:fit_pack/core/feedback/rest_sound.dart';
+import 'package:fit_pack/core/live_activity/workout_live_activity.dart';
 import 'package:fit_pack/core/notifications/notification_service.dart';
 import 'package:fit_pack/core/theme/app_colors.dart';
 import 'package:fit_pack/data/database/app_database.dart';
@@ -186,6 +188,75 @@ void main() {
     });
   });
 
+  // docs/45 — kilit ekranı eylemleri seans ekranında (Codex kuralları):
+  // eylem kartın gösterdiği sete bağlı; ± yalnız o setin tek alanı; ✓
+  // kartta görünen değeri kaydeder.
+  group('kilit ekranı eylemleri', () {
+    final shown = <Map<Object?, Object?>>[];
+    const channel = WorkoutLiveActivity.channel;
+
+    setUp(() {
+      shown.clear();
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (c) async {
+        if (c.arguments is Map) shown.add(c.arguments as Map);
+        return true;
+      });
+    });
+
+    Future<Object?> act(WidgetTester tester, String action, String key) async {
+      const codec = StandardMethodCodec();
+      Object? reply;
+      await tester.runAsync(() => TestDefaultBinaryMessengerBinding
+              .instance.defaultBinaryMessenger
+              .handlePlatformMessage(
+            channel.name,
+            codec.encodeMethodCall(
+                MethodCall('action', {'action': action, 'setKey': key})),
+            (d) => reply = d == null ? null : codec.decodeEnvelope(d),
+          ));
+      await tester.pump();
+      return reply;
+    }
+
+    testWidgets('bayat set kimliği yok sayılır; ± ve ✓ görünen değerle',
+        (tester) async {
+      await seed([(60, 10), (60, 10)]);
+      await open(tester);
+      final first = shown.last;
+      final key = first['setKey'] as String;
+      expect(first['canComplete'], isTrue);
+      expect(first['stepUpLabel'], startsWith('+'));
+
+      // Gecikmiş/çift dokunuş: başka setin kimliği → hiçbir şey olmaz.
+      expect(await act(tester, 'completeSet', 'baska:9'), isFalse);
+      var d = await tester.runAsync(reloadDraft);
+      expect(d!.exercises.single.sets.where((s) => s.done), isEmpty);
+
+      // + : yalnız bu setin kilosu, öneriden bir adım yukarı.
+      expect(await act(tester, 'stepUp', key), isTrue);
+      d = await tester.runAsync(reloadDraft);
+      final w = d!.exercises.single.sets[0].weight!;
+      expect(w, greaterThan(60));
+      expect(d.exercises.single.sets[1].weight, isNull,
+          reason: 'sonraki sete dokunulmaz');
+      expect(shown.last['target'] as String, contains(w.toString().replaceAll('.0', '')));
+
+      // ✓ : kartta görünen kilo kaydedilir, sıradaki sete geçilir.
+      expect(await act(tester, 'completeSet', key), isTrue);
+      d = await tester.runAsync(reloadDraft);
+      final s0 = d!.exercises.single.sets[0];
+      expect((s0.done, s0.weight), (true, w));
+      expect(shown.last['setKey'], isNot(key));
+
+      // Aynı (artık bayat) kimlikle ikinci dokunuş 2. seti tamamlamaz.
+      expect(await act(tester, 'completeSet', key), isFalse);
+      d = await tester.runAsync(reloadDraft);
+      expect(d!.exercises.single.sets[1].done, isFalse);
+      await close(tester);
+    });
+  });
+
   group('sonraki hedef: uygula → geri al', () {
     testWidgets('taslak yeniden yüklenince geri alınmış hali gelir', (
       tester,
@@ -320,10 +391,10 @@ void main() {
 /// Ses/titreşim yok; ses oynatıcısı test ortamında kurulmaz.
 class _SilentFeedback extends FeedbackService {
   @override
-  void warmUp() {}
+  void warmUp([RestSound sound = RestSound.fallback]) {}
 
   @override
-  void playCountdown({int offsetMs = 0}) {}
+  void playCountdown({int offsetMs = 0, RestSound? sound}) {}
 
   @override
   void stopCountdown() {}
@@ -342,9 +413,10 @@ class _SilentFeedback extends FeedbackService {
 class _NoNotifications extends NotificationService {
   @override
   Future<void> scheduleRestDone({
-    required Duration after,
+    required DateTime at,
     required String title,
     required String body,
+    RestSound? sound,
   }) async {}
 
   @override

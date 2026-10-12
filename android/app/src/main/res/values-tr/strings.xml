@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_workout_name">Süren antrenman</string>
+    <string name="channel_workout_desc">Kilit ekranında şu anki set ve dinlenme sayacı</string>
+    <string name="channel_rest_live_name">Dinlenme geri sayımı</string>
+    <string name="channel_rest_live_desc">Süren dinlenme sayacını gösterir</string>
+    <string name="channel_rest_done_name">Dinlenme bitti</string>
+    <string name="channel_rest_done_desc">Setler arası dinlenme bitince haber verir</string>
+</resources>

@@ -1003,6 +1003,30 @@ abstract class AppL10n {
   /// **'Workout History'**
   String get workoutHistory;
 
+  /// No description provided for @wcalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout calendar'**
+  String get wcalTitle;
+
+  /// No description provided for @wcalEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No workout logged on this day.'**
+  String get wcalEmpty;
+
+  /// No description provided for @wcalAddForDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Log a workout for this day'**
+  String get wcalAddForDay;
+
+  /// No description provided for @wcalMonthCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No workouts this month} =1{1 workout day this month} other{{count} workout days this month}}'**
+  String wcalMonthCount(int count);
+
   /// No description provided for @workoutThisWeekCaps.
   ///
   /// In en, this message translates to:
@@ -1692,6 +1716,42 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'All sets done'**
   String get liveAllDone;
+
+  /// No description provided for @liveRestOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest over'**
+  String get liveRestOver;
+
+  /// No description provided for @liveNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get liveNext;
+
+  /// No description provided for @liveCompleteSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete set'**
+  String get liveCompleteSet;
+
+  /// No description provided for @liveAddRest.
+  ///
+  /// In en, this message translates to:
+  /// **'+15 s'**
+  String get liveAddRest;
+
+  /// No description provided for @liveSkipRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get liveSkipRest;
+
+  /// No description provided for @liveElapsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get liveElapsed;
 
   /// No description provided for @asPastEntry.
   ///
@@ -3072,6 +3132,102 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Beeps for the last 3 seconds and when rest ends. Uses media volume and plays over your music.'**
   String get notifRestSoundSub;
+
+  /// No description provided for @restSoundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest sound'**
+  String get restSoundTitle;
+
+  /// No description provided for @restSoundSheetSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays in the last 3 seconds and when rest ends. Tap to choose and listen.'**
+  String get restSoundSheetSub;
+
+  /// No description provided for @restSoundPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get restSoundPreview;
+
+  /// No description provided for @restSoundDigitalBeep.
+  ///
+  /// In en, this message translates to:
+  /// **'Digital beep'**
+  String get restSoundDigitalBeep;
+
+  /// No description provided for @restSoundDigitalBeepHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Short beeps, one long start tone'**
+  String get restSoundDigitalBeepHint;
+
+  /// No description provided for @restSoundClassicBell.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic bell'**
+  String get restSoundClassicBell;
+
+  /// No description provided for @restSoundClassicBellHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A single clear bell strike'**
+  String get restSoundClassicBellHint;
+
+  /// No description provided for @restSoundBoxingBell.
+  ///
+  /// In en, this message translates to:
+  /// **'Boxing bell'**
+  String get restSoundBoxingBell;
+
+  /// No description provided for @restSoundBoxingBellHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ring bell: ding-ding-ding'**
+  String get restSoundBoxingBellHint;
+
+  /// No description provided for @restSoundSoftChime.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft chime'**
+  String get restSoundSoftChime;
+
+  /// No description provided for @restSoundSoftChimeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Gentle, quiet chord'**
+  String get restSoundSoftChimeHint;
+
+  /// No description provided for @restSoundStrongAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong alert'**
+  String get restSoundStrongAlert;
+
+  /// No description provided for @restSoundStrongAlertHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Loud two-tone alarm for noisy gyms'**
+  String get restSoundStrongAlertHint;
+
+  /// No description provided for @notifIosSoundOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound is off for Fit Pack notifications'**
+  String get notifIosSoundOff;
+
+  /// No description provided for @notifIosSoundOffSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn it on in iPhone Settings › Notifications › Fit Pack › Sounds.'**
+  String get notifIosSoundOffSub;
+
+  /// No description provided for @notifRestIosNote.
+  ///
+  /// In en, this message translates to:
+  /// **'When the app is in the background, iPhone plays the rest alert as a notification: it is silent when the phone is on silent mode or a Focus filters it. With the app open, the sound always plays.'**
+  String get notifRestIosNote;
 
   /// No description provided for @notifWorkout.
   ///
@@ -5479,23 +5635,11 @@ abstract class AppL10n {
   /// **'Your meal journal'**
   String get journalMeals;
 
-  /// No description provided for @journalMealIdea.
+  /// No description provided for @journalMealAdd.
   ///
   /// In en, this message translates to:
-  /// **'Meal idea · illustrative photo'**
-  String get journalMealIdea;
-
-  /// No description provided for @journalSalmonSalad.
-  ///
-  /// In en, this message translates to:
-  /// **'Salmon salad'**
-  String get journalSalmonSalad;
-
-  /// No description provided for @journalMealPhoto.
-  ///
-  /// In en, this message translates to:
-  /// **'Illustrative photo of grilled salmon with greens, avocado and lemon'**
-  String get journalMealPhoto;
+  /// **'+ Add'**
+  String get journalMealAdd;
 
   /// No description provided for @journalActivity.
   ///
@@ -5563,18 +5707,6 @@ abstract class AppL10n {
   /// **'Meal journal'**
   String get nutritionDiary;
 
-  /// No description provided for @nutritionShowMacros.
-  ///
-  /// In en, this message translates to:
-  /// **'Show macros'**
-  String get nutritionShowMacros;
-
-  /// No description provided for @nutritionHideMacros.
-  ///
-  /// In en, this message translates to:
-  /// **'Simple view'**
-  String get nutritionHideMacros;
-
   /// No description provided for @nutritionFoodCount.
   ///
   /// In en, this message translates to:
@@ -5584,26 +5716,32 @@ abstract class AppL10n {
   /// No description provided for @nutritionDayCompleteToday.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s log is complete'**
+  /// **'I logged all of today’s meals'**
   String get nutritionDayCompleteToday;
 
   /// No description provided for @nutritionDayCompletePast.
   ///
   /// In en, this message translates to:
-  /// **'This day\'s log is complete'**
+  /// **'I logged all meals for this day'**
   String get nutritionDayCompletePast;
 
   /// No description provided for @nutritionDayCompleteHint.
   ///
   /// In en, this message translates to:
-  /// **'Marked days count as “known days” in your weekly review, so a partial log isn\'t mistaken for eating little.'**
+  /// **'Tick it so the weekly review and assistant don’t treat this day as incomplete.'**
   String get nutritionDayCompleteHint;
 
   /// No description provided for @nutritionDayCompleted.
   ///
   /// In en, this message translates to:
-  /// **'Log complete'**
+  /// **'All meals logged'**
   String get nutritionDayCompleted;
+
+  /// No description provided for @nutritionDayCompletedSub.
+  ///
+  /// In en, this message translates to:
+  /// **'This day counts as complete in your weekly review.'**
+  String get nutritionDayCompletedSub;
 
   /// No description provided for @nutritionDayChangedAfter.
   ///

@@ -37,6 +37,16 @@ class AppRoutes {
   static const workoutActive = '/workout/active';
   static const workoutActiveResume = '/workout/active/resume';
   static const workoutLogPast = '/workout/log-past';
+
+  /// Geçmiş antrenman ekle — gün önceden seçili (takvimden). Tarih seçici
+  /// açılmaz.
+  static String workoutLogPastAt(DateTime d) =>
+      '$workoutLogPast?date=${_ymd(d)}';
+
+  /// Antrenman takvimi (docs/45 §4): güne dokununca o günün seansları.
+  static const workoutCalendar = '/workout/calendar';
+  static String workoutCalendarAt(DateTime d) =>
+      '$workoutCalendar?date=${_ymd(d)}';
   static const routineNew = '/workout/routine/new';
 
   // ── Diğer sabit rotalar ──
@@ -70,8 +80,9 @@ class AppRoutes {
   /// Takvim — ay görünümü (docs/24). Ana sayfa haftalık şeridinin
   /// başlığından açılır; seçili gün `date=yyyy-MM-dd` ile gelir.
   static const calendar = '/calendar';
-  static String calendarAt(DateTime d) =>
-      '$calendar?date=${d.year.toString().padLeft(4, '0')}-'
+  static String calendarAt(DateTime d) => '$calendar?date=${_ymd(d)}';
+
+  static String _ymd(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
       '${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   // ── Parametreli rotalar: `*Path` = router tanımı, fonksiyon = çağrı ──

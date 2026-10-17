@@ -22,8 +22,14 @@ silme artık sunucuya gidiyor (CR-002); yüklenemeyen kayıt hesap değişiminde
 korunuyor (CR-005); çekme sırasında yapılan kayıt kuyruğa giriyor (CR-003);
 gönderim sürerken silinen kayıt geri gelmiyor (CR-004). Silme tetikleyicisi
 değişti; mevcut kurulumlar açılışta `trigger_rev` ile kendiliğinden güncellenir,
-şema sürümü değişmedi. 1006 test. Sırada CR-001 (hesap değişimi + senkron
-sahipliği).
+şema sürümü değişmedi. 1006 test.
+
+**CR-001 de kapandı** ([docs/47](docs/47-sync-account-ownership.md)): senkron
+artık yalnız oturum açan hesap = cihazdaki verinin sahibi iken çalışır.
+Çakışma ekranı açıkken arka plan da bekler; hesap değişirken yolda kalan
+gönderim/çekme hiçbir şey yazmaz; başka hesaba ait satır gönderilmez. Şema ve
+sunucu değişmedi. 1018 test. Raporun P1'lerinden yalnız CR-006 (Android
+yayın ayarları) kaldı — yayın zamanına.
 
 ## Geri bildirim turu — kilit ekranı, mola sesi, takvim · 2026-10-12
 

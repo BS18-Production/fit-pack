@@ -16,7 +16,10 @@ Sahip Claude-5.
 - [x] 1006 test, analiz temiz; main'e birleşti, push yok.
 - [ ] Samet cihazda: öğün ekle → hemen "Geri al" → "Şimdi eşitle" → başka
       cihazda öğün yok.
-- [ ] CR-001 hesap değişiminde senkronun sahiplik sınırı (önce tasarım notu).
+- [x] CR-001 hesap değişiminde senkronun sahiplik sınırı
+      ([docs/47](docs/47-sync-account-ownership.md)): gönderim/çekme yalnız
+      oturum = yerel sahip iken; yolda kalan iş hesap değişince yazılmaz.
+      1018 test; main'e birleşti, push yok.
 - [ ] Sonra: CR-012 mola servisi, CR-009 açılışta ağ beklemesi, CR-007 sağlık
       tercihi, CR-023 belge çelişkileri. CR-006 (Android yayın) yayın zamanına.
 

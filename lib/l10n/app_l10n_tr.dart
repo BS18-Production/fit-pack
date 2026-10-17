@@ -183,6 +183,43 @@ class AppL10nTr extends AppL10n {
   String get homeFirstWeekWeight => 'İlk kilonu gir';
 
   @override
+  String homeTodayLiftIncrease(String exercise, String weight) {
+    return '$exercise: bu sefer $weight dene.';
+  }
+
+  @override
+  String homeTodayLiftAddRep(String exercise, String weight) {
+    return '$exercise: $weight ile her sete +1 tekrar dene.';
+  }
+
+  @override
+  String get homeTodayFirstMeal => 'İlk öğününü ekle.';
+
+  @override
+  String homeTodayLeftBoth(int protein, int kcal) {
+    return 'Bugün $protein g protein, $kcal kcal kaldı.';
+  }
+
+  @override
+  String homeTodayLeftProtein(int protein) {
+    return 'Bugün $protein g protein kaldı.';
+  }
+
+  @override
+  String homeTodayLeftKcal(int kcal) {
+    return 'Bugün $kcal kcal kaldı.';
+  }
+
+  @override
+  String get homeWeekReadyKicker => 'HAFTAN HAZIR';
+
+  @override
+  String get homeWeekReadyTitle => 'Haftalık değerlendirmen hazır';
+
+  @override
+  String get homeWeekReadyOpen => 'Aç';
+
+  @override
   String get homeRestTitle => 'Bugün dinlenme günü';
 
   @override

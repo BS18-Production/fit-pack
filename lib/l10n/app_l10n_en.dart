@@ -184,6 +184,43 @@ class AppL10nEn extends AppL10n {
   String get homeFirstWeekWeight => 'Log your first weight';
 
   @override
+  String homeTodayLiftIncrease(String exercise, String weight) {
+    return '$exercise: try $weight this time.';
+  }
+
+  @override
+  String homeTodayLiftAddRep(String exercise, String weight) {
+    return '$exercise: try +1 rep per set at $weight.';
+  }
+
+  @override
+  String get homeTodayFirstMeal => 'Add your first meal.';
+
+  @override
+  String homeTodayLeftBoth(int protein, int kcal) {
+    return '$protein g protein, $kcal kcal left today.';
+  }
+
+  @override
+  String homeTodayLeftProtein(int protein) {
+    return '$protein g protein left today.';
+  }
+
+  @override
+  String homeTodayLeftKcal(int kcal) {
+    return '$kcal kcal left today.';
+  }
+
+  @override
+  String get homeWeekReadyKicker => 'YOUR WEEK IS READY';
+
+  @override
+  String get homeWeekReadyTitle => 'Your weekly review is ready';
+
+  @override
+  String get homeWeekReadyOpen => 'Open';
+
+  @override
   String get homeRestTitle => 'Rest day today';
 
   @override

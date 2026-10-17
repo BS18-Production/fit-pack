@@ -202,7 +202,10 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.weeklyReview,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(const WeeklyReviewScreen()),
+      builder: (context, state) => _glass(WeeklyReviewScreen(
+        initialOffset:
+            int.tryParse(state.uri.queryParameters['w'] ?? '') ?? 0,
+      )),
     ),
     GoRoute(path: AppRoutes.assistant, parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => _glass(const AssistantScreen())),

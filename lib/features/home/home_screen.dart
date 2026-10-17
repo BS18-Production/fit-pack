@@ -26,6 +26,11 @@ import 'providers/home_providers.dart';
 import '../../core/prefs/week_start_provider.dart';
 import '../nutrition/nutrition_habit_widgets.dart';
 import 'first_week.dart';
+import 'today_lines.dart';
+import '../workout/progression.dart' show ProgressionKind;
+import 'week_ready.dart';
+import '../insights/weekly_review.dart';
+import '../insights/weekly_review_providers.dart';
 import 'rhythm_state.dart';
 import 'streak_calc.dart';
 import '../assistant/assistant_screen.dart';
@@ -72,10 +77,12 @@ class HomeScreen extends ConsumerWidget {
             _Header(),
             AppSpacing.vGapLg,
             WeekStrip(),
+            _WeekReadyCard(),
             AppSpacing.vGapXl,
             _CompactNutrition(),
             AppSpacing.vGapLg,
             _PrimaryActionCard(),
+            _TodayLines(),
             _FirstWeekCard(),
             AppSpacing.vGapXl,
             _DayLogHeader(),
@@ -494,6 +501,146 @@ class _FirstWeekCard extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// "Bugün" satırları (docs/50 Faz 1): eylem kartının altında en çok iki kısa
+/// öneri — antrenman (ilerleme kuralı) ve beslenmede kalan. Satırın içeriği
+/// yoksa hiç çıkmaz; ikisi de yoksa alan kaplamaz.
+class _TodayLines extends ConsumerWidget {
+  const _TodayLines();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
+    final units = ref.watch(unitsProvider);
+    // Devam eden seans varken eylem kartı "Devam et" der; öneri yarışmaz.
+    final draft = ref.watch(activeDraftProvider).valueOrNull;
+    final lift =
+        draft == null ? ref.watch(todayTrainingLineProvider).valueOrNull : null;
+    final food = ref.watch(todayNutritionLineProvider).valueOrNull;
+    if (lift == null && food == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
+      child: Column(
+        children: [
+          if (lift != null)
+            _TodayLine(
+              key: const ValueKey('home.todayLine.lift'),
+              icon: Icons.trending_up_rounded,
+              text: switch (lift.kind) {
+                ProgressionKind.addRep => l.homeTodayLiftAddRep(
+                    lift.exerciseName, units.lift(lift.weightKg)),
+                _ => l.homeTodayLiftIncrease(
+                    lift.exerciseName, units.lift(lift.weightKg)),
+              },
+              onTap: () =>
+                  context.push(AppRoutes.routinePreview(lift.routineId)),
+            ),
+          if (food != null)
+            _TodayLine(
+              key: const ValueKey('home.todayLine.food'),
+              icon: Icons.restaurant_rounded,
+              text: switch (food) {
+                NutritionLineFirstMeal() => l.homeTodayFirstMeal,
+                NutritionLineRemaining(:final proteinG?, :final kcal?) =>
+                  l.homeTodayLeftBoth(proteinG, kcal),
+                NutritionLineRemaining(:final proteinG?) =>
+                  l.homeTodayLeftProtein(proteinG),
+                NutritionLineRemaining(:final kcal) =>
+                  l.homeTodayLeftKcal(kcal ?? 0),
+              },
+              onTap: () => context.go(AppRoutes.nutrition),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TodayLine extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final VoidCallback onTap;
+  const _TodayLine({
+    super.key,
+    required this.icon,
+    required this.text,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.brMd,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: AppA11y.minTapTarget),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+          child: Row(
+            children: [
+              FitPackIcon.material(icon, color: c.primary, size: AppIconSize.sm),
+              AppSpacing.hGapMd,
+              Expanded(
+                child: Text(
+                  text,
+                  style: context.texts.bodyMedium?.copyWith(color: c.onSurface),
+                ),
+              ),
+              FitPackIcon.material(
+                Icons.chevron_right_rounded,
+                color: c.outline,
+                size: AppIconSize.sm,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "Haftan hazır" (docs/50 Faz 2): hafta kapanınca (son gün 20:00) ertesi
+/// günün sonuna kadar, değerlendirme açılmadıysa. Alt satır = değerlendirmenin
+/// "Gelecek hafta" odak cümlesi (aynı motor).
+class _WeekReadyCard extends ConsumerWidget {
+  const _WeekReadyCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(weekReadyVisibleProvider)) return const SizedBox.shrink();
+    final l = AppL10n.of(context);
+    final now = ref.watch(weekReadyClockProvider)();
+    final weekStart = ref.watch(weekStartProvider);
+    final offset = weekReadyOffset(now, weekStart);
+    final focus = ref.watch(weeklyReviewProvider(offset)).valueOrNull?.focus;
+    final subtitle = focus == null
+        ? ''
+        : switch (focus.kind) {
+            FocusKind.completePlan =>
+              l.wrFocusCompletePlan(focus.planned!, focus.done!),
+            FocusKind.increaseWeight => l.wrFocusIncrease(focus.exerciseName!),
+            FocusKind.loggingHabit => l.wrFocusLogging(focus.done!),
+            FocusKind.reviewCalories => l.wrFocusCalories,
+            FocusKind.keepRhythm => l.wrFocusKeep,
+          };
+    return Padding(
+      key: const ValueKey('home.weekReady'),
+      padding: const EdgeInsets.only(top: AppSpacing.lg),
+      child: _GradientActionCard(
+        kicker: l.homeWeekReadyKicker,
+        title: l.homeWeekReadyTitle,
+        subtitle: subtitle,
+        action: l.homeWeekReadyOpen,
+        actionIcon: Icons.insights_rounded,
+        onTap: () {
+          ref.read(weekReadyOpenedProvider.notifier).markOpened(now, weekStart);
+          context.push(AppRoutes.weeklyReviewWeeksBack(offset));
+        },
       ),
     );
   }

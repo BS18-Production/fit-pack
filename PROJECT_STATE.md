@@ -43,6 +43,12 @@ düzenlemek yalnız o alanı yazar (CR-013); onboarding profil + ilk kilo tek
 transaction (CR-014); reaktif yardımcı ilk okuma sırasındaki yazmayı kaçırmaz
 (CR-008). 1042 test, iPhone'a kuruldu.
 
+**Son tur:** fotoğraf gizlilik metni telefonun kendi yedeğini de söyler
+(CR-015); sessiz kayıt hataları uyarı gösterir (CR-019); rekor ve asistan
+hesapları geçmiş büyüdükçe yavaşlamaz (CR-016/017); CI Android derlemesi ve
+Deno testlerini çalıştırır (CR-020). 1054 test, iPhone'a kuruldu. Asistan
+istek kaydı saklama göçü (CR-024) yazıldı, uygulanmadı.
+
 ## Geri bildirim turu — kilit ekranı, mola sesi, takvim · 2026-10-12
 
 [docs/45](docs/45-feedback-round-oct11.md). Kilit ekranında antrenman başına

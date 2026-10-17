@@ -29,9 +29,22 @@ Sahip Claude-5.
       profil tek alan yazımı (`updateFields`), CR-014 onboarding tek
       transaction, CR-008 reaktif yardımcı önce abone olur. 1042 test; main
       `d5ec247`, iPhone'a kuruldu, push yok.
-- [ ] Sonraki tur: CR-015 fotoğraf yedeği (Samet kararı: yedekten çıkar mı,
-      metni mi düzelt), CR-019 sessiz yazma hataları. Kalan küçükler:
-      beslenme gün okları/"dünü kopyala" 24 saat, öğün önerisi saat dilimi.
+- [x] CR-015 fotoğraf metni telefon yedeğini söyler (Samet: seçenek b), CR-019
+      sessiz yazma hataları uyarı + kilit `finally`, CR-016 rekor tek geçiş,
+      CR-017 asistan dakikalık tick DB okumaz, küçükler (gün okları takvim
+      günü, öğün dilimi sınır zamanlayıcısı, eski catch log). 1054 test; main
+      `9e9a1cc`, iPhone'a kuruldu, push yok.
+- [x] CR-020 CI: Android debug derlemesi + ask-route Deno check/test (push
+      edilince ilk koşu doğrulanacak). SQL/RLS CI testi yok (Docker gerekir).
+- [ ] CR-024 göçü `20261017120000_assistant_requests_retention.sql` yazıldı,
+      UYGULANMADI → Dev'de uygula + `supabase/tests/assistant_requests_retention.sql`,
+      sonra Samet onayıyla üretim (sunucu kilidi Claude-2'de).
+- [ ] CR-022 Samet kararı: (a) Ayarlar'a "Dışa aktar" ekranı (önerilen —
+      health-next gizlilik politikası bunu vaat ediyor) mı, (b) politikadan
+      çıkar + motoru sil mi. Silinirse `csv`, `cupertino_icons`,
+      `riverpod_annotation`, `phosphor_flutter` (+ neon_design_test) çıkar.
+- [ ] Bekleyen: CR-018 büyük ekranları bölme, CR-021 delete_user göçü
+      (Claude-2), CR-006 yayın.
 - [ ] Samet Android'de (Samsung bağlanınca): kısa mola bitince 1 sn içinde
       yeni mola → bildirim/ses/titreşim sürüyor mu (CR-012).
 - [ ] health-next birleşince: `app_database.dart` `schemaVersion` üstü yorum

@@ -100,6 +100,15 @@ class SyncController {
     // bayrağı görmez) ve aynı satır birden fazla kez gönderilir.
     _running = true;
     try {
+      // Hesap sahipliği (docs/47): çakışma ekranı açıkken ya da hesap
+      // temizliği sürerken hiçbir şey gönderilmez. Karar verilince `sync_meta`
+      // yazması tablo güncellemesi üretir → tur kendiliğinden yeniden gelir.
+      final own = push.ownership;
+      if (own != null && !await own.owns(userId)) {
+        syncLog('atlandı: yerel veri $userId hesabına ait değil '
+            '(hesap kararı bekleniyor)');
+        return;
+      }
       // Boşa tur atma: bekleyen yoksa çık. Bu aynı zamanda döngü korumasıdır —
       // temiz işaretleme de bir yazmadır ve `tableUpdates` tetikler.
       final waiting = await pendingCount();

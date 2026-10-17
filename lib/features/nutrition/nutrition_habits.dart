@@ -19,6 +19,17 @@ String mealForTime(DateTime now) {
   return 'dinner';
 }
 
+/// [now]'dan sonraki ilk öğün dilimi sınırı: 11:00, 16:00, 18:00 ya da
+/// ertesi günün 00:00'ı (akşam yemeği → kahvaltı). [mealForTime] ile aynı
+/// sınırlar; ikisi birlikte değişmeli.
+DateTime nextMealSlotBoundary(DateTime now) {
+  final m = now.hour * 60 + now.minute;
+  if (m < 11 * 60) return DateTime(now.year, now.month, now.day, 11);
+  if (m < 16 * 60) return DateTime(now.year, now.month, now.day, 16);
+  if (m < 18 * 60) return DateTime(now.year, now.month, now.day, 18);
+  return DateTime(now.year, now.month, now.day + 1);
+}
+
 // ───────────────────────────── Her zamanki öğün ─────────────────────────────
 
 /// "Her zamanki kahvaltın" önerisi: aynı içerik (aynı besinler) en az
@@ -40,9 +51,9 @@ class UsualMeal {
   double get protein => items.fold(0, (s, i) => s + i.log.computedProtein);
 
   List<MealCopyItem> get copyItems => [
-        for (final i in items)
-          MealCopyItem(foodId: i.log.foodId, grams: i.log.grams),
-      ];
+    for (final i in items)
+      MealCopyItem(foodId: i.log.foodId, grams: i.log.grams),
+  ];
 }
 
 /// Tek sefer yenmiş öğün "her zamanki" değildir.
@@ -198,9 +209,9 @@ LogWeek logWeekOf(Set<DateTime> loggedDays) {
   final line = done == 0
       ? LogWeekLine.start
       : left == 0
-          ? LogWeekLine.done
-          : left == 1
-              ? LogWeekLine.lastOne
-              : LogWeekLine.going;
+      ? LogWeekLine.done
+      : left == 1
+      ? LogWeekLine.lastOne
+      : LogWeekLine.going;
   return (done: done, goal: weeklyLogGoalDays, left: left, line: line);
 }

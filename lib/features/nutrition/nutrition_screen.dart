@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/router/app_routes.dart';
+import '../../core/utils/current_day.dart';
 import '../../core/theme/nutrition_theme.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/onboarding/first_run_hints.dart';
@@ -245,12 +246,14 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
             _DateBar(
               date: date,
               isToday: isToday,
-              onPrev: () => ref.read(selectedDateProvider.notifier).state = date
-                  .subtract(const Duration(days: 1)),
+              // Takvim günü, ±24 saat değil: yaz saati gününde 24 saat
+              // gece yarısına denk gelmez (CR-011).
+              onPrev: () => ref.read(selectedDateProvider.notifier).state =
+                  addDays(date, -1),
               onNext: isToday
                   ? null
-                  : () => ref.read(selectedDateProvider.notifier).state = date
-                        .add(const Duration(days: 1)),
+                  : () => ref.read(selectedDateProvider.notifier).state =
+                      addDays(date, 1),
             ),
             AppSpacing.vGapLg,
             totalsAsync.when(
@@ -365,7 +368,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
   Future<void> _copyYesterday(BuildContext context, WidgetRef ref) async {
     final l = AppL10n.of(context);
     final date = ref.read(selectedDateProvider);
-    final from = date.subtract(const Duration(days: 1));
+    final from = addDays(date, -1);
     final messenger = ScaffoldMessenger.of(context);
     final busy = ref.read(copyDayBusyProvider.notifier);
     if (busy.state) return; // ikinci dokunuş

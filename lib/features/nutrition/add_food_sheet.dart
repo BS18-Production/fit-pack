@@ -196,7 +196,8 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
         _editing = null;
         _pushRecent(f, grams);
       });
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[fitpack.nutrition] besin eklenemedi | HATA: $e');
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -286,7 +287,8 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
         _lastAdded = (label: '$name · ${r.kcal.round()} kcal', ids: [id]);
       });
       _load(); // yeni besin listeye (ve son eklenenlere) girsin
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[fitpack.nutrition] hızlı ekleme kaydedilemedi | HATA: $e');
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(

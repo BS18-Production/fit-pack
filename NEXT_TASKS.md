@@ -47,8 +47,16 @@ Sahip Claude-5.
       ücretli yapılamaz → ücretsiz yol destek e-postasıyla talep. Gizlilik
       politikası (health-next `assets/legal/privacy_*.md:44`) buna göre
       yazılmalı: "uygulama içinden (premium) veya destek e-postasıyla".
-- [ ] Bekleyen: CR-018 büyük ekranları bölme, CR-021 delete_user göçü
-      (Claude-2), CR-006 yayın.
+- [x] health-next main'e (`4f2b785`), üretime `delete_user` + `health_guards`
+      (CR-021 kapandı). iPhone'da v17 göçü doğrulandı.
+- [ ] Samet iPhone'da: tartıdan kilo (rıza ekranı), antrenmanı Sağlık'a
+      yazma, Hesap → Hesabı sil akışı (test hesabıyla!).
+- [ ] CR-018 ekran bölme `refactor/split-screens` hazır (1097 test, davranış
+      aynı) — Samet onayı → main.
+- [ ] Hareket kütüphanesi önerisi docs/48 (`docs/core-exercise-list`): 219
+      hareket — Samet'in 3 kararı.
+- [ ] Gizlilik politikası iletişim adresi (yayından önce).
+- [ ] CR-006 yayın.
 - [ ] Samet Android'de (Samsung bağlanınca): kısa mola bitince 1 sn içinde
       yeni mola → bildirim/ses/titreşim sürüyor mu (CR-012).
 - [ ] health-next birleşince: `app_database.dart` `schemaVersion` üstü yorum

@@ -49,6 +49,16 @@ hesapları geçmiş büyüdükçe yavaşlamaz (CR-016/017); CI Android derlemesi
 Deno testlerini çalıştırır (CR-020). 1054 test, iPhone'a kuruldu. Asistan
 istek kaydı saklama göçü (CR-024) yazıldı, uygulanmadı.
 
+## Sağlık entegrasyonu main'de · 2026-10-17
+
+Claude-2'nin `feat/health-next` dalı (docs/40–44: tartıdan kilo + rıza,
+gizlilik politikası + hesap silme, trend kilo, gerçek harcama, antrenmanı
+Sağlık'a yazma) Codex turlarıyla uyumlanıp birleşti. Şema **v17**; iPhone'da
+göç doğrulandı (veri yerinde, senkron çalışıyor). Üretim sunucusuna
+`delete_user` + `health_guards` uygulandı. Gizlilik metni: fotoğraf/adım
+telefonun kendi yedeğine girer; veri erişim/taşıma talebi iletişim adresiyle
+(adres henüz boş — yayından önce doldurulmalı). 1097 test.
+
 ## Geri bildirim turu — kilit ekranı, mola sesi, takvim · 2026-10-12
 
 [docs/45](docs/45-feedback-round-oct11.md). Kilit ekranında antrenman başına

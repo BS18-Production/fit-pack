@@ -111,6 +111,20 @@ void main() {
       expect(await db.syncMetaDao.read(SyncMetaDao.keySwitchInProgress), isNull);
     });
 
+    test('kalıcı hatalı kayıt (sync_state=2) da korunur (CR-005)', () async {
+      // Sunucunun reddettiği satır kuyruktan çıkar ama yüklenmemiştir —
+      // cihazdaki tek kopyadır. Sayılmazsa hesap değişimi onu uyarısız siler.
+      await AccountSwitchGuard.apply(db, userA);
+      await addRoutine('Yüklenemedi');
+      await db.customStatement('UPDATE routines SET sync_state = 2');
+
+      final outcome = await AccountSwitchGuard.apply(db, userB);
+
+      expect(outcome, AccountSwitch.pendingConflict);
+      expect(await count('routines'), 1, reason: 'kayıt durmalı');
+      expect(await AccountSwitchGuard.pendingRowCount(db), 1);
+    });
+
     test('kuyruk boşsa normal temizlik yapılır', () async {
       await AccountSwitchGuard.apply(db, userA);
       await addRoutine('Gönderilmiş');

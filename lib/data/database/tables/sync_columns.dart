@@ -304,6 +304,23 @@ const seedSyncMetaSql = [
   "INSERT OR IGNORE INTO sync_meta (key, value) VALUES ('clock_offset_ms', '0')",
 ];
 
+/// Tetikleyici tanımlarının sürümü (docs/46 §3). Tetikleyici SQL'i
+/// değişince artırılır; açılıştaki onarım `sync_meta.trigger_rev` daha
+/// küçükse tetikleyicileri yeniden kurar. Şema sürümünden bağımsızdır —
+/// tetikleyiciler drift şema dökümünde yer almaz.
+///
+/// - 1: ilk v2 tetikleyicileri (anahtar yoksa 1 sayılır)
+/// - 2: silme, kuyruktaki/hatalı satır için de iz bırakır (CR-004)
+const syncTriggerRev = 2;
+
+/// `sync_meta.trigger_rev` okuma/yazma — anahtar yoksa 1 sayılır.
+const readTriggerRevSql =
+    "SELECT COALESCE((SELECT value FROM sync_meta WHERE key = 'trigger_rev'), "
+    "'1') AS v";
+const writeTriggerRevSql =
+    "INSERT INTO sync_meta (key, value) VALUES ('trigger_rev', '$syncTriggerRev') "
+    "ON CONFLICT(key) DO UPDATE SET value = excluded.value";
+
 /// Çekme/göç sırasında tetikleyicileri susturur (1 = kuyruğa al, 0 = sus).
 String setCaptureSql(bool on) =>
     "INSERT INTO sync_meta (key, value) VALUES ('capture', '${on ? 1 : 0}') "
@@ -346,10 +363,19 @@ END''';
 /// (kullanılmamış seed katalog satırı iz bırakmaz). Yabancı anahtar zinciriyle
 /// silinen satırlar da bu tetikleyiciyi çalıştırır → seans silinince setlerin
 /// mezar taşları da oluşur.
+///
+/// "Gitmiş olabilir" = sunucudan onay almış (`server_rev`/`user_id` dolu) YA
+/// DA kuyrukta/hatada (`sync_state <> 0`). İkincisi şart: gönderim sürerken ya
+/// da cevabı kaybolmuş gönderimden sonra silinen satır sunucuda vardır ama
+/// onayı yerele yazılmamıştır. İz bırakılmazsa sunucu kaydı tutar, çekme geri
+/// getirir (docs/46 §2, CR-004). Sunucuda olmayan kimliğin silmesi zararsızdır.
+///
+/// ⚠️ Bu metni değiştirince [syncTriggerRev]'i artır.
 String createDeleteTriggerSql(String table) => '''
 CREATE TRIGGER IF NOT EXISTS ${table}_sync_del AFTER DELETE ON $table
 WHEN $_captureOnSql AND OLD.uid IS NOT NULL
-     AND (OLD.server_rev IS NOT NULL OR OLD.user_id IS NOT NULL)
+     AND (OLD.server_rev IS NOT NULL OR OLD.user_id IS NOT NULL
+          OR OLD.sync_state <> 0)
 BEGIN
   INSERT INTO sync_tombstones (table_name, uid, changed_at_ms, local_seq, sync_state)
   VALUES ('$table', OLD.uid, $_nowMsSql, $_nextSeqSql, 1);

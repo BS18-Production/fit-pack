@@ -5,6 +5,7 @@ import '../../data/database/app_database.dart';
 import '../../data/database/daos/sync_meta_dao.dart';
 import '../../data/database/tables/sync_columns.dart';
 import '../../data/services/photo_storage.dart';
+import '../sync/sync_apply.dart';
 import '../sync/sync_controller.dart' show syncLog;
 import '../health/health_prefs.dart';
 import '../workout/workout_draft.dart';
@@ -77,8 +78,12 @@ class AccountSwitchGuard {
     return AccountSwitch.wiped;
   }
 
-  /// Gönderilmeyi bekleyen satır sayısı (giden kutusu + mezar taşları).
+  /// Sunucuya ulaşmamış satır sayısı (giden kutusu + mezar taşları).
   /// Hesap değişiminde "kaç kayıt kaybolacak?" sorusunun cevabı.
+  ///
+  /// **Kalıcı hatalı satırlar da sayılır** (`sync_state = 2`, docs/20 §9):
+  /// otomatik gönderim kuyruğundan çıkmışlardır ama yüklenmemişlerdir —
+  /// cihazdaki tek kopyadır. Kuyruktan çıkmak yedeklenmek değildir (CR-005).
   ///
   /// **İlerleme fotoğrafları BİLİNÇLİ olarak sayılır**, senkron göstergesi
   /// onları atladığı halde (docs/19 K-2): sunucuya hiç gitmezler, yani hesap
@@ -89,7 +94,8 @@ class AccountSwitchGuard {
     var total = 0;
     for (final table in [...syncedTableNames, 'sync_tombstones']) {
       final row = await db
-          .customSelect('SELECT COUNT(*) c FROM $table WHERE sync_state = 1')
+          .customSelect(
+              'SELECT COUNT(*) c FROM $table WHERE sync_state IN (1, 2)')
           .getSingle();
       total += row.read<int>('c');
     }
@@ -148,12 +154,8 @@ class AccountSwitchGuard {
     // Temizlik mezar taşı ÜRETMEZ: bu kullanıcı silmesi değil, cihazın
     // önceki hesaptan arındırılması. İz bırakırsa o izler yeni kullanıcının
     // hesabıyla sunucuya gider ve **onun** kayıtlarını siler (docs/20 §7.3).
-    await db.customStatement(setCaptureSql(false));
-    try {
-      await _wipeTables(db);
-    } finally {
-      await db.customStatement(setCaptureSql(true));
-    }
+    // Bayrak temizliğin transaction'ı İÇİNDE kapanıp açılır (docs/46 §1).
+    await SyncApply(db).withCaptureOff(() => _wipeTables(db));
     // Temizlikten arta kalan iz varsa (eski sürümden) da silinir.
     await db.customStatement('DELETE FROM sync_tombstones');
     // Profil satırı silindi → boş profil yeniden kurulur (onboarded = false,

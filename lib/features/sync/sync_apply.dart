@@ -32,14 +32,22 @@ class SyncApply {
   /// Bayrak **yalnız inen satırların yazıldığı transaction** boyunca kapalı
   /// kalır — ağ beklenirken değil. Böylece kullanıcı çekme sürerken bir şey
   /// kaydederse tetikleyici çalışır ve o satır kuyruğa girer (S-4).
-  Future<void> withCaptureOff(Future<void> Function() body) async {
-    await db.customStatement(setCaptureSql(false));
-    try {
-      await body();
-    } finally {
-      await db.customStatement(setCaptureSql(true));
-    }
-  }
+  ///
+  /// Transaction'ı **bu metot açar** ve bayrağı onun içinde kapatıp açar
+  /// (docs/46 §1, CR-003). Eskiden bayrak transaction'dan önce kapanıp
+  /// sonra açılıyordu; drift'in arada sıraya aldığı kullanıcı yazması bayrak
+  /// kapalıyken çalışıp kuyruksuz kalıyordu. Şimdi başka yazmalar transaction
+  /// bitene kadar bekler ve bayrağı hep açık görür. Hata olursa geri alma
+  /// bayrağı da eski değerine (açık) döndürür. [body] ağ beklememeli.
+  Future<void> withCaptureOff(Future<void> Function() body) =>
+      db.transaction(() async {
+        await db.customStatement(setCaptureSql(false));
+        try {
+          await body();
+        } finally {
+          await db.customStatement(setCaptureSql(true));
+        }
+      });
 
   /// Tablonun kolon tipleri — `_decode` bunlara bakarak çeviri yapar.
   Map<String, Object?> columnTypes(String table) {

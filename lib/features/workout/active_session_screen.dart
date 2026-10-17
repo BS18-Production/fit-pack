@@ -30,6 +30,7 @@ import 'session_progress.dart';
 import 'set_prefill.dart';
 import 'set_timer.dart';
 import 'weight_step.dart';
+import 'active_session_model.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
@@ -42,155 +43,6 @@ import '../health/body_providers.dart';
 
 /// Set alanına yazım durduktan sonra taslağın kaydedilme gecikmesi.
 const _draftSaveDelay = Duration(milliseconds: 500);
-
-const _setTypes = ['normal', 'warmup', 'drop', 'failure'];
-const _setTypeLabel = {
-  'normal': '',
-  'warmup': 'I',
-  'drop': 'D',
-  'failure': 'F'
-};
-
-class _SetEntry {
-  double? weight;
-  int? reps;
-  double? rpe;
-  int? durationSec; // süre ölçümlü hareket (plank, kardiyo)
-  double? distanceM; // mesafe ölçümlü hareket (koşu, yüzme)
-  String type = 'normal';
-  bool done = false;
-  bool isRecord = false; // bu set tamamlanınca kişisel rekor kırdı (rozet)
-  // Değerler koddan doldurulunca artar (G-2): giriş alanları `initialValue`
-  // ile kurulu, yeni değeri göstermeleri için bu sayaçla yeniden kurulurlar.
-  int fillGen = 0;
-
-  SetValues get values => SetValues(
-      weightKg: weight,
-      reps: reps,
-      durationSec: durationSec,
-      distanceM: distanceM);
-
-  void apply(SetValues v) {
-    weight = v.weightKg;
-    reps = v.reps;
-    durationSec = v.durationSec;
-    distanceM = v.distanceM;
-  }
-
-  /// Ölçüm tipine göre set'te anlamlı bir veri girilmiş mi.
-  bool hasInput(String measure) {
-    switch (measure) {
-      case 'reps':
-        return reps != null;
-      case 'time':
-        return durationSec != null;
-      case 'distance':
-        return distanceM != null || durationSec != null;
-      default:
-        return weight != null || reps != null;
-    }
-  }
-}
-
-class _SessionExercise {
-  final Exercise exercise;
-  // Geçen seansın son çalışma seti etiketi — yalnız taslak uyumu için
-  // yazılır; ekran artık set numarasına göre [lastSets]'i gösterir (G-2).
-  final String? previous;
-  // Hareketin son yapıldığı seanstaki setler, set sırasıyla (G-2).
-  final List<WorkoutSet> lastSets;
-  final List<_SetEntry> sets;
-  // Setler arası dinlenme (rutinden ya da kategoriye göre). Seansta
-  // değiştirilebilir; rutindeki hareketse rutine de yazılır (A2).
-  int restSec;
-  // Hareket açılan rutinde var mı — dinlenme değişikliği rutine yazılır mı.
-  final bool inRoutine;
-  // Seans öncesi kişisel rekorlar (record_calc) — canlı modda, yalnız ağırlık
-  // ölçümlü hareketlerde yüklenir. 0 = geçmiş yok → anlık rozet üretilmez.
-  // Seans içinde rekor kırılınca güncellenir ki aynı seansta yalnız gerçek
-  // artışlar yeniden rozetlensin.
-  double bestE1rm = 0;
-  double bestWeightKg = 0;
-  // Sonraki hedef önerisi (docs/21 #3) — yalnız rutinli canlı seansta,
-  // kilo×tekrar harekette ve geçmiş varsa.
-  final ProgressionAdvice? advice;
-  // Kullanıcı öneriyi uyguladıysa kullanılan artış (kg); uygulanmadıysa null.
-  // Tekrar önerisinde (+1) yalnız "uygulandı" bayrağı olarak işler.
-  double? appliedIncrementKg;
-  _SessionExercise(this.exercise, this.sets,
-      {required this.lastSets,
-      required this.restSec,
-      required Units units,
-      this.inRoutine = false,
-      this.advice,
-      this.appliedIncrementKg})
-      : previous = prevLabel(
-            lastSets.where((s) => !s.isWarmup).lastOrNull,
-            exercise.measurementType,
-            units);
-
-  String get measure => exercise.measurementType;
-
-  List<CurrentSet> get currentSets => [
-        for (final s in sets) (values: s.values, warmup: s.type == 'warmup')
-      ];
-
-  /// Öneri kaynağı olarak geçen seans. Kullanıcı ilerlemeyi uyguladıysa
-  /// çalışma setleri öneriye çevrilir (ısınma setleri aynen kalır); "ÖNCEKİ"
-  /// sütunu ise her zaman gerçek geçmişi gösterir.
-  List<SetValues> get lastValues {
-    final a = advice;
-    final inc = appliedIncrementKg;
-    return [
-      for (final w in lastSets)
-        a != null && inc != null && !w.isWarmup
-            ? a.apply(SetValues.fromSet(w), incrementKg: inc)
-            : SetValues.fromSet(w),
-    ];
-  }
-
-  /// [index]'teki set için ✓ önerisi (bkz. [suggestionFor]).
-  SetValues? suggestionAt(int index) => suggestionFor(
-        index: index,
-        current: currentSets,
-        lastSession: lastValues,
-        measure: measure,
-      );
-}
-
-/// "12:30" / "1.30" / "90" → saniye. Boş/geçersiz → null.
-int? parseDuration(String raw) {
-  final t = raw.trim();
-  if (t.isEmpty) return null;
-  if (t.contains(':')) {
-    final parts = t.split(':');
-    final m = int.tryParse(parts[0]) ?? 0;
-    final s = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
-    return m * 60 + s;
-  }
-  // saf sayı → dakika kabul et
-  final mins = double.tryParse(t.replaceAll(',', '.'));
-  return mins == null ? null : (mins * 60).round();
-}
-
-/// Geçen seansın değerini ölçüm tipine göre GÖRÜNTÜ biriminde formatlar
-/// ("60×8", "12", "12:30", "5.2 km" / imperial'de "132×8", "3.2 mi").
-String? prevLabel(WorkoutSet? s, String measure, Units units) {
-  if (s == null) return null;
-  switch (measure) {
-    case 'reps':
-      return s.reps != null ? '${s.reps}' : null;
-    case 'time':
-      return s.durationSec != null ? fmtDuration(s.durationSec!) : null;
-    case 'distance':
-      if (s.distanceM == null) return null;
-      return '${units.distanceValue(s.distanceM!)} ${units.distanceUnit}';
-    default:
-      return (s.weightKg != null && s.reps != null)
-          ? '${units.liftValue(s.weightKg!)}×${s.reps}'
-          : null;
-  }
-}
 
 class ActiveSessionScreen extends ConsumerStatefulWidget {
   final int? routineId;
@@ -217,7 +69,7 @@ class ActiveSessionScreen extends ConsumerStatefulWidget {
 
 class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     with WidgetsBindingObserver {
-  final List<_SessionExercise> _exercises = [];
+  final List<SessionExerciseEntry> _exercises = [];
   late String _title;
   // Rutin bağı: normalde route'tan gelir; resume modunda TASLAKTAN geri
   // yüklenir (M-01 — widget.routineId resume'da null olur, bağ kopmasın).
@@ -392,8 +244,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   /// [canComplete]: değeri girilmiş ya da öneriyle dolacak — boş set kilit
   /// ekranından işaretlenmez (değersiz kayıt üretirdi).
   ({
-    _SessionExercise exercise,
-    _SetEntry set,
+    SessionExerciseEntry exercise,
+    SessionSetEntry set,
     int index,
     String key,
     bool canComplete,
@@ -415,7 +267,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   /// Kartta (ve ✓'de) geçerli değerler: girilen değer önce, boş alan
   /// öneriden — `_toggleDone`'un kaydedeceğiyle aynı (G-2).
-  SetValues _shownValues(_SessionExercise ex, _SetEntry set, int index) {
+  SetValues _shownValues(SessionExerciseEntry ex, SessionSetEntry set, int index) {
     final suggestion = ex.suggestionAt(index);
     return suggestion == null
         ? set.values
@@ -424,12 +276,12 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   /// Kilit ekranı ± yalnız kilo×tekrar (kilo adımı) ve tekrar (±1)
   /// hareketlerinde; süre/mesafede yok.
-  bool _canStep(_SessionExercise ex) =>
+  bool _canStep(SessionExerciseEntry ex) =>
       ex.measure != 'time' && ex.measure != 'distance';
 
   /// Kilit ekranı ±: yalnız bu setin tek alanını değiştirir (kilo ya da
   /// tekrar); boşsa öneriden başlar. Sonraki setlere ve öneriye dokunmaz.
-  void _stepLive(_SessionExercise ex, _SetEntry set, int index, int dir) {
+  void _stepLive(SessionExerciseEntry ex, SessionSetEntry set, int index, int dir) {
     if (ex.measure == 'reps') {
       final from = set.reps ?? ex.suggestionAt(index)?.reps ?? 0;
       setState(() {
@@ -451,26 +303,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         sessionDateMs: _sessionDate.millisecondsSinceEpoch,
         restStartedAtMs: _restStartedAt?.millisecondsSinceEpoch,
         restEndsAtMs: _restDeadline?.millisecondsSinceEpoch,
-        exercises: _exercises
-            .map((e) => DraftExercise(
-                  exerciseId: e.exercise.id,
-                  restSec: e.restSec,
-                  previous: e.previous,
-                  appliedIncrementKg: e.appliedIncrementKg,
-                  sets: e.sets
-                      .map((s) => DraftSet(
-                            weight: s.weight,
-                            reps: s.reps,
-                            rpe: s.rpe,
-                            durationSec: s.durationSec,
-                            distanceM: s.distanceM,
-                            type: s.type,
-                            done: s.done,
-                            isRecord: s.isRecord,
-                          ))
-                      .toList(),
-                ))
-            .toList(),
+        exercises: _exercises.map((e) => e.toDraft()).toList(),
       );
 
   /// Kilit ekranı / Dynamic Island (docs/32): yalnız canlı seansta. Şu
@@ -602,18 +435,10 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       if (ex == null) continue; // silinmiş/arşivlenmiş hareketi atla
       final lastSets = await dao.getLastSessionSetsForExercise(ex.id);
       final prevSets = await dao.getPreviousSessionSetsForExercise(ex.id);
-      final se = _SessionExercise(
+      final se = SessionExerciseEntry(
         ex,
         de.sets
-            .map((s) => _SetEntry()
-              ..weight = s.weight
-              ..reps = s.reps
-              ..rpe = s.rpe
-              ..durationSec = s.durationSec
-              ..distanceM = s.distanceM
-              ..type = s.type
-              ..done = s.done
-              ..isRecord = s.isRecord)
+            .map(SessionSetEntry.fromDraft)
             .toList(),
         // Geçen seans taslakta değil DB'de — devam ederken yeniden okunur.
         lastSets: lastSets,
@@ -653,7 +478,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   /// Öneriyi uygula / geri al — yalnız bu seansın önerilerini değiştirir,
   /// girilmiş ve tamamlanmış setlere dokunmaz.
-  void _toggleAdvance(_SessionExercise ex) {
+  void _toggleAdvance(SessionExerciseEntry ex) {
     setState(() {
       ex.appliedIncrementKg = ex.appliedIncrementKg == null
           ? ref.read(effectiveIncrementKgProvider)
@@ -730,9 +555,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
             await dao.getLastSessionSetsForExercise(it.exercise.id);
         final prevSets =
             await dao.getPreviousSessionSetsForExercise(it.exercise.id);
-        final se = _SessionExercise(
+        final se = SessionExerciseEntry(
           it.exercise,
-          List.generate(count, (_) => _SetEntry()),
+          List.generate(count, (_) => SessionSetEntry()),
           lastSets: lastSets,
           restSec: it.routineExercise.targetRestSec ??
               WorkoutUi.defaultRestSec(it.exercise.category),
@@ -763,7 +588,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   /// Hareketin seans öncesi en iyi değerlerini yükler (anlık rekor rozeti).
   /// Geçmiş kayıt modunda anlamsız (rekoru özet ekranı tarihe göre hesaplar);
   /// ağırlık dışı ölçümlerde rekor tanımı yok (Rekorlar sekmesiyle tutarlı).
-  Future<void> _loadBests(_SessionExercise ex) async {
+  Future<void> _loadBests(SessionExerciseEntry ex) async {
     if (_isManual) return;
     final m = ex.measure;
     if (m == 'time' || m == 'distance' || m == 'reps') return;
@@ -778,7 +603,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   /// Tamamlanan set kişisel rekor mu? (canlı mod; geçmişi olmayan hareket
   /// rozetlenmez — record_calc kuralı). Rekorsa işaretle + güçlü titreşim.
-  void _checkRecord(_SessionExercise ex, _SetEntry set) {
+  void _checkRecord(SessionExerciseEntry ex, SessionSetEntry set) {
     if (_isManual || set.type == 'warmup') return;
     if (ex.bestE1rm <= 0 && ex.bestWeightKg <= 0) return; // geçmiş yok
     final w = set.weight;
@@ -798,7 +623,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
   }
 
-  void _toggleDone(_SessionExercise ex, _SetEntry set) {
+  void _toggleDone(SessionExerciseEntry ex, SessionSetEntry set) {
     setState(() {
       // G-2: tamamlanırken boş alanlar öneriyle dolar (tek dokunuş = onay).
       // Geri alırken değerler kalır — kullanıcı düzeltip yeniden işaretler.
@@ -821,7 +646,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _saveDraft();
   }
 
-  void _fillFromSuggestion(_SessionExercise ex, _SetEntry set) {
+  void _fillFromSuggestion(SessionExerciseEntry ex, SessionSetEntry set) {
     final suggestion = ex.suggestionAt(ex.sets.indexOf(set));
     if (suggestion == null) return;
     final filled = fillMissing(set.values, suggestion, ex.measure);
@@ -830,18 +655,18 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     set.fillGen++;
   }
 
-  void _cycleType(_SetEntry set) {
-    final i = _setTypes.indexOf(set.type);
-    setState(() => set.type = _setTypes[(i + 1) % _setTypes.length]);
+  void _cycleType(SessionSetEntry set) {
+    final i = sessionSetTypes.indexOf(set.type);
+    setState(() => set.type = sessionSetTypes[(i + 1) % sessionSetTypes.length]);
     _saveDraft();
   }
 
-  void _addSet(_SessionExercise ex) {
-    setState(() => ex.sets.add(_SetEntry()));
+  void _addSet(SessionExerciseEntry ex) {
+    setState(() => ex.sets.add(SessionSetEntry()));
     _saveDraft();
   }
 
-  void _removeSet(_SessionExercise ex) {
+  void _removeSet(SessionExerciseEntry ex) {
     if (ex.sets.length > 1) {
       setState(() => ex.sets.removeLast());
       _saveDraft();
@@ -849,7 +674,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   }
 
   /// Hareketi seanstan kaldır. Veri girilmişse önce onay sor.
-  Future<void> _removeExercise(_SessionExercise ex) async {
+  Future<void> _removeExercise(SessionExerciseEntry ex) async {
     final hasData = ex.sets.any((s) => s.hasInput(ex.measure) || s.done);
     if (hasData) {
       final ok = await confirmAction(
@@ -867,7 +692,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   /// Hareketi seans içinde bir yukarı/aşağı taşır (A1). Rutin değişmez;
   /// yeni sıra taslağa ve kayda (setler bu sırayla yazılır) yansır.
-  void _moveExercise(_SessionExercise ex, int delta) {
+  void _moveExercise(SessionExerciseEntry ex, int delta) {
     final i = _exercises.indexOf(ex);
     final j = i + delta;
     if (i < 0 || j < 0 || j >= _exercises.length) return;
@@ -904,7 +729,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   /// sormadan rutine de yazılır (Samet 2026-09-30) — sonraki antrenman bu
   /// süreyle başlar. Çalışan sayaç etkilenmez; yeni süre sonraki setten
   /// itibaren geçerli.
-  Future<void> _pickRest(_SessionExercise ex) async {
+  Future<void> _pickRest(SessionExerciseEntry ex) async {
     _dismissKeyboard();
     final picked = await showModalBottomSheet<int>(
       context: context,
@@ -930,7 +755,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   }
 
   /// Hareketin kilo adımı (A4): seçilen → geçmişten tahmin → ekipman.
-  double _stepKgFor(_SessionExercise ex, Map<int, double> saved) =>
+  double _stepKgFor(SessionExerciseEntry ex, Map<int, double> saved) =>
       saved[ex.exercise.id] ??
       inferStepKg([
         for (final s in ex.lastSets)
@@ -942,7 +767,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   /// ± düğmesi: boş alanda öneriden başlar. Dokunuş kullanıcı girişi
   /// sayılır — değer alana yazılır (✓ onayı yine gerekir).
-  void _stepWeight(_SessionExercise ex, _SetEntry set, int direction) {
+  void _stepWeight(SessionExerciseEntry ex, SessionSetEntry set, int direction) {
     final base = ex.suggestionAt(ex.sets.indexOf(set))?.weightKg;
     final step = _stepKgFor(ex, ref.read(weightStepPrefsProvider));
     _dismissKeyboard();
@@ -954,7 +779,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _scheduleDraftSave();
   }
 
-  Future<void> _pickStep(_SessionExercise ex) async {
+  Future<void> _pickStep(SessionExerciseEntry ex) async {
     _dismissKeyboard();
     final current = _stepKgFor(ex, ref.read(weightStepPrefsProvider));
     final picked = await showModalBottomSheet<double>(
@@ -973,9 +798,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     final lastSets =
         await ref.read(workoutDaoProvider).getLastSessionSetsForExercise(ex.id);
     if (!mounted) return;
-    final se = _SessionExercise(
+    final se = SessionExerciseEntry(
       ex,
-      List.generate(1, (_) => _SetEntry()),
+      List.generate(1, (_) => SessionSetEntry()),
       lastSets: lastSets,
       restSec: WorkoutUi.defaultRestSec(ex.category),
       units: ref.read(unitsProvider),
@@ -1155,29 +980,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
               ? const Value(null)
               : Value(_elapsed.inMinutes),
         ),
-        (id) {
-          final out = <WorkoutSetsCompanion>[];
-          for (final ex in _exercises) {
-            var n = 1;
-            for (final s in ex.sets) {
-              if (!s.hasInput(ex.measure) && !s.done) continue;
-              out.add(WorkoutSetsCompanion(
-                sessionId: Value(id),
-                exerciseId: Value(ex.exercise.id),
-                setNumber: Value(n++),
-                weightKg: Value(s.weight),
-                reps: Value(s.reps),
-                rpe: Value(s.rpe),
-                durationSec: Value(s.durationSec),
-                distanceM: Value(s.distanceM),
-                setType: Value(s.type),
-                isComplete: Value(s.done),
-                isWarmup: Value(s.type == 'warmup'),
-              ));
-            }
-          }
-          return out;
-        },
+        (id) => sessionSetRows(id, _exercises),
       );
     } catch (_) {
       // Yazım başarısız: taslak duruyor, veri kaybolmadı. Düğmeyi serbest
@@ -1585,9 +1388,9 @@ class _MiniBtn extends StatelessWidget {
 }
 
 class _ExerciseBlock extends ConsumerWidget {
-  final _SessionExercise ex;
-  final void Function(_SetEntry) onToggle;
-  final void Function(_SetEntry) onCycleType;
+  final SessionExerciseEntry ex;
+  final void Function(SessionSetEntry) onToggle;
+  final void Function(SessionSetEntry) onCycleType;
   final VoidCallback onAddSet, onRemoveSet, onRemoveExercise, onChanged;
   final VoidCallback onToggleAdvance;
   // null = o yöne taşınamaz (ilk/son hareket).
@@ -1595,7 +1398,7 @@ class _ExerciseBlock extends ConsumerWidget {
   // null = geçmiş kayıt modu (dinlenme sayacı yok).
   final VoidCallback? onPickRest;
   final double stepKg; // ± düğmesinin adımı (kg)
-  final void Function(_SetEntry set, int direction) onStep;
+  final void Function(SessionSetEntry set, int direction) onStep;
   final VoidCallback onPickStep;
   const _ExerciseBlock(
       {super.key,
@@ -1651,7 +1454,7 @@ class _ExerciseBlock extends ConsumerWidget {
   /// ✓'e basılınca kaydedilecek değerin metni ("55 kg × 10"); ✓ hiçbir
   /// alanı doldurmayacaksa (öneri yok ya da set zaten dolu) null.
   static String? _assistHint(
-      _SessionExercise ex, _SetEntry set, int index, Units units) {
+      SessionExerciseEntry ex, SessionSetEntry set, int index, Units units) {
     final sug = ex.suggestionAt(index);
     if (sug == null) return null;
     final v = fillMissing(set.values, sug, ex.measure);
@@ -2114,7 +1917,7 @@ class _StepPickerSheet extends ConsumerWidget {
 /// Hareket başlığının altında sonraki hedef satırı (docs/21 #3): gerekçe +
 /// uygula/geri al. Metne dokununca kuralın açıklaması açılır.
 class _ProgressionLine extends ConsumerWidget {
-  final _SessionExercise ex;
+  final SessionExerciseEntry ex;
   final VoidCallback onToggle;
   const _ProgressionLine({required this.ex, required this.onToggle});
 
@@ -2360,7 +2163,7 @@ void _showRpeInfo(BuildContext context) {
 
 class _SetRow extends StatelessWidget {
   final int index;
-  final _SetEntry set;
+  final SessionSetEntry set;
   final String measure;
   final String? previous;
   // ✓'e basılınca boş alanlara yazılacak değerler — alanlarda soluk ipucu.
@@ -2520,7 +2323,7 @@ class _SetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final badge = _setTypeLabel[set.type]!;
+    final badge = sessionSetTypeLabel[set.type]!;
     final badgeColor = switch (set.type) {
       'warmup' => context.semantic.warning,
       'drop' => context.semantic.info,

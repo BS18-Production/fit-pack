@@ -16,6 +16,20 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
         ..orderBy([(r) => OrderingTerm.asc(r.orderIndex), (r) => OrderingTerm.asc(r.id)]))
       .get();
 
+  /// En son yapılan rutinli seansın rutini (boş antrenmanlar sayılmaz) —
+  /// Ana Sayfa döngü sırası (docs/49 §3).
+  Future<int?> getLastSessionRoutineId() async {
+    final row = await (select(workoutSessions)
+          ..where((s) => s.routineId.isNotNull())
+          ..orderBy([
+            (s) => OrderingTerm.desc(s.date),
+            (s) => OrderingTerm.desc(s.id),
+          ])
+          ..limit(1))
+        .getSingleOrNull();
+    return row?.routineId;
+  }
+
   Future<Routine?> getRoutine(int id) =>
       (select(routines)..where((r) => r.id.equals(id))).getSingleOrNull();
 

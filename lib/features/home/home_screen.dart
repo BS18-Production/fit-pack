@@ -25,6 +25,7 @@ import 'providers/dashboard_providers.dart';
 import 'providers/home_providers.dart';
 import '../../core/prefs/week_start_provider.dart';
 import '../nutrition/nutrition_habit_widgets.dart';
+import 'first_week.dart';
 import 'rhythm_state.dart';
 import 'streak_calc.dart';
 import '../assistant/assistant_screen.dart';
@@ -75,6 +76,7 @@ class HomeScreen extends ConsumerWidget {
             _CompactNutrition(),
             AppSpacing.vGapLg,
             _PrimaryActionCard(),
+            _FirstWeekCard(),
             AppSpacing.vGapXl,
             _DayLogHeader(),
             AppSpacing.vGapMd,
@@ -174,7 +176,8 @@ class _Header extends StatelessWidget {
 // ──────────────────────────────────────────────── Birincil aksiyon (durum)
 
 /// Bugünün eylemi — öncelik sırası (docs/24 §2): devam eden seans →
-/// planlı rutin → dinlenme günü → plan yok. Yalnız BUGÜNE bakar.
+/// planlı rutin → dinlenme günü → döngüde sıradaki rutin → rutin yok
+/// (docs/49 §3). Yalnız BUGÜNE bakar.
 class _PrimaryActionCard extends ConsumerWidget {
   const _PrimaryActionCard();
 
@@ -191,8 +194,9 @@ class _PrimaryActionCard extends ConsumerWidget {
           error: (_, _) => const _StartWorkoutCard(),
           data: (tr) {
             if (tr.today != null) return _TrainingDayCard(routine: tr.today!);
-            if (tr.next == null) return const _StartWorkoutCard();
-            return _RestDayCard(nextName: tr.next!.name);
+            if (tr.next != null) return _RestDayCard(nextName: tr.next!.name);
+            if (tr.upNext != null) return _UpNextCard(routine: tr.upNext!);
+            return const _NoRoutineCard();
           },
         );
   }
@@ -329,6 +333,218 @@ class _TrainingDayCard extends ConsumerWidget {
       action: l.homeStart,
       actionIcon: Icons.play_arrow_rounded,
       onTap: () => context.push(AppRoutes.routinePreview(routine.id)),
+    );
+  }
+}
+
+/// Güne bağlı rutin yokken döngüde sıradaki rutin (hazır program kopyası
+/// burada çıkar — docs/49 §3).
+class _UpNextCard extends ConsumerWidget {
+  final Routine routine;
+  const _UpNextCard({required this.routine});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
+    final items = ref.watch(routineExercisesProvider(routine.id)).valueOrNull;
+    final mins = items == null
+        ? null
+        : estimateRoutineMinutes([for (final i in items) i.routineExercise]);
+    return _GradientActionCard(
+      kicker: l.homeUpNext,
+      title: routine.name,
+      subtitle: items == null || mins == null
+          ? ''
+          : l.homeUpNextSubtitle(items.length, mins),
+      action: l.homeStart,
+      actionIcon: Icons.play_arrow_rounded,
+      onTap: () => context.push(AppRoutes.routinePreview(routine.id)),
+    );
+  }
+}
+
+/// Hiç rutin yok: iki başlangıç yolu (docs/49 §3) — hazır program (Antrenman
+/// sekmesindeki Keşfet) ya da kendi rutini.
+class _NoRoutineCard extends StatelessWidget {
+  const _NoRoutineCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    final c = context.colors;
+    return _Card(
+      key: const ValueKey('home.noRoutine'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: c.primary.withValues(alpha: 0.12),
+                  borderRadius: AppRadius.brMd,
+                ),
+                child: FitPackIcon.material(
+                  Icons.fitness_center_rounded,
+                  color: c.primary,
+                ),
+              ),
+              AppSpacing.hGapMd,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l.homeNoRoutineTitle, style: context.texts.titleMedium),
+                    const SizedBox(height: 2),
+                    Text(
+                      l.homeNoRoutineSubtitle,
+                      style: context.texts.bodySmall?.copyWith(
+                        color: c.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          AppSpacing.vGapLg,
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              key: const ValueKey('home.pickProgram'),
+              onPressed: () => context.go(AppRoutes.workout),
+              icon: const FitPackIcon.material(
+                Icons.auto_awesome_rounded,
+                size: AppIconSize.sm,
+              ),
+              label: Text(l.homePickProgram),
+            ),
+          ),
+          AppSpacing.vGapSm,
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              key: const ValueKey('home.buildRoutine'),
+              onPressed: () => context.push(AppRoutes.routineNew),
+              icon: const FitPackIcon.material(
+                Icons.add_rounded,
+                size: AppIconSize.sm,
+              ),
+              label: Text(l.homeBuildRoutine),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// İlk hafta rehberi (docs/49 §3): hesabın ilk 14 gününde, üç ilk adım
+/// bitene kadar. Adımlar veriden okunur; bitince kart kendiliğinden kalkar.
+class _FirstWeekCard extends ConsumerWidget {
+  const _FirstWeekCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = ref.watch(firstWeekCardProvider);
+    if (p == null) return const SizedBox.shrink();
+    final l = AppL10n.of(context);
+    final c = context.colors;
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.lg),
+      child: _Card(
+        key: const ValueKey('home.firstWeek'),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l.homeFirstWeekTitle,
+                    style: context.texts.labelSmall?.copyWith(
+                      color: c.onSurfaceVariant,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+                Text(
+                  l.homeFirstWeekProgress(p.doneCount),
+                  style: context.texts.labelSmall?.copyWith(color: c.primary),
+                ),
+              ],
+            ),
+            AppSpacing.vGapSm,
+            _FirstWeekStep(
+              label: l.homeFirstWeekWorkout,
+              done: p.workout,
+              onTap: () => context.go(AppRoutes.workout),
+            ),
+            _FirstWeekStep(
+              label: l.homeFirstWeekMeal,
+              done: p.meal,
+              onTap: () => context.go(AppRoutes.nutrition),
+            ),
+            _FirstWeekStep(
+              label: l.homeFirstWeekWeight,
+              done: p.weight,
+              onTap: () => context.go(AppRoutes.progress),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FirstWeekStep extends StatelessWidget {
+  final String label;
+  final bool done;
+  final VoidCallback onTap;
+  const _FirstWeekStep({
+    required this.label,
+    required this.done,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return InkWell(
+      onTap: done ? null : onTap,
+      borderRadius: AppRadius.brMd,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: AppA11y.minTapTarget),
+        child: Row(
+          children: [
+            FitPackIcon.material(
+              done
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              color: done ? c.primary : c.outline,
+              size: AppIconSize.sm,
+            ),
+            AppSpacing.hGapMd,
+            Expanded(
+              child: Text(
+                label,
+                style: context.texts.bodyMedium?.copyWith(
+                  color: done ? c.onSurfaceVariant : c.onSurface,
+                  decoration: done ? TextDecoration.lineThrough : null,
+                ),
+              ),
+            ),
+            if (!done)
+              FitPackIcon.material(
+                Icons.chevron_right_rounded,
+                color: c.outline,
+                size: AppIconSize.sm,
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1162,6 +1378,7 @@ class _Card extends StatelessWidget {
   final Widget child;
   final EdgeInsets padding;
   const _Card({
+    super.key,
     required this.child,
     this.padding = const EdgeInsets.all(AppSpacing.lg),
   });

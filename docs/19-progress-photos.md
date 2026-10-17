@@ -25,7 +25,7 @@ motivasyonu" diye işaretlemiş. Kilo grafiği zaten var; fotoğraf onun eksik y
 - Galeri: tarihe göre gruplu ızgara, açıya göre süzme
 - **Karşılaştırma:** iki fotoğrafı yan yana koy (özelliğin asıl değeri)
 - Sil (satır + disk dosyası birlikte)
-- Fotoğraflar **cihazdan çıkmaz**
+- Fotoğraflar **sunucuya gitmez** (telefonun kendi yedeğine girer, §6)
 
 **Dilim 2 (sonra) — Supabase Storage**
 
@@ -134,7 +134,10 @@ için 1440 px fazlasıyla yeterli.
 Bunlar uygulamanın topladığı **en hassas veri** — çoğu iç çamaşırıyla çekilir.
 Kurallar:
 
-1. Dilim 1'de fotoğraflar cihazdan **çıkmaz**. Ağ çağrısı yok.
+1. Dilim 1'de fotoğraflar **sunucuya gitmez**. Ağ çağrısı yok. İşletim
+   sisteminin uygulama yedeğinden (iCloud / Google) dışlanmaz — telefon
+   değişince kaybolmasınlar; ekrandaki metin bunu açıkça söyler (CR-015,
+   Samet kararı 2026-10-17: yedekten çıkarmak yerine metni düzelt).
 2. Dilim 2'nin yüklemesi **varsayılan açık olmayacak** — kullanıcı açıkça
    onaylayacak, ne yüklendiği anlatılarak. Senkronun geri kalanı sessizce çalışır;
    burada sessizlik yanlış olur.

@@ -26,7 +26,7 @@ akışlarının uçtan uca cihaz QA kontrolü ayrıca açık.
 **2026-10-08 geri bildirim turu:** kilit ekranında antrenman (iOS Canlı
 Etkinlik), Keşfet'te 9 hazır program, yeni antrenman geçmişi (özet + detay),
 RPE'li ilerleme önerisi, arşiv görünür, çeşitli öğün bildirimleri, mola sesi
-ve bildirimi düzeltmeleri. Şema v14. Ayrıntı: NEXT_TASKS "Geri bildirim turu".
+ve bildirimi düzeltmeleri. O turda şema v14 idi. Ayrıntı: NEXT_TASKS "Geri bildirim turu".
 
 **2026-10-08 Velocity:** FitPack özel vektör ikonları, dolu lime seçili
 sekme ve ortak buton görünümü uygulandı. Analiz temiz, 740 test geçti.
@@ -101,7 +101,7 @@ ekran paylaşımı iOS 27+ ister; iOS 26.6 telefonda görsel kontrol yapılır.
 |--------|-----------|
 | Framework | Flutter 3.x |
 | State | Riverpod 2.x |
-| DB | Drift (SQLite) — şema **v10** (migration'lı) + Supabase senkron |
+| DB | Drift (SQLite, migration'lı; güncel sürüm `app_database.dart` → `schemaVersion`) + Supabase senkron |
 | Routing | go_router |
 | Grafikler | fl_chart |
 | Beslenme | OpenFoodFacts (`http`) + barkod (`mobile_scanner`) |

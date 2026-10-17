@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +8,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/units/units.dart';
 import '../../data/providers.dart';
-import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/glass.dart';
 import '../auth/auth_gate.dart';
@@ -169,24 +167,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             gender: _gender,
             // Günlük enerji tahmini için makul varsayılan; Ayarlar'dan değişir.
             activityLevel: 'moderate',
+            // Başlangıç kilosu ilk ölçüm olur → grafik 1. noktasını alır.
+            // Profille aynı transaction'da yazılır (CR-014).
+            initialWeightKg: _weight,
           );
 
-      // Başlangıç kilosunu ilk ölçüm olarak kaydet → grafik 1. noktasını alır.
-      final w = _weight;
-      if (w != null && w > 0) {
-        await ref.read(bodyDaoProvider).insertMeasurement(
-              BodyMeasurementsCompanion(
-                date: Value(DateTime.now()),
-                weightKg: Value(w),
-              ),
-            );
-      }
-
-      // Home provider'ları reaktif (H-05): profil + başlangıç kilosu DB'ye
+      // Home provider'ları reaktif: profil + başlangıç kilosu DB'ye
       // yazılınca kendiliğinden yansır — elle invalidate gerekmez.
 
-      // Kapı durumu güncellenmeden Ana Sayfa'ya gidilemez: `redirect` hâlâ
-      // "onboarded değil" görür ve kullanıcıyı buraya geri yollar (docs/18 §5.1).
+      // Kapı durumu yalnız kayıt tamamlandıktan sonra güncellenir. Güncellenmeden
+      // Ana Sayfa'ya gidilemez: `redirect` hâlâ "onboarded değil" görür ve
+      // kullanıcıyı buraya geri yollar (docs/18 §5.1).
       ref.read(authGateProvider).markOnboarded();
       if (mounted) context.go(AppRoutes.home);
     } catch (_) {

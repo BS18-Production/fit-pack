@@ -11,6 +11,7 @@ import '../activity/activity_providers.dart';
 import 'calendar_day_cell.dart';
 import 'calendar_logic.dart';
 import 'day_records.dart';
+import 'month_grid.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 
 /// Takvim — ay görünümü (docs/24 §2). Ana sayfa şeridinin başlığından açılır.
@@ -144,12 +145,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   CalendarWeekdayRow(
                       days: weekDays(startOfWeek(_month, weekStart))),
                   AppSpacing.vGapXs,
-                  _MonthGrid(
+                  MonthGrid(
                     month: _month,
                     weekStart: weekStart,
                     now: now,
                     selected: _selected,
-                    activity: activity,
+                    markOf: (day) => dayMarkOf(activity[day]),
                     onSelect: (d) => setState(() => _selected = d),
                   ),
                   Padding(
@@ -193,7 +194,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 style: context.texts.bodySmall
                     ?.copyWith(color: c.onSurfaceVariant)),
             AppSpacing.vGapMd,
-            DayRecords(activity: selectedAct),
+            DayRecords(day: _selected, activity: selectedAct),
             if (!isSameDay(_selected, now) || !_isCurrentMonth) ...[
               AppSpacing.vGapLg,
               FilledButton.icon(
@@ -216,58 +217,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
   static String _cap(String s) =>
       s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
-}
-
-class _MonthGrid extends StatelessWidget {
-  final DateTime month;
-  final int weekStart;
-  final DateTime now;
-  final DateTime selected;
-  final Map<int, DayActivity> activity;
-  final ValueChanged<DateTime> onSelect;
-
-  const _MonthGrid({
-    required this.month,
-    required this.weekStart,
-    required this.now,
-    required this.selected,
-    required this.activity,
-    required this.onSelect,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
-    // Ayın ilk gününden önceki boş hücre sayısı (hafta başı tercihine göre).
-    final lead = (month.weekday - weekStart) % 7;
-    final cells = lead + daysInMonth;
-    final rows = (cells / 7).ceil();
-
-    return Column(
-      children: [
-        for (var r = 0; r < rows; r++)
-          Row(
-            children: [
-              for (var col = 0; col < 7; col++)
-                Expanded(child: _cell(r * 7 + col - lead + 1, daysInMonth)),
-            ],
-          ),
-      ],
-    );
-  }
-
-  Widget _cell(int day, int daysInMonth) {
-    if (day < 1 || day > daysInMonth) return const SizedBox.shrink();
-    final d = DateTime(month.year, month.month, day);
-    return CalendarDayCell(
-      day: d,
-      mark: dayMarkOf(activity[day]),
-      isToday: isSameDay(d, now),
-      isSelected: isSameDay(d, selected),
-      isFuture: isFutureDay(d, now),
-      onTap: () => onSelect(d),
-    );
-  }
 }
 
 class _LegendDot extends StatelessWidget {

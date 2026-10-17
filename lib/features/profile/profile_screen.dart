@@ -78,9 +78,28 @@ class _ProfileBody extends ConsumerWidget {
 
   const _ProfileBody({required this.profile});
 
-  Future<void> _save(WidgetRef ref, UserProfileData updated) async {
-    await ref.read(userProfileDaoProvider).updateProfile(updated);
-    // userProfileProvider reaktif (H-05) → düzenleme kendiliğinden yansır.
+  /// Yalnız düzenlenen alanı yazar — [profile] diyalog açılırken alınmış
+  /// kopya, eskimiş olabilir (CR-013). userProfileProvider reaktif →
+  /// düzenleme kendiliğinden yansır.
+  ///
+  /// Başarısızsa kısa mesaj gösterir, gerçek hata loga (CR-019); `false`
+  /// döner ki çağıran "Kaydedildi" demesin.
+  Future<bool> _save(
+      BuildContext context, WidgetRef ref, UserProfileCompanion patch) async {
+    if (!context.mounted) return false;
+    final messenger = ScaffoldMessenger.of(context);
+    final message = AppL10n.of(context).commonSaveFailed;
+    final errorColor = context.colors.error;
+    try {
+      await ref.read(userProfileDaoProvider).updateFields(patch);
+      return true;
+    } catch (e) {
+      debugPrint('[fitpack.profile] profil yazılamadı | HATA: $e');
+      messenger.showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: errorColor),
+      );
+      return false;
+    }
   }
 
   static String _fmtDate(DateTime d) =>
@@ -97,8 +116,8 @@ class _ProfileBody extends ConsumerWidget {
       ],
       current: profile.gender,
     );
-    if (picked != null) {
-      await _save(ref, profile.copyWith(gender: Value(picked)));
+    if (picked != null && context.mounted) {
+      await _save(context, ref, UserProfileCompanion(gender: Value(picked)));
     }
   }
 
@@ -110,8 +129,8 @@ class _ProfileBody extends ConsumerWidget {
       options: [for (final k in activityLevelKeys) (k, activityLabel(l, k))],
       current: profile.activityLevel,
     );
-    if (picked != null) {
-      await _save(ref, profile.copyWith(activityLevel: Value(picked)));
+    if (picked != null && context.mounted) {
+      await _save(context, ref, UserProfileCompanion(activityLevel: Value(picked)));
     }
   }
 
@@ -128,16 +147,17 @@ class _ProfileBody extends ConsumerWidget {
           isInt: false,
           min: 120,
           max: 230,
-          apply: (v) => profile.copyWith(heightCm: Value(v.toDouble())));
+          apply: (v) => UserProfileCompanion(heightCm: Value(v.toDouble())));
     }
     final cm = await showDialog<double>(
       context: context,
       builder: (_) => _FtInDialog(
           title: l.settingsHeight, initialCm: profile.heightCm ?? 175),
     );
-    if (cm != null) {
-      await _save(ref, profile.copyWith(heightCm: Value(cm)));
-      if (context.mounted) {
+    if (cm != null && context.mounted) {
+      final ok =
+          await _save(context, ref, UserProfileCompanion(heightCm: Value(cm)));
+      if (ok && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppL10n.of(context).commonSaved)),
         );
@@ -154,8 +174,8 @@ class _ProfileBody extends ConsumerWidget {
       lastDate: DateTime(now.year - 10, 12, 31), // en az 10 yaş
       helpText: AppL10n.of(context).settingsPickBirthDate,
     );
-    if (picked != null) {
-      await _save(ref, profile.copyWith(birthDate: Value(picked)));
+    if (picked != null && context.mounted) {
+      await _save(context, ref, UserProfileCompanion(birthDate: Value(picked)));
     }
   }
 
@@ -168,7 +188,7 @@ class _ProfileBody extends ConsumerWidget {
     required bool isInt,
     required num min,
     required num max,
-    required UserProfileData Function(num value) apply,
+    required UserProfileCompanion Function(num value) apply,
   }) async {
     final result = await showNumberEditDialog(
       context,
@@ -179,9 +199,9 @@ class _ProfileBody extends ConsumerWidget {
       min: min,
       max: max,
     );
-    if (result != null) {
-      await _save(ref, apply(result));
-      if (context.mounted) {
+    if (result != null && context.mounted) {
+      final ok = await _save(context, ref, apply(result));
+      if (ok && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppL10n.of(context).commonSaved)),
         );
@@ -212,7 +232,7 @@ class _ProfileBody extends ConsumerWidget {
                   isInt: true,
                   min: 800,
                   max: 6000,
-                  apply: (v) => profile.copyWith(kcalGoal: v.toInt())),
+                  apply: (v) => UserProfileCompanion(kcalGoal: Value(v.toInt()))),
             ),
             SettingTile(
               icon: Icons.egg_alt_outlined,
@@ -225,7 +245,7 @@ class _ProfileBody extends ConsumerWidget {
                   isInt: true,
                   min: 30,
                   max: 400,
-                  apply: (v) => profile.copyWith(proteinGoal: v.toInt())),
+                  apply: (v) => UserProfileCompanion(proteinGoal: Value(v.toInt()))),
             ),
           ],
         ),
@@ -255,7 +275,7 @@ class _ProfileBody extends ConsumerWidget {
                   isInt: false,
                   min: units.weightFromKg(40).floor(),
                   max: units.weightFromKg(250).ceil(),
-                  apply: (v) => profile.copyWith(
+                  apply: (v) => UserProfileCompanion(
                       goalWeightKg: Value(units.weightToKg(v)))),
             ),
             // Güncel kilo/bel/kol tek form üzerinden girilir (İlerleme'deki ile

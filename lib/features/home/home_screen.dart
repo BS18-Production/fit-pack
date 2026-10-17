@@ -18,7 +18,7 @@ import '../health/step_providers.dart';
 import '../workout/routine_providers.dart';
 import '../workout/workout_draft.dart';
 import '../nutrition/nutrition_summary_card.dart';
-import '../nutrition/meal_idea_card.dart';
+import '../nutrition/today_meals_card.dart';
 import '../nutrition/nutrition_screen.dart' show selectedDateProvider;
 import 'workout_activity_card.dart';
 import 'providers/dashboard_providers.dart';
@@ -78,7 +78,7 @@ class HomeScreen extends ConsumerWidget {
             AppSpacing.vGapXl,
             _DayLogHeader(),
             AppSpacing.vGapMd,
-            MealIdeaCard(),
+            TodayMealsCard(),
             AppSpacing.vGapMd,
             UsualMealCard(),
             AppSpacing.vGapXl,

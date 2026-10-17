@@ -94,10 +94,18 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
 
       if (choice == _SignOutChoice.syncFirst) {
         setState(() => _busy = true);
-        await controller.syncNow();
-        final left = await controller.pendingCount();
+        int left;
+        try {
+          await controller.syncNow();
+          left = await controller.pendingCount();
+        } catch (e) {
+          // Sayım okunamadı → bekleyen var say, çıkma (CR-019).
+          debugPrint('[fitpack.cloud] çıkış öncesi eşitleme | HATA: $e');
+          left = 1;
+        } finally {
+          if (mounted) setState(() => _busy = false);
+        }
         if (!mounted) return;
-        setState(() => _busy = false);
         if (left > 0) {
           // Hâlâ bekliyor (ağ yok) → çıkma, kullanıcı tekrar deneyebilir.
           ScaffoldMessenger.of(context)
@@ -122,9 +130,18 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
     if (userId == null) return; // Oturum düşmüş → kapı zaten devreye girer.
 
     setState(() => _busy = true);
-    final result = await ref.read(syncRefreshProvider).syncNow(userId);
+    final ManualSyncResult result;
+    try {
+      result = await ref.read(syncRefreshProvider).syncNow(userId);
+    } catch (e) {
+      // Düğme her çıkışta serbest kalır (CR-019); veri yerelde güvende.
+      debugPrint('[fitpack.cloud] şimdi eşitle | HATA: $e');
+      messenger.showSnackBar(SnackBar(content: Text(l.cloudSyncFailed)));
+      return;
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
     if (!mounted) return;
-    setState(() => _busy = false);
 
     final String mesaj;
     if (result.ok) {

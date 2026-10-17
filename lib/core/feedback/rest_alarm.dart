@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'rest_sound.dart';
+
 /// Dinlenme sonu uyarısının Android yerel servisi (docs/25).
 ///
 /// Android'de dinlenme boyunca bir ön plan servisi çalışır: bildirimde canlı
@@ -22,6 +24,7 @@ class RestAlarm {
   Future<bool> start({
     required DateTime deadline,
     required bool sound,
+    required RestSound soundFile,
     required String title,
     required String doneTitle,
     required String doneBody,
@@ -31,6 +34,8 @@ class RestAlarm {
       final ok = await _channel.invokeMethod<bool>('start', {
         'deadlineMs': deadline.millisecondsSinceEpoch,
         'sound': sound,
+        // Servis Dart ile aynı Flutter varlığını çalar (kopya dosya yok).
+        'soundAsset': soundFile.countdownAsset,
         'title': title,
         'doneTitle': doneTitle,
         'doneBody': doneBody,

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android sisteminin gösterdiği bildirim kanalı adları (Ayarlar ›
+     Bildirimler). Uygulama içi metinler .arb'de; bunlar yerel tarafta. -->
+<resources>
+    <string name="channel_workout_name">Workout in progress</string>
+    <string name="channel_workout_desc">Current set and rest timer on the lock screen</string>
+    <string name="channel_rest_live_name">Rest countdown</string>
+    <string name="channel_rest_live_desc">Shows the running rest timer</string>
+    <string name="channel_rest_done_name">Rest over</string>
+    <string name="channel_rest_done_desc">Alerts when the rest between sets is over</string>
+</resources>

@@ -1,14 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/utils/adaptive_tdee.dart';
+import '../../core/utils/current_day.dart';
 import '../../data/database/daos/nutrition_dao.dart';
 import '../../data/providers.dart';
 import '../../data/reactive.dart';
 
 /// Gerçek harcama tahmini (docs/43). Kilo, öğün ya da "gün tamamlandı"
-/// değişince kendiliğinden yeniden hesaplanır.
+/// değişince kendiliğinden yeniden hesaplanır; gün dönünce de (dün tamamlanan
+/// gün yeni yazma beklemeden hesaba girer).
 final adaptiveTdeeProvider = StreamProvider<TdeeEstimate>((ref) {
   final db = ref.watch(databaseProvider);
+  ref.watch(currentDayProvider);
   return watchTables(
     db,
     [db.bodyMeasurements, db.foodLogs, db.nutritionDays],

@@ -15,7 +15,7 @@ Fit Pack, Samet Orhan tarafından geliştirilen kişisel bir uygulamadır. Veri 
 - Sağlık verileri: kilo, vücut yağ oranı ve vücut çevre ölçüleri. Açık rıza verirsen tartı uygulamalarının Apple Sağlık / Health Connect'e yazdığı kilo ve yağ oranı da.
 - Antrenman kayıtları: seanslar, setler, zorluk (RPE), notlar.
 - Beslenme kayıtları: öğünler, besinler, su.
-- Yalnız telefonunda kalanlar (sunucuya gitmez): ilerleme fotoğrafları ve günlük adım sayısı.
+- Sunucumuza hiç gitmeyenler: ilerleme fotoğrafları ve günlük adım sayısı. Bunlar telefonunda durur; telefonunun kendi yedeği (iCloud / Google) açıksa o yedeğe de girer.
 
 ## Neden işliyoruz ve hukuki dayanak
 
@@ -41,7 +41,7 @@ Verilerin hesabın açık olduğu sürece saklanır. Hesabını sildiğinde sunu
 
 KVKK md. 11 ve GDPR md. 15–22 kapsamındaki haklarının bir kısmını uygulamadan doğrudan kullanabilirsin:
 
-- Verilerine erişmek ve taşımak: Ayarlar → Dışa aktar (CSV / JSON).
+- Verilerine erişmek ve taşımak: iletişim adresine (yukarıda, "Veri sorumlusu") yazman yeterli; verilerini 30 gün içinde CSV / JSON olarak göndeririz.
 - Düzeltmek: ölçüm, öğün ve antrenmanları uygulamada düzenleyebilir ya da silebilirsin.
 - Silinmesini istemek: Hesap → Hesabı sil.
 - Sağlık verisi rızasını geri almak: Ayarlar → Sağlık → Kilo ve yağ oranı. Geri aldığında içe aktarma durur ve içe alınan ölçümler silinir; yeniden rıza verirsen yalnız yeni ölçümler gelir. Rızayı geri almak, o ana kadar yapılan işlemeyi geçersiz kılmaz.

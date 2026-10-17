@@ -47,6 +47,12 @@
       }
     }
   },
+  "commonSaveFailed": "Couldn't save, try again",
+  "@commonSaveFailed": {
+    "description": "Generic SnackBar when a user-initiated write fails (CR-019)."
+  },
+  "commonDeleteFailed": "Couldn't delete, try again",
+  "commonUndoFailed": "Couldn't undo, try again",
   "macroProtein": "Protein",
   "macroCarbs": "Carbs",
   "macroFat": "Fat",
@@ -336,6 +342,17 @@
   "workoutLibrary": "Exercise Library",
   "workoutAddPast": "Add Past Workout",
   "workoutHistory": "Workout History",
+  "wcalTitle": "Workout calendar",
+  "wcalEmpty": "No workout logged on this day.",
+  "wcalAddForDay": "Log a workout for this day",
+  "wcalMonthCount": "{count, plural, =0{No workouts this month} =1{1 workout day this month} other{{count} workout days this month}}",
+  "@wcalMonthCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "workoutThisWeekCaps": "THIS WEEK",
   "workoutTotalVolumeCaps": "TOTAL VOLUME",
   "workoutStartEmpty": "Start Empty Workout",
@@ -548,6 +565,12 @@
   "asEmptyWorkout": "Empty Workout",
   "liveSetLabel": "Set {n}/{total}",
   "liveAllDone": "All sets done",
+  "liveRestOver": "Rest over",
+  "liveNext": "Next",
+  "liveCompleteSet": "Complete set",
+  "liveAddRest": "+15 s",
+  "liveSkipRest": "Skip",
+  "liveElapsed": "Time",
   "@liveSetLabel": {
     "placeholders": {
       "n": {
@@ -905,12 +928,30 @@
   "notifRestTimerSub": "Notifies when rest ends while the app is in the background",
   "notifRestSound": "Rest timer sound",
   "notifRestSoundSub": "Beeps for the last 3 seconds and when rest ends. Uses media volume and plays over your music.",
+  "restSoundTitle": "Rest sound",
+  "restSoundSheetSub": "Plays in the last 3 seconds and when rest ends. Tap to choose and listen.",
+  "restSoundPreview": "Listen",
+  "restSoundDigitalBeep": "Digital beep",
+  "restSoundDigitalBeepHint": "Short beeps, one long start tone",
+  "restSoundClassicBell": "Classic bell",
+  "restSoundClassicBellHint": "A single clear bell strike",
+  "restSoundBoxingBell": "Boxing bell",
+  "restSoundBoxingBellHint": "Ring bell: ding-ding-ding",
+  "restSoundSoftChime": "Soft chime",
+  "restSoundSoftChimeHint": "Gentle, quiet chord",
+  "restSoundStrongAlert": "Strong alert",
+  "restSoundStrongAlertHint": "Loud two-tone alarm for noisy gyms",
+  "notifIosSoundOff": "Sound is off for Fit Pack notifications",
+  "notifIosSoundOffSub": "Turn it on in iPhone Settings › Notifications › Fit Pack › Sounds.",
+  "notifRestIosNote": "When the app is in the background, iPhone plays the rest alert as a notification: it is silent when the phone is on silent mode or a Focus filters it. With the app open, the sound always plays.",
   "notifWorkout": "Daily workout reminder",
   "notifWater": "Daily water reminder",
   "notifTime": "Time",
   "notifPermissionDenied": "Notification permission denied — enable it in system settings.",
   "notifRestDoneTitle": "Rest over",
   "notifRestDoneBody": "Time for the next set",
+  "notifRestEndingTitle": "Rest ends in 3 seconds",
+  "notifRestEndingBody": "Get ready for the next set",
   "notifWorkoutTitle": "Workout time",
   "notifWorkoutBody": "Your plan is waiting — a short session counts too.",
   "notifWaterTitle": "Water break",
@@ -1589,7 +1630,7 @@
   "notifWeeklyTitle": "Your week is ready",
   "notifWeeklyBody": "This week's summary and one focus for next week.",
   "ppTitle": "Progress photos",
-  "ppEntrySub": "{count} photo(s) · on this device only",
+  "ppEntrySub": "{count} photo(s) · never uploaded",
   "@ppEntrySub": {
     "placeholders": { "count": { "type": "int" } }
   },
@@ -1605,7 +1646,7 @@
   "ppGallery": "Choose from library",
   "ppAngle": "Angle",
   "ppDeleteTitle": "Delete photo?",
-  "ppDeleteMsg": "This photo has no backup; it can't be restored once deleted.",
+  "ppDeleteMsg": "This photo isn't backed up on our server; once deleted, it can't be restored in the app.",
   "ppCompare": "Compare",
   "ppCompareHint": "Select two photos to compare",
   "ppSelected": "{count}/2 selected",
@@ -1616,7 +1657,7 @@
   "@ppDaysApart": {
     "placeholders": { "days": { "type": "int" } }
   },
-  "ppDeviceOnly": "Photos are stored on this device only: not backed up, not saved to your gallery, and deleted if you switch accounts.",
+  "ppDeviceOnly": "Photos are never uploaded to our server or saved to your gallery; they're stored on this phone. If your phone's own backup (iCloud / Google) is on, they're included in it. They're deleted from this phone if you switch accounts.",
   "ppLoadError": "Couldn't load photos",
   "ppSaveError": "Couldn't save the photo",
   "ppMissingFile": "File not found",
@@ -1926,9 +1967,7 @@
   "journalEnergyGoal": "Daily goal",
   "journalProteinRing": "Inner ring: protein",
   "journalMeals": "Your meal journal",
-  "journalMealIdea": "Meal idea · illustrative photo",
-  "journalSalmonSalad": "Salmon salad",
-  "journalMealPhoto": "Illustrative photo of grilled salmon with greens, avocado and lemon",
+  "journalMealAdd": "+ Add",
   "journalActivity": "Workout activity",
   "journalActivityPeriod": "Last 7 days · estimated kcal",
   "journalActivityEmpty": "No workouts logged in the last 7 days.",
@@ -1947,8 +1986,6 @@
   "nutritionKcalAboveGoal": "kcal above goal",
   "nutritionKcalAtGoal": "kcal to goal",
   "nutritionDiary": "Meal journal",
-  "nutritionShowMacros": "Show macros",
-  "nutritionHideMacros": "Simple view",
   "nutritionFoodCount": "{count, plural, =0{No entries} =1{1 food} other{{count} foods}}",
   "@nutritionFoodCount": {
     "placeholders": {
@@ -1957,10 +1994,11 @@
       }
     }
   },
-  "nutritionDayCompleteToday": "Today's log is complete",
-  "nutritionDayCompletePast": "This day's log is complete",
-  "nutritionDayCompleteHint": "Marked days count as “known days” in your weekly review, so a partial log isn't mistaken for eating little.",
-  "nutritionDayCompleted": "Log complete",
+  "nutritionDayCompleteToday": "I logged all of today’s meals",
+  "nutritionDayCompletePast": "I logged all meals for this day",
+  "nutritionDayCompleteHint": "Tick it so the weekly review and assistant don’t treat this day as incomplete.",
+  "nutritionDayCompleted": "All meals logged",
+  "nutritionDayCompletedSub": "This day counts as complete in your weekly review.",
   "nutritionDayChangedAfter": "Changed after completion",
   "nutritionDayReopen": "Undo",
   "wrCompletedDays": "{days} completed days",

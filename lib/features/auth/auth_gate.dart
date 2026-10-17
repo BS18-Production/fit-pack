@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/router/app_routes.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
+import '../health/health_prefs.dart';
 import '../sync/sync_controller.dart' show syncLog;
 import '../sync/sync_refresh.dart';
 import 'account_switch.dart';
@@ -27,8 +28,12 @@ import 'account_switch.dart';
 /// kalıcı oturumundan gelir. `ChangeNotifier` olması GoRouter'ın
 /// `refreshListenable`ına bağlanmasını sağlar → çıkışta kapı anında devreye girer.
 class AuthGate extends ChangeNotifier {
-  AuthGate(this._db, {Future<void> Function(String userId)? pull})
-      : _pull = pull {
+  AuthGate(
+    this._db, {
+    Future<void> Function(String userId)? pull,
+    void Function()? onLocalDataWiped,
+  })  : _pull = pull,
+        _onLocalDataWiped = onLocalDataWiped {
     try {
       _sub = Supabase.instance.client.auth.onAuthStateChange.listen(_onAuth);
     } catch (_) {
@@ -42,6 +47,11 @@ class AuthGate extends ChangeNotifier {
   /// kapı KARARI ona bağlı değil (Kural 1) — pull başarısız olsa da yereldeki
   /// veriyle devam edilir. Test edilebilsin diye enjekte edilir.
   final Future<void> Function(String userId)? _pull;
+
+  /// Yerel kullanıcı verisi silindikten sonra çağrılır (CR-007). Temizlik
+  /// diskteki tercihleri siler ama yaşayan provider'lar bellekteki eski
+  /// hesabın değerini tutar; bu kanca onları yeniden yükletir.
+  final void Function()? _onLocalDataWiped;
 
   StreamSubscription<AuthState>? _sub;
 
@@ -98,6 +108,7 @@ class AuthGate extends ChangeNotifier {
     notifyListeners();
     try {
       await AccountSwitchGuard.wipeAndAdopt(_db, userId);
+      _onLocalDataWiped?.call();
       _pendingConflictRows = 0;
       _appliedUserId = userId;
       await _runPull(userId);
@@ -145,21 +156,31 @@ class AuthGate extends ChangeNotifier {
     // Yerel hesap kontrolü açılışta da çalışır (docs/20 §7.1 madde 2): ağ
     // gerektirmez, aynı kullanıcıda anında döner. Eskiden atlanıyordu — yarım
     // kalmış bir temizlik bir sonraki girişe kadar açıkta kalırdı.
+    AccountSwitch? outcome;
     try {
-      await AccountSwitchGuard.resumeIfInterrupted(_db);
+      if (await AccountSwitchGuard.resumeIfInterrupted(_db)) {
+        _onLocalDataWiped?.call();
+      }
       if (userId != null) {
-        final outcome = await AccountSwitchGuard.apply(_db, userId);
+        outcome = await AccountSwitchGuard.apply(_db, userId);
         if (outcome == AccountSwitch.pendingConflict) {
           _pendingConflictRows = await AccountSwitchGuard.pendingRowCount(_db);
         }
+        if (outcome == AccountSwitch.wiped) _onLocalDataWiped?.call();
       }
     } catch (e) {
       _accountError = true;
       syncLog('açılışta hesap kontrolü başarısız', error: e);
     }
     await _readOnboarded();
-    // Her açılışta pull tekrarlanmasın: olay bizden önce geldiyse zaten başladı.
-    if (userId != null && !alreadyApplied) unawaited(_backgroundPull(userId));
+    if (shouldPullOnBootstrap(
+      userId: userId,
+      alreadyApplied: alreadyApplied,
+      outcome: outcome,
+      accountError: _accountError,
+    )) {
+      unawaited(_backgroundPull(userId!));
+    }
   }
 
   /// Onboarding bitince çağrılır — kapı anında açılır.
@@ -209,6 +230,7 @@ class AuthGate extends ChangeNotifier {
         _pendingConflictRows = await AccountSwitchGuard.pendingRowCount(_db);
         return;
       }
+      if (outcome == AccountSwitch.wiped) _onLocalDataWiped?.call();
       _pendingConflictRows = 0;
       // Sunucudaki veriyi indir (docs/18 §6.4). Bunu onboarding kararından ÖNCE
       // yaparız: sunucuda `onboarded = 1` profil varsa kullanıcı onboarding'i
@@ -268,6 +290,9 @@ final authGateProvider = Provider<AuthGate>((ref) {
     // Çekme + okuma önbelleklerinin tazelenmesi `SyncRefresh`'te tek yerde
     // (docs/20 §6.5) — aynı işi öne gelme ve "Şimdi eşitle" de yapıyor.
     pull: (userId) => ref.read(syncRefreshProvider).pullNow(userId),
+    // Hesaba bağlı bellek durumları (CR-007). Adım bağlantısı ve haftası
+    // `healthPrefsProvider`'ı izlediği için kendiliğinden yenilenir.
+    onLocalDataWiped: () => ref.invalidate(healthPrefsProvider),
   );
   ref.onDispose(gate.dispose);
   return gate;
@@ -306,6 +331,24 @@ AuthAction authActionFor({
   if (event == AuthChangeEvent.initialSession) return AuthAction.markApplied;
   return AuthAction.applyAccount;
 }
+
+/// Açılışta arka plan çekmesi başlasın mı — saf mantık, test edilebilsin diye
+/// ayrı.
+///
+/// Her açılışta tekrarlanmaz: olay bizden önce geldiyse zaten başladı.
+/// **Hesap kontrolü çakışma ya da hata verdiyse çekilmez** (docs/47): yerel
+/// veri başka hesabındır ya da sahibi bilinmiyor; inen satırlar ona karışırdı.
+/// Çekme kendi içinde de sahipliği sorar — bu ikinci güvence.
+bool shouldPullOnBootstrap({
+  required String? userId,
+  required bool alreadyApplied,
+  required AccountSwitch? outcome,
+  required bool accountError,
+}) =>
+    userId != null &&
+    !alreadyApplied &&
+    !accountError &&
+    outcome != AccountSwitch.pendingConflict;
 
 /// Yönlendirme tablosu (docs/18 §5.1) — saf mantık, test edilebilir olsun diye
 /// GoRouter'dan ayrı:

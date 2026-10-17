@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/prefs/week_start_provider.dart';
+import '../../../core/utils/current_day.dart';
 import '../../../data/providers.dart';
 import '../../../data/reactive.dart';
 import '../../../data/database/app_database.dart';
@@ -24,8 +25,9 @@ final lastWorkoutSessionProvider = StreamProvider<WorkoutSession?>((ref) {
 
 final todayNutritionProvider = StreamProvider<DailyNutrition>((ref) {
   final db = ref.watch(databaseProvider);
+  final day = ref.watch(currentDayProvider);
   return watchTables(db, [db.foodLogs, db.foods],
-      () => ref.read(nutritionDaoProvider).getDailyTotals(DateTime.now()));
+      () => ref.read(nutritionDaoProvider).getDailyTotals(day));
 });
 
 final latestWeightProvider = StreamProvider<BodyMeasurement?>((ref) {
@@ -37,8 +39,9 @@ final latestWeightProvider = StreamProvider<BodyMeasurement?>((ref) {
 /// Bugünün su tüketimi (ml). Home su kartı izler.
 final todayWaterProvider = StreamProvider<int>((ref) {
   final db = ref.watch(databaseProvider);
+  final day = ref.watch(currentDayProvider);
   return watchTables(db, [db.waterIntake],
-      () => ref.read(nutritionDaoProvider).getWaterForDay(DateTime.now()));
+      () => ref.read(nutritionDaoProvider).getWaterForDay(day));
 });
 
 /// Ana Sayfa kilo hücresi. [delta]: trend hazırsa **7 günlük trend
@@ -75,6 +78,7 @@ final weightTrendProvider = StreamProvider<WeightTrend>((ref) {
 final weeklyStreakProvider = StreamProvider<WeeklyStreak>((ref) {
   final db = ref.watch(databaseProvider);
   final weekStart = ref.watch(weekStartProvider);
+  ref.watch(currentDayProvider); // hafta dönümü (CR-010)
   return watchTables(db, [db.workoutSessions, db.routines], () async {
     final dao = ref.read(workoutDaoProvider);
     final sessions = await dao.getAllSessions();

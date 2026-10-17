@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-10-11
+> **Son güncelleme:** 2026-10-17
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -12,7 +12,57 @@
 > kodlandı)
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
-> **Şema:** v15 · **Sahibi:** Samet Orhan (kişisel proje)
+> **Şema:** koddaki `schemaVersion` (`lib/data/database/app_database.dart`; 2026-10-17'de v16) · **Sahibi:** Samet Orhan (kişisel proje)
+
+## Codex incelemesi — senkron P1 düzeltmeleri · 2026-10-17
+
+Codex'in tam kod incelemesi (24 bulgu) dört veri açığını doğruladı, hepsi
+kapandı ([docs/46](docs/46-sync-capture-inflight-delete.md)): tek başına
+silme artık sunucuya gidiyor (CR-002); yüklenemeyen kayıt hesap değişiminde
+korunuyor (CR-005); çekme sırasında yapılan kayıt kuyruğa giriyor (CR-003);
+gönderim sürerken silinen kayıt geri gelmiyor (CR-004). Silme tetikleyicisi
+değişti; mevcut kurulumlar açılışta `trigger_rev` ile kendiliğinden güncellenir,
+şema sürümü değişmedi. 1006 test.
+
+**CR-001 de kapandı** ([docs/47](docs/47-sync-account-ownership.md)): senkron
+artık yalnız oturum açan hesap = cihazdaki verinin sahibi iken çalışır.
+Çakışma ekranı açıkken arka plan da bekler; hesap değişirken yolda kalan
+gönderim/çekme hiçbir şey yazmaz; başka hesaba ait satır gönderilmez. Şema ve
+sunucu değişmedi. 1018 test. Raporun P1'lerinden yalnız CR-006 (Android
+yayın ayarları) kaldı — yayın zamanına.
+
+**P2/P3 turu (aynı gün):** açılışta sürüm kontrolü ilk ekranı en fazla 1,5 sn
+bekletir (CR-009); Android'de eski molanın gecikmeli kapanışı yeni molayı
+susturmaz (CR-012); hesap silinince sağlık tercihinin bellek kopyası da
+sıfırlanır (CR-007); şema sürümü belgelerde tek yerde, koda yönlendirir
+(CR-023). 1024 test, iPhone'a kuruldu.
+
+**Veri doğruluğu turu:** uygulama açıkken gece yarısı geçince günlük ekranlar
+yeni güne geçer, "son 30 gün" gerçekten 30 gün (CR-010/011); profilde bir alanı
+düzenlemek yalnız o alanı yazar (CR-013); onboarding profil + ilk kilo tek
+transaction (CR-014); reaktif yardımcı ilk okuma sırasındaki yazmayı kaçırmaz
+(CR-008). 1042 test, iPhone'a kuruldu.
+
+**Son tur:** fotoğraf gizlilik metni telefonun kendi yedeğini de söyler
+(CR-015); sessiz kayıt hataları uyarı gösterir (CR-019); rekor ve asistan
+hesapları geçmiş büyüdükçe yavaşlamaz (CR-016/017); CI Android derlemesi ve
+Deno testlerini çalıştırır (CR-020). 1054 test, iPhone'a kuruldu. Asistan
+istek kaydı saklama göçü (CR-024) yazıldı, uygulanmadı.
+
+## Geri bildirim turu — kilit ekranı, mola sesi, takvim · 2026-10-12
+
+[docs/45](docs/45-feedback-round-oct11.md). Kilit ekranında antrenman başına
+**tek** kart (çift kartın kök nedeni: seans açılışında aynı karede iki
+`start`); iOS 17+ ve Android'de kart üstünden − · + · Seti tamamla, dinlenmede
++15 sn / Atla; dinlenme bitince kart kendiliğinden "Dinlenme bitti". Mola
+sesi: 5 sentetik ses (Ayarlar'da önizlemeli), bildirim dinlenme başlarken de
+kurulur. iOS'ta arka plan sesi bildirime bağlı → sessiz mod/Odaklanma'da
+sessiz (sistem kuralı; Time Sensitive ücretsiz hesapta imzalanmıyor).
+Antrenman sekmesinde gerçek takvim (eski ikon boş kayıt formuydu). Beslenme:
+makrolar hep görünür, "Kaydın tamam" sade onay satırı; Ana Sayfa öğün kartı
+bugünün 4 öğünü. Codex 2 tur inceleme (P1 dahil 12 bulgu düzeltildi).
+993 test; Android emülatörde uçtan uca; iPhone'a kuruldu — cihaz kontrolü
+Samet'te. Şema değişmedi. main `520a2d9`, push yok.
 
 ## Sağlık entegrasyonu — adım · 2026-10-11
 

@@ -81,6 +81,15 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String get commonSaveFailed => 'Couldn\'t save, try again';
+
+  @override
+  String get commonDeleteFailed => 'Couldn\'t delete, try again';
+
+  @override
+  String get commonUndoFailed => 'Couldn\'t undo, try again';
+
+  @override
   String get macroProtein => 'Protein';
 
   @override
@@ -521,6 +530,27 @@ class AppL10nEn extends AppL10n {
   String get workoutHistory => 'Workout History';
 
   @override
+  String get wcalTitle => 'Workout calendar';
+
+  @override
+  String get wcalEmpty => 'No workout logged on this day.';
+
+  @override
+  String get wcalAddForDay => 'Log a workout for this day';
+
+  @override
+  String wcalMonthCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count workout days this month',
+      one: '1 workout day this month',
+      zero: 'No workouts this month',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get workoutThisWeekCaps => 'THIS WEEK';
 
   @override
@@ -942,6 +972,24 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get liveAllDone => 'All sets done';
+
+  @override
+  String get liveRestOver => 'Rest over';
+
+  @override
+  String get liveNext => 'Next';
+
+  @override
+  String get liveCompleteSet => 'Complete set';
+
+  @override
+  String get liveAddRest => '+15 s';
+
+  @override
+  String get liveSkipRest => 'Skip';
+
+  @override
+  String get liveElapsed => 'Time';
 
   @override
   String get asPastEntry => 'Past entry';
@@ -1697,6 +1745,57 @@ class AppL10nEn extends AppL10n {
       'Beeps for the last 3 seconds and when rest ends. Uses media volume and plays over your music.';
 
   @override
+  String get restSoundTitle => 'Rest sound';
+
+  @override
+  String get restSoundSheetSub =>
+      'Plays in the last 3 seconds and when rest ends. Tap to choose and listen.';
+
+  @override
+  String get restSoundPreview => 'Listen';
+
+  @override
+  String get restSoundDigitalBeep => 'Digital beep';
+
+  @override
+  String get restSoundDigitalBeepHint => 'Short beeps, one long start tone';
+
+  @override
+  String get restSoundClassicBell => 'Classic bell';
+
+  @override
+  String get restSoundClassicBellHint => 'A single clear bell strike';
+
+  @override
+  String get restSoundBoxingBell => 'Boxing bell';
+
+  @override
+  String get restSoundBoxingBellHint => 'Ring bell: ding-ding-ding';
+
+  @override
+  String get restSoundSoftChime => 'Soft chime';
+
+  @override
+  String get restSoundSoftChimeHint => 'Gentle, quiet chord';
+
+  @override
+  String get restSoundStrongAlert => 'Strong alert';
+
+  @override
+  String get restSoundStrongAlertHint => 'Loud two-tone alarm for noisy gyms';
+
+  @override
+  String get notifIosSoundOff => 'Sound is off for Fit Pack notifications';
+
+  @override
+  String get notifIosSoundOffSub =>
+      'Turn it on in iPhone Settings › Notifications › Fit Pack › Sounds.';
+
+  @override
+  String get notifRestIosNote =>
+      'When the app is in the background, iPhone plays the rest alert as a notification: it is silent when the phone is on silent mode or a Focus filters it. With the app open, the sound always plays.';
+
+  @override
   String get notifWorkout => 'Daily workout reminder';
 
   @override
@@ -1714,6 +1813,12 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get notifRestDoneBody => 'Time for the next set';
+
+  @override
+  String get notifRestEndingTitle => 'Rest ends in 3 seconds';
+
+  @override
+  String get notifRestEndingBody => 'Get ready for the next set';
 
   @override
   String get notifWorkoutTitle => 'Workout time';
@@ -2544,7 +2649,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String ppEntrySub(int count) {
-    return '$count photo(s) · on this device only';
+    return '$count photo(s) · never uploaded';
   }
 
   @override
@@ -2586,7 +2691,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get ppDeleteMsg =>
-      'This photo has no backup; it can\'t be restored once deleted.';
+      'This photo isn\'t backed up on our server; once deleted, it can\'t be restored in the app.';
 
   @override
   String get ppCompare => 'Compare';
@@ -2606,7 +2711,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get ppDeviceOnly =>
-      'Photos are stored on this device only: not backed up, not saved to your gallery, and deleted if you switch accounts.';
+      'Photos are never uploaded to our server or saved to your gallery; they\'re stored on this phone. If your phone\'s own backup (iCloud / Google) is on, they\'re included in it. They\'re deleted from this phone if you switch accounts.';
 
   @override
   String get ppLoadError => 'Couldn\'t load photos';
@@ -3216,14 +3321,7 @@ class AppL10nEn extends AppL10n {
   String get journalMeals => 'Your meal journal';
 
   @override
-  String get journalMealIdea => 'Meal idea · illustrative photo';
-
-  @override
-  String get journalSalmonSalad => 'Salmon salad';
-
-  @override
-  String get journalMealPhoto =>
-      'Illustrative photo of grilled salmon with greens, avocado and lemon';
+  String get journalMealAdd => '+ Add';
 
   @override
   String get journalActivity => 'Workout activity';
@@ -3268,12 +3366,6 @@ class AppL10nEn extends AppL10n {
   String get nutritionDiary => 'Meal journal';
 
   @override
-  String get nutritionShowMacros => 'Show macros';
-
-  @override
-  String get nutritionHideMacros => 'Simple view';
-
-  @override
   String nutritionFoodCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -3286,17 +3378,21 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String get nutritionDayCompleteToday => 'Today\'s log is complete';
+  String get nutritionDayCompleteToday => 'I logged all of today’s meals';
 
   @override
-  String get nutritionDayCompletePast => 'This day\'s log is complete';
+  String get nutritionDayCompletePast => 'I logged all meals for this day';
 
   @override
   String get nutritionDayCompleteHint =>
-      'Marked days count as “known days” in your weekly review, so a partial log isn\'t mistaken for eating little.';
+      'Tick it so the weekly review and assistant don’t treat this day as incomplete.';
 
   @override
-  String get nutritionDayCompleted => 'Log complete';
+  String get nutritionDayCompleted => 'All meals logged';
+
+  @override
+  String get nutritionDayCompletedSub =>
+      'This day counts as complete in your weekly review.';
 
   @override
   String get nutritionDayChangedAfter => 'Changed after completion';

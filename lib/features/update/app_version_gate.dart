@@ -87,6 +87,22 @@ class UpdateGate extends ChangeNotifier {
 
   bool get blocked => _state.blocked;
 
+  /// Açılışta ilk kareyi en fazla bu kadar bekletir (CR-009).
+  static const startupDeadline = Duration(milliseconds: 1500);
+
+  /// Açılış kontrolü: [refresh]'i başlatır, en fazla [deadline] kadar bekler.
+  ///
+  /// Cevap gelmeyen bağlantıda (sinyali zayıf salon) yerel ekran ağa
+  /// bağlanmaz — istemcinin kendi süre sınırına kadar beklenmez. Süre dolunca
+  /// kontrol **iptal edilmez**, arkada sürer: geç gelen "çok eskisin" kararı
+  /// `notifyListeners` → yönlendirici (`refreshListenable`) yoluyla yine
+  /// uygulanır. Bedeli: o nadir durumda uygulamanın içi kısa süre görünür.
+  Future<void> refreshWithin([Duration deadline = startupDeadline]) =>
+      refresh().timeout(deadline, onTimeout: () {
+        syncLog('sürüm kapısı: ${deadline.inMilliseconds} ms içinde cevap yok '
+            '→ açılış sürüyor, kontrol arkada devam ediyor');
+      });
+
   /// Kapıyı yeniden değerlendirir. Açılışta ve uygulama öne geldiğinde
   /// çağrılır: kullanıcı mağazadan güncelleyip geri döndüğünde kapı
   /// kendiliğinden açılsın.

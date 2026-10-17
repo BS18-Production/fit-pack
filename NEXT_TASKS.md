@@ -1,5 +1,89 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## Codex kod incelemesi (16 Eki 2026) — senkron P1'leri · [docs/46](docs/46-sync-capture-inflight-delete.md)
+
+Rapor: 24 bulgu (6 P1, 15 P2, 3 P3). Önce veri kaybı / silme açıkları.
+Sahip Claude-5.
+
+- [x] CR-002 yalnız silme kalınca senkron turu çalışmıyordu (sayım mezar
+      taşlarını görmüyordu).
+- [x] CR-005 kalıcı hatalı kayıt (`sync_state=2`) hesap değişiminde uyarısız
+      siliniyordu.
+- [x] CR-003 yakalama bayrağı transaction dışındaydı → araya giren kayıt
+      kuyruksuz kalıyordu.
+- [x] CR-004 gönderim sürerken silinen kayıt geri geliyordu (silme
+      tetikleyicisi + `trigger_rev` açılış onarımı; şema değişmedi).
+- [x] 1006 test, analiz temiz; main'e birleşti, push yok.
+- [~] Samet cihazda: öğün ekle → hemen "Geri al" → "Şimdi eşitle" → başka
+      cihazda öğün yok. Samet atladı ("olmuştur"); testlerle kapsanıyor.
+- [x] CR-001 hesap değişiminde senkronun sahiplik sınırı
+      ([docs/47](docs/47-sync-account-ownership.md)): gönderim/çekme yalnız
+      oturum = yerel sahip iken; yolda kalan iş hesap değişince yazılmaz.
+      1018 test; main'e birleşti, push yok.
+- [x] CR-009 açılışta sürüm kontrolü en fazla 1,5 sn bekletir, CR-012 eski
+      mola kapanışı yeni molanın servisini kapatmaz, CR-007 hesap silinince
+      sağlık tercihinin bellek kopyası sıfırlanır, CR-023 şema sürümü ve
+      reaktiflik yorumları koda uyduruldu. 1024 test; main `caea6ef`, iPhone'a
+      kuruldu, push yok.
+- [x] CR-010/011 gece yarısı + tarih aralıkları (`currentDayProvider`), CR-013
+      profil tek alan yazımı (`updateFields`), CR-014 onboarding tek
+      transaction, CR-008 reaktif yardımcı önce abone olur. 1042 test; main
+      `d5ec247`, iPhone'a kuruldu, push yok.
+- [x] CR-015 fotoğraf metni telefon yedeğini söyler (Samet: seçenek b), CR-019
+      sessiz yazma hataları uyarı + kilit `finally`, CR-016 rekor tek geçiş,
+      CR-017 asistan dakikalık tick DB okumaz, küçükler (gün okları takvim
+      günü, öğün dilimi sınır zamanlayıcısı, eski catch log). 1054 test; main
+      `9e9a1cc`, iPhone'a kuruldu, push yok.
+- [x] CR-020 CI: Android debug derlemesi + ask-route Deno check/test (push
+      edilince ilk koşu doğrulanacak). SQL/RLS CI testi yok (Docker gerekir).
+- [ ] CR-024 göçü `20261017120000_assistant_requests_retention.sql` yazıldı,
+      UYGULANMADI → Dev'de uygula + `supabase/tests/assistant_requests_retention.sql`,
+      sonra Samet onayıyla üretim (sunucu kilidi Claude-2'de).
+- [ ] CR-022 → KARAR (Samet, 2026-10-17): uygulama içi "Dışa aktar" yalnız
+      premium özelliği olacak; şimdi GELİŞTİRİLMEYECEK. Motor (`ExportService`)
+      SİLİNMEZ, olduğu gibi bekler. Planı: monetizasyon işi açılınca
+      (a) premium: Ayarlar → Dışa aktar (CSV / JSON, tek dokunuş);
+      (b) herkes: kanuni veri erişim/taşıma hakkı (KVKK md. 11, GDPR md. 15/20)
+      ücretli yapılamaz → ücretsiz yol destek e-postasıyla talep. Gizlilik
+      politikası (health-next `assets/legal/privacy_*.md:44`) buna göre
+      yazılmalı: "uygulama içinden (premium) veya destek e-postasıyla".
+- [ ] Bekleyen: CR-018 büyük ekranları bölme, CR-021 delete_user göçü
+      (Claude-2), CR-006 yayın.
+- [ ] Samet Android'de (Samsung bağlanınca): kısa mola bitince 1 sn içinde
+      yeni mola → bildirim/ses/titreşim sürüyor mu (CR-012).
+- [ ] health-next birleşince: `app_database.dart` `schemaVersion` üstü yorum
+      güncel sürümü anlatsın (CR-023 kalanı).
+- [ ] CR-006 (Android yayın) yayın zamanına; P2/P3 kalanları raporda.
+
+## Geri bildirim turu (8 madde) — 2026-10-11/12 · [docs/45](docs/45-feedback-round-oct11.md)
+
+Problem: kilit ekranında aynı antrenmandan iki kart; mola sesi arkadayken
+çalmıyor; takvimden geçmiş gün boş; öğün kartı stok fotoğraf; makro anahtarı
+ve "Kaydın tamam" gereksiz/anlaşılmaz. Sahip Claude-3, inceleyen Codex (2 tur).
+
+- [x] Çift kart kök nedeni (aynı karede iki `start`) — Dart kuyruk + Swift
+      seri/tekil; test.
+- [x] Kilit ekranı etkileşimi: iOS 17 düğmeleri + Android tek bildirim:
+      − · + · Seti tamamla, dinlenmede +15 sn / Atla, "Dinlenme bitti"
+      durumu; set kimliği koruması. Kart ~145 pt (iOS 160 pt'de kesiyordu).
+- [x] Mola sesi: bildirim dinlenme başlarken de kurulur, seçili ses; 5 ses
+      + Ayarlar'da önizleme; taslakta dinlenme. iOS sessiz mod/Odaklanma =
+      sistem kuralı (Time Sensitive ücretsiz hesapta yok).
+- [x] Antrenman takvimi (eski ikon boş "geçmiş ekle" formuydu).
+- [x] Makrolar hep görünür; "Kaydın tamam" sade onay satırı (kaldırılmadı:
+      asistan + haftalık değerlendirme kullanıyor); öğün kartı = bugünün 4 öğünü.
+- [x] 993 test, analiz temiz; Android emülatörde kilit ekranı uçtan uca;
+      iPhone'a kuruldu. main'e birleşti (`520a2d9`), push yok.
+- [x] Samet iPhone'da doğruladı (2026-10-12): tek kart, düğmeler, ses seçimi.
+- [x] iOS arka planda son 3 sn: bildirim 3 sn önce + tam geri sayım sesi
+      (`869ebca`). **Samet: telefon SESLİYKEN başka uygulama açıkken dene.**
+- [ ] Sessiz modda arka plan geri sayımı — yalnız arka plan ses oturumuyla
+      mümkün (pil + App Store 2.5.4 riski); Samet kararı bekliyor.
+- [ ] Samsung SM A075F'de kilit ekranı + arka plan sesi.
+- [ ] `assets/images/salmon_salad.jpg` + pubspec satırı silinecek
+      (bağımlılık kilidi Claude-2'de — onun birleştirmesinde).
+- [ ] Sonraya: dinlenme bitince +15 sn (dokunduğu andan), seti atla (karar: hayır).
+
 ## Sağlık entegrasyonu — Faz 0–1: adım (docs/39) · 2026-10-11
 
 Problem: hareket verisi elle girilmiyor, uygulamada yoktu. Beklenen: Apple
@@ -95,8 +179,9 @@ cihazda görsel kontrol; iPhone'a uygulamayı kaldırmadan yerinde kurulum.
 - [x] **#3 Kilit ekranı, faz 1 (iOS)** — Canlı Etkinlik: hareket, set,
       hedef, dinlenme geri sayımı ([docs/32](docs/32-lock-screen-live-activity.md)).
       **Samet: rutin başlat → kilitle → kilit ekranı/Dynamic Island.**
-- [ ] **#3 faz 2** — kilit ekranından "Seti tamamla / +15 sn" düğmeleri
-      (iOS 17 LiveActivityIntent) + Android'de seans boyu bildirim + eylemler.
+- [x] **#3 faz 2** — kilit ekranından "Seti tamamla / ± / +15 sn / Atla"
+      (iOS 17 LiveActivityIntent) + Android'de seans boyu bildirim + eylemler
+      ([docs/45](docs/45-feedback-round-oct11.md), 2026-10-12).
 - [ ] **docs/28 F2 — rutinde set planı** (ısınma/drop setleri planlama;
       `set_plan` JSON kolonu, karar 1 açık).
 - [ ] Katman (ücretsiz/ücretli) kararı satıştan önce (docs/27).
@@ -389,7 +474,7 @@ ticari üründe düşüyor.
       **Not:** `SyncApply._insert` / `_update` hâlâ `customStatement`
       kullanıyor, yani çekilen ekleme/güncellemeler de akış bildirimi
       yapmıyor — orayı `SyncRefresh.onChanged`'deki elle invalidate listesi
-      kapatıyor (tasarım böyle, H-05 ertelenmiş). Silme o listeden kaçıyordu.
+      kapatıyor (o tarihteki tasarım; bugün `SyncPull` `notifyUpdates` da yapıyor, docs/20 §6.3). Silme o listeden kaçıyordu.
 - [x] **"Şimdi eşitle" ve ret bildirimi cihazda görüldü (00:27):** hesap
       ekranında düğme çalışıyor (gönder → çek), ve §2.3 bildirimi gerçek
       veriyle çıktı: **"1 kaydın buluttaki daha yeni sürümü alındı"** —

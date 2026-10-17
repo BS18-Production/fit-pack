@@ -10,6 +10,7 @@ yok; dosyalar doğrudan çalıştırılır.
 | Dosya | Kapsam |
 |---|---|
 | `sync_v2_stage3.sql` | `sync_guard` çakışma kuralı, saat kırpma, silme kazanır, yetkiler (29 test) |
+| `assistant_requests_retention.sql` | Asistan istek kimliklerinin 8 günlük saklama süresi (CR-024) — göç `20261017120000` uygulandıktan sonra |
 
 ## Çalıştırma
 

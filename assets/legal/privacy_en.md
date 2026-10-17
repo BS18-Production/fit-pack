@@ -15,7 +15,7 @@ Fit Pack is a personal app developed by Samet Orhan, who is the data controller.
 - Health data: weight, body fat percentage and body measurements. With your explicit consent, also the weight and body fat that your scale apps write to Apple Health / Health Connect.
 - Workout logs: sessions, sets, effort (RPE), notes.
 - Nutrition logs: meals, foods, water.
-- Kept only on your phone (never sent to our server): progress photos and daily step count.
+- Never sent to our server: progress photos and daily step count. They stay on your phone and are included in your phone's own backup (iCloud / Google) if you have it turned on.
 
 ## Why, and on what legal basis
 
@@ -41,7 +41,7 @@ Your data is kept while your account exists. When you delete your account, your 
 
 You can exercise several of your rights (GDPR Art. 15–22, KVKK Art. 11) directly in the app:
 
-- Access and portability: Settings → Export (CSV / JSON).
+- Access and portability: write to the contact address (above, "Controller") and we'll send your data as CSV / JSON within 30 days.
 - Rectification: edit or delete measurements, meals and workouts in the app.
 - Erasure: Account → Delete account.
 - Withdraw health data consent: Settings → Health → Weight and body fat. Importing stops and imported measurements are deleted; if you consent again, only new measurements are imported. Withdrawal does not affect processing before it.

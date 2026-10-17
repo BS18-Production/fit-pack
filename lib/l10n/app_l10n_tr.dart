@@ -81,6 +81,15 @@ class AppL10nTr extends AppL10n {
   }
 
   @override
+  String get commonSaveFailed => 'Kaydedilemedi, tekrar dene';
+
+  @override
+  String get commonDeleteFailed => 'Silinemedi, tekrar dene';
+
+  @override
+  String get commonUndoFailed => 'Geri alınamadı, tekrar dene';
+
+  @override
   String get macroProtein => 'Protein';
 
   @override
@@ -518,6 +527,26 @@ class AppL10nTr extends AppL10n {
   String get workoutHistory => 'Antrenman Geçmişi';
 
   @override
+  String get wcalTitle => 'Antrenman takvimi';
+
+  @override
+  String get wcalEmpty => 'Bu gün antrenman kaydı yok.';
+
+  @override
+  String get wcalAddForDay => 'Bu güne antrenman ekle';
+
+  @override
+  String wcalMonthCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Bu ay $count antrenman günü',
+      zero: 'Bu ay antrenman yok',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get workoutThisWeekCaps => 'BU HAFTA';
 
   @override
@@ -933,6 +962,24 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get liveAllDone => 'Tüm setler tamam';
+
+  @override
+  String get liveRestOver => 'Dinlenme bitti';
+
+  @override
+  String get liveNext => 'Sıradaki';
+
+  @override
+  String get liveCompleteSet => 'Seti tamamla';
+
+  @override
+  String get liveAddRest => '+15 sn';
+
+  @override
+  String get liveSkipRest => 'Atla';
+
+  @override
+  String get liveElapsed => 'Süre';
 
   @override
   String get asPastEntry => 'Geçmiş kayıt';
@@ -1687,6 +1734,58 @@ class AppL10nTr extends AppL10n {
       'Son 3 saniye ve mola bitince bip sesi. Medya sesini kullanır, müziğin üstünde çalar.';
 
   @override
+  String get restSoundTitle => 'Mola sesi';
+
+  @override
+  String get restSoundSheetSub =>
+      'Son 3 saniyede ve mola bitince çalar. Dokun: seç ve dinle.';
+
+  @override
+  String get restSoundPreview => 'Dinle';
+
+  @override
+  String get restSoundDigitalBeep => 'Dijital bip';
+
+  @override
+  String get restSoundDigitalBeepHint => 'Kısa bipler, uzun bir başlama sesi';
+
+  @override
+  String get restSoundClassicBell => 'Klasik zil';
+
+  @override
+  String get restSoundClassicBellHint => 'Tek, net bir zil vuruşu';
+
+  @override
+  String get restSoundBoxingBell => 'Boks zili';
+
+  @override
+  String get restSoundBoxingBellHint => 'Ring zili: ding-ding-ding';
+
+  @override
+  String get restSoundSoftChime => 'Yumuşak çan';
+
+  @override
+  String get restSoundSoftChimeHint => 'Nazik, kısık bir akor';
+
+  @override
+  String get restSoundStrongAlert => 'Güçlü alarm';
+
+  @override
+  String get restSoundStrongAlertHint =>
+      'Gürültülü salon için yüksek iki tonlu alarm';
+
+  @override
+  String get notifIosSoundOff => 'Fit Pack bildirim sesi kapalı';
+
+  @override
+  String get notifIosSoundOffSub =>
+      'iPhone Ayarlar › Bildirimler › Fit Pack › Sesler’den aç.';
+
+  @override
+  String get notifRestIosNote =>
+      'Uygulama arka plandayken mola sonu iPhone bildirimiyle gelir: telefon sessizdeyse ya da bir Odaklanma modu süzüyorsa ses çıkmaz. Uygulama açıkken ses her zaman çalar.';
+
+  @override
   String get notifWorkout => 'Günlük antrenman hatırlatıcı';
 
   @override
@@ -1704,6 +1803,12 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get notifRestDoneBody => 'Sıradaki set zamanı';
+
+  @override
+  String get notifRestEndingTitle => 'Dinlenme 3 saniyede bitiyor';
+
+  @override
+  String get notifRestEndingBody => 'Sıradaki sete hazırlan';
 
   @override
   String get notifWorkoutTitle => 'Antrenman zamanı';
@@ -2532,7 +2637,7 @@ class AppL10nTr extends AppL10n {
 
   @override
   String ppEntrySub(int count) {
-    return '$count fotoğraf · yalnız bu cihazda';
+    return '$count fotoğraf · sunucuya yüklenmez';
   }
 
   @override
@@ -2573,7 +2678,8 @@ class AppL10nTr extends AppL10n {
   String get ppDeleteTitle => 'Fotoğraf silinsin mi?';
 
   @override
-  String get ppDeleteMsg => 'Bu fotoğrafın yedeği yok; silinince geri gelmez.';
+  String get ppDeleteMsg =>
+      'Bu fotoğraf bizim sunucumuzda yedeklenmez; silinince uygulamadan geri getirilemez.';
 
   @override
   String get ppCompare => 'Karşılaştır';
@@ -2593,7 +2699,7 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get ppDeviceOnly =>
-      'Fotoğraflar yalnız bu cihazda saklanır: yedeklenmez, galeriye yazılmaz ve hesap değişiminde silinir.';
+      'Fotoğraflar sunucumuza yüklenmez, galeriye yazılmaz; bu telefonda saklanır. Telefonunun kendi yedeği (iCloud / Google) açıksa onun içinde de yer alır. Hesap değiştirince bu telefondan silinir.';
 
   @override
   String get ppLoadError => 'Fotoğraflar yüklenemedi';
@@ -3175,14 +3281,7 @@ class AppL10nTr extends AppL10n {
   String get journalMeals => 'Öğün günlüğün';
 
   @override
-  String get journalMealIdea => 'Öğün fikri · temsili görsel';
-
-  @override
-  String get journalSalmonSalad => 'Somonlu salata';
-
-  @override
-  String get journalMealPhoto =>
-      'Yeşillikler, avokado ve limonla ızgara somonun temsili görseli';
+  String get journalMealAdd => '+ Ekle';
 
   @override
   String get journalActivity => 'Antrenman aktivitesi';
@@ -3221,12 +3320,6 @@ class AppL10nTr extends AppL10n {
   String get nutritionDiary => 'Öğün günlüğü';
 
   @override
-  String get nutritionShowMacros => 'Makroları göster';
-
-  @override
-  String get nutritionHideMacros => 'Sade görünüm';
-
-  @override
   String nutritionFoodCount(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -3239,17 +3332,21 @@ class AppL10nTr extends AppL10n {
   }
 
   @override
-  String get nutritionDayCompleteToday => 'Bugünkü kaydım tamamlandı';
+  String get nutritionDayCompleteToday => 'Bugünün tüm öğünlerini girdim';
 
   @override
-  String get nutritionDayCompletePast => 'Bu günün kaydı tamamlandı';
+  String get nutritionDayCompletePast => 'Bu günün tüm öğünlerini girdim';
 
   @override
   String get nutritionDayCompleteHint =>
-      'İşaretlediğin günler haftalık değerlendirmede “bilinen gün” sayılır; eksik kayıt düşük tüketim sanılmaz.';
+      'İşaretle: haftalık değerlendirme ve asistan bu günü eksik saymaz.';
 
   @override
-  String get nutritionDayCompleted => 'Kaydın tamam';
+  String get nutritionDayCompleted => 'Tüm öğünler girildi';
+
+  @override
+  String get nutritionDayCompletedSub =>
+      'Bu gün haftalık değerlendirmede tam sayılıyor.';
 
   @override
   String get nutritionDayChangedAfter => 'Tamamlandıktan sonra değişti';

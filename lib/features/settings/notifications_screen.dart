@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,10 +7,18 @@ import '../../core/notifications/notification_prefs.dart';
 import '../../core/notifications/notification_service.dart';
 import '../../core/prefs/week_start_provider.dart';
 import '../insights/weekly_review_reminder.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/setting_tiles.dart';
 import '../../shared/widgets/fitpack_icon.dart';
+import 'rest_sound_picker.dart';
+
+/// iOS: bu uygulamanın bildirim sesi sistem ayarlarında açık mı (docs/45 §3).
+/// Kapalıysa arka plandaki mola sonu sessiz gelir — uygulama hatası değil,
+/// kullanıcıya gösterilir. Ekran her açılışta yeniden sorar.
+final _iosSoundAllowedProvider = FutureProvider.autoDispose<bool>(
+    (ref) => ref.read(notificationServiceProvider).iosSoundAllowed());
 
 /// Öğün hatırlatıcısını aç/kapat (docs/26). Ayarlar ve Beslenme ekranındaki
 /// öneri kartı aynı yolu kullanır. Açarken izin ister; zamanlamanın kendisi
@@ -206,8 +215,33 @@ class NotificationsScreen extends ConsumerWidget {
                     .read(notificationPrefsProvider.notifier)
                     .update(prefs.copyWith(restSoundEnabled: v)),
               ),
+              if (prefs.restSoundEnabled)
+                SettingTile(
+                  key: const ValueKey('notif.restSoundPick'),
+                  icon: Icons.music_note_rounded,
+                  title: l.restSoundTitle,
+                  value: restSoundName(l, prefs.restSound),
+                  onTap: () => showRestSoundPicker(context),
+                ),
+              if (prefs.restEnabled &&
+                  ref.watch(_iosSoundAllowedProvider).valueOrNull == false)
+                SettingTile(
+                  icon: Icons.volume_off_rounded,
+                  title: l.notifIosSoundOff,
+                  subtitle: l.notifIosSoundOffSub,
+                ),
             ],
           ),
+          // Arka plan bildirimi iOS'ta sessiz anahtara ve Odaklanma'ya uyar —
+          // uygulamanın aşamayacağı sistem kuralı; kullanıcı bilsin.
+          if (defaultTargetPlatform == TargetPlatform.iOS && prefs.restEnabled)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
+              child: Text(l.notifRestIosNote,
+                  style: context.texts.bodySmall
+                      ?.copyWith(color: context.colors.onSurfaceVariant)),
+            ),
           AppSpacing.vGapLg,
           SettingsSection(
             children: [

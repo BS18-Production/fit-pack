@@ -540,7 +540,7 @@ class _AssistantScreenState extends ConsumerState<AssistantScreen> {
               AppSpacing.vGapLg,
               Text(l.assistantError),
               TextButton(
-                onPressed: () => ref.invalidate(assistantDataProvider),
+                onPressed: () => ref.invalidate(assistantSnapshotProvider),
                 child: Text(l.assistantRetry),
               ),
             ],

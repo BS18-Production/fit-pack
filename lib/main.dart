@@ -66,9 +66,11 @@ void main() async {
 
   // Asgari sürüm kapısı (docs/23 §3.2). `runApp` ÖNCESİ: desteklenmeyen bir
   // build ilk kareden itibaren durdurulsun, arada uygulamanın içi görünmesin.
-  // Ağ yoksa kapı AÇILMAZ (docs/18 Kural 1) — kontrol sessizce geçilir,
-  // açılış gecikmesin diye hata beklenmez.
-  await container.read(updateGateProvider).refresh();
+  // Ağ yoksa kapı KAPANMAZ (docs/18 Kural 1) — kontrol sessizce geçilir.
+  // Cevap gelmeyen bağlantıda da ilk kare en fazla
+  // `UpdateGate.startupDeadline` bekler; kontrol arkada sürer, geç gelen
+  // karar yönlendirici üzerinden yine uygulanır (CR-009).
+  await container.read(updateGateProvider).refreshWithin();
 
   // İlk-kullanım ipuçları (docs/15 §B): mevcut kullanıcıya güncelleme sonrası
   // coach mark gösterme — yalnız yeni onboarding'den geçenler görür.

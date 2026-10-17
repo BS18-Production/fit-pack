@@ -11,23 +11,20 @@ import 'core/i18n/locale_provider.dart';
 import 'package:drift/drift.dart' show TableUpdateQuery;
 import 'core/notifications/notification_prefs.dart';
 import 'core/prefs/week_start_provider.dart';
+import 'core/utils/current_day.dart';
 import 'core/notifications/notification_service.dart';
 import 'data/providers.dart';
 import 'features/nutrition/meal_reminders.dart';
 import 'core/router/app_router.dart';
 import 'core/router/app_routes.dart';
 import 'l10n/app_l10n.dart';
-import 'features/home/providers/home_providers.dart';
-import 'features/home/providers/dashboard_providers.dart';
 import 'features/nutrition/nutrition_screen.dart' show selectedDateProvider;
-import 'features/workout/routine_providers.dart';
 import 'features/sync/sync_providers.dart';
 import 'features/sync/sync_refresh.dart';
 import 'features/update/update_providers.dart';
 import 'features/auth/auth_gate.dart';
 import 'features/health/body_providers.dart';
 import 'features/health/step_providers.dart';
-import 'features/profile/adaptive_tdee_provider.dart';
 
 class FitPackApp extends ConsumerStatefulWidget {
   const FitPackApp({super.key});
@@ -165,11 +162,13 @@ class _FitPackAppState extends ConsumerState<FitPackApp> {
   }
 }
 
-/// Gün değişimi bekçisi (CODE_REVIEW M-02). "Bugün" verileri (beslenme, su,
-/// günün rutini, seri) provider önbelleğinde kurulduğu günün DateTime.now()
-/// değeriyle yaşar. Uygulama gece açık kalır ya da ertesi gün arka plandan
-/// dönerse dünün verisi "bugün" diye görünürdü. Bu bekçi, uygulama öne her
-/// geldiğinde takvim günü değişmişse güne bağlı provider'ları tazeler.
+/// Gün değişimi bekçisi (CODE_REVIEW M-02, CR-010). "Bugün" verileri
+/// (beslenme, su, günün rutini, seri, son 30 gün…) güne bağlı provider'larda
+/// yaşar. Uygulama gece açık kalır ya da ertesi gün arka plandan dönerse
+/// dünün verisi "bugün" diye görünürdü. Bekçi takvim günü değişince
+/// [currentDayProvider]'ı ilerletir; güne bağlı provider'lar onu izlediği
+/// için kendiliğinden yeniden kurulur. İki tetik: ön planda gece yarısı
+/// zamanlayıcısı ve uygulamanın öne gelişi.
 class _DayRolloverGuard extends ConsumerStatefulWidget {
   final Widget child;
   const _DayRolloverGuard({required this.child});
@@ -180,7 +179,7 @@ class _DayRolloverGuard extends ConsumerStatefulWidget {
 
 class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     with WidgetsBindingObserver {
-  late DateTime _day = _today();
+  late final _midnight = MidnightTimer(onMidnight: () => _rollDay());
 
   // ── Öğün hatırlatıcıları (docs/26): kayıt değişince, öne gelince ve ayar
   // değişince yeniden kurulur — girilen öğünün bildirimi böyle iptal olur.
@@ -209,11 +208,6 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     }
   }
 
-  static DateTime _today() {
-    final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day);
-  }
-
   @override
   void initState() {
     super.initState();
@@ -229,6 +223,7 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
       _scheduleMealSync();
       unawaited(runBodyImportFrom(ref)); // docs/40: açılışta da
     });
+    _midnight.arm();
   }
 
   @override
@@ -236,6 +231,7 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     WidgetsBinding.instance.removeObserver(this);
     _foodLogChanges?.cancel();
     _mealSyncDebounce?.cancel();
+    _midnight.cancel();
     super.dispose();
   }
 
@@ -250,20 +246,27 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     // body_measurements'a yazılır → kilo okuyan ekranlar kendiliğinden tazelenir.
     unawaited(runBodyImportFrom(ref));
     unawaited(flushWorkoutOutbox(ref).catchError((_) {})); // docs/44 H-5
-    final today = _today();
-    if (today == _day) return;
-    _day = today;
-    // Güne bağlı tüm önbellekler tazelenir; beslenmede seçili gün yeni
-    // "bugün"e çekilir (dün gece bakılan gün artık geçmiş).
-    ref.invalidate(todayNutritionProvider);
-    ref.invalidate(todayWaterProvider);
-    ref.invalidate(todayRoutineProvider);
-    ref.invalidate(recentWorkoutActivityProvider);
-    ref.invalidate(weeklyStreakProvider);
-    ref.invalidate(weekWorkoutStatsProvider);
-    // docs/43: dün tamamlanan gün yeni yazma beklemeden hesaba girsin.
-    ref.invalidate(adaptiveTdeeProvider);
-    ref.read(selectedDateProvider.notifier).state = DateTime.now();
+    // Arka planda zamanlayıcı bekletilmiş olabilir: günü kontrol et, yeniden kur.
+    _rollDay(resumed: true);
+    _midnight.arm();
+  }
+
+  /// Takvim günü değiştiyse [currentDayProvider]'ı ilerletir.
+  ///
+  /// Beslenmede seçili gün: öne gelişte her zaman yeni "bugün"e çekilir (dün
+  /// gece bakılan gün artık geçmiş). Ön planda gece yarısında ise yalnız seçili
+  /// gün eski "bugün"se kayar — kullanıcının bilerek açtığı geçmiş gün
+  /// ekranın altından değişmez.
+  void _rollDay({bool resumed = false}) {
+    if (!mounted) return;
+    final today = dayStart(DateTime.now());
+    final previous = ref.read(currentDayProvider);
+    if (today == previous) return;
+    ref.read(currentDayProvider.notifier).state = today;
+    final selected = ref.read(selectedDateProvider.notifier);
+    if (resumed || dayStart(selected.state) == previous) {
+      selected.state = DateTime.now();
+    }
   }
 
   @override

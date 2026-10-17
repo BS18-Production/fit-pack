@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/router/app_routes.dart';
+import '../../core/utils/current_day.dart';
 import '../../core/theme/nutrition_theme.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/onboarding/first_run_hints.dart';
@@ -59,8 +60,6 @@ class NutritionScreen extends ConsumerStatefulWidget {
 }
 
 class _NutritionScreenState extends ConsumerState<NutritionScreen> {
-  bool _showMacros = false;
-
   void _invalidateAll(WidgetRef ref) {
     ref.invalidate(logsWithFoodProvider);
     ref.invalidate(nutritionTotalsProvider);
@@ -78,10 +77,26 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
     // artık reaktif provider'ların işi (elle invalidate yok).
     final dao = ref.read(nutritionDaoProvider);
     final l = AppL10n.of(context);
-    await dao.deleteFoodLog(item.log.id);
+    final messenger = ScaffoldMessenger.of(context);
+    final errorColor = context.colors.error;
+    // Hata şeridi — gerçek hata loga, kullanıcıya kısa mesaj (CR-019).
+    void fail(String what, Object e, String message) {
+      debugPrint('[fitpack.nutrition] $what | HATA: $e');
+      messenger
+        ..clearSnackBars()
+        ..showSnackBar(
+          SnackBar(content: Text(message), backgroundColor: errorColor),
+        );
+    }
+
+    try {
+      await dao.deleteFoodLog(item.log.id);
+    } catch (e) {
+      fail('öğün silinemedi', e, l.commonDeleteFailed);
+      return;
+    }
     // Kayıt/toplam provider'ları reaktif (H-05) → silme kendiliğinden yansır.
     if (!context.mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
     messenger.clearSnackBars();
     messenger.showSnackBar(
       SnackBar(
@@ -92,18 +107,22 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
         action: SnackBarAction(
           label: l.commonUndo,
           onPressed: () async {
-            await dao.insertFoodLog(
-              FoodLogsCompanion(
-                date: Value(item.log.date),
-                mealType: Value(item.log.mealType),
-                foodId: Value(item.log.foodId),
-                grams: Value(item.log.grams),
-                computedKcal: Value(item.log.computedKcal),
-                computedProtein: Value(item.log.computedProtein),
-                computedCarb: Value(item.log.computedCarb),
-                computedFat: Value(item.log.computedFat),
-              ),
-            );
+            try {
+              await dao.insertFoodLog(
+                FoodLogsCompanion(
+                  date: Value(item.log.date),
+                  mealType: Value(item.log.mealType),
+                  foodId: Value(item.log.foodId),
+                  grams: Value(item.log.grams),
+                  computedKcal: Value(item.log.computedKcal),
+                  computedProtein: Value(item.log.computedProtein),
+                  computedCarb: Value(item.log.computedCarb),
+                  computedFat: Value(item.log.computedFat),
+                ),
+              );
+            } catch (e) {
+              fail('silme geri alınamadı', e, l.commonUndoFailed);
+            }
             // Reaktif provider'lar (H-05) geri-al eklemesini kendiliğinden yansıtır.
           },
         ),
@@ -227,12 +246,14 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
             _DateBar(
               date: date,
               isToday: isToday,
-              onPrev: () => ref.read(selectedDateProvider.notifier).state = date
-                  .subtract(const Duration(days: 1)),
+              // Takvim günü, ±24 saat değil: yaz saati gününde 24 saat
+              // gece yarısına denk gelmez (CR-011).
+              onPrev: () => ref.read(selectedDateProvider.notifier).state =
+                  addDays(date, -1),
               onNext: isToday
                   ? null
-                  : () => ref.read(selectedDateProvider.notifier).state = date
-                        .add(const Duration(days: 1)),
+                  : () => ref.read(selectedDateProvider.notifier).state =
+                      addDays(date, 1),
             ),
             AppSpacing.vGapLg,
             totalsAsync.when(
@@ -249,34 +270,9 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
               error: (_, _) => const SizedBox.shrink(),
             ),
             AppSpacing.vGapXl,
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final toggle = TextButton(
-                  key: const ValueKey('nutrition.macros'),
-                  onPressed: () => setState(() => _showMacros = !_showMacros),
-                  child: Text(
-                    _showMacros ? l.nutritionHideMacros : l.nutritionShowMacros,
-                  ),
-                );
-                final title = Text(
-                  l.nutritionDiary,
-                  style: context.texts.titleMedium,
-                );
-                if (constraints.maxWidth < 330 ||
-                    MediaQuery.textScalerOf(context).scale(1) > 1.15) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [title, toggle],
-                  );
-                }
-                return Row(
-                  children: [
-                    Expanded(child: title),
-                    toggle,
-                  ],
-                );
-              },
-            ),
+            // Makrolar her kayıtta görünür (Samet, 2026-10-11) — görünüm
+            // anahtarı kaldırıldı; satırda gramla aynı satırda durur.
+            Text(l.nutritionDiary, style: context.texts.titleMedium),
             AppSpacing.vGapSm,
             logsAsync.when(
               loading: () => Column(
@@ -325,7 +321,6 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
                             '${date.year}-${date.month}-${date.day}-$mealType',
                           ),
                           initiallyExpanded: latest == mealType,
-                          showMacros: _showMacros,
                           showUsual: isToday,
                           mealType: mealType,
                           items: logs
@@ -373,7 +368,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
   Future<void> _copyYesterday(BuildContext context, WidgetRef ref) async {
     final l = AppL10n.of(context);
     final date = ref.read(selectedDateProvider);
-    final from = date.subtract(const Duration(days: 1));
+    final from = addDays(date, -1);
     final messenger = ScaffoldMessenger.of(context);
     final busy = ref.read(copyDayBusyProvider.notifier);
     if (busy.state) return; // ikinci dokunuş
@@ -485,7 +480,7 @@ class _DateNavButton extends StatelessWidget {
 class _MealSection extends StatefulWidget {
   final String mealType;
   final List<FoodLogWithFood> items;
-  final bool initiallyExpanded, showMacros, showUsual;
+  final bool initiallyExpanded, showUsual;
   final VoidCallback onAddFood, onCopyFromDay;
   final void Function(FoodLogWithFood) onDelete;
   const _MealSection({
@@ -493,7 +488,6 @@ class _MealSection extends StatefulWidget {
     required this.mealType,
     required this.items,
     required this.initiallyExpanded,
-    required this.showMacros,
     required this.showUsual,
     required this.onAddFood,
     required this.onCopyFromDay,
@@ -620,7 +614,6 @@ class _MealSectionState extends State<_MealSection> {
             (item) => _FoodLogRow(
               key: ValueKey(item.log.id),
               item: item,
-              showMacros: widget.showMacros,
               onDelete: () => widget.onDelete(item),
             ),
           ),
@@ -637,13 +630,11 @@ class _MealSectionState extends State<_MealSection> {
 class _FoodLogRow extends StatelessWidget {
   final FoodLogWithFood item;
   final VoidCallback onDelete;
-  final bool showMacros;
 
   const _FoodLogRow({
     super.key,
     required this.item,
     required this.onDelete,
-    required this.showMacros,
   });
 
   @override
@@ -681,22 +672,16 @@ class _FoodLogRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   AppSpacing.vGapXs,
-                  Text(
-                    item.food.source == quickFoodSource
-                        ? AppL10n.of(context).nhQuickEntry
-                        : '${context.numFmt.format(log.grams.round())} g',
-                    style: context.texts.bodySmall?.copyWith(
-                      color: context.colors.onSurfaceVariant,
-                    ),
+                  // Miktar + makrolar tek satır: bilgi hep orada, satır
+                  // yüksekliği değişmez (eski "Makroları göster" yerine).
+                  MacroInlineText(
+                    prefix: item.food.source == quickFoodSource
+                        ? '${AppL10n.of(context).nhQuickEntry} · '
+                        : '${context.numFmt.format(log.grams.round())} g · ',
+                    protein: log.computedProtein,
+                    carb: log.computedCarb,
+                    fat: log.computedFat,
                   ),
-                  if (showMacros) ...[
-                    AppSpacing.vGapXs,
-                    MacroInlineText(
-                      protein: log.computedProtein,
-                      carb: log.computedCarb,
-                      fat: log.computedFat,
-                    ),
-                  ],
                 ],
               ),
             ),

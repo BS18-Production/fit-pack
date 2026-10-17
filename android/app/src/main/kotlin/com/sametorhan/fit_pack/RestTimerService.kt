@@ -22,6 +22,9 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
+import io.flutter.FlutterInjector
+import java.io.File
 
 /**
  * Dinlenme sayacı — ön plan servisi (docs/25).
@@ -37,6 +40,11 @@ import androidx.core.app.NotificationCompat
  * + bitiş) çalar, bitişte titreştirir ve "dinlenme bitti" bildirimi bırakır.
  * Ses ve titreşim yalnız buradan gelir (Android'de Dart çalmaz) — iki kaynak
  * olursa bipler üst üste biner.
+ *
+ * **Seans bildirimiyle tek kart (docs/45).** Seans sürerken ön plan bildirimi
+ * [WorkoutNotification]'ın kartıdır (aynı kimlik): dinlenme bitince kart
+ * kaldırılmaz, "Dinlenme bitti" durumuna geçer. Ses Ayarlar'da seçilen
+ * dosyadır (Flutter varlığı — `assets/sounds/`).
  */
 class RestTimerService : Service() {
 
@@ -45,13 +53,20 @@ class RestTimerService : Service() {
         const val ACTION_STOP = "fit_pack.rest.STOP"
         const val EXTRA_DEADLINE = "deadline"
         const val EXTRA_SOUND = "sound"
+        const val EXTRA_SOUND_ASSET = "soundAsset"
         const val EXTRA_TITLE = "title"
         const val EXTRA_DONE_TITLE = "doneTitle"
         const val EXTRA_DONE_BODY = "doneBody"
 
         private const val CHANNEL_LIVE = "rest_timer_live"
         private const val CHANNEL_DONE = "rest_timer_done"
-        private const val ID_LIVE = 7101
+        /** Seans bildirimiyle ortak kimlik (bkz. [WorkoutNotification]). */
+        const val ID_LIVE = 7101
+
+        /** Servis ön planda mı (seans bildirimi kaldırılırken bakılır). */
+        @Volatile
+        var isRunning = false
+            private set
         // flutter_local_notifications'taki idRest ile aynı değil — o kanal
         // artık yalnız iOS'ta kullanılıyor.
         private const val ID_DONE = 7102
@@ -64,6 +79,7 @@ class RestTimerService : Service() {
             context: Context,
             deadlineMs: Long,
             sound: Boolean,
+            soundAsset: String,
             title: String,
             doneTitle: String,
             doneBody: String,
@@ -72,6 +88,7 @@ class RestTimerService : Service() {
                 .setAction(ACTION_START)
                 .putExtra(EXTRA_DEADLINE, deadlineMs)
                 .putExtra(EXTRA_SOUND, sound)
+                .putExtra(EXTRA_SOUND_ASSET, soundAsset)
                 .putExtra(EXTRA_TITLE, title)
                 .putExtra(EXTRA_DONE_TITLE, doneTitle)
                 .putExtra(EXTRA_DONE_BODY, doneBody)
@@ -98,11 +115,23 @@ class RestTimerService : Service() {
     private var focusRequest: AudioFocusRequest? = null
     private var deadlineMs = 0L
     private var sound = true
+    private var soundAsset = ""
     private var doneTitle = ""
     private var doneBody = ""
 
     private val playCountdown = Runnable { startCountdown() }
     private val finish = Runnable { onDeadline() }
+
+    /** Son başlatma isteğinin kimliği — kapanış yalnız ona bağlı (CR-012). */
+    private var lastStartId = 0
+
+    /**
+     * Bitişten sonra gecikmeli kapanış. Adı var ki yeni mola başlarken
+     * iptal edilebilsin: yoksa önceki molanın 1,5 sn'lik kapanışı yeni
+     * molanın servisini de kapatıyordu (CR-012). [stopSelfResult] ayrıca
+     * arada yeni başlatma geldiyse kapatmaz.
+     */
+    private val stopAfterFinish = Runnable { stopSelfResult(lastStartId) }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -111,15 +140,20 @@ class RestTimerService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
+        lastStartId = startId
+        handler.removeCallbacks(stopAfterFinish)
         deadlineMs = intent?.getLongExtra(EXTRA_DEADLINE, 0L) ?: 0L
         sound = intent?.getBooleanExtra(EXTRA_SOUND, true) ?: true
+        soundAsset = intent?.getStringExtra(EXTRA_SOUND_ASSET) ?: ""
         val title = intent?.getStringExtra(EXTRA_TITLE) ?: ""
         doneTitle = intent?.getStringExtra(EXTRA_DONE_TITLE) ?: ""
         doneBody = intent?.getStringExtra(EXTRA_DONE_BODY) ?: ""
 
         ensureChannels()
         // startForegroundService'ten sonra 5 sn içinde ÇAĞRILMALI — her durumda.
-        val live = liveNotification(title)
+        // Seans açıksa onun kartı (eylem düğmeli); değilse yalnız geri sayım.
+        val live = WorkoutNotification.build(this) ?: liveNotification(title)
+        isRunning = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(ID_LIVE, live, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         } else {
@@ -129,7 +163,7 @@ class RestTimerService : Service() {
 
         val left = deadlineMs - System.currentTimeMillis()
         if (left <= 0) {
-            stopSelf()
+            stopSelfResult(startId)
             return START_NOT_STICKY
         }
         acquireWakeLock(left)
@@ -164,18 +198,34 @@ class RestTimerService : Service() {
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .build()
-        val afd = resources.openRawResourceFd(R.raw.rest_countdown) ?: return
         player = try {
             MediaPlayer().apply {
                 setAudioAttributes(attrs)
-                setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                setSoundSource(this)
                 prepare() // önceden hazırla: çalma anında yükleme gecikmesi olmasın
                 setOnCompletionListener { abandonFocus() }
             }
         } catch (e: Exception) {
             null // ses en iyi çaba; titreşim ve bildirim yine çalışır
-        } finally {
-            afd.close()
+        }
+    }
+
+    /**
+     * Seçili sesi Flutter varlıklarından açar (`assets/sounds/…` — Dart ile
+     * aynı dosya, kopyası yok). Varlık APK'da sıkıştırılmışsa dosya
+     * tanımlayıcısı açılamaz: önbelleğe bir kez kopyalanıp oradan çalınır.
+     */
+    private fun setSoundSource(p: MediaPlayer) {
+        val key = FlutterInjector.instance().flutterLoader().getLookupKeyForAsset(soundAsset)
+        try {
+            assets.openFd(key).use { p.setDataSource(it.fileDescriptor, it.startOffset, it.length) }
+        } catch (e: Exception) {
+            val cached = File(cacheDir, "rest_sounds/" + soundAsset.substringAfterLast('/'))
+            if (!cached.exists()) {
+                cached.parentFile?.mkdirs()
+                assets.open(key).use { input -> cached.outputStream().use { input.copyTo(it) } }
+            }
+            p.setDataSource(cached.path)
         }
     }
 
@@ -193,6 +243,11 @@ class RestTimerService : Service() {
 
     private fun onDeadline() {
         vibrate()
+        // Seans kartı kalsın, "Dinlenme bitti"ye geçsin (Dart uyuyor olabilir).
+        if (WorkoutNotification.state != null) {
+            ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_DETACH)
+            WorkoutNotification.restEnded(this)
+        }
         // Uygulama ekrandaysa sayaç zaten görünüyor — bildirim gereksiz.
         // Boş başlık = kullanıcı mola bildirimini kapatmış.
         if (doneTitle.isNotEmpty() && !appInForeground()) {
@@ -200,7 +255,7 @@ class RestTimerService : Service() {
                 ?.notify(ID_DONE, doneNotification())
         }
         // Bitiş sesi (~0,6 sn) bitsin, sonra servisi kapat.
-        handler.postDelayed({ stopSelf() }, 1500)
+        handler.postDelayed(stopAfterFinish, 1500)
     }
 
     private fun appInForeground(): Boolean {
@@ -311,16 +366,16 @@ class RestTimerService : Service() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val nm = getSystemService(NotificationManager::class.java) ?: return
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_LIVE, "Rest countdown",
+            NotificationChannel(CHANNEL_LIVE, getString(R.string.channel_rest_live_name),
                 NotificationManager.IMPORTANCE_LOW).apply {
-                description = "Shows the running rest timer"
+                description = getString(R.string.channel_rest_live_desc)
                 setShowBadge(false)
             }
         )
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_DONE, "Rest over",
+            NotificationChannel(CHANNEL_DONE, getString(R.string.channel_rest_done_name),
                 NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "Alerts when the rest between sets is over"
+                description = getString(R.string.channel_rest_done_desc)
                 setSound(null, null)
                 enableVibration(false) // titreşim servisten, deseniyle
             }
@@ -334,6 +389,12 @@ class RestTimerService : Service() {
     }
 
     override fun onDestroy() {
+        isRunning = false
+        // Atla / süre değişimi: seans kartı servisle birlikte silinmesin.
+        if (WorkoutNotification.state != null) {
+            ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_DETACH)
+            WorkoutNotification.post(this)
+        }
         handler.removeCallbacksAndMessages(null)
         releasePlayer()
         if (wakeLock?.isHeld == true) wakeLock?.release()

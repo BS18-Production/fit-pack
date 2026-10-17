@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/prefs/week_start_provider.dart';
+import '../../core/utils/current_day.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../data/reactive.dart';
@@ -23,12 +24,23 @@ final assistantClockProvider = StreamProvider.autoDispose<DateTime>((
   yield DateTime.now();
   yield* Stream.periodic(const Duration(minutes: 1), (_) => DateTime.now());
 });
-final assistantDataProvider = StreamProvider.autoDispose<AssistantData>((ref) {
+
+/// Asistanın veritabanı fotoğrafı (CR-017): yalnız tablo değişiminde, gün
+/// ilerleyince ([currentDayProvider]) ve hesap/hafta başı değişince yeniden
+/// okunur. Dakikalık saat buraya BAĞLI DEĞİL — eskiden her dakika bütün
+/// seanslar, setler, kataloglar ve ölçümler yeniden yükleniyordu.
+///
+/// Pencereler güne göre: öğün ve tamamlanan günler son 30 gün, ağırlıklı set
+/// noktaları 1970'ten (asistanın "tüm zamanlar" dönemi bunlarla hesaplanır).
+/// `now` burada günün başı; gerçek an [assistantDataProvider]'da eklenir.
+final assistantSnapshotProvider = StreamProvider.autoDispose<AssistantData>((
+  ref,
+) {
   ref.watch(currentUserProvider); // hesap değişiminde eski sonuç gösterilmez
-  final now = ref.watch(assistantClockProvider).valueOrNull ?? DateTime.now();
+  final day = ref.watch(currentDayProvider);
   final weekStart = ref.watch(weekStartProvider);
   final db = ref.watch(databaseProvider);
-  // Saat/hesap değişip sağlayıcı kapanırken devam eden DAO çağrısı ref kullanmaz.
+  // Gün/hesap değişip sağlayıcı kapanırken devam eden DAO çağrısı ref kullanmaz.
   final wo = ref.watch(workoutDaoProvider);
   final nut = ref.watch(nutritionDaoProvider);
   final body = ref.watch(bodyDaoProvider);
@@ -47,11 +59,11 @@ final assistantDataProvider = StreamProvider.autoDispose<AssistantData>((ref) {
       db.userProfile,
     ],
     () async {
-      final start = DateTime(now.year, now.month, now.day - 30);
-      final end = DateTime(now.year, now.month, now.day + 1);
+      final start = addDays(day, -30);
+      final end = addDays(day, 1);
       final sessions = await wo.getAllSessions();
       return AssistantData(
-        now: now,
+        now: day,
         weekStart: weekStart,
         sessions: sessions.where((v) => v.date.isBefore(end)).toList(),
         sets: await wo.getSetsForSessions(sessions.map((v) => v.id).toList()),
@@ -76,6 +88,17 @@ final assistantDataProvider = StreamProvider.autoDispose<AssistantData>((ref) {
       );
     },
   );
+});
+
+/// Ekranın kullandığı veri: [assistantSnapshotProvider] + dakikalık saat.
+/// Saat ilerleyince yalnız `now` değişir (ucuz kopya); veritabanı okunmaz.
+///
+/// `async*` DEĞİL: üreteç gövdesi geç başlar, iki `watch` arasında fotoğraf
+/// dinleyicisiz kalıp kapanır ve her dakika yeniden okunurdu.
+final assistantDataProvider = StreamProvider.autoDispose<AssistantData>((ref) {
+  final now = ref.watch(assistantClockProvider).valueOrNull ?? DateTime.now();
+  final snap = ref.watch(assistantSnapshotProvider.future);
+  return Stream.fromFuture(snap.then((d) => d.at(now)));
 });
 final assistantQualityProvider =
     StreamProvider.autoDispose<List<AssistantQualityEvent>>((ref) async* {

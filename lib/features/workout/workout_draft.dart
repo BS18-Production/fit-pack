@@ -94,17 +94,29 @@ class WorkoutDraft {
   final int? routineId;
   final int startedAtMs;
   final int sessionDateMs;
+  // Süren dinlenme (docs/45): uygulama arka planda öldürülse de dönüşte
+  // sayaç kaldığı yerden sürer. Eski taslakta yok → null.
+  final int? restStartedAtMs;
+  final int? restEndsAtMs;
   final List<DraftExercise> exercises;
   WorkoutDraft({
     required this.title,
     required this.routineId,
     required this.startedAtMs,
     required this.sessionDateMs,
+    this.restStartedAtMs,
+    this.restEndsAtMs,
     required this.exercises,
   });
 
   DateTime get startedAt => DateTime.fromMillisecondsSinceEpoch(startedAtMs);
   DateTime get sessionDate => DateTime.fromMillisecondsSinceEpoch(sessionDateMs);
+  DateTime? get restStartedAt => restStartedAtMs == null
+      ? null
+      : DateTime.fromMillisecondsSinceEpoch(restStartedAtMs!);
+  DateTime? get restEndsAt => restEndsAtMs == null
+      ? null
+      : DateTime.fromMillisecondsSinceEpoch(restEndsAtMs!);
 
   /// Banner için: en az bir sette anlamlı veri ya da ✓ var mı.
   bool get hasData =>
@@ -120,6 +132,8 @@ class WorkoutDraft {
         'routineId': routineId,
         'startedAtMs': startedAtMs,
         'sessionDateMs': sessionDateMs,
+        if (restStartedAtMs != null) 'restStartedAtMs': restStartedAtMs,
+        if (restEndsAtMs != null) 'restEndsAtMs': restEndsAtMs,
         'exercises': exercises.map((e) => e.toJson()).toList(),
       };
 
@@ -128,6 +142,8 @@ class WorkoutDraft {
         routineId: (j['routineId'] as num?)?.toInt(),
         startedAtMs: (j['startedAtMs'] as num).toInt(),
         sessionDateMs: (j['sessionDateMs'] as num).toInt(),
+        restStartedAtMs: (j['restStartedAtMs'] as num?)?.toInt(),
+        restEndsAtMs: (j['restEndsAtMs'] as num?)?.toInt(),
         exercises: ((j['exercises'] as List?) ?? [])
             .map((e) => DraftExercise.fromJson(e as Map<String, dynamic>))
             .toList(),

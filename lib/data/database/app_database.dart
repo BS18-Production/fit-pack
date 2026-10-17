@@ -113,11 +113,14 @@ class AppDatabase extends _$AppDatabase {
   /// `nutrition_days` tablosu (13. senkron tablosu). Eski göç adımları
   /// dondurulmuş `syncedTableNamesV14` listesini kullanır — o adımlarda bu
   /// tablo henüz yok. Sunucu tablosu istemciden ÖNCE uygulanır (docs/37 §4).
+  ///
+  /// v15 → v16 (asistan — docs/38): yerel/metinsiz asistan kalite olayları.
+  /// Senkron yok.
+  ///
+  /// v16 → v17 (sağlık — docs/40, docs/41): `body_measurements` kaynak
+  /// kolonları + `user_profile` sağlık rızası. Sunucuya aynı kolonlar ÖNCE
+  /// eklenir (`supabase/migrations/20261011180000_health_weight_consent.sql`).
   @override
-  // v15 → v16: yerel/metinsiz asistan kalite olayları (docs/38). Senkron yok.
-  // v16 → v17: body_measurements kaynak kolonları + user_profile sağlık rızası
-  // (docs/40, docs/41). Sunucuya aynı kolonlar ÖNCE eklenir
-  // (`supabase/migrations/20261011180000_health_weight_consent.sql`).
   int get schemaVersion => 17;
 
   /// v5→v6 gibi ARA göç adımları `m.createTable()` ile GÜNCEL tanımı kullanır —
@@ -177,6 +180,26 @@ class AppDatabase extends _$AppDatabase {
     // Çekme yarıda kaldıysa bayrak kapalı kalmış olabilir → aç.
     await customStatement(setCaptureSql(true));
 
+    // Tetikleyici TANIMI değiştiyse (docs/46 §3) eskileri düşür; aşağıdaki
+    // döngü eksikleri güncel tanımla kurar. Hepsi tek transaction: yarıda
+    // kalırsa hiçbiri düşmemiş olur, bir sonraki açılış yeniden dener.
+    final rev = await customSelect(readTriggerRevSql).getSingle();
+    if ((int.tryParse(rev.read<String>('v')) ?? 1) < syncTriggerRev) {
+      await transaction(() async {
+        for (final table in syncedTableNames) {
+          await customStatement(dropInsertTriggerSql(table));
+          await customStatement(dropUpdateTriggerSql(table));
+          await customStatement(dropDeleteTriggerSql(table));
+        }
+        await _installMissingSyncTriggers();
+        await customStatement(writeTriggerRevSql);
+      });
+      return;
+    }
+    await _installMissingSyncTriggers();
+  }
+
+  Future<void> _installMissingSyncTriggers() async {
     final rows = await customSelect(
       "SELECT name FROM sqlite_master WHERE type = 'trigger'",
     ).get();
@@ -214,6 +237,8 @@ class AppDatabase extends _$AppDatabase {
         for (final sql in seedSyncMetaSql) {
           await m.database.customStatement(sql);
         }
+        // Aşağıda güncel tanım kuruluyor → açılış onarımı yeniden kurmasın.
+        await m.database.customStatement(writeTriggerRevSql);
         for (final t in syncedTableNames) {
           await m.database.customStatement(createUidIndexSql(t));
           await m.database.customStatement(createInsertTriggerSql(t));

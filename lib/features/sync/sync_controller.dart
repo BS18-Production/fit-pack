@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart' show Variable;
 import 'package:flutter/foundation.dart';
 
 import '../../data/database/app_database.dart';
@@ -99,6 +100,15 @@ class SyncController {
     // bayrağı görmez) ve aynı satır birden fazla kez gönderilir.
     _running = true;
     try {
+      // Hesap sahipliği (docs/47): çakışma ekranı açıkken ya da hesap
+      // temizliği sürerken hiçbir şey gönderilmez. Karar verilince `sync_meta`
+      // yazması tablo güncellemesi üretir → tur kendiliğinden yeniden gelir.
+      final own = push.ownership;
+      if (own != null && !await own.owns(userId)) {
+        syncLog('atlandı: yerel veri $userId hesabına ait değil '
+            '(hesap kararı bekleniyor)');
+        return;
+      }
       // Boşa tur atma: bekleyen yoksa çık. Bu aynı zamanda döngü korumasıdır —
       // temiz işaretleme de bir yazmadır ve `tableUpdates` tetikler.
       final waiting = await pendingCount();
@@ -128,18 +138,15 @@ class SyncController {
   }
 
   /// Kuyrukta bekleyen satır var mı?
-  Future<bool> hasPending() async {
-    for (final table in syncRemoteTables) {
-      final r = await db
-          .customSelect(
-              'SELECT EXISTS(SELECT 1 FROM $table WHERE sync_state = 1) e')
-          .getSingle();
-      if (r.read<int>('e') == 1) return true;
-    }
-    return false;
-  }
+  Future<bool> hasPending() async => await pendingCount() > 0;
 
-  /// Kuyrukta bekleyen toplam satır — arayüzde "N kayıt yüklenecek" için.
+  /// Kuyrukta bekleyen toplam iş — arayüzde "N kayıt yüklenecek" için.
+  ///
+  /// **Mezar taşları da sayılır:** gönderilmiş tek kayıt silinince canlı
+  /// tablolarda bekleyen satır kalmaz, iş yalnız mezar taşındadır. Sayılmasa
+  /// tur hiç başlamaz ve silme sunucuya gitmezdi (CR-002). Yalnız cihazda
+  /// kalan tabloların izleri (fotoğraflar, docs/19 K-2) gönderilmediği için
+  /// sayılmaz — sayılsalardı kuyruk asla boşalmazdı.
   Future<int> pendingCount() async {
     var total = 0;
     for (final table in syncRemoteTables) {
@@ -148,7 +155,15 @@ class SyncController {
           .getSingle();
       total += r.read<int>('c');
     }
-    return total;
+    final r = await db
+        .customSelect(
+          'SELECT COUNT(*) c FROM sync_tombstones WHERE sync_state = 1 '
+          'AND table_name IN '
+          '(${List.filled(syncRemoteTables.length, '?').join(', ')})',
+          variables: [for (final t in syncRemoteTables) Variable(t)],
+        )
+        .getSingle();
+    return total + r.read<int>('c');
   }
 
   /// Kalıcı hata yüzünden kuyruktan ayrılmış satır sayısı (`sync_state = 2`,

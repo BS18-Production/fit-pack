@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/utils/current_day.dart';
 import 'health_prefs.dart';
 import 'step_source.dart';
 import 'step_stats.dart';
@@ -54,6 +55,7 @@ final stepWeekProvider = FutureProvider<StepWeek?>((ref) async {
   if (link != StepLinkState.connected) return null;
   final source = ref.watch(stepSourceProvider);
   final goal = ref.watch(healthPrefsProvider.select((p) => p.stepGoal));
+  ref.watch(currentDayProvider); // gün dönümünde yeni hafta (CR-010)
   final now = DateTime.now();
   final windows = stepDayWindows(now);
   final values = await Future.wait([

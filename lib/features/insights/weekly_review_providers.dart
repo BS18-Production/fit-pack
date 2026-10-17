@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/prefs/week_start_provider.dart';
+import '../../core/utils/current_day.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../data/reactive.dart';
@@ -18,6 +19,7 @@ final weeklyReviewProvider =
     StreamProvider.autoDispose.family<WeeklyReview, int>((ref, offset) {
   final db = ref.watch(databaseProvider);
   final weekStart = ref.watch(weekStartProvider);
+  final day = ref.watch(currentDayProvider); // hafta dönümü (CR-010)
   return watchTables(db, [
     db.workoutSessions,
     db.workoutSets,
@@ -34,10 +36,9 @@ final weeklyReviewProvider =
     final profile = await ref.read(userProfileDaoProvider).getProfile();
 
     final now = DateTime.now();
-    final start = startOfWeek(now, weekStart)
-        .subtract(Duration(days: 7 * offset));
-    final end = start.add(const Duration(days: 7));
-    final prevStart = start.subtract(const Duration(days: 7));
+    final start = addDays(startOfWeek(day, weekStart), -7 * offset);
+    final end = addDays(start, 7);
+    final prevStart = addDays(start, -7);
 
     final sessions = await wo.getSessionsByDateRange(start, end);
     final sets = await wo.getSetsForSessions(sessions.map((s) => s.id).toList());
@@ -47,7 +48,7 @@ final weeklyReviewProvider =
 
     // Hareket ilerlemesi + "3 haftadır aynı kilo" kuralı: bu hafta + önceki 3.
     final points = await wo.getWeightedSetPointsInRange(
-      start.subtract(const Duration(days: 21)),
+      addDays(start, -21),
       end,
       onlyComplete: true,
     );
@@ -96,7 +97,7 @@ final weeklyReviewProvider =
       kcalGoal: profile?.kcalGoal ?? 0,
       proteinGoal: profile?.proteinGoal ?? 0,
       measurements: await body.getDailyMeasurementsInRange(
-          start.subtract(const Duration(days: 14)), end),
+          addDays(start, -14), end),
       bodyWeightKg: (await body.getDailyLatestWeight())?.weightKg,
       goalDirection: GoalDirection.tryParse(profile?.goalDirection),
       goalDirectionSince: profile?.goalDirectionSince,

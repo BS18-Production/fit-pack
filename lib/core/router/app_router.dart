@@ -13,6 +13,7 @@ import 'package:fit_pack/features/workout/routine_builder_screen.dart';
 import 'package:fit_pack/features/workout/routine_preview_screen.dart';
 import 'package:fit_pack/features/workout/active_session_screen.dart';
 import 'package:fit_pack/features/workout/workout_summary_screen.dart';
+import 'package:fit_pack/features/workout/workout_calendar_screen.dart';
 import 'package:fit_pack/features/workout/workout_session_detail_screen.dart';
 import 'package:fit_pack/features/explore/program_detail_screen.dart';
 import 'package:fit_pack/features/nutrition/nutrition_screen.dart';
@@ -185,6 +186,13 @@ GoRouter createAppRouter({
       builder: (context, state) => _glass(const WorkoutHistoryScreen()),
     ),
     GoRoute(
+      path: AppRoutes.workoutCalendar,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(WorkoutCalendarScreen(
+        initialDate: DateTime.tryParse(state.uri.queryParameters['date'] ?? ''),
+      )),
+    ),
+    GoRoute(
       path: AppRoutes.calendar,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => _glass(CalendarScreen(
@@ -253,8 +261,15 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.workoutLogPast,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) =>
-          _glass(ActiveSessionScreen(manualDate: DateTime.now())),
+      // Takvimden gelince gün hazır (`date=`) — tarih seçici açılmaz.
+      builder: (context, state) {
+        final day =
+            DateTime.tryParse(state.uri.queryParameters['date'] ?? '');
+        return _glass(ActiveSessionScreen(
+          manualDate: day ?? DateTime.now(),
+          pickDateOnOpen: day == null,
+        ));
+      },
     ),
     GoRoute(
       path: AppRoutes.programPath,

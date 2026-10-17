@@ -1,11 +1,18 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
+
+import '../feedback/feedback_service.dart' show restCountdownLeadMs;
+import '../feedback/rest_sound.dart';
 
 /// Yerel bildirimler (docs/16 §5 — B6, P-11).
 ///
@@ -45,11 +52,8 @@ class NotificationService {
     priority: Priority.defaultPriority,
   );
 
-  /// iOS karşılıkları. Dinlenme bitişi zamana duyarlı — Odaklanma modunda da
-  /// görünsün (Android'deki Importance.high dengi); hatırlatıcılar sıradan.
-  static const _iosRest = DarwinNotificationDetails(
-    interruptionLevel: InterruptionLevel.timeSensitive,
-  );
+  /// iOS hatırlatıcıları sıradan; mola bildiriminin ayarları
+  /// [scheduleRestDone] içinde (ses + ön planda sessiz sunum).
   static const _iosReminders = DarwinNotificationDetails();
 
   final _plugin = FlutterLocalNotificationsPlugin();
@@ -96,6 +100,26 @@ class NotificationService {
       },
     );
     _inited = true;
+    unawaited(_removeCopiedSounds());
+  }
+
+  /// 2026-10-11 sürümü mola seslerini `Library/Sounds/`a kopyalıyordu. iOS
+  /// bildirim sesini önce orada arar — kalan kopyalar paketteki (yeniden
+  /// üretilmiş) sesleri gölgelerdi. Ses artık yalnız paketten; kopyalar
+  /// silinir (yoksa iş yok).
+  Future<void> _removeCopiedSounds() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
+    try {
+      final dir =
+          Directory(p.join((await getLibraryDirectory()).path, 'Sounds'));
+      if (!await dir.exists()) return;
+      await for (final f in dir.list()) {
+        final name = p.basename(f.path);
+        if (name.startsWith('rest_') && name.endsWith('.caf')) await f.delete();
+      }
+    } catch (_) {
+      // En iyi çaba: silinemezse paketteki sesle aynı içerik çalar.
+    }
   }
 
   /// Uygulama KAPALIYKEN bir bildirime dokunularak açıldıysa o bildirimin
@@ -132,36 +156,112 @@ class NotificationService {
     } catch (_) {/* platform desteklemiyorsa sessiz geç */}
   }
 
-  /// Dinlenme bitince tek seferlik bildirim — [after] sonra (docs/12 + P-11).
+  // Mola bildirimi işlemleri sıralı (docs/45, Codex incelemesi): ses dosyası
+  // kopyalanırken gelen "Atla"/öne dönüş iptali, geç biten kurulum
+  // tarafından ezilmesin. Her kurulum/iptal nesli artırır; eski nesil
+  // kurulum hiçbir şey yazmadan çıkar.
+  Future<void> _restOps = Future.value();
+  int _restGen = 0;
+
+  Future<void> _restSerial(Future<void> Function() op) =>
+      _restOps = _restOps.then((_) => op()).catchError((Object _) {});
+
+  /// Dinlenme bitince tek seferlik bildirim — [at] anında (docs/12 + P-11).
   /// Dakik alarm izni yoksa inexact'e düşer (birkaç dk gecikebilir).
+  ///
+  /// iOS'ta [sound] seçili mola sesidir (docs/45 §3); `null` = kullanıcı
+  /// mola sesini kapattı → sessiz bildirim. Sistem bildirim sesi telefonun
+  /// sessiz anahtarına ve Odaklanma'ya uyar — uygulama hatası değil.
+  ///
+  /// **Son 3 saniye (iOS, docs/45 §3b).** Uygulama arkadayken iOS onu
+  /// askıya alır; uygulama içi tık-tık-tık çalamaz. Yeterli süre varsa
+  /// bildirim bitişten [restCountdownLeadMs] ÖNCE, tam geri sayım sesiyle
+  /// ([earlyTitle]/[earlyBody]) kurulur: 3-2-1 + bitiş arka planda da duyulur.
+  /// Süre azsa tam bitişte yalnız bitiş sesi.
+  ///
+  /// **Hiçbir zaman iki kez çalmaz (Samet, 2026-10-12).** Ses dosyaları
+  /// uygulama paketinde (`ios/Runner/Sounds/`) — çalışma anında kopyalama
+  /// ve "kopyalanamazsa varsayılan ses" yolu yok. Ön planda sunum her
+  /// zaman sessiz (`presentSound: false`): uygulama açıkken sesi yalnız
+  /// uygulama içi geri sayım çalar; bildirimin sesi yalnız arka planda.
   Future<void> scheduleRestDone({
-    required Duration after,
+    required DateTime at,
     required String title,
     required String body,
-  }) async {
-    await init();
-    final when = tz.TZDateTime.now(tz.local).add(after);
-    const details = NotificationDetails(android: _chRest, iOS: _iosRest);
-    try {
-      await _plugin.zonedSchedule(
-          id: idRest,
-          title: title,
-          body: body,
-          scheduledDate: when,
-          notificationDetails: details,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
-    } on PlatformException {
-      await _plugin.zonedSchedule(
-          id: idRest,
-          title: title,
-          body: body,
-          scheduledDate: when,
-          notificationDetails: details,
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle);
-    }
+    String? earlyTitle,
+    String? earlyBody,
+    RestSound? sound,
+  }) {
+    final gen = ++_restGen;
+    return _restSerial(() async {
+      await init();
+      if (gen != _restGen) return; // arada iptal ya da yeni kurulum geldi
+      final countdown = restNotifLeadMs(
+            left: at.difference(DateTime.now()),
+            countdownSound: sound != null &&
+                earlyTitle != null &&
+                !kIsWeb &&
+                defaultTargetPlatform == TargetPlatform.iOS,
+          ) >
+          0;
+      final fireAt = countdown
+          ? at.subtract(const Duration(milliseconds: restCountdownLeadMs))
+          : at;
+      final left = fireAt.difference(DateTime.now());
+      if (left <= Duration.zero) return;
+      final when = tz.TZDateTime.now(tz.local).add(left);
+      final details = NotificationDetails(
+        android: _chRest,
+        iOS: DarwinNotificationDetails(
+          interruptionLevel: InterruptionLevel.timeSensitive,
+          presentSound: false,
+          sound: sound == null
+              ? null
+              : (countdown
+                  ? sound.countdownNotifFileName
+                  : sound.endFileName),
+        ),
+      );
+      final shownTitle = countdown ? earlyTitle! : title;
+      final shownBody = countdown ? (earlyBody ?? body) : body;
+      try {
+        await _plugin.zonedSchedule(
+            id: idRest,
+            title: shownTitle,
+            body: shownBody,
+            scheduledDate: when,
+            notificationDetails: details,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
+      } on PlatformException {
+        await _plugin.zonedSchedule(
+            id: idRest,
+            title: shownTitle,
+            body: shownBody,
+            scheduledDate: when,
+            notificationDetails: details,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle);
+      }
+    });
   }
 
-  Future<void> cancelRestDone() => _plugin.cancel(id: idRest);
+  Future<void> cancelRestDone() {
+    _restGen++;
+    return _restSerial(() => _plugin.cancel(id: idRest));
+  }
+
+  /// iOS: bu uygulamanın bildirim sesi sistem ayarlarında açık mı. Ayarlar
+  /// ekranı uyarı göstermek için sorar; Android'de ses servisten gelir → true.
+  Future<bool> iosSoundAllowed() async {
+    await init();
+    final ios = _ios;
+    if (ios == null) return true;
+    try {
+      final o = await ios.checkPermissions();
+      return o == null || (o.isEnabled && o.isSoundEnabled);
+    } catch (_) {
+      return true;
+    }
+  }
 
   /// Her gün aynı saatte tekrar eden hatırlatıcı (antrenman/su). Dakiklik
   /// kritik değil → inexact (SCHEDULE_EXACT_ALARM izni istemez).
@@ -250,6 +350,21 @@ class NotificationService {
 
   Future<void> cancel(int id) => _plugin.cancel(id: id);
 }
+
+/// Geri sayımlı bildirim için en az bu kadar pay (ms): kurulum + iOS teslim
+/// gecikmesi son 3 saniyeyi yemesin.
+const restNotifEarlyMarginMs = 1000;
+
+/// Mola bildirimi bitişten kaç ms ÖNCE kurulsun (docs/45 §3b): geri sayım
+/// sesi varsa ve yeterli süre kaldıysa [restCountdownLeadMs] (3-2-1 + bitiş),
+/// yoksa 0 (tam bitişte, yalnız bitiş sesi).
+int restNotifLeadMs({required Duration left, required bool countdownSound}) =>
+    countdownSound &&
+            left >
+                const Duration(
+                    milliseconds: restCountdownLeadMs + restNotifEarlyMarginMs)
+        ? restCountdownLeadMs
+        : 0;
 
 /// [now]'dan SONRAKİ ilk [weekday] günü, [hour]:[minute] anı. Tam o an
 /// geçmişse bir sonraki haftaya atılır.

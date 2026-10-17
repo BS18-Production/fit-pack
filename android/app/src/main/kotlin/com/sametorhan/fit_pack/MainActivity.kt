@@ -9,8 +9,9 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
         // Dinlenme sayacı servisi (docs/25) — Dart: core/feedback/rest_alarm.dart
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fit_pack/rest_timer")
+        MethodChannel(messenger, "fit_pack/rest_timer")
             .setMethodCallHandler { call, result ->
                 try {
                     when (call.method) {
@@ -19,6 +20,7 @@ class MainActivity : FlutterFragmentActivity() {
                                 this,
                                 deadlineMs = call.argument<Number>("deadlineMs")!!.toLong(),
                                 sound = call.argument<Boolean>("sound") ?: true,
+                                soundAsset = call.argument<String>("soundAsset") ?: "",
                                 title = call.argument<String>("title") ?: "",
                                 doneTitle = call.argument<String>("doneTitle") ?: "",
                                 doneBody = call.argument<String>("doneBody") ?: "",
@@ -40,5 +42,28 @@ class MainActivity : FlutterFragmentActivity() {
                     result.error("rest_timer", e.message, null)
                 }
             }
+        // Seans kilit ekranı bildirimi (docs/45) — Dart:
+        // core/live_activity/workout_live_activity.dart (iOS ile aynı kanal).
+        val live = MethodChannel(messenger, "fit_pack/live_activity")
+        live.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "start", "update" -> {
+                    val args = call.arguments as? Map<*, *>
+                    if (args != null) WorkoutNotification.show(this, WorkoutNotification.fromArgs(args))
+                    result.success(true)
+                }
+                "end" -> {
+                    WorkoutNotification.end(this)
+                    result.success(true)
+                }
+                else -> result.notImplemented()
+            }
+        }
+        WorkoutNotification.channel = live
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        WorkoutNotification.channel = null
+        super.cleanUpFlutterEngine(flutterEngine)
     }
 }

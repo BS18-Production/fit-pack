@@ -33,7 +33,7 @@ kontrolü, (5) mağaza beyanları.
 | Kilo, yağ oranı, vücut çevreleri | Cihaz + Supabase | **Evet (sağlık)** | docs/40 ile tartıdan da gelecek |
 | Antrenman, set, RPE, notlar | Cihaz + Supabase | ⚖️ Notlar sağlık bilgisi içerebilir (ör. diz durumu — `kneeStatus` alanı var) | |
 | Öğün kayıtları, su | Cihaz + Supabase | ⚖️ Beslenme tek başına genelde değil | |
-| İlerleme fotoğrafları | **Yalnız cihaz** | Evet (beden görüntüsü) | Buluta gitmez (docs/19) |
+| İlerleme fotoğrafları | **Cihaz** (+ telefonun kendi yedeği) | Evet (beden görüntüsü) | Sunucumuza gitmez; iCloud/Google yedeğine girer (docs/19 §6, Samet kararı b) |
 | Adım | **Yalnız cihaz** | Evet (sağlık) | docs/39 |
 | Asistan soru metni | Google Gemini (ücretsiz katman) | Soruya göre | Saklanmıyor (docs/38 §8); ⚠️ §2.4 |
 | Asistan kota sayacı | Supabase | Hayır | |
@@ -79,8 +79,9 @@ kontrolü, (5) mağaza beyanları.
     samet.orhan@inveon.com): kişisel projede iş adresi; politikadaki iletişim
     adresi de bekliyor (Samet: "şimdilik es geç").
 
-**Zaten var olanlar:** hesap silme düğmesi (sunucu fonksiyonu yukarıda, madde 10), dışa aktarma (CSV/JSON — erişim ve
-taşınabilirlik hakkı), fotoğraf ve adımın cihazda kalması, asistanda
+**Zaten var olanlar:** hesap silme düğmesi (sunucu fonksiyonu yukarıda, madde 10), dışa aktarma motoru (CSV/JSON — erişim ve
+taşınabilirlik hakkı; uygulama içi ekran yalnız premium olacak, şimdilik
+yok → herkes için talep iletişim adresiyle, 30 gün — Samet kararı 2026-10-17), fotoğraf ve adımın cihazda kalması, asistanda
 gönderim öncesi onay, metinsiz kalite paneli.
 
 ## 3. Sağlık verisi açık rıza tasarımı (docs/40 ile birlikte uygulanır)

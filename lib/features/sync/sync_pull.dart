@@ -6,6 +6,7 @@ import '../../data/database/tables/sync_columns.dart';
 import 'sync_apply.dart';
 import 'sync_controller.dart' show syncLog;
 import 'sync_health.dart';
+import 'sync_ownership.dart';
 import 'sync_push.dart';
 
 /// Bir çekme (pull) turunun sonucu — arayüz ve testler bunu okur.
@@ -82,11 +83,16 @@ class SyncPull {
   /// Son başarılı çekme / kesinti kaydı ("Son yedekleme" satırı).
   final SyncHealth health;
 
+  /// Hesap sahipliği sınırı (docs/47). `null` = denetim yok (yalnız testler;
+  /// sağlayıcı her zaman verir).
+  final SyncOwnership? ownership;
+
   SyncPull(
     this.db,
     this.remote, {
     SyncApply? apply,
     SyncHealth? health,
+    this.ownership,
     this.pageSize = 500,
     this.cursorLag = 1000,
     this.fullPullInterval = const Duration(days: 7),
@@ -94,6 +100,12 @@ class SyncPull {
         health = health ?? SyncHealth(db);
 
   SyncMetaDao get _meta => SyncMetaDao(db);
+
+  /// Sahiplik bozulduysa [SyncOwnershipLost] fırlatır (docs/47).
+  Future<void> _ensureOwner(String userId) async {
+    final own = ownership;
+    if (own != null) await own.ensure(userId);
+  }
 
   /// Sunucudaki bu kullanıcıya ait değişiklikleri indirir. Bağımlılık
   /// sırasıyla: referans verilen tablo (ebeveyn) önce iner ki çocuğun
@@ -106,10 +118,19 @@ class SyncPull {
   /// Çağıran istemese de **[fullPullInterval] geçmişse tam tur yapılır**:
   /// ikinci katmanın kimsenin çağırmasına bağlı olmaması gerekir, yoksa
   /// yalnız kâğıt üstünde kalır.
+  ///
+  /// **Hesap sahipliği** (docs/47): yerel veri bu hesaba ait değilse hiçbir
+  /// şey indirilmez. Çekme sürerken hesap değişirse [SyncOwnershipLost]
+  /// fırlar; o ana kadar yazılmamış sayfalar ve imleçler yazılmaz.
   Future<PullResult> pullAll({
     required String userId,
     bool full = false,
   }) async {
+    final own = ownership;
+    if (own != null && !await own.owns(userId)) {
+      syncLog('çekme atlandı: yerel veri $userId hesabına ait değil');
+      return const PullResult();
+    }
     final vadesiGeldi = full || await _fullPullDue(userId);
     if (vadesiGeldi && !full) {
       syncLog('tam uzlaştırma zamanı (docs/20 §12.1) — imleçler yok sayılıyor');
@@ -124,6 +145,7 @@ class SyncPull {
     try {
       result += await _pullDeletions(userId, full: full);
     } catch (e, st) {
+      if (e is SyncOwnershipLost) rethrow;
       syncLog('silme işaretleri çekilemedi: $e\n$st', error: e);
       result += PullResult(error: e);
     }
@@ -132,6 +154,7 @@ class SyncPull {
       try {
         result += await _pullTable(table, userId, full: full);
       } catch (e, st) {
+        if (e is SyncOwnershipLost) rethrow;
         syncLog('$table çekilemedi: $e\n$st', error: e);
         result += PullResult(error: e);
         // Bir tablo başarısızsa dur: sonraki tablolar buna referans verebilir,
@@ -190,6 +213,7 @@ class SyncPull {
 
     while (true) {
       // ── AĞ AŞAMASI — veritabanına dokunmaz, tetikleyiciler AÇIK ──
+      await _ensureOwner(userId);
       final page = await remote.fetchSince(table, userId, cursor, pageSize);
       if (page.isEmpty) break;
 
@@ -206,7 +230,9 @@ class SyncPull {
           '(imleç $cursor → $lastRev)');
 
       // ── UYGULAMA AŞAMASI — kısa transaction, tetikleyiciler susturulmuş ──
-      await apply.withCaptureOff(() => db.transaction(() async {
+      await apply.withCaptureOff(() async {
+            // Ağ cevabı geldi; yazmadan ÖNCE, transaction içinde sor (docs/47).
+            await _ensureOwner(userId);
             for (final server in page) {
               // Satır başına ayrı kayıt noktası: tek bozuk satır (ör. yerelde
               // NOT NULL olan alanı boş gelen) sayfanın geri kalanını geri
@@ -232,7 +258,7 @@ class SyncPull {
             if (lastRev > cursor) {
               await _meta.write(cursorKey, _laggedCursor(lastRev).toString());
             }
-          }));
+          });
 
       if (lastRev <= cursor) {
         // Sunucu ilerlemedi (sürümsüz satır ya da bozuk sıralama) — sonsuz
@@ -276,6 +302,7 @@ class SyncPull {
     final ertelenen = <(String, String)>[];
 
     while (true) {
+      await _ensureOwner(userId);
       final page =
           await remote.fetchSince(syncDeletedTable, userId, cursor, pageSize);
       if (page.isEmpty) break;
@@ -298,7 +325,8 @@ class SyncPull {
       final sirali = [...page]
         ..sort((a, b) => _silmeSirasi(b) - _silmeSirasi(a));
 
-      await apply.withCaptureOff(() => db.transaction(() async {
+      await apply.withCaptureOff(() async {
+            await _ensureOwner(userId);
             for (final mark in sirali) {
               final table = mark['table_name'];
               final uid = mark['uid'];
@@ -317,7 +345,7 @@ class SyncPull {
             if (lastRev > cursor) {
               await _meta.write(cursorKey, _laggedCursor(lastRev).toString());
             }
-          }));
+          });
 
       if (lastRev <= cursor) break;
       cursor = lastRev;
@@ -330,7 +358,8 @@ class SyncPull {
     // uzlaştırma bütün işaretleri baştan okuyup yeniden dener.
     var atlanan = 0;
     if (ertelenen.isNotEmpty) {
-      await apply.withCaptureOff(() => db.transaction(() async {
+      await apply.withCaptureOff(() async {
+            await _ensureOwner(userId);
             for (final (table, uid) in ertelenen.reversed) {
               final n = await _isolated(
                   () => _deleteLocal(table, uid), '$table/$uid silme');
@@ -340,7 +369,7 @@ class SyncPull {
                 applied += n;
               }
             }
-          }));
+          });
     }
 
     // Silinen satırlar `updated` sayılır: kullanıcı açısından "veri değişti".

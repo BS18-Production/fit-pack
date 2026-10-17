@@ -87,6 +87,11 @@
             android:name=".RestTimerService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
+        <!-- Kilit ekranı seans bildirimi eylemleri (docs/45): Seti tamamla,
+             +15 sn, Atla — kilit açılmadan, uygulama içi yayın. -->
+        <receiver
+            android:name=".LiveActionReceiver"
+            android:exported="false" />
         <!-- flutter_local_notifications: zamanlanmış bildirim + boot sonrası
              yeniden kurulum alıcıları -->
         <receiver android:exported="false"

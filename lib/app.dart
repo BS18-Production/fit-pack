@@ -18,7 +18,7 @@ import 'features/nutrition/meal_reminders.dart';
 import 'core/router/app_router.dart';
 import 'core/router/app_routes.dart';
 import 'l10n/app_l10n.dart';
-import 'features/nutrition/nutrition_screen.dart' show selectedDateProvider;
+import 'features/nutrition/nutrition_providers.dart' show selectedDateProvider;
 import 'features/sync/sync_providers.dart';
 import 'features/sync/sync_refresh.dart';
 import 'features/update/update_providers.dart';

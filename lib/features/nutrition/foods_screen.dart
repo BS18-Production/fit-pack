@@ -6,24 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
-import '../../data/reactive.dart';
 import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/progress_indicators.dart';
 import 'barcode_flow.dart';
+import 'nutrition_providers.dart';
 import 'nutrition_screen.dart' show unitOptionsWith;
 import '../../shared/widgets/fitpack_icon.dart';
-
-/// Besin veritabanı (P-1 + P-2, docs/07-nutrition-v2.md).
-/// "Yemekler frontend'de değil" → buradan görünür/yönetilir: lokal SQLite
-/// `foods` tablosu. Değerleri gör, custom yemekleri düzenle/sil.
-/// **Reaktif** (H-05): yemek eklenince/düzenlenince/silinince tazelenir.
-final allFoodsProvider = StreamProvider<List<Food>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return watchTables(
-      db, [db.foods], () => ref.read(nutritionDaoProvider).getAllFoods());
-});
 
 /// Yemek grupları (C-5) — `foods.category` değerleri. Sıra ekrandaki çip
 /// sırasıdır: en çok kullanılandan başlar.

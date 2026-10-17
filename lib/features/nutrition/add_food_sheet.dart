@@ -17,7 +17,8 @@ import 'food_search.dart';
 import 'foods_screen.dart' show foodCategoryLabel, availableFoodCategories;
 import 'meal_types.dart';
 import 'nutrition_habits.dart' show mealForTime;
-import 'nutrition_screen.dart' show selectedDateProvider, unitOptionsWith;
+import 'nutrition_providers.dart' show selectedDateProvider;
+import 'nutrition_screen.dart' show unitOptionsWith;
 import '../../shared/widgets/fitpack_icon.dart';
 
 /// **Yemek ekleme paneli** (2026-09-30 yeniden tasarım — NEXT_TASKS

@@ -1,5 +1,25 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+## Codex kod incelemesi (16 Eki 2026) — senkron P1'leri · [docs/46](docs/46-sync-capture-inflight-delete.md)
+
+Rapor: 24 bulgu (6 P1, 15 P2, 3 P3). Önce veri kaybı / silme açıkları.
+Sahip Claude-5.
+
+- [x] CR-002 yalnız silme kalınca senkron turu çalışmıyordu (sayım mezar
+      taşlarını görmüyordu).
+- [x] CR-005 kalıcı hatalı kayıt (`sync_state=2`) hesap değişiminde uyarısız
+      siliniyordu.
+- [x] CR-003 yakalama bayrağı transaction dışındaydı → araya giren kayıt
+      kuyruksuz kalıyordu.
+- [x] CR-004 gönderim sürerken silinen kayıt geri geliyordu (silme
+      tetikleyicisi + `trigger_rev` açılış onarımı; şema değişmedi).
+- [x] 1006 test, analiz temiz; main'e birleşti, push yok.
+- [ ] Samet cihazda: öğün ekle → hemen "Geri al" → "Şimdi eşitle" → başka
+      cihazda öğün yok.
+- [ ] CR-001 hesap değişiminde senkronun sahiplik sınırı (önce tasarım notu).
+- [ ] Sonra: CR-012 mola servisi, CR-009 açılışta ağ beklemesi, CR-007 sağlık
+      tercihi, CR-023 belge çelişkileri. CR-006 (Android yayın) yayın zamanına.
+
 ## Geri bildirim turu (8 madde) — 2026-10-11/12 · [docs/45](docs/45-feedback-round-oct11.md)
 
 Problem: kilit ekranında aynı antrenmandan iki kart; mola sesi arkadayken

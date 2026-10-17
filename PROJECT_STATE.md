@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-10-12
+> **Son güncelleme:** 2026-10-17
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -13,6 +13,17 @@
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** v15 · **Sahibi:** Samet Orhan (kişisel proje)
+
+## Codex incelemesi — senkron P1 düzeltmeleri · 2026-10-17
+
+Codex'in tam kod incelemesi (24 bulgu) dört veri açığını doğruladı, hepsi
+kapandı ([docs/46](docs/46-sync-capture-inflight-delete.md)): tek başına
+silme artık sunucuya gidiyor (CR-002); yüklenemeyen kayıt hesap değişiminde
+korunuyor (CR-005); çekme sırasında yapılan kayıt kuyruğa giriyor (CR-003);
+gönderim sürerken silinen kayıt geri gelmiyor (CR-004). Silme tetikleyicisi
+değişti; mevcut kurulumlar açılışta `trigger_rev` ile kendiliğinden güncellenir,
+şema sürümü değişmedi. 1006 test. Sırada CR-001 (hesap değişimi + senkron
+sahipliği).
 
 ## Geri bildirim turu — kilit ekranı, mola sesi, takvim · 2026-10-12
 

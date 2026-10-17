@@ -122,6 +122,17 @@ class RestTimerService : Service() {
     private val playCountdown = Runnable { startCountdown() }
     private val finish = Runnable { onDeadline() }
 
+    /** Son başlatma isteğinin kimliği — kapanış yalnız ona bağlı (CR-012). */
+    private var lastStartId = 0
+
+    /**
+     * Bitişten sonra gecikmeli kapanış. Adı var ki yeni mola başlarken
+     * iptal edilebilsin: yoksa önceki molanın 1,5 sn'lik kapanışı yeni
+     * molanın servisini de kapatıyordu (CR-012). [stopSelfResult] ayrıca
+     * arada yeni başlatma geldiyse kapatmaz.
+     */
+    private val stopAfterFinish = Runnable { stopSelfResult(lastStartId) }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -129,6 +140,8 @@ class RestTimerService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
+        lastStartId = startId
+        handler.removeCallbacks(stopAfterFinish)
         deadlineMs = intent?.getLongExtra(EXTRA_DEADLINE, 0L) ?: 0L
         sound = intent?.getBooleanExtra(EXTRA_SOUND, true) ?: true
         soundAsset = intent?.getStringExtra(EXTRA_SOUND_ASSET) ?: ""
@@ -150,7 +163,7 @@ class RestTimerService : Service() {
 
         val left = deadlineMs - System.currentTimeMillis()
         if (left <= 0) {
-            stopSelf()
+            stopSelfResult(startId)
             return START_NOT_STICKY
         }
         acquireWakeLock(left)
@@ -242,7 +255,7 @@ class RestTimerService : Service() {
                 ?.notify(ID_DONE, doneNotification())
         }
         // Bitiş sesi (~0,6 sn) bitsin, sonra servisi kapat.
-        handler.postDelayed({ stopSelf() }, 1500)
+        handler.postDelayed(stopAfterFinish, 1500)
     }
 
     private fun appInForeground(): Boolean {

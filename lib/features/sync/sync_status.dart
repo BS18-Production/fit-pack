@@ -71,7 +71,7 @@ class SyncStatus {
 
 /// Senkron durumunu canlı yayınlar (Aşama G). Hesap ekranı bunu izler.
 ///
-/// Uygulama tam reaktif olmadığı için (H-05 ertelendi) durumu iki sinyalden
+/// Kuyruğun durumu tek bir tablodan okunmaz, bu yüzden iki sinyalden
 /// türetiriz: her tablo yazımı (`tableUpdates`) kuyruğu değiştirebilir, her
 /// gönderim turu sonucu (`controller.last`) durumu değiştirir. İkisinden birinde
 /// yeniden hesaplayıp yayınlarız.

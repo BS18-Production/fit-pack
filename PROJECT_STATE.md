@@ -12,7 +12,7 @@
 > kodlandı)
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
-> **Şema:** v15 · **Sahibi:** Samet Orhan (kişisel proje)
+> **Şema:** koddaki `schemaVersion` (`lib/data/database/app_database.dart`; 2026-10-17'de v16) · **Sahibi:** Samet Orhan (kişisel proje)
 
 ## Codex incelemesi — senkron P1 düzeltmeleri · 2026-10-17
 

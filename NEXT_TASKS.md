@@ -442,7 +442,7 @@ ticari üründe düşüyor.
       **Not:** `SyncApply._insert` / `_update` hâlâ `customStatement`
       kullanıyor, yani çekilen ekleme/güncellemeler de akış bildirimi
       yapmıyor — orayı `SyncRefresh.onChanged`'deki elle invalidate listesi
-      kapatıyor (tasarım böyle, H-05 ertelenmiş). Silme o listeden kaçıyordu.
+      kapatıyor (o tarihteki tasarım; bugün `SyncPull` `notifyUpdates` da yapıyor, docs/20 §6.3). Silme o listeden kaçıyordu.
 - [x] **"Şimdi eşitle" ve ret bildirimi cihazda görüldü (00:27):** hesap
       ekranında düğme çalışıyor (gönder → çek), ve §2.3 bildirimi gerçek
       veriyle çıktı: **"1 kaydın buluttaki daha yeni sürümü alındı"** —

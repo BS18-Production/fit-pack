@@ -14,7 +14,7 @@ Flutter · Drift (SQLite, lokal) · Riverpod · GoRouter · fl_chart · Supabase
 
 - **Yol:** `/Users/sametorhan/dev/fit_pack`
 - **GitHub:** `BS18-Production/fit-pack` (public)
-- **Package:** `com.sametorhan.fit_pack` · minSdk 24 · şema v13
+- **Package:** `com.sametorhan.fit_pack` · minSdk 26 · şema: `app_database.dart` → `schemaVersion`
 - **Ana cihaz:** iPhone 17 (gerçek, iOS 26.6, ID `00008150-000214C02E03C01C`)
   — Samet'in günlük telefonu, üretim verisi. Ücretsiz Apple hesabı → imza
   7 günde bir yenilenir. **`flutter install` KULLANMA** — önce uygulamayı

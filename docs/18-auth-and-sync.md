@@ -713,7 +713,7 @@ gelince yüklenecek"), hata ("Kaydedildi — N kayıt yüklenmeyi bekliyor"). Me
 **"kaydedildi"** ile başlar (§9 ilkesi). Sağlayıcı `autoDispose` — yalnız ekran
 açıkken canlı; senkron arka planda controller ile devam eder.
 
-**Reaktiflik:** uygulama tam reaktif olmadığı için (H-05 ertelendi) durum iki
+**Reaktiflik:** kuyruk durumu tek tablodan okunmadığı için iki
 sinyalden türetilir — her tablo yazımı (`db.tableUpdates()`) + her gönderim turu
 sonucu (`controller.last`).
 

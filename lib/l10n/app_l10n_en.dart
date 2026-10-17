@@ -1874,7 +1874,7 @@ class AppL10nEn extends AppL10n {
       'When the app is in the background, iPhone plays the rest alert as a notification: it is silent when the phone is on silent mode or a Focus filters it. With the app open, the sound always plays.';
 
   @override
-  String get notifWorkout => 'Daily workout reminder';
+  String get notifWorkout => 'Workout reminder';
 
   @override
   String get notifWater => 'Daily water reminder';
@@ -1904,6 +1904,57 @@ class AppL10nEn extends AppL10n {
   @override
   String get notifWorkoutBody =>
       'Your plan is waiting — a short session counts too.';
+
+  @override
+  String get notifWorkoutSub =>
+      'If you take a 2-day break, reminds you of your next workout at your usual time.';
+
+  @override
+  String get notifWorkoutFallbackTime => 'Default time';
+
+  @override
+  String get notifWorkoutFallbackTimeSub =>
+      'The time comes from your workout history; this one is used until there is history.';
+
+  @override
+  String get notifRecallTitle => 'Your next workout is ready';
+
+  @override
+  String get notifRecallTitle2 => 'A short session counts too';
+
+  @override
+  String get notifRecallTitle3 => 'Is today a good day?';
+
+  @override
+  String notifRecallBodyRoutine(String routine, int minutes) {
+    return 'Up next: $routine · ~$minutes min';
+  }
+
+  @override
+  String notifRecallBodyRoutineOnly(String routine) {
+    return 'Up next: $routine';
+  }
+
+  @override
+  String get notifRecallBody =>
+      'Pick a routine or start an empty workout — a few sets do the job.';
+
+  @override
+  String get recallOfferTitle => 'Want a reminder for your next workout?';
+
+  @override
+  String get recallOfferBody =>
+      'If you take a 2-day break, you get one notification at your usual time. Turn it off in Settings → Notifications.';
+
+  @override
+  String get recallOfferYes => 'Yes, remind me';
+
+  @override
+  String get recallOfferNo => 'Not now';
+
+  @override
+  String get recallOfferEnabled =>
+      'Done — I\'ll remind you after a 2-day break.';
 
   @override
   String get notifWaterTitle => 'Water break';

@@ -348,6 +348,17 @@ class WorkoutDao extends DatabaseAccessor<AppDatabase> with _$WorkoutDaoMixin {
   Future<List<WorkoutSession>> getAllSessions() =>
       (select(workoutSessions)..orderBy([(s) => OrderingTerm.desc(s.date)])).get();
 
+  /// En yeni [limit] seans (geri çağırma: son antrenman + olağan saat —
+  /// docs/51).
+  Future<List<WorkoutSession>> getRecentSessions(int limit) =>
+      (select(workoutSessions)
+            ..orderBy([
+              (s) => OrderingTerm.desc(s.date),
+              (s) => OrderingTerm.desc(s.id),
+            ])
+            ..limit(limit))
+          .get();
+
   /// [start, end) aralığındaki seanslar — bitiş HARİÇ (CODE_REVIEW H-01:
   /// gece yarısı kayıtları iki döneme birden sayılmasın).
   Future<List<WorkoutSession>> getSessionsByDateRange(DateTime start, DateTime end) =>

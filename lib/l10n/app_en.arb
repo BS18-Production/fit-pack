@@ -970,7 +970,7 @@
   "notifIosSoundOff": "Sound is off for Fit Pack notifications",
   "notifIosSoundOffSub": "Turn it on in iPhone Settings › Notifications › Fit Pack › Sounds.",
   "notifRestIosNote": "When the app is in the background, iPhone plays the rest alert as a notification: it is silent when the phone is on silent mode or a Focus filters it. With the app open, the sound always plays.",
-  "notifWorkout": "Daily workout reminder",
+  "notifWorkout": "Workout reminder",
   "notifWater": "Daily water reminder",
   "notifTime": "Time",
   "notifPermissionDenied": "Notification permission denied — enable it in system settings.",
@@ -980,6 +980,37 @@
   "notifRestEndingBody": "Get ready for the next set",
   "notifWorkoutTitle": "Workout time",
   "notifWorkoutBody": "Your plan is waiting — a short session counts too.",
+  "notifWorkoutSub": "If you take a 2-day break, reminds you of your next workout at your usual time.",
+  "notifWorkoutFallbackTime": "Default time",
+  "notifWorkoutFallbackTimeSub": "The time comes from your workout history; this one is used until there is history.",
+  "notifRecallTitle": "Your next workout is ready",
+  "notifRecallTitle2": "A short session counts too",
+  "notifRecallTitle3": "Is today a good day?",
+  "notifRecallBodyRoutine": "Up next: {routine} · ~{minutes} min",
+  "@notifRecallBodyRoutine": {
+    "placeholders": {
+      "routine": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "notifRecallBodyRoutineOnly": "Up next: {routine}",
+  "@notifRecallBodyRoutineOnly": {
+    "placeholders": {
+      "routine": {
+        "type": "String"
+      }
+    }
+  },
+  "notifRecallBody": "Pick a routine or start an empty workout — a few sets do the job.",
+  "recallOfferTitle": "Want a reminder for your next workout?",
+  "recallOfferBody": "If you take a 2-day break, you get one notification at your usual time. Turn it off in Settings → Notifications.",
+  "recallOfferYes": "Yes, remind me",
+  "recallOfferNo": "Not now",
+  "recallOfferEnabled": "Done — I'll remind you after a 2-day break.",
   "notifWaterTitle": "Water break",
   "notifWaterBody": "A glass of water now keeps your ring on track.",
   "unitsMetric": "Metric (kg, cm)",

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/notifications/notification_service.dart';
 import '../../core/onboarding/first_run_hints.dart';
 import '../../core/router/app_routes.dart';
 import '../../data/database/app_database.dart';
@@ -11,6 +12,7 @@ import '../../data/providers.dart';
 import '../health/health_prefs.dart';
 import '../sync/sync_controller.dart' show syncLog;
 import '../sync/sync_refresh.dart';
+import '../workout/recall_reminders.dart';
 import 'account_switch.dart';
 
 /// Zorunlu giriş kapısının durumu (docs/18 §5.1).
@@ -314,7 +316,17 @@ final authGateProvider = Provider<AuthGate>((ref) {
     pull: (userId) => ref.read(syncRefreshProvider).pullNow(userId),
     // Hesaba bağlı bellek durumları (CR-007). Adım bağlantısı ve haftası
     // `healthPrefsProvider`'ı izlediği için kendiliğinden yenilenir.
-    onLocalDataWiped: () => ref.invalidate(healthPrefsProvider),
+    onLocalDataWiped: () {
+      ref.invalidate(healthPrefsProvider);
+      // Önceki hesabın verisinden üretilmiş bildirimler (öğün, geri çağırma,
+      // mola) açıkça silinir; yeniden kurma yeni hesabın verisiyle olur
+      // (docs/51 §1). Defter de önceki hesabın antrenmanlarına göreydi.
+      unawaited(ref
+          .read(notificationServiceProvider)
+          .cancelAccountScoped()
+          .catchError((Object _) {}));
+      unawaited(RecallLedger.clear().catchError((Object _) {}));
+    },
     // Kurulum sunucudan geldi → ilk-kullanım ipuçları gösterilmez (docs/49 E).
     onOnboardedFromAccount: () =>
         ref.read(firstRunHintsProvider.notifier).markAllSeen(),

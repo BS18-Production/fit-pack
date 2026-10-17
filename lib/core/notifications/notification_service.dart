@@ -31,10 +31,18 @@ class NotificationService {
   static const idMealBase = 20;
   static const mealReminderSlots = 9;
 
+  /// Geri çağırma — "ara uzadı" antrenman hatırlatıcısı (docs/51):
+  /// `idRecallBase + gün` (bugün + 2 gün = 40…42). Eski günlük sabit saatli
+  /// antrenman hatırlatıcısı ([idWorkout]) bu türe dönüştü; her yeniden
+  /// kurulumda o da iptal edilir.
+  static const idRecallBase = 40;
+  static const recallSlots = 3;
+
   /// Dokununca açılacak ekranı söyleyen yük (payload). Uygulama kökü bunu
   /// dinleyip ilgili rotaya gider.
   static const payloadWeeklyReview = 'weekly_review';
   static const payloadNutrition = 'nutrition';
+  static const payloadRecall = 'recall';
 
   static const _chRest = AndroidNotificationDetails(
     'rest_timer',
@@ -349,6 +357,22 @@ class NotificationService {
   }
 
   Future<void> cancel(int id) => _plugin.cancel(id: id);
+
+  /// Hesaba ait veriden üretilen bildirimleri siler (docs/51 §1): öğün ve
+  /// geri çağırma metinleri önceki hesabın rutin/öğün adlarını taşır, mola
+  /// bildirimi önceki hesabın seansına aittir. Su ve haftalık değerlendirme
+  /// cihaz tercihi, metinleri genel — dokunulmaz. Yeniden kurma yeni hesabın
+  /// verisiyle (tablo değişimi) kendiliğinden yapılır.
+  Future<void> cancelAccountScoped() async {
+    await cancelRestDone();
+    await cancel(idWorkout);
+    for (var i = 0; i < mealReminderSlots; i++) {
+      await cancel(idMealBase + i);
+    }
+    for (var i = 0; i < recallSlots; i++) {
+      await cancel(idRecallBase + i);
+    }
+  }
 }
 
 /// Geri sayımlı bildirim için en az bu kadar pay (ms): kurulum + iOS teslim

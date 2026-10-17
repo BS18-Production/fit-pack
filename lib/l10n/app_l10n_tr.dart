@@ -1863,7 +1863,7 @@ class AppL10nTr extends AppL10n {
       'Uygulama arka plandayken mola sonu iPhone bildirimiyle gelir: telefon sessizdeyse ya da bir Odaklanma modu süzüyorsa ses çıkmaz. Uygulama açıkken ses her zaman çalar.';
 
   @override
-  String get notifWorkout => 'Günlük antrenman hatırlatıcı';
+  String get notifWorkout => 'Antrenman hatırlatıcı';
 
   @override
   String get notifWater => 'Günlük su hatırlatıcı';
@@ -1893,6 +1893,56 @@ class AppL10nTr extends AppL10n {
   @override
   String get notifWorkoutBody =>
       'Planın seni bekliyor — kısa bir seans da sayılır.';
+
+  @override
+  String get notifWorkoutSub =>
+      '2 gün ara verirsen, olağan saatinde sıradaki antrenmanını hatırlatır.';
+
+  @override
+  String get notifWorkoutFallbackTime => 'Varsayılan saat';
+
+  @override
+  String get notifWorkoutFallbackTimeSub =>
+      'Saat antrenman geçmişinden bulunur; geçmiş yoksa bu saat kullanılır.';
+
+  @override
+  String get notifRecallTitle => 'Sıradaki antrenmanın hazır';
+
+  @override
+  String get notifRecallTitle2 => 'Kısa bir seans da sayılır';
+
+  @override
+  String get notifRecallTitle3 => 'Bugün uygun bir gün mü?';
+
+  @override
+  String notifRecallBodyRoutine(String routine, int minutes) {
+    return 'Sıradaki: $routine · ~$minutes dk';
+  }
+
+  @override
+  String notifRecallBodyRoutineOnly(String routine) {
+    return 'Sıradaki: $routine';
+  }
+
+  @override
+  String get notifRecallBody =>
+      'Rutinini seç ya da boş antrenman başlat — birkaç set de iş görür.';
+
+  @override
+  String get recallOfferTitle => 'Sıradaki antrenmanını hatırlatayım mı?';
+
+  @override
+  String get recallOfferBody =>
+      '2 gün ara verirsen olağan saatinde tek bir bildirim gelir. Ayarlar → Bildirimler\'den kapatabilirsin.';
+
+  @override
+  String get recallOfferYes => 'Evet, hatırlat';
+
+  @override
+  String get recallOfferNo => 'Şimdi değil';
+
+  @override
+  String get recallOfferEnabled => 'Tamam — 2 gün ara verirsen hatırlatacağım.';
 
   @override
   String get notifWaterTitle => 'Su molası';

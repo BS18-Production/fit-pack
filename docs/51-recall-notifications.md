@@ -1,6 +1,12 @@
 # 51 — Geri çağırma bildirimleri
 
-> **Durum:** Öneri — Samet'in kararı bekleniyor. Kod yok.
+> **Durum:** İlk adım kodlandı (2026-10-17, `feat/recall-notifications`):
+> "ara uzadı" türü (`lib/features/workout/recall_reminders.dart`), günde 1 /
+> haftada 3 sınırı, sessiz saat, 3 tepkisiz → 14 gün susma (tepki = bildirime
+> dokunma ya da sonrasında antrenman), ilk antrenman sonrası izin önerisi
+> (`recall_offer.dart`), hesap değişiminde hesaba bağlı bildirimlerin iptali,
+> yeni hesapta haftalık değerlendirme açık (docs/50 karar 3). Sonraki tur:
+> "planlı gün kaçtı" ve ilk hafta hatırlatması.
 > **İlgili:** docs/49 (yeni kullanıcı deneyimi, ilk hafta rehberi), docs/26
 > (öğün hatırlatıcısı), docs/25 (mola zamanlayıcısı), docs/22 §5 (haftalık
 > değerlendirme bildirimi), docs/16 §5 (bildirim ayarları), docs/41 (gizlilik).

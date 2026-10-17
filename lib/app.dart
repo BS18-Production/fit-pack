@@ -15,6 +15,8 @@ import 'core/utils/current_day.dart';
 import 'core/notifications/notification_service.dart';
 import 'data/providers.dart';
 import 'features/nutrition/meal_reminders.dart';
+import 'features/workout/recall_reminders.dart';
+import 'features/insights/weekly_review_reminder.dart';
 import 'core/router/app_router.dart';
 import 'core/router/app_routes.dart';
 import 'l10n/app_l10n.dart';
@@ -99,6 +101,11 @@ class _FitPackAppState extends ConsumerState<FitPackApp> {
       _router.push(AppRoutes.weeklyReview);
     } else if (payload == NotificationService.payloadNutrition) {
       _router.go(AppRoutes.nutrition); // öğün hatırlatıcısı (docs/26)
+    } else if (payload == NotificationService.payloadRecall) {
+      // Geri çağırma (docs/51): "Sıradaki antrenman" kartı Ana Sayfa'da.
+      // Dokunma tepki sayılır → tepkisiz sayaç sıfırlanır.
+      unawaited(RecallLedger.markTapped());
+      _router.go(AppRoutes.home);
     }
   }
 
@@ -186,6 +193,53 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
   StreamSubscription<void>? _foodLogChanges;
   Timer? _mealSyncDebounce;
 
+  // ── Geri çağırma (docs/51): antrenman/rutin değişince, öne gelince ve ayar
+  // değişince yeniden kurulur — girilen antrenman bildirimi böyle iptal eder.
+  StreamSubscription<void>? _workoutChanges;
+  Timer? _recallSyncDebounce;
+
+  void _scheduleRecallSync() {
+    _recallSyncDebounce?.cancel();
+    _recallSyncDebounce = Timer(const Duration(seconds: 1), _syncRecall);
+  }
+
+  Future<void> _syncRecall() async {
+    if (!mounted) return;
+    final prefs = ref.read(notificationPrefsProvider);
+    try {
+      await syncRecallReminders(
+        service: ref.read(notificationServiceProvider),
+        dao: ref.read(workoutDaoProvider),
+        l: AppL10n.of(context),
+        enabled: prefs.workoutEnabled,
+        fallbackHour: prefs.workoutHour,
+        fallbackMinute: prefs.workoutMinute,
+      );
+    } catch (_) {
+      // Bildirim eklentisi yok (test) ya da zamanlama reddedildi: hatırlatma
+      // en iyi çaba — uygulamanın akışını bozmaz.
+    }
+  }
+
+  /// Haftalık değerlendirme açıksa bildirimini (yeniden) kurar. Yeni hesapta
+  /// ayar izin istenmeden açık başlar (docs/50 karar 3); izin sonradan
+  /// gelince bir sonraki öne gelişte bildirim takvimde olur. Aynı kimlikle
+  /// kurulduğu için tekrar çağırmak zararsız.
+  Future<void> _syncWeekly() async {
+    if (!mounted || !ref.read(notificationPrefsProvider).weeklyReviewEnabled) {
+      return;
+    }
+    try {
+      await scheduleWeeklyReviewReminder(
+        service: ref.read(notificationServiceProvider),
+        l: AppL10n.of(context),
+        weekStart: ref.read(weekStartProvider),
+      );
+    } catch (_) {
+      // İzin yok ya da eklenti yok (test) — en iyi çaba.
+    }
+  }
+
   void _scheduleMealSync() {
     _mealSyncDebounce?.cancel();
     // Çoklu yazım (öğün kopyalama, senkron çekme) tek kuruluma insin.
@@ -216,11 +270,26 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     _foodLogChanges = db
         .tableUpdates(TableUpdateQuery.onTable(db.foodLogs))
         .listen((_) => _scheduleMealSync());
+    _workoutChanges = db
+        .tableUpdates(TableUpdateQuery.onAllTables(
+            [db.workoutSessions, db.routines]))
+        .listen((_) => _scheduleRecallSync());
     ref.listenManual(notificationPrefsProvider, (prev, next) {
       if (prev?.mealEnabled != next.mealEnabled) _scheduleMealSync();
+      if (prev?.weeklyReviewEnabled != next.weeklyReviewEnabled &&
+          next.weeklyReviewEnabled) {
+        unawaited(_syncWeekly());
+      }
+      if (prev?.workoutEnabled != next.workoutEnabled ||
+          prev?.workoutHour != next.workoutHour ||
+          prev?.workoutMinute != next.workoutMinute) {
+        _scheduleRecallSync();
+      }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scheduleMealSync();
+      _scheduleRecallSync();
+      unawaited(_syncWeekly());
       unawaited(runBodyImportFrom(ref)); // docs/40: açılışta da
     });
     _midnight.arm();
@@ -231,6 +300,8 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
     WidgetsBinding.instance.removeObserver(this);
     _foodLogChanges?.cancel();
     _mealSyncDebounce?.cancel();
+    _workoutChanges?.cancel();
+    _recallSyncDebounce?.cancel();
     _midnight.cancel();
     super.dispose();
   }
@@ -239,6 +310,8 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
     _scheduleMealSync();
+    _scheduleRecallSync();
+    unawaited(_syncWeekly());
     // Adımlar her öne gelişte tazelenir (docs/39 S-9); izin Ayarlar'dan
     // kaldırıldıysa bağlantı durumu da yeniden hesaplanır.
     ref.invalidate(stepLinkStateProvider);

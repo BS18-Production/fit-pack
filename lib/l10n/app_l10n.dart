@@ -3364,7 +3364,7 @@ abstract class AppL10n {
   /// No description provided for @notifWorkout.
   ///
   /// In en, this message translates to:
-  /// **'Daily workout reminder'**
+  /// **'Workout reminder'**
   String get notifWorkout;
 
   /// No description provided for @notifWater.
@@ -3420,6 +3420,90 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Your plan is waiting — a short session counts too.'**
   String get notifWorkoutBody;
+
+  /// No description provided for @notifWorkoutSub.
+  ///
+  /// In en, this message translates to:
+  /// **'If you take a 2-day break, reminds you of your next workout at your usual time.'**
+  String get notifWorkoutSub;
+
+  /// No description provided for @notifWorkoutFallbackTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Default time'**
+  String get notifWorkoutFallbackTime;
+
+  /// No description provided for @notifWorkoutFallbackTimeSub.
+  ///
+  /// In en, this message translates to:
+  /// **'The time comes from your workout history; this one is used until there is history.'**
+  String get notifWorkoutFallbackTimeSub;
+
+  /// No description provided for @notifRecallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your next workout is ready'**
+  String get notifRecallTitle;
+
+  /// No description provided for @notifRecallTitle2.
+  ///
+  /// In en, this message translates to:
+  /// **'A short session counts too'**
+  String get notifRecallTitle2;
+
+  /// No description provided for @notifRecallTitle3.
+  ///
+  /// In en, this message translates to:
+  /// **'Is today a good day?'**
+  String get notifRecallTitle3;
+
+  /// No description provided for @notifRecallBodyRoutine.
+  ///
+  /// In en, this message translates to:
+  /// **'Up next: {routine} · ~{minutes} min'**
+  String notifRecallBodyRoutine(String routine, int minutes);
+
+  /// No description provided for @notifRecallBodyRoutineOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Up next: {routine}'**
+  String notifRecallBodyRoutineOnly(String routine);
+
+  /// No description provided for @notifRecallBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a routine or start an empty workout — a few sets do the job.'**
+  String get notifRecallBody;
+
+  /// No description provided for @recallOfferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Want a reminder for your next workout?'**
+  String get recallOfferTitle;
+
+  /// No description provided for @recallOfferBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If you take a 2-day break, you get one notification at your usual time. Turn it off in Settings → Notifications.'**
+  String get recallOfferBody;
+
+  /// No description provided for @recallOfferYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, remind me'**
+  String get recallOfferYes;
+
+  /// No description provided for @recallOfferNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get recallOfferNo;
+
+  /// No description provided for @recallOfferEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Done — I\'ll remind you after a 2-day break.'**
+  String get recallOfferEnabled;
 
   /// No description provided for @notifWaterTitle.
   ///

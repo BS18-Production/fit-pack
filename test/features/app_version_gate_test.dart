@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fit_pack/core/router/app_routes.dart';
 import 'package:fit_pack/features/auth/auth_gate.dart';
 import 'package:fit_pack/features/update/app_version_gate.dart';
@@ -113,6 +115,50 @@ void main() {
 
       expect(g.blocked, isFalse);
       expect(bildirim, 0);
+    });
+  });
+
+  // CR-009: cevap gelmeyen bağlantı ilk kareyi süresiz bekletmemeli.
+  group('açılış — süre sınırı', () {
+    test('cevap gelmezse açılış süre dolunca devam eder', () async {
+      final cevap = Completer<({int minBuild, String? message})?>();
+      final g = UpdateGate(AppVersionGate(
+        currentBuild: () async => 1,
+        fetchMinimum: () => cevap.future,
+      ));
+
+      final sw = Stopwatch()..start();
+      await g.refreshWithin(const Duration(milliseconds: 50));
+
+      expect(sw.elapsed, lessThan(const Duration(seconds: 1)));
+      expect(g.blocked, isFalse, reason: 'karar yokken kapı kapanmaz');
+    });
+
+    test('geç gelen "çok eskisin" kararı yine uygulanır', () async {
+      final cevap = Completer<({int minBuild, String? message})?>();
+      final g = UpdateGate(AppVersionGate(
+        currentBuild: () async => 1,
+        fetchMinimum: () => cevap.future,
+      ));
+      var bildirim = 0;
+      g.addListener(() => bildirim++);
+
+      await g.refreshWithin(const Duration(milliseconds: 20));
+      expect(g.blocked, isFalse);
+
+      cevap.complete((minBuild: 5, message: null));
+      await pumpEventQueue();
+
+      expect(g.blocked, isTrue);
+      expect(bildirim, 1, reason: 'yönlendirici haberdar edilir');
+    });
+
+    test('hızlı cevapta karar ilk kareden önce uygulanır', () async {
+      final g = UpdateGate(gate(build: 1, minimum: (minBuild: 5, message: null)));
+
+      await g.refreshWithin();
+
+      expect(g.blocked, isTrue);
     });
   });
 

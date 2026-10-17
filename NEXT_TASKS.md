@@ -51,8 +51,8 @@ Sahip Claude-5.
       (CR-021 kapandı). iPhone'da v17 göçü doğrulandı.
 - [ ] Samet iPhone'da: tartıdan kilo (rıza ekranı), antrenmanı Sağlık'a
       yazma, Hesap → Hesabı sil akışı (test hesabıyla!).
-- [ ] CR-018 ekran bölme `refactor/split-screens` hazır (1097 test, davranış
-      aynı) — Samet onayı → main.
+- [x] CR-018 ekran bölme: aktif seans 2729 → 1131 satır, beslenme ortak
+      sağlayıcı/etiket dosyaları. main `a4fe487`, iPhone'a kuruldu.
 - [ ] Hareket kütüphanesi önerisi docs/48 (`docs/core-exercise-list`): 219
       hareket — Samet'in 3 kararı.
 - [ ] Gizlilik politikası iletişim adresi (yayından önce).

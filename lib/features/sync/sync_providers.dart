@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/providers.dart';
 import 'supabase_sync_remote.dart';
 import 'sync_controller.dart';
+import 'sync_ownership.dart';
 import 'sync_pull.dart';
 import 'sync_push.dart';
 
@@ -14,12 +15,38 @@ final syncRemoteProvider = Provider<SyncRemote>(
   (ref) => SupabaseSyncRemote(() => Supabase.instance.client),
 );
 
+/// Açık oturumun kullanıcısı — doğrudan Supabase'in **kalıcı oturumundan**,
+/// ağ sorulmaz (docs/18 §5.1 Kural 1). Supabase başlatılamadıysa oturumsuz.
+String? _sessionUserId() {
+  try {
+    return Supabase.instance.client.auth.currentSession?.user.id;
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Hesap sahipliği sınırı (docs/47) — gönderim ve çekme aynı kuralı sorar.
+final syncOwnershipProvider = Provider<SyncOwnership>(
+  (ref) => SyncOwnership(
+    ref.watch(databaseProvider),
+    sessionUserId: _sessionUserId,
+  ),
+);
+
 final syncPushProvider = Provider<SyncPush>(
-  (ref) => SyncPush(ref.watch(databaseProvider), ref.watch(syncRemoteProvider)),
+  (ref) => SyncPush(
+    ref.watch(databaseProvider),
+    ref.watch(syncRemoteProvider),
+    ownership: ref.watch(syncOwnershipProvider),
+  ),
 );
 
 final syncPullProvider = Provider<SyncPull>(
-  (ref) => SyncPull(ref.watch(databaseProvider), ref.watch(syncRemoteProvider)),
+  (ref) => SyncPull(
+    ref.watch(databaseProvider),
+    ref.watch(syncRemoteProvider),
+    ownership: ref.watch(syncOwnershipProvider),
+  ),
 );
 
 /// Senkron zamanlayıcısı. **`autoDispose` DEĞİL** — ekran değişince yok olup
@@ -32,13 +59,7 @@ final syncControllerProvider = Provider<SyncController>((ref) {
   final controller = SyncController(
     db: ref.watch(databaseProvider),
     push: ref.watch(syncPushProvider),
-    currentUserId: () {
-      try {
-        return Supabase.instance.client.auth.currentSession?.user.id;
-      } catch (_) {
-        return null; // Supabase init edilemedi → oturumsuz say
-      }
-    },
+    currentUserId: _sessionUserId,
   );
   ref.onDispose(controller.stop);
   return controller;

@@ -7,6 +7,7 @@ import 'sync_clock.dart';
 import 'sync_controller.dart' show syncLog;
 import 'sync_errors.dart';
 import 'sync_health.dart';
+import 'sync_ownership.dart';
 
 /// Bir gönderim turunun sonucu — arayüz ve testler bunu okur.
 class PushResult {
@@ -145,6 +146,7 @@ class SyncPush {
     SyncApply? apply,
     SyncHealth? health,
     SyncClock? clock,
+    this.ownership,
     this.batchSize = 200,
   })  : apply = apply ?? SyncApply(db),
         health = health ?? SyncHealth(db),
@@ -153,10 +155,40 @@ class SyncPush {
   /// Sunucu saati farkını öğrenen katman (docs/23 §2).
   final SyncClock clock;
 
+  /// Hesap sahipliği sınırı (docs/47). `null` = denetim yok (yalnız testler;
+  /// sağlayıcı her zaman verir).
+  final SyncOwnership? ownership;
+
   /// Bekleyen her şeyi gönderir. `userId` = Supabase `auth.uid()`.
   ///
   /// Oturum yoksa çağrılmaz — satırlar kuyrukta bekler, girişte gönderilir.
+  ///
+  /// **Hesap sahipliği** (docs/47): yerel veri bu hesaba ait değilse tur hiç
+  /// başlamaz; tur sürerken hesap değişirse yarıda bırakılır ve hiçbir yerel
+  /// işaretleme yapılmaz. Satırlar kuyrukta kalır.
   Future<PushResult> pushAll({required String userId}) async {
+    final own = ownership;
+    if (own != null && !await own.owns(userId)) {
+      syncLog('gönderim atlandı: yerel veri $userId hesabına ait değil');
+      return const PushResult();
+    }
+    try {
+      return await _pushAllOwned(userId);
+    } on SyncOwnershipLost catch (e) {
+      // Ağ hatası değil → sağlık kaydına "ulaşılamadı" yazılmaz.
+      syncLog('gönderim yarıda bırakıldı', error: e);
+      return PushResult(error: e);
+    }
+  }
+
+  /// Sahiplik bozulduysa [SyncOwnershipLost] fırlatır. Her ağ çağrısından
+  /// önce ve her yerel yazma transaction'ının başında çağrılır.
+  Future<void> _ensureOwner(String userId) async {
+    final own = ownership;
+    if (own != null) await own.ensure(userId);
+  }
+
+  Future<PushResult> _pushAllOwned(String userId) async {
     var pushed = 0;
     var failed = 0;
     var rejected = 0;
@@ -195,6 +227,7 @@ class SyncPush {
         rejected += r.rejected;
         permanent += r.permanent;
       } catch (e, st) {
+        if (e is SyncOwnershipLost) rethrow;
         firstError ??= e;
         failed += await _pendingCount(table);
         syncLog('$table gönderilemedi: $e\n$st', error: e);
@@ -215,6 +248,7 @@ class SyncPush {
       try {
         deleted = await _pushTombstones(userId);
       } catch (e, st) {
+        if (e is SyncOwnershipLost) rethrow;
         firstError ??= e;
         syncLog('mezar taşları gönderilemedi: $e\n$st', error: e);
       }
@@ -347,6 +381,7 @@ class SyncPush {
       final failedUids = <String>{};
       // Fark hesabı için isteğin ÇIKIŞ anı (docs/23 §2.2).
       final sentAtMs = DateTime.now().millisecondsSinceEpoch;
+      await _ensureOwner(userId);
       try {
         accepted = await remote.upsert(table, payload);
       } catch (e) {
@@ -356,7 +391,8 @@ class SyncPush {
         // arkasındaki bütün kuyruğu sonsuza kadar kilitler (docs/20 §9).
         if (classifySyncError(e) != SyncErrorKind.permanent) rethrow;
         syncLog('$table: kalıcı hata ($e) → satırlar tek tek deneniyor');
-        final ayrik = await _upsertIsolating(table, payload, stamps);
+        final ayrik =
+            await _upsertIsolating(table, payload, stamps, userId);
         accepted = ayrik.accepted;
         failedUids.addAll(ayrik.failed);
         permanent += ayrik.failed.length;
@@ -406,11 +442,15 @@ class SyncPush {
     String table,
     List<Map<String, Object?>> payload,
     Map<String, Object?> stamps,
+    String userId,
   ) async {
     final accepted = <AcceptedRow>[];
     final failed = <String>[];
     for (final row in payload) {
       final uid = row['uid']! as String;
+      // Hesap değiştiyse sunucunun yetki reddi "kalıcı hata" sanılıp satır
+      // yanlışlıkla hatalı işaretlenmesin (docs/47).
+      await _ensureOwner(userId);
       try {
         accepted.addAll(await remote.upsert(table, [row]));
       } catch (e) {
@@ -420,11 +460,14 @@ class SyncPush {
         // `local_seq` koruması burada da geçerli: kullanıcı arada satırı
         // düzenlediyse o yeni sürüm denenmeyi hak eder, hatalı işaretlenmez.
         // sync_state değiştiği için yerel tetikleyici çalışmaz.
-        await db.customStatement(
-          'UPDATE $table SET sync_state = 2 '
-          'WHERE uid = ? AND sync_state = 1 AND local_seq IS ?',
-          [uid, stamps[uid]],
-        );
+        await db.transaction(() async {
+          await _ensureOwner(userId);
+          await db.customStatement(
+            'UPDATE $table SET sync_state = 2 '
+            'WHERE uid = ? AND sync_state = 1 AND local_seq IS ?',
+            [uid, stamps[uid]],
+          );
+        });
         failed.add(uid);
       }
     }
@@ -457,6 +500,7 @@ class SyncPush {
 
         // ⚠️ Sunucu onayı burada. Hata fırlarsa aşağıya inilmez → mezar
         // taşları kuyrukta kalır ve bir sonraki turda tekrar denenir.
+        await _ensureOwner(userId);
         final silinen = await remote.deleteRows(table, userId, uids);
         total += silinen.length;
 
@@ -464,11 +508,14 @@ class SyncPush {
         // "sunucuda zaten yoktu" demektir (hiç gönderilmemiş satır).
         // Bırakılsalardı sonsuza kadar tekrar gönderilirlerdi.
         final ids = [for (final r in rows) r.data['id'] as int];
-        await db.customStatement(
-          'DELETE FROM sync_tombstones WHERE id IN '
-          '(${List.filled(ids.length, '?').join(', ')})',
-          ids,
-        );
+        await db.transaction(() async {
+          await _ensureOwner(userId);
+          await db.customStatement(
+            'DELETE FROM sync_tombstones WHERE id IN '
+            '(${List.filled(ids.length, '?').join(', ')})',
+            ids,
+          );
+        });
 
         if (rows.length < batchSize) break;
       }
@@ -487,6 +534,7 @@ class SyncPush {
     Map<String, Object?> stamps,
     String userId,
   ) async {
+    await _ensureOwner(userId);
     final serverRows = await remote.fetchByUids(table, userId, uids);
     final byUid = {
       for (final r in serverRows)
@@ -496,6 +544,7 @@ class SyncPush {
     var resolved = 0;
     final types = apply.columnTypes(table);
     await apply.withCaptureOff(() async {
+          await _ensureOwner(userId);
           for (final uid in uids) {
             final server = byUid[uid];
             if (server != null) {
@@ -552,6 +601,9 @@ class SyncPush {
     // zaten görmezden gelir, ama `server_rev` yazması onu uyandırmasın diye
     // bayrak kapatılır (docs/20 K-4).
     await apply.withCaptureOff(() async {
+          // Sahiplik transaction İÇİNDE sorulur: arada hesap temizliği
+          // başladıysa (docs/47) hiçbir satır temiz işaretlenmez.
+          await _ensureOwner(userId);
           for (final row in accepted) {
             await db.customStatement(
               'UPDATE $table SET sync_state = 0, user_id = ?, server_rev = ? '
@@ -575,6 +627,13 @@ class SyncPush {
     Map<String, Object?> data,
     String userId,
   ) async {
+    // Başka hesaba ait satır bu hesap adına gönderilmez (docs/47): `user_id`
+    // damgası aşağıda gönderenle değiştirilir, sunucu bunu ayırt edemez.
+    final owner = data['user_id'];
+    if (owner is String && owner != userId) {
+      syncLog('$table: satır başka hesaba ait ($owner) → gönderilmedi');
+      return null;
+    }
     final info = db.allTables.firstWhere((t) => t.actualTableName == table);
     final types = {for (final c in info.$columns) c.name: c.type};
     final fks = syncForeignKeys[table] ?? const {};

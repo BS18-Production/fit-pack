@@ -145,10 +145,11 @@ class AuthGate extends ChangeNotifier {
     // Yerel hesap kontrolü açılışta da çalışır (docs/20 §7.1 madde 2): ağ
     // gerektirmez, aynı kullanıcıda anında döner. Eskiden atlanıyordu — yarım
     // kalmış bir temizlik bir sonraki girişe kadar açıkta kalırdı.
+    AccountSwitch? outcome;
     try {
       await AccountSwitchGuard.resumeIfInterrupted(_db);
       if (userId != null) {
-        final outcome = await AccountSwitchGuard.apply(_db, userId);
+        outcome = await AccountSwitchGuard.apply(_db, userId);
         if (outcome == AccountSwitch.pendingConflict) {
           _pendingConflictRows = await AccountSwitchGuard.pendingRowCount(_db);
         }
@@ -158,8 +159,14 @@ class AuthGate extends ChangeNotifier {
       syncLog('açılışta hesap kontrolü başarısız', error: e);
     }
     await _readOnboarded();
-    // Her açılışta pull tekrarlanmasın: olay bizden önce geldiyse zaten başladı.
-    if (userId != null && !alreadyApplied) unawaited(_backgroundPull(userId));
+    if (shouldPullOnBootstrap(
+      userId: userId,
+      alreadyApplied: alreadyApplied,
+      outcome: outcome,
+      accountError: _accountError,
+    )) {
+      unawaited(_backgroundPull(userId!));
+    }
   }
 
   /// Onboarding bitince çağrılır — kapı anında açılır.
@@ -306,6 +313,24 @@ AuthAction authActionFor({
   if (event == AuthChangeEvent.initialSession) return AuthAction.markApplied;
   return AuthAction.applyAccount;
 }
+
+/// Açılışta arka plan çekmesi başlasın mı — saf mantık, test edilebilsin diye
+/// ayrı.
+///
+/// Her açılışta tekrarlanmaz: olay bizden önce geldiyse zaten başladı.
+/// **Hesap kontrolü çakışma ya da hata verdiyse çekilmez** (docs/47): yerel
+/// veri başka hesabındır ya da sahibi bilinmiyor; inen satırlar ona karışırdı.
+/// Çekme kendi içinde de sahipliği sorar — bu ikinci güvence.
+bool shouldPullOnBootstrap({
+  required String? userId,
+  required bool alreadyApplied,
+  required AccountSwitch? outcome,
+  required bool accountError,
+}) =>
+    userId != null &&
+    !alreadyApplied &&
+    !accountError &&
+    outcome != AccountSwitch.pendingConflict;
 
 /// Yönlendirme tablosu (docs/18 §5.1) — saf mantık, test edilebilir olsun diye
 /// GoRouter'dan ayrı:

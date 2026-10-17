@@ -37,6 +37,12 @@ susturmaz (CR-012); hesap silinince sağlık tercihinin bellek kopyası da
 sıfırlanır (CR-007); şema sürümü belgelerde tek yerde, koda yönlendirir
 (CR-023). 1024 test, iPhone'a kuruldu.
 
+**Veri doğruluğu turu:** uygulama açıkken gece yarısı geçince günlük ekranlar
+yeni güne geçer, "son 30 gün" gerçekten 30 gün (CR-010/011); profilde bir alanı
+düzenlemek yalnız o alanı yazar (CR-013); onboarding profil + ilk kilo tek
+transaction (CR-014); reaktif yardımcı ilk okuma sırasındaki yazmayı kaçırmaz
+(CR-008). 1042 test, iPhone'a kuruldu.
+
 ## Geri bildirim turu — kilit ekranı, mola sesi, takvim · 2026-10-12
 
 [docs/45](docs/45-feedback-round-oct11.md). Kilit ekranında antrenman başına

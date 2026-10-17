@@ -25,6 +25,13 @@ Sahip Claude-5.
       sağlık tercihinin bellek kopyası sıfırlanır, CR-023 şema sürümü ve
       reaktiflik yorumları koda uyduruldu. 1024 test; main `caea6ef`, iPhone'a
       kuruldu, push yok.
+- [x] CR-010/011 gece yarısı + tarih aralıkları (`currentDayProvider`), CR-013
+      profil tek alan yazımı (`updateFields`), CR-014 onboarding tek
+      transaction, CR-008 reaktif yardımcı önce abone olur. 1042 test; main
+      `d5ec247`, iPhone'a kuruldu, push yok.
+- [ ] Sonraki tur: CR-015 fotoğraf yedeği (Samet kararı: yedekten çıkar mı,
+      metni mi düzelt), CR-019 sessiz yazma hataları. Kalan küçükler:
+      beslenme gün okları/"dünü kopyala" 24 saat, öğün önerisi saat dilimi.
 - [ ] Samet Android'de (Samsung bağlanınca): kısa mola bitince 1 sn içinde
       yeni mola → bildirim/ses/titreşim sürüyor mu (CR-012).
 - [ ] health-next birleşince: `app_database.dart` `schemaVersion` üstü yorum

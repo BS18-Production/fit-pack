@@ -20,20 +20,27 @@ class ExerciseBests {
   const ExerciseBests({required this.e1rm, required this.weightKg});
 
   bool get isEmpty => e1rm <= 0 && weightKg <= 0;
+
+  static const none = ExerciseBests(e1rm: 0, weightKg: 0);
+
+  /// Bu en iyilere [points] eklenince oluşan en iyiler — geçmişi baştan
+  /// taramadan büyütmek için (CR-016).
+  ExerciseBests withPoints(Iterable<ExerciseSetPoint> points) {
+    var bestE1 = e1rm, bestW = weightKg;
+    for (final p in points) {
+      final e1 = p.e1rm;
+      if (e1 != null && e1 > bestE1) bestE1 = e1;
+      final w = p.weightKg;
+      if (w != null && w > bestW) bestW = w;
+    }
+    return ExerciseBests(e1rm: bestE1, weightKg: bestW);
+  }
 }
 
 /// Set noktalarından en iyi e1RM + en ağır kiloyu çıkarır (ısınma setlerini
 /// çağıran filtreler — `getExerciseHistory` zaten hariç tutuyor).
-ExerciseBests bestsOf(Iterable<ExerciseSetPoint> points) {
-  var bestE1 = 0.0, bestW = 0.0;
-  for (final p in points) {
-    final e1 = p.e1rm;
-    if (e1 != null && e1 > bestE1) bestE1 = e1;
-    final w = p.weightKg;
-    if (w != null && w > bestW) bestW = w;
-  }
-  return ExerciseBests(e1rm: bestE1, weightKg: bestW);
-}
+ExerciseBests bestsOf(Iterable<ExerciseSetPoint> points) =>
+    ExerciseBests.none.withPoints(points);
 
 /// Antrenman özetinde gösterilecek yeni rekor: hangi harekette, hangi türde
 /// (e1RM öncelikli), hangi set değeriyle.
@@ -59,8 +66,20 @@ NewRecord? newRecordFor({
   required String name,
   required Iterable<ExerciseSetPoint> priorHistory,
   required Iterable<ExerciseSetPoint> sessionPoints,
+}) =>
+    newRecordAgainst(
+      name: name,
+      prior: bestsOf(priorHistory),
+      sessionPoints: sessionPoints,
+    );
+
+/// [newRecordFor]'un önceden hesaplanmış en iyilerle çalışan hâli — geçmişi
+/// tarih sırasıyla yürüyen hesaplar her seansta listeyi yeniden taramasın.
+NewRecord? newRecordAgainst({
+  required String name,
+  required ExerciseBests prior,
+  required Iterable<ExerciseSetPoint> sessionPoints,
 }) {
-  final prior = bestsOf(priorHistory);
   if (prior.isEmpty) return null; // ilk kez yapılan hareket — rekor sayılmaz
 
   ExerciseSetPoint? bestE1Point, bestWPoint;

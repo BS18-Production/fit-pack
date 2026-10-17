@@ -82,7 +82,9 @@ List<ExerciseBrief> exerciseBriefs(Iterable<WorkoutSet> sets) {
 
 /// Seans başına kırılan rekor sayısı (hareket başına en fazla 1) — Özet
 /// ekranıyla aynı tanım (`newRecordFor`): seans ÖNCESİ geçmişin en iyi
-/// e1RM'ini ya da en ağır kilosunu aşan hareket. Tek geçişte, tarih sırasıyla.
+/// e1RM'ini ya da en ağır kilosunu aşan hareket. Tek geçişte, tarih sırasıyla:
+/// hareket başına yalnız o ana kadarki en iyiler taşınır, geçmiş listesi
+/// yeniden taranmaz (CR-016) — iş toplam set sayısıyla doğrusal.
 Map<int, int> recordCountsBySession(
   Iterable<WorkoutSession> sessions,
   Map<int, List<WorkoutSet>> setsBySession,
@@ -92,7 +94,7 @@ Map<int, int> recordCountsBySession(
       final c = a.date.compareTo(b.date);
       return c != 0 ? c : a.id.compareTo(b.id);
     });
-  final history = <int, List<ExerciseSetPoint>>{};
+  final bests = <int, ExerciseBests>{};
   final counts = <int, int>{};
   var i = 0;
   while (i < ordered.length) {
@@ -112,9 +114,9 @@ Map<int, int> recordCountsBySession(
       }
       var n = 0;
       for (final e in byEx.entries) {
-        final rec = newRecordFor(
+        final rec = newRecordAgainst(
           name: '',
-          priorHistory: history[e.key] ?? const [],
+          prior: bests[e.key] ?? ExerciseBests.none,
           sessionPoints: e.value,
         );
         if (rec != null) n++;
@@ -122,8 +124,9 @@ Map<int, int> recordCountsBySession(
       }
       counts[session.id] = n;
     }
+    // Grup bitince en iyiler güncellenir — grup içi seanslar birbirini görmez.
     for (final e in pending.entries) {
-      history.putIfAbsent(e.key, () => []).addAll(e.value);
+      bests[e.key] = (bests[e.key] ?? ExerciseBests.none).withPoints(e.value);
     }
     i = j;
   }

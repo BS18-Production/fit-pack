@@ -13,7 +13,9 @@ import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/glass.dart';
+import '../../core/prefs/week_start_provider.dart';
 import '../home/providers/home_providers.dart';
+import '../home/week_ready.dart';
 import '../workout/workout_ui.dart';
 import 'weekly_review.dart';
 import 'weekly_review_providers.dart';
@@ -31,7 +33,9 @@ import '../../shared/widgets/fitpack_icon.dart';
 /// yok" der); kayıtsız günden yargı çıkmaz; düşüş "kötü" diye boyanmaz;
 /// puan yok, hareketler toplanmaz.
 class WeeklyReviewScreen extends ConsumerStatefulWidget {
-  const WeeklyReviewScreen({super.key});
+  /// Açılışta kaç hafta geriye bakılır (0 bu hafta).
+  final int initialOffset;
+  const WeeklyReviewScreen({super.key, this.initialOffset = 0});
 
   @override
   ConsumerState<WeeklyReviewScreen> createState() => _WeeklyReviewScreenState();
@@ -39,7 +43,17 @@ class WeeklyReviewScreen extends ConsumerStatefulWidget {
 
 class _WeeklyReviewScreenState extends ConsumerState<WeeklyReviewScreen> {
   /// Kaç hafta geriye bakılıyor — geçici ekran durumu (CONVENTIONS §2).
-  int _offset = 0;
+  late int _offset = widget.initialOffset;
+
+  @override
+  void initState() {
+    super.initState();
+    // Değerlendirme hangi yoldan açılırsa açılsın "Haftan hazır" kartı
+    // kalkar (docs/50 Faz 2) — kapanış aralığı dışında etkisiz.
+    ref
+        .read(weekReadyOpenedProvider.notifier)
+        .markOpened(DateTime.now(), ref.read(weekStartProvider));
+  }
 
   @override
   Widget build(BuildContext context) {

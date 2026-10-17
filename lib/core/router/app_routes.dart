@@ -67,6 +67,11 @@ class AppRoutes {
   /// Haftalık değerlendirme (docs/22 §4). Ana sayfa "Bu Hafta"dan ve haftalık
   /// bildirimden açılır.
   static const weeklyReview = '/insights/week';
+
+  /// [weeksBack] hafta önceki değerlendirme (`w=1` geçen hafta) — "Haftan
+  /// hazır" kartı (docs/50) yeni haftanın ilk günü kapanan haftayı açar.
+  static String weeklyReviewWeeksBack(int weeksBack) =>
+      weeksBack <= 0 ? weeklyReview : '$weeklyReview?w=$weeksBack';
   static const assistant = '/assistant';
   static const assistantQuality = '/settings/developer/assistant-quality';
 

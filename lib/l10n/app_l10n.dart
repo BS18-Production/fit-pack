@@ -403,6 +403,60 @@ abstract class AppL10n {
   /// **'Log your first weight'**
   String get homeFirstWeekWeight;
 
+  /// No description provided for @homeTodayLiftIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'{exercise}: try {weight} this time.'**
+  String homeTodayLiftIncrease(String exercise, String weight);
+
+  /// No description provided for @homeTodayLiftAddRep.
+  ///
+  /// In en, this message translates to:
+  /// **'{exercise}: try +1 rep per set at {weight}.'**
+  String homeTodayLiftAddRep(String exercise, String weight);
+
+  /// No description provided for @homeTodayFirstMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first meal.'**
+  String get homeTodayFirstMeal;
+
+  /// No description provided for @homeTodayLeftBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'{protein} g protein, {kcal} kcal left today.'**
+  String homeTodayLeftBoth(int protein, int kcal);
+
+  /// No description provided for @homeTodayLeftProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'{protein} g protein left today.'**
+  String homeTodayLeftProtein(int protein);
+
+  /// No description provided for @homeTodayLeftKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal left today.'**
+  String homeTodayLeftKcal(int kcal);
+
+  /// No description provided for @homeWeekReadyKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR WEEK IS READY'**
+  String get homeWeekReadyKicker;
+
+  /// No description provided for @homeWeekReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your weekly review is ready'**
+  String get homeWeekReadyTitle;
+
+  /// No description provided for @homeWeekReadyOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get homeWeekReadyOpen;
+
   /// No description provided for @homeRestTitle.
   ///
   /// In en, this message translates to:

@@ -1,7 +1,7 @@
 import 'package:fit_pack/data/database/app_database.dart';
 import 'package:fit_pack/core/units/units.dart';
 import 'package:fit_pack/core/utils/format.dart';
-import 'package:fit_pack/features/workout/active_session_screen.dart';
+import 'package:fit_pack/features/workout/active_session_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Aktif seansta ölçüm tipine göre süre/mesafe biçimlendirme ve ayrıştırma

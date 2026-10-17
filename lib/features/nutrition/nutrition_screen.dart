@@ -11,7 +11,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../../data/providers.dart';
-import '../../data/reactive.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/nutrition_dao.dart';
 import '../../shared/widgets/app_state_views.dart';
@@ -23,35 +22,8 @@ import 'add_food_sheet.dart';
 import 'meal_types.dart';
 import 'nutrition_habit_widgets.dart';
 import 'day_complete.dart';
+import 'nutrition_providers.dart';
 import '../../shared/widgets/fitpack_icon.dart';
-
-final selectedDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
-
-/// "Dünü kopyala" sürüyor mu. Düğme yalnız gün boşken görünür ve kopyalama
-/// bitene kadar ekran tazelenmez → hızlı iki dokunuş iki kopya başlatabiliyordu
-/// (dış inceleme 2026-09-15, #12). DAO tarafında da hedef kontrolü var; bu
-/// bayrak kullanıcıya düğmeyi sönük gösterip ikinci dokunuşu hiç başlatmaz.
-final copyDayBusyProvider = StateProvider<bool>((ref) => false);
-
-/// Kayıtlar + yemek adı (join). **Reaktif** (H-05): öğün eklenince/silinince
-/// kendiliğinden tazelenir. Seçili gün değişince provider yeniden kurulur.
-final logsWithFoodProvider = StreamProvider<List<FoodLogWithFood>>((ref) {
-  final db = ref.watch(databaseProvider);
-  final date = ref.watch(selectedDateProvider);
-  return watchTables(db, [
-    db.foodLogs,
-    db.foods,
-  ], () => ref.read(nutritionDaoProvider).getLogsWithFoodForDate(date));
-});
-
-final nutritionTotalsProvider = StreamProvider<DailyNutrition>((ref) {
-  final db = ref.watch(databaseProvider);
-  final date = ref.watch(selectedDateProvider);
-  return watchTables(db, [
-    db.foodLogs,
-    db.foods,
-  ], () => ref.read(nutritionDaoProvider).getDailyTotals(date));
-});
 
 class NutritionScreen extends ConsumerStatefulWidget {
   const NutritionScreen({super.key});
@@ -703,33 +675,4 @@ class _FoodLogRow extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Custom yemek + Yemekler ekranında ortak birim seçenekleri (docs/14 —
-/// locale'e göre). Seçilen etiket yemeğin `unitLabel`'ına YAZILIR (içerik):
-/// eski/karışık dilde kayıtlı etiketler için çağıran taraf, mevcut değeri
-/// listeye ekleyerek dropdown'ı korur ([unitOptionsWith]).
-List<String> unitOptions(AppL10n l) => [
-  l.unitPortion,
-  l.unitPiece,
-  l.unitSlice,
-  l.unitBowl,
-  l.unitWaterGlass,
-  l.unitCup,
-  l.unitTablespoon,
-  l.unitHandful,
-  l.unitClove,
-  l.unitScoop,
-  l.unitCan,
-];
-
-/// Seçenekler + (listede olmayan) mevcut kayıtlı birim — dropdown value'su
-/// items'ta yoksa Flutter assert atar; farklı dilde kaydedilmiş birimler
-/// böyle korunur.
-List<String> unitOptionsWith(AppL10n l, String? current) {
-  final options = unitOptions(l);
-  if (current != null && !options.contains(current)) {
-    return [current, ...options];
-  }
-  return options;
 }

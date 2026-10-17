@@ -6,71 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
-import '../../data/reactive.dart';
 import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/progress_indicators.dart';
 import 'barcode_flow.dart';
-import 'nutrition_screen.dart' show unitOptionsWith;
+import 'nutrition_providers.dart';
+import 'food_labels.dart';
 import '../../shared/widgets/fitpack_icon.dart';
-
-/// Besin veritabanı (P-1 + P-2, docs/07-nutrition-v2.md).
-/// "Yemekler frontend'de değil" → buradan görünür/yönetilir: lokal SQLite
-/// `foods` tablosu. Değerleri gör, custom yemekleri düzenle/sil.
-/// **Reaktif** (H-05): yemek eklenince/düzenlenince/silinince tazelenir.
-final allFoodsProvider = StreamProvider<List<Food>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return watchTables(
-      db, [db.foods], () => ref.read(nutritionDaoProvider).getAllFoods());
-});
-
-/// Yemek grupları (C-5) — `foods.category` değerleri. Sıra ekrandaki çip
-/// sırasıdır: en çok kullanılandan başlar.
-const foodCategoryOrder = <String>[
-  'meat',
-  'dairy',
-  'grain',
-  'legume',
-  'vegetable',
-  'fruit',
-  'fat',
-  'dish',
-  'sweet',
-  'drink',
-  'other',
-];
-
-/// Grup kodunu kullanıcı diline çevirir. Bilinmeyen kod olduğu gibi gösterilir
-/// (dış kaynaktan gelen yemekte beklenmedik değer ekranı boş bırakmasın).
-String foodCategoryLabel(AppL10n l, String category) => switch (category) {
-  'meat' => l.foodCatMeat,
-  'dairy' => l.foodCatDairy,
-  'grain' => l.foodCatGrain,
-  'legume' => l.foodCatLegume,
-  'vegetable' => l.foodCatVegetable,
-  'fruit' => l.foodCatFruit,
-  'fat' => l.foodCatFat,
-  'dish' => l.foodCatDish,
-  'sweet' => l.foodCatSweet,
-  'drink' => l.foodCatDrink,
-  'other' => l.foodCatOther,
-  _ => category,
-};
-
-/// Listede gerçekten bulunan gruplar, [foodCategoryOrder] sırasıyla.
-/// Hiç kategorili yemek yoksa boş döner → çip şeridi çizilmez.
-List<String> availableFoodCategories(Iterable<Food> foods) {
-  final present = {
-    for (final f in foods)
-      if (f.category != null && f.category!.isNotEmpty) f.category!,
-  };
-  return [
-    for (final c in foodCategoryOrder)
-      if (present.remove(c)) c,
-    ...present.toList()..sort(),
-  ];
-}
 
 class FoodsScreen extends ConsumerStatefulWidget {
   const FoodsScreen({super.key});

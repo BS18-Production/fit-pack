@@ -14,10 +14,10 @@ import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/progress_indicators.dart';
 import 'barcode_flow.dart';
 import 'food_search.dart';
-import 'foods_screen.dart' show foodCategoryLabel, availableFoodCategories;
+import 'food_labels.dart';
 import 'meal_types.dart';
 import 'nutrition_habits.dart' show mealForTime;
-import 'nutrition_screen.dart' show selectedDateProvider, unitOptionsWith;
+import 'nutrition_providers.dart' show selectedDateProvider;
 import '../../shared/widgets/fitpack_icon.dart';
 
 /// **Yemek ekleme paneli** (2026-09-30 yeniden tasarım — NEXT_TASKS
@@ -54,35 +54,12 @@ Future<void> showAddFoodSheet(
   );
 }
 
-/// Yemek grubu ikonu — liste satırının solunda.
-IconData foodIcon(Food f) {
-  if (f.isCustom) return Icons.person_rounded;
-  return switch (f.category) {
-    'meat' => Icons.kebab_dining_rounded,
-    'dairy' => Icons.local_drink_rounded,
-    'grain' => Icons.bakery_dining_rounded,
-    'legume' => Icons.rice_bowl_rounded,
-    'vegetable' => Icons.eco_rounded,
-    'fruit' => Icons.spa_rounded,
-    'fat' => Icons.water_drop_rounded,
-    'dish' => Icons.ramen_dining_rounded,
-    'sweet' => Icons.cake_rounded,
-    'drink' => Icons.local_cafe_rounded,
-    _ => f.barcode != null ? Icons.qr_code_rounded : Icons.restaurant_rounded,
-  };
-}
-
 String _addToMeal(AppL10n l, String meal) => switch (meal) {
   'breakfast' => l.afAddBreakfast,
   'lunch' => l.afAddLunch,
   'dinner' => l.afAddDinner,
   _ => l.afAddSnack,
 };
-
-/// "1 porsiyon · 200 g" / "150 g".
-String portionText(FoodPortion p) => p.unit != null && p.units > 0
-    ? '${fmtNum(p.units)} ${p.unit} · ${p.grams.round()} g'
-    : '${p.grams.round()} g';
 
 class AddFoodSheet extends ConsumerStatefulWidget {
   /// null → günün saatine göre öğün (bugünse), yoksa öğle.

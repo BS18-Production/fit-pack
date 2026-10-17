@@ -12,7 +12,7 @@ import '../../shared/widgets/glass.dart';
 import '../home/providers/home_providers.dart';
 import 'add_food_sheet.dart';
 import 'meal_types.dart';
-import 'nutrition_screen.dart' show selectedDateProvider;
+import 'nutrition_providers.dart' show selectedDateProvider;
 
 /// Bugün öğün başına girilen kalori (öğün anahtarı → kcal). Reaktif;
 /// gün dönümünde [todayNutritionProvider] ile birlikte tazelenir.

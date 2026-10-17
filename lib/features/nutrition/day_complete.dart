@@ -4,36 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../data/providers.dart';
-import '../../data/reactive.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/fitpack_icon.dart';
-import 'nutrition_screen.dart' show selectedDateProvider;
-
-/// Seçili günün "kaydım tamamlandı" durumu (docs/37 §1).
-typedef DayCompletion = ({bool complete, bool changedAfter});
-
-/// Reaktif: gün işaretlenince ya da o güne kayıt eklenince/değişince yeniden
-/// hesaplanır (gün tablosu + öğün kayıtları izlenir; elle invalidate gerekmez).
-final dayCompletionProvider = StreamProvider<DayCompletion>((ref) {
-  final db = ref.watch(databaseProvider);
-  final date = ref.watch(selectedDateProvider);
-  final dao = ref.read(nutritionDaoProvider);
-  return watchTables(db, [db.nutritionDays, db.foodLogs], () async {
-    final row = await (db.select(db.nutritionDays)
-          ..where((n) => n.day.equals(_key(date))))
-        .getSingleOrNull();
-    final complete = row?.status == 'complete';
-    return (
-      complete: complete,
-      changedAfter: complete && await dao.changedAfterComplete(date),
-    );
-  });
-});
-
-String _key(DateTime d) =>
-    '${d.year.toString().padLeft(4, '0')}-'
-    '${d.month.toString().padLeft(2, '0')}-'
-    '${d.day.toString().padLeft(2, '0')}';
+import 'nutrition_providers.dart';
 
 /// Beslenme günlüğünün altında tek satır: "Bugünün tüm öğünlerini girdim"
 /// (docs/37; sunum docs/45 §6).

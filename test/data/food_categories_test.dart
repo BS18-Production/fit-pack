@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:drift/drift.dart' show Value;
 import 'package:fit_pack/data/database/app_database.dart';
 import 'package:fit_pack/data/seed/seed_manager.dart';
-import 'package:fit_pack/features/nutrition/foods_screen.dart';
+import 'package:fit_pack/features/nutrition/food_labels.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/test_database.dart';

@@ -1,5 +1,9 @@
 # 15 — Onboarding V2 (Karşılama + Öğretme)
 
+> **Güncel akış için:** [docs/49](49-new-user-experience.md) (2026-10-17).
+> Bu belgenin **A bölümü (kurulum akışı) aşıldı**; B (ipuçları) ve C (boş
+> haller) geçerli. Aşağıdaki A metni tarihçe olarak durur.
+>
 > **Durum:** ✅ UYGULANDI (2026-07-05, aynı gün) — analyze 0 · test 123/123 ·
 > sıfır kurulum emülatörde EN + TR uçtan uca doğrulandı
 > **İlgili:** [docs/03-ux-flows.md](03-ux-flows.md) §3 (eski P-10),
@@ -26,7 +30,17 @@ amalgama.co/the-psychology-behind-fitness-apps-onboarding.
 
 ---
 
-## A — Kurulum Akışı (glass reskin + değer)
+## A — Kurulum Akışı (glass reskin + değer) — ⚠️ AŞILDI
+
+> **2026-10-17 (docs/49):** kurulum artık 4 sayfa: **Antrenmanın** (deneyim +
+> haftada kaç gün) → **Senin için önerimiz** (9 hazır programdan biri; "Kendim
+> kuracağım" açık) → **Seni tanıyalım** (yalnız kilo + hedef; boy/cinsiyet/
+> doğum tarihi Profil'e taşındı) → **Planın hazır** (A3 aynen sürüyor).
+> A1 karşılama artık girişten önceki `welcome_screen`; **A4 "İçeride ne var"
+> kaldırıldı** (yerine ana sayfada "Sıradaki antrenman" kartı + ilk hafta
+> rehberi). Kod: `lib/features/onboarding/onboarding_screen.dart`,
+> `program_recommendation.dart`.
+
 
 4 sayfa (`PageView`, mevcut iskelet korunur; 3→4):
 
@@ -85,7 +99,9 @@ sonra harita. Geri navigasyonu ve `_canAdvance` mantığı 4 sayfaya uyarlanır.
 | Beslenme | "Yemek Ekle" FAB | "İlk öğününü ekle: yaz, ara ya da barkod okut." |
 | İlerleme | Kilo/ölçüm ekle butonu | "İlk kilonu gir — grafik buradan başlar." |
 
-Ana Sayfa'ya ipucu **yok**: onboarding zaten oradan çıkarır ve A4 tanıttı.
+Ana Sayfa'ya ipucu **yok**: ilk yönlendirmeyi "Sıradaki antrenman" kartı ve ilk
+hafta rehberi yapar (docs/49 §3). Yeni cihazda eski hesapla girene ipucu
+gösterilmez (docs/49 E, 2026-10-17).
 
 ### Teknik
 - `lib/core/onboarding/first_run_hints.dart`:
@@ -130,6 +146,6 @@ enum'dan çıkar → `enum_labels.dart`'a `phaseLabel/phaseDescription(l, phase)
    (DB silinmiş cihazda uçtan uca: onboarding → ipuçları → ilk aksiyonlar),
    EN + TR ekran görüntüsü.
 
-**"Bitti" tanımı:** Yeni kullanıcı kurulumdan çıktığında (1) planını görmüş,
+**"Bitti" tanımı (2026-07, tarihçe):** Yeni kullanıcı kurulumdan çıktığında (1) planını görmüş,
 (2) 4 sekmenin ne işe yaradığını okumuş, (3) her sekmeye ilk girişte tek
 ipucuyla ilk aksiyona yönlendirilmiş olur; mevcut kullanıcı hiçbir ipucu görmez.

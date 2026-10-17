@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/prefs/week_start_provider.dart';
+import '../../core/utils/current_day.dart';
 import '../../data/providers.dart';
 import '../../data/reactive.dart';
 import 'meal_copy_sheet.dart' show mealCopyWindowDays;
@@ -19,9 +20,9 @@ String usualMealDismissKey(DateTime day, String mealType) =>
 final usualMealProvider = StreamProvider<UsualMeal?>((ref) {
   final db = ref.watch(databaseProvider);
   final dismissed = ref.watch(usualMealDismissedProvider);
+  final today = ref.watch(currentDayProvider);
   return watchTables(db, [db.foodLogs, db.foods], () async {
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
     final meal = mealForTime(now);
     if (dismissed.contains(usualMealDismissKey(today, meal))) return null;
     final dao = ref.read(nutritionDaoProvider);
@@ -37,9 +38,10 @@ final usualMealProvider = StreamProvider<UsualMeal?>((ref) {
 final logWeekProvider = StreamProvider<LogWeek>((ref) {
   final db = ref.watch(databaseProvider);
   final weekStart = ref.watch(weekStartProvider);
+  final day = ref.watch(currentDayProvider);
   return watchTables(db, [db.foodLogs], () async {
-    final start = startOfWeek(DateTime.now(), weekStart);
-    final end = DateTime(start.year, start.month, start.day + 7);
+    final start = startOfWeek(day, weekStart);
+    final end = addDays(start, 7);
     final totals =
         await ref.read(nutritionDaoProvider).getDailyTotalsInRange(start, end);
     return logWeekOf(totals.keys.toSet());

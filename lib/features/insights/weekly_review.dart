@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../core/utils/current_day.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/workout_dao.dart';
 import '../home/dashboard_stats.dart';
@@ -139,7 +140,7 @@ class WeeklyReviewInput {
     this.goalDirectionSince,
   });
 
-  DateTime get weekEnd => weekStart.add(const Duration(days: 7));
+  DateTime get weekEnd => addDays(weekStart, 7);
 }
 
 // ─────────────────────────────── Çıktı ───────────────────────────────
@@ -450,7 +451,7 @@ NutritionSection _nutrition(WeeklyReviewInput i) {
 
 /// Bir haftanın kilo ortalaması (ölçüm yoksa `null`).
 double? _weekAvg(List<BodyMeasurement> ms, DateTime start) {
-  final end = start.add(const Duration(days: 7));
+  final end = addDays(start, 7);
   final w = [
     for (final m in ms)
       if (m.weightKg != null && !m.date.isBefore(start) && m.date.isBefore(end))
@@ -471,7 +472,7 @@ WeightSection _weight(WeeklyReviewInput i) {
   final avg = _weekAvg(i.measurements, i.weekStart);
   final prev = _weekAvg(
     i.measurements,
-    i.weekStart.subtract(const Duration(days: 7)),
+    addDays(i.weekStart, -7),
   );
   final delta = (avg != null && prev != null) ? avg - prev : null;
   final single = buHafta.length == 1;
@@ -609,8 +610,8 @@ String? _stuckExercise(WeeklyReviewInput i) {
     String? ad;
     final haftalik = <({double kg, int reps})>[];
     for (var w = 0; w < 3; w++) {
-      final start = i.weekStart.subtract(Duration(days: 7 * w));
-      final end = start.add(const Duration(days: 7));
+      final start = addDays(i.weekStart, -7 * w);
+      final end = addDays(start, 7);
       ({double kg, int reps})? enIyi;
       for (final p in i.progressPoints) {
         if (p.exerciseId != id) continue;
@@ -641,11 +642,11 @@ bool _weightAgainstTwoWeeks(WeeklyReviewInput i) {
   final w0 = _weekAvg(i.measurements, i.weekStart);
   final w1 = _weekAvg(
     i.measurements,
-    i.weekStart.subtract(const Duration(days: 7)),
+    addDays(i.weekStart, -7),
   );
   final w2 = _weekAvg(
     i.measurements,
-    i.weekStart.subtract(const Duration(days: 14)),
+    addDays(i.weekStart, -14),
   );
   if (w0 == null || w1 == null || w2 == null) return false;
   return _meaning(w0 - w1, dir) == WeightMeaning.against &&

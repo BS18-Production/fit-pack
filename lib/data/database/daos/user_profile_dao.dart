@@ -17,6 +17,15 @@ class UserProfileDao extends DatabaseAccessor<AppDatabase> with _$UserProfileDao
   Future<bool> updateProfile(UserProfileData entry) =>
       update(userProfile).replace(entry);
 
+  /// Yalnız [patch]'te verilen kolonları yazar (CR-013). Ekranın elindeki
+  /// profil kopyası eskimiş olabilir — diyalog açıkken senkron başka bir alanı
+  /// güncellemiş olabilir. Tüm satırı o kopyadan yazmak (`replace`) o değişikliği
+  /// ve senkron kolonlarını geri alırdı. Senkron kolonları tetikleyiciye kalır.
+  Future<void> updateFields(UserProfileCompanion patch) async {
+    await ensureProfile();
+    await update(userProfile).write(patch);
+  }
+
   Future<void> ensureProfile() async {
     final existing = await getProfile();
     if (existing == null) {
@@ -50,6 +59,12 @@ class UserProfileDao extends DatabaseAccessor<AppDatabase> with _$UserProfileDao
 
   /// P-10 Onboarding tamamlandığında çağrılır: hedefleri yazar + onboarded=1.
   /// Tek profil satırını günceller (yoksa oluşturur). Boy/hedef kilo opsiyonel.
+  ///
+  /// [initialWeightKg] verilirse başlangıç kilosu ilk ölçüm olarak AYNI
+  /// transaction'da yazılır (CR-014): ya ikisi birden kaydolur ya hiçbiri.
+  /// Ayrı yazılınca ölçüm hata verse bile profil "onboarded" kalıyordu; kapı
+  /// onboarding'i bir daha göstermediği için ilk ölçüm hep eksik kalırdı.
+  /// Hata sonrası yeniden deneme de bu yüzden çift ölçüm üretmez.
   Future<void> completeOnboarding({
     required int kcalGoal,
     required int proteinGoal,
@@ -59,19 +74,31 @@ class UserProfileDao extends DatabaseAccessor<AppDatabase> with _$UserProfileDao
     DateTime? birthDate,
     String? gender,
     String? activityLevel,
-  }) async {
-    await ensureProfile();
-    final profile = await getProfile();
-    await updateProfile(profile!.copyWith(
-      kcalGoal: kcalGoal,
-      proteinGoal: proteinGoal,
-      currentPhase: phase,
-      heightCm: Value(heightCm),
-      goalWeightKg: Value(goalWeightKg),
-      birthDate: Value(birthDate),
-      gender: Value(gender),
-      activityLevel: Value(activityLevel),
-      onboarded: true,
-    ));
-  }
+    double? initialWeightKg,
+    DateTime? now,
+  }) =>
+      transaction(() async {
+        // Ölçüm önce: hata verirse profil hiç dokunulmadan geri alınır.
+        if (initialWeightKg != null && initialWeightKg > 0) {
+          await attachedDatabase.bodyDao.insertMeasurement(
+            BodyMeasurementsCompanion(
+              date: Value(now ?? DateTime.now()),
+              weightKg: Value(initialWeightKg),
+            ),
+          );
+        }
+        await ensureProfile();
+        final profile = await getProfile();
+        await updateProfile(profile!.copyWith(
+          kcalGoal: kcalGoal,
+          proteinGoal: proteinGoal,
+          currentPhase: phase,
+          heightCm: Value(heightCm),
+          goalWeightKg: Value(goalWeightKg),
+          birthDate: Value(birthDate),
+          gender: Value(gender),
+          activityLevel: Value(activityLevel),
+          onboarded: true,
+        ));
+      });
 }

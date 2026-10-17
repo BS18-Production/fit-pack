@@ -3616,7 +3616,7 @@ abstract class AppL10n {
   /// No description provided for @onbAboutYouSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Your weight is enough for a goal suggestion — the rest is optional (gender and birth date improve the daily energy estimate).'**
+  /// **'Your weight is enough for a goal suggestion. You can add height, gender and age later in Profile.'**
   String get onbAboutYouSubtitle;
 
   /// No description provided for @onbCurrentWeight.
@@ -3630,12 +3630,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Goal weight (optional)'**
   String get onbGoalWeightOptional;
-
-  /// No description provided for @onbBirthDateOptional.
-  ///
-  /// In en, this message translates to:
-  /// **'Birth date (optional)'**
-  String get onbBirthDateOptional;
 
   /// No description provided for @commonSelect.
   ///
@@ -3727,47 +3721,113 @@ abstract class AppL10n {
   /// **'An estimate — real progress varies from person to person.'**
   String get onbProjectionNote;
 
-  /// No description provided for @onbWhatsInsideTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'What\'s inside'**
-  String get onbWhatsInsideTitle;
-
-  /// No description provided for @onbWhatsInsideSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Four tabs, everything in its place:'**
-  String get onbWhatsInsideSubtitle;
-
-  /// No description provided for @onbTourHomeDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Your day at a glance: streak, plan, nutrition, water'**
-  String get onbTourHomeDesc;
-
-  /// No description provided for @onbTourWorkoutDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Build routines, log your sets, review past sessions'**
-  String get onbTourWorkoutDesc;
-
-  /// No description provided for @onbTourNutritionDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Add meals: search, scan a barcode, track macros'**
-  String get onbTourNutritionDesc;
-
-  /// No description provided for @onbTourProgressDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Log weight and measurements, watch the trend'**
-  String get onbTourProgressDesc;
-
   /// No description provided for @onbStart.
   ///
   /// In en, this message translates to:
   /// **'Let\'s go'**
   String get onbStart;
+
+  /// No description provided for @onbTrainingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your training'**
+  String get onbTrainingTitle;
+
+  /// No description provided for @onbTrainingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Two questions — let\'s start you on a program that fits.'**
+  String get onbTrainingSubtitle;
+
+  /// No description provided for @onbExperienceQ.
+  ///
+  /// In en, this message translates to:
+  /// **'How long have you been training?'**
+  String get onbExperienceQ;
+
+  /// No description provided for @onbExpBeginner.
+  ///
+  /// In en, this message translates to:
+  /// **'Just starting'**
+  String get onbExpBeginner;
+
+  /// No description provided for @onbExpSome.
+  ///
+  /// In en, this message translates to:
+  /// **'For a while'**
+  String get onbExpSome;
+
+  /// No description provided for @onbExpLong.
+  ///
+  /// In en, this message translates to:
+  /// **'For a long time'**
+  String get onbExpLong;
+
+  /// No description provided for @onbDaysQ.
+  ///
+  /// In en, this message translates to:
+  /// **'How many days a week do you want to train?'**
+  String get onbDaysQ;
+
+  /// No description provided for @onbDays23.
+  ///
+  /// In en, this message translates to:
+  /// **'2–3 days'**
+  String get onbDays23;
+
+  /// No description provided for @onbDays4.
+  ///
+  /// In en, this message translates to:
+  /// **'4 days'**
+  String get onbDays4;
+
+  /// No description provided for @onbDays56.
+  ///
+  /// In en, this message translates to:
+  /// **'5–6 days'**
+  String get onbDays56;
+
+  /// No description provided for @onbProgramTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Our pick for you'**
+  String get onbProgramTitle;
+
+  /// No description provided for @onbProgramSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chosen from your answers. The routines are added to your account — change them however you like.'**
+  String get onbProgramSubtitle;
+
+  /// No description provided for @onbProgramRestNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest days speed up progress when you\'re starting out — so we suggest 4 days a week.'**
+  String get onbProgramRestNote;
+
+  /// No description provided for @onbProgramUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with this program'**
+  String get onbProgramUse;
+
+  /// No description provided for @onbProgramSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ll build my own'**
+  String get onbProgramSkip;
+
+  /// No description provided for @onbProgramSkipDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up your routine later in the Workout tab; ready-made programs are in Explore.'**
+  String get onbProgramSkipDesc;
+
+  /// No description provided for @onbProgramInstallError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t add the program — you can add it from Workout → Explore.'**
+  String get onbProgramInstallError;
 
   /// No description provided for @onbGoalsNumberError.
   ///

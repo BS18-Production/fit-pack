@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/i18n/formatting.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
@@ -11,19 +10,26 @@ import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/glass.dart';
 import '../auth/auth_gate.dart';
+import '../explore/program_catalog.dart';
+import '../explore/program_install.dart';
+import '../explore/program_labels.dart';
 import 'onboarding_calc.dart';
+import 'program_recommendation.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 
-/// İlk açılış akışı V2 (docs/15 — glass tema + değer + öğretme).
+/// İlk açılış akışı (docs/15 V2 + docs/49 "ilk antrenmanın hazır").
 ///
-/// 3 sayfa: Seni tanıyalım (vücut + faz) → Planın hazır (kalori/protein +
-/// değer projeksiyonu) → İçeride ne var (4 sekme haritası). Karşılama sayfası
+/// 4 sayfa: Antrenmanın (deneyim + haftada kaç gün) → Senin için önerimiz
+/// (katalogdan bir program ya da "Kendim kuracağım") → Seni tanıyalım (kilo +
+/// hedef; boy/cinsiyet/yaş Profil'de, docs/49 karar 3) → Planın hazır
+/// (kalori/protein + değer projeksiyonu). Karşılama sayfası
 /// **giriş öncesine taşındı** (`features/auth/welcome_screen.dart`, docs/18
 /// §5.1) — onboarding artık oturum açılmış kullanıcıyla başlar, yani topladığı
 /// profil verisi doğduğu anda hesaba bağlıdır.
 ///
 /// Tamamla → profil yazılır, başlangıç kilosu ölçüm olarak kaydedilir,
-/// onboarded=1, Home'a geçilir. Sekme başına ilk-kullanım ipuçları
+/// onboarded=1; program seçildiyse rutinleri kopyalanır (Keşfet'teki "Programı
+/// ekle" ile aynı işlem), Home'a geçilir. Sekme başına ilk-kullanım ipuçları
 /// (coach mark) ayrı: `core/onboarding/first_run_hints.dart`.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -49,27 +55,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
   int _page = 0;
 
-  // Sayfa 1 — vücut bilgileri
-  final _heightCtrl = TextEditingController();
+  // Sayfa 0–1 — antrenman + program önerisi (docs/49). Kalıcı değil: yalnız
+  // öneriyi seçmek için; uygun kolon yok, şema değişmez.
+  TrainingExperience? _experience;
+  WeeklyDays? _days;
+  bool _useProgram = true;
+
+  // Sayfa 2 — vücut bilgileri
   final _weightCtrl = TextEditingController();
   final _goalWeightCtrl = TextEditingController();
   OnboardingPhase _phase = OnboardingPhase.cut;
-  String? _gender; // 'male' | 'female' — günlük enerji tahmini için (opsiyonel)
-  DateTime? _birthDate; // yaş — günlük enerji tahmini için (opsiyonel)
 
-  // Sayfa 2 — hedefler
+  // Sayfa 3 — hedefler
   final _kcalCtrl = TextEditingController();
   final _proteinCtrl = TextEditingController();
   bool _goalsEdited = false; // kullanıcı elle değiştirdiyse üzerine yazma
 
   bool _saving = false;
 
-  static const _lastPage = 2;
+  static const _aboutYouPage = 2;
+  static const _lastPage = 3;
 
   @override
   void dispose() {
     _pageController.dispose();
-    _heightCtrl.dispose();
     _weightCtrl.dispose();
     _goalWeightCtrl.dispose();
     _kcalCtrl.dispose();
@@ -103,7 +112,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     FocusScope.of(context).unfocus();
     if (_page < _lastPage) {
       // "Seni tanıyalım"dan çıkarken hedefleri öner.
-      if (_page == 0) _refreshSuggestedGoals();
+      if (_page == _aboutYouPage) _refreshSuggestedGoals();
       _pageController.nextPage(
         duration: AppDuration.normal,
         curve: Curves.easeInOut,
@@ -125,9 +134,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   /// İleri tuşu, mevcut adımın zorunlu alanları doluysa aktif olur.
   bool get _canAdvance {
     switch (_page) {
-      case 0: // Seni tanıyalım — kilo zorunlu
+      case 0: // Antrenmanın — iki soru da cevaplanmalı
+        return _experience != null && _days != null;
+      case _aboutYouPage: // Seni tanıyalım — kilo zorunlu
         return _weight != null && _weight! > 0;
-      case 1: // Planın hazır — kalori/protein zorunlu
+      case _lastPage: // Planın hazır — kalori/protein zorunlu
         final kcal = int.tryParse(_kcalCtrl.text);
         final protein = int.tryParse(_proteinCtrl.text);
         return kcal != null && kcal > 0 && protein != null && protein > 0;
@@ -149,47 +160,67 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       return;
     }
     setState(() => _saving = true);
+    final messenger = ScaffoldMessenger.of(context);
+    final program = _recommended;
     try {
-      final heightRaw =
-          double.tryParse(_heightCtrl.text.replaceAll(',', '.'));
-      final height = heightRaw == null
-          ? null
-          : ref.read(unitsProvider).lengthToCm(heightRaw);
-      final goalWeight = _goalWeight;
-
-      await ref.read(userProfileDaoProvider).completeOnboarding(
-            kcalGoal: kcal,
-            proteinGoal: protein,
-            phase: _phase.dbValue,
-            heightCm: height,
-            goalWeightKg: goalWeight,
-            birthDate: _birthDate,
-            gender: _gender,
-            // Günlük enerji tahmini için makul varsayılan; Ayarlar'dan değişir.
-            activityLevel: 'moderate',
-            // Başlangıç kilosu ilk ölçüm olur → grafik 1. noktasını alır.
-            // Profille aynı transaction'da yazılır (CR-014).
-            initialWeightKg: _weight,
-          );
-
-      // Home provider'ları reaktif: profil + başlangıç kilosu DB'ye
-      // yazılınca kendiliğinden yansır — elle invalidate gerekmez.
-
-      // Kapı durumu yalnız kayıt tamamlandıktan sonra güncellenir. Güncellenmeden
-      // Ana Sayfa'ya gidilemez: `redirect` hâlâ "onboarded değil" görür ve
-      // kullanıcıyı buraya geri yollar (docs/18 §5.1).
-      ref.read(authGateProvider).markOnboarded();
-      if (mounted) context.go(AppRoutes.home);
-    } catch (_) {
+      final dao = ref.read(userProfileDaoProvider);
+      // Boy/cinsiyet/yaş artık sorulmuyor (docs/49 karar 3): profilde
+      // (ör. senkronla gelen) değer varsa korunur, üzerine boş yazılmaz.
+      final existing = await dao.getProfile();
+      await dao.completeOnboarding(
+        kcalGoal: kcal,
+        proteinGoal: protein,
+        phase: _phase.dbValue,
+        heightCm: existing?.heightCm,
+        goalWeightKg: _goalWeight,
+        birthDate: existing?.birthDate,
+        gender: existing?.gender,
+        // Günlük enerji tahmini için makul varsayılan; Ayarlar'dan değişir.
+        activityLevel: existing?.activityLevel ?? 'moderate',
+        // Başlangıç kilosu ilk ölçüm olur → grafik 1. noktasını alır.
+        // Profille aynı transaction'da yazılır (CR-014).
+        initialWeightKg: _weight,
+      );
+    } catch (e) {
       // Kayıt başarısız — kullanıcı bilsin ve tekrar deneyebilsin (M-10:
       // eskiden hata sessizce yutulup düğme takılı kalıyordu).
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l.onbSaveError)));
-      }
-    } finally {
+      debugPrint('[fitpack.onboarding] profil kaydedilemedi | HATA: $e');
+      messenger.showSnackBar(SnackBar(content: Text(l.onbSaveError)));
       if (mounted) setState(() => _saving = false);
+      return;
     }
+
+    // Program ayrı adım: profil kaydı tamamlandı, kurulum bunun yüzünden
+    // geri alınmaz. Başarısızsa kullanıcı söylenir, Keşfet'ten ekleyebilir.
+    if (program != null) {
+      try {
+        await installCatalogProgram(ref.read(workoutDaoProvider), l, program);
+      } catch (e) {
+        debugPrint('[fitpack.onboarding] program eklenemedi '
+            '(${program.key}) | HATA: $e');
+        messenger
+            .showSnackBar(SnackBar(content: Text(l.onbProgramInstallError)));
+      }
+    }
+
+    // Home provider'ları reaktif: profil, kilo ve rutinler DB'ye yazılınca
+    // kendiliğinden yansır — elle invalidate gerekmez.
+
+    // Kapı durumu yalnız kayıt tamamlandıktan sonra güncellenir. Güncellenmeden
+    // Ana Sayfa'ya gidilemez: `redirect` hâlâ "onboarded değil" görür ve
+    // kullanıcıyı buraya geri yollar (docs/18 §5.1).
+    ref.read(authGateProvider).markOnboarded();
+    if (mounted) {
+      setState(() => _saving = false);
+      context.go(AppRoutes.home);
+    }
+  }
+
+  /// Kurulum sonunda eklenecek program — "Kendim kuracağım" seçildiyse yok.
+  CatalogProgram? get _recommended {
+    final exp = _experience, days = _days;
+    if (!_useProgram || exp == null || days == null) return null;
+    return programByKey(recommendProgram(exp, days));
   }
 
   @override
@@ -206,16 +237,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   onPageChanged: (i) => setState(() => _page = i),
                   children: [
+                    _TrainingPage(
+                      experience: _experience,
+                      days: _days,
+                      onExperience: (v) => setState(() => _experience = v),
+                      onDays: (v) => setState(() => _days = v),
+                    ),
+                    _ProgramPage(
+                      experience: _experience,
+                      days: _days,
+                      useProgram: _useProgram,
+                      onChanged: (v) => setState(() => _useProgram = v),
+                    ),
                     _AboutYouPage(
-                      heightCtrl: _heightCtrl,
                       weightCtrl: _weightCtrl,
                       goalWeightCtrl: _goalWeightCtrl,
                       phase: _phase,
-                      gender: _gender,
-                      birthDate: _birthDate,
-                      onGenderChanged: (g) => setState(() => _gender = g),
-                      onBirthDateChanged: (d) =>
-                          setState(() => _birthDate = d),
                       onPhaseChanged: (p) => setState(() {
                         _phase = p;
                         _refreshSuggestedGoals();
@@ -230,7 +267,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       phase: _phase,
                       onEdited: () => setState(() => _goalsEdited = true),
                     ),
-                    const _TourPage(),
                   ],
                 ),
               ),
@@ -249,44 +285,230 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
-// ────────────────────────────────────────────── Sayfa 1: Seni tanıyalım
+// ─────────────────────────────────────────────── Sayfa 0: Antrenmanın
+
+class _TrainingPage extends StatelessWidget {
+  const _TrainingPage({
+    required this.experience,
+    required this.days,
+    required this.onExperience,
+    required this.onDays,
+  });
+
+  final TrainingExperience? experience;
+  final WeeklyDays? days;
+  final ValueChanged<TrainingExperience> onExperience;
+  final ValueChanged<WeeklyDays> onDays;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    String expLabel(TrainingExperience e) => switch (e) {
+          TrainingExperience.beginner => l.onbExpBeginner,
+          TrainingExperience.some => l.onbExpSome,
+          TrainingExperience.long => l.onbExpLong,
+        };
+    String daysLabel(WeeklyDays d) => switch (d) {
+          WeeklyDays.twoThree => l.onbDays23,
+          WeeklyDays.four => l.onbDays4,
+          WeeklyDays.fiveSix => l.onbDays56,
+        };
+    return ListView(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
+      children: [
+        Text(l.onbTrainingTitle, style: context.texts.headlineSmall),
+        AppSpacing.vGapSm,
+        Text(l.onbTrainingSubtitle,
+            style: context.texts.bodyMedium
+                ?.copyWith(color: context.colors.onSurfaceVariant)),
+        AppSpacing.vGapLg,
+        Text(l.onbExperienceQ, style: context.texts.titleMedium),
+        AppSpacing.vGapSm,
+        for (final e in TrainingExperience.values)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: _ChoiceChipTile(
+              label: expLabel(e),
+              selected: experience == e,
+              onTap: () => onExperience(e),
+            ),
+          ),
+        AppSpacing.vGapLg,
+        Text(l.onbDaysQ, style: context.texts.titleMedium),
+        AppSpacing.vGapSm,
+        Row(
+          children: [
+            for (final (i, d) in WeeklyDays.values.indexed) ...[
+              if (i > 0) AppSpacing.hGapMd,
+              Expanded(
+                child: _ChoiceChipTile(
+                  label: daysLabel(d),
+                  selected: days == d,
+                  onTap: () => onDays(d),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ──────────────────────────────────────────── Sayfa 1: Senin için önerimiz
+
+class _ProgramPage extends StatelessWidget {
+  const _ProgramPage({
+    required this.experience,
+    required this.days,
+    required this.useProgram,
+    required this.onChanged,
+  });
+
+  final TrainingExperience? experience;
+  final WeeklyDays? days;
+  final bool useProgram;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    final exp = experience, d = days;
+    // Sayfaya ancak iki cevapla gelinir (İleri kilitli); yine de güvenli.
+    final program =
+        exp == null || d == null ? null : programByKey(recommendProgram(exp, d));
+    final muted = context.colors.onSurfaceVariant;
+    return ListView(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
+      children: [
+        Text(l.onbProgramTitle, style: context.texts.headlineSmall),
+        AppSpacing.vGapSm,
+        Text(l.onbProgramSubtitle,
+            style: context.texts.bodyMedium?.copyWith(color: muted)),
+        AppSpacing.vGapLg,
+        if (program != null)
+          _OptionCard(
+            selected: useProgram,
+            onTap: () => onChanged(true),
+            title: l.programTitle(program),
+            lines: [
+              '${l.exDaysPerWeek(program.daysPerWeek)} · '
+                  '${l.exRoutineCount(program.routines.length)}',
+              l.programSplitDesc(program.split),
+              if (restDayNote(exp!, d!)) l.onbProgramRestNote,
+            ],
+            action: l.onbProgramUse,
+          ),
+        AppSpacing.vGapMd,
+        _OptionCard(
+          selected: !useProgram || program == null,
+          onTap: () => onChanged(false),
+          title: l.onbProgramSkip,
+          lines: [l.onbProgramSkipDesc],
+        ),
+      ],
+    );
+  }
+}
+
+/// Program sayfasındaki seçilebilir kart (radyo davranışı).
+class _OptionCard extends StatelessWidget {
+  const _OptionCard({
+    required this.selected,
+    required this.onTap,
+    required this.title,
+    required this.lines,
+    this.action,
+  });
+
+  final bool selected;
+  final VoidCallback onTap;
+  final String title;
+  final List<String> lines;
+
+  /// Seçiliyken kartın altında gösterilen eylem adı ("Bu programla başla").
+  final String? action;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final fg = selected ? colors.onPrimaryContainer : colors.onSurfaceVariant;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.brMd,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: AppA11y.minTapTarget),
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: selected
+              ? colors.primaryContainer
+              : colors.surfaceContainerHighest,
+          borderRadius: AppRadius.brMd,
+          border: Border.all(
+            color: selected ? colors.primary : colors.outlineVariant,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FitPackIcon.material(
+              selected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_unchecked_rounded,
+              color: selected ? colors.primary : colors.onSurfaceVariant,
+            ),
+            AppSpacing.hGapMd,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: context.texts.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: selected ? colors.onPrimaryContainer : null,
+                      )),
+                  for (final line in lines) ...[
+                    AppSpacing.vGapXs,
+                    Text(line,
+                        style: context.texts.bodySmall?.copyWith(color: fg)),
+                  ],
+                  if (selected && action != null) ...[
+                    AppSpacing.vGapSm,
+                    Text(action!,
+                        style: context.texts.labelLarge?.copyWith(
+                          color: colors.primary,
+                          fontWeight: FontWeight.w700,
+                        )),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ────────────────────────────────────────────── Sayfa 2: Seni tanıyalım
 
 class _AboutYouPage extends ConsumerWidget {
   const _AboutYouPage({
-    required this.heightCtrl,
     required this.weightCtrl,
     required this.goalWeightCtrl,
     required this.phase,
-    required this.gender,
-    required this.birthDate,
-    required this.onGenderChanged,
-    required this.onBirthDateChanged,
     required this.onPhaseChanged,
     required this.onWeightChanged,
   });
 
-  final TextEditingController heightCtrl;
   final TextEditingController weightCtrl;
   final TextEditingController goalWeightCtrl;
   final OnboardingPhase phase;
-  final String? gender;
-  final DateTime? birthDate;
-  final ValueChanged<String?> onGenderChanged;
-  final ValueChanged<DateTime?> onBirthDateChanged;
   final ValueChanged<OnboardingPhase> onPhaseChanged;
   final VoidCallback onWeightChanged;
-
-  Future<void> _pickBirthDate(BuildContext context) async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: birthDate ?? DateTime(now.year - 25, 1, 1),
-      firstDate: DateTime(now.year - 100),
-      lastDate: DateTime(now.year - 10, 12, 31),
-      helpText: AppL10n.of(context).settingsPickBirthDate,
-    );
-    if (picked != null) onBirthDateChanged(picked);
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -305,81 +527,17 @@ class _AboutYouPage extends ConsumerWidget {
         GlassCard(
           child: Column(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _NumField(
-                      controller: weightCtrl,
-                      label: l.onbCurrentWeight,
-                      suffix: units.weightUnit,
-                      onChanged: (_) => onWeightChanged(),
-                    ),
-                  ),
-                  AppSpacing.hGapMd,
-                  Expanded(
-                    child: _NumField(
-                      controller: heightCtrl,
-                      label: l.settingsHeight,
-                      suffix: units.lengthUnit,
-                    ),
-                  ),
-                ],
+              _NumField(
+                controller: weightCtrl,
+                label: l.onbCurrentWeight,
+                suffix: units.weightUnit,
+                onChanged: (_) => onWeightChanged(),
               ),
               AppSpacing.vGapLg,
               _NumField(
                 controller: goalWeightCtrl,
                 label: l.onbGoalWeightOptional,
                 suffix: units.weightUnit,
-              ),
-            ],
-          ),
-        ),
-        AppSpacing.vGapMd,
-        GlassCard(
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _ChoiceChipTile(
-                      label: l.settingsGenderMale,
-                      selected: gender == 'male',
-                      onTap: () =>
-                          onGenderChanged(gender == 'male' ? null : 'male'),
-                    ),
-                  ),
-                  AppSpacing.hGapMd,
-                  Expanded(
-                    child: _ChoiceChipTile(
-                      label: l.settingsGenderFemale,
-                      selected: gender == 'female',
-                      onTap: () => onGenderChanged(
-                          gender == 'female' ? null : 'female'),
-                    ),
-                  ),
-                ],
-              ),
-              AppSpacing.vGapLg,
-              InkWell(
-                onTap: () => _pickBirthDate(context),
-                borderRadius: AppRadius.brMd,
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    labelText: l.onbBirthDateOptional,
-                    border:
-                        const OutlineInputBorder(borderRadius: AppRadius.brMd),
-                    suffixIcon: const FitPackIcon.material(Icons.calendar_today_rounded),
-                  ),
-                  child: Text(
-                    birthDate == null
-                        ? l.commonSelect
-                        : context.dateFmt('d MMMM y').format(birthDate!),
-                    style: context.texts.bodyLarge?.copyWith(
-                        color: birthDate == null
-                            ? context.colors.onSurfaceVariant
-                            : null),
-                  ),
-                ),
               ),
             ],
           ),
@@ -465,7 +623,7 @@ class _PhaseTile extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────── Sayfa 2: Planın hazır
+// ─────────────────────────────────────────────── Sayfa 3: Planın hazır
 
 class _PlanPage extends ConsumerWidget {
   const _PlanPage({
@@ -590,102 +748,6 @@ class _PlanPage extends ConsumerWidget {
   }
 }
 
-// ─────────────────────────────────────────── Sayfa 3: İçeride ne var
-
-class _TourPage extends StatelessWidget {
-  const _TourPage();
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppL10n.of(context);
-    final s = context.semantic;
-    final c = context.colors;
-    return ListView(
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
-      children: [
-        Text(l.onbWhatsInsideTitle, style: context.texts.headlineSmall),
-        AppSpacing.vGapSm,
-        Text(l.onbWhatsInsideSubtitle,
-            style: context.texts.bodyMedium
-                ?.copyWith(color: c.onSurfaceVariant)),
-        AppSpacing.vGapLg,
-        _TourRow(
-            icon: Icons.home_rounded,
-            tint: c.primary,
-            title: l.navHome,
-            description: l.onbTourHomeDesc),
-        AppSpacing.vGapMd,
-        _TourRow(
-            icon: Icons.fitness_center_rounded,
-            tint: c.tertiary,
-            title: l.navWorkout,
-            description: l.onbTourWorkoutDesc),
-        AppSpacing.vGapMd,
-        _TourRow(
-            icon: Icons.restaurant_rounded,
-            tint: c.secondary,
-            title: l.navNutrition,
-            description: l.onbTourNutritionDesc),
-        AppSpacing.vGapMd,
-        _TourRow(
-            icon: Icons.trending_up_rounded,
-            tint: s.success,
-            title: l.navProgress,
-            description: l.onbTourProgressDesc),
-      ],
-    );
-  }
-}
-
-class _TourRow extends StatelessWidget {
-  const _TourRow({
-    required this.icon,
-    required this.tint,
-    required this.title,
-    required this.description,
-  });
-
-  final IconData icon;
-  final Color tint;
-  final String title;
-  final String description;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassCard(
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: tint.withValues(alpha: 0.16),
-              borderRadius: AppRadius.brMd,
-            ),
-            child: FitPackIcon.material(icon, color: tint),
-          ),
-          AppSpacing.hGapMd,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: context.texts.titleSmall
-                        ?.copyWith(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 2),
-                Text(description,
-                    style: context.texts.bodySmall?.copyWith(
-                        color: context.colors.onSurfaceVariant)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 // ───────────────────────────────────────────────────────── Ortak parçalar
 
 class _NumField extends StatelessWidget {
@@ -722,7 +784,7 @@ class _NumField extends StatelessWidget {
   }
 }
 
-/// Onboarding'de cinsiyet seçimi için seçilebilir kart (tekrar dokun = bırak).
+/// Onboarding'de tek seçimlik kart (deneyim, haftada kaç gün).
 class _ChoiceChipTile extends StatelessWidget {
   const _ChoiceChipTile({
     required this.label,

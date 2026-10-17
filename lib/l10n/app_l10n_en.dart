@@ -2000,16 +2000,13 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get onbAboutYouSubtitle =>
-      'Your weight is enough for a goal suggestion — the rest is optional (gender and birth date improve the daily energy estimate).';
+      'Your weight is enough for a goal suggestion. You can add height, gender and age later in Profile.';
 
   @override
   String get onbCurrentWeight => 'Current weight';
 
   @override
   String get onbGoalWeightOptional => 'Goal weight (optional)';
-
-  @override
-  String get onbBirthDateOptional => 'Birth date (optional)';
 
   @override
   String get commonSelect => 'Select';
@@ -2063,29 +2060,63 @@ class AppL10nEn extends AppL10n {
       'An estimate — real progress varies from person to person.';
 
   @override
-  String get onbWhatsInsideTitle => 'What\'s inside';
-
-  @override
-  String get onbWhatsInsideSubtitle => 'Four tabs, everything in its place:';
-
-  @override
-  String get onbTourHomeDesc =>
-      'Your day at a glance: streak, plan, nutrition, water';
-
-  @override
-  String get onbTourWorkoutDesc =>
-      'Build routines, log your sets, review past sessions';
-
-  @override
-  String get onbTourNutritionDesc =>
-      'Add meals: search, scan a barcode, track macros';
-
-  @override
-  String get onbTourProgressDesc =>
-      'Log weight and measurements, watch the trend';
-
-  @override
   String get onbStart => 'Let\'s go';
+
+  @override
+  String get onbTrainingTitle => 'Your training';
+
+  @override
+  String get onbTrainingSubtitle =>
+      'Two questions — let\'s start you on a program that fits.';
+
+  @override
+  String get onbExperienceQ => 'How long have you been training?';
+
+  @override
+  String get onbExpBeginner => 'Just starting';
+
+  @override
+  String get onbExpSome => 'For a while';
+
+  @override
+  String get onbExpLong => 'For a long time';
+
+  @override
+  String get onbDaysQ => 'How many days a week do you want to train?';
+
+  @override
+  String get onbDays23 => '2–3 days';
+
+  @override
+  String get onbDays4 => '4 days';
+
+  @override
+  String get onbDays56 => '5–6 days';
+
+  @override
+  String get onbProgramTitle => 'Our pick for you';
+
+  @override
+  String get onbProgramSubtitle =>
+      'Chosen from your answers. The routines are added to your account — change them however you like.';
+
+  @override
+  String get onbProgramRestNote =>
+      'Rest days speed up progress when you\'re starting out — so we suggest 4 days a week.';
+
+  @override
+  String get onbProgramUse => 'Start with this program';
+
+  @override
+  String get onbProgramSkip => 'I\'ll build my own';
+
+  @override
+  String get onbProgramSkipDesc =>
+      'Set up your routine later in the Workout tab; ready-made programs are in Explore.';
+
+  @override
+  String get onbProgramInstallError =>
+      'Couldn\'t add the program — you can add it from Workout → Explore.';
 
   @override
   String get onbGoalsNumberError =>

@@ -1991,16 +1991,13 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get onbAboutYouSubtitle =>
-      'Hedef önerisi için kilon yeterli — gerisi opsiyonel (cinsiyet ve doğum tarihi günlük enerji tahminini iyileştirir).';
+      'Hedef önerisi için kilon yeterli. Boy, cinsiyet ve yaşı sonra Profil\'den ekleyebilirsin.';
 
   @override
   String get onbCurrentWeight => 'Mevcut kilo';
 
   @override
   String get onbGoalWeightOptional => 'Hedef kilo (opsiyonel)';
-
-  @override
-  String get onbBirthDateOptional => 'Doğum tarihi (opsiyonel)';
 
   @override
   String get commonSelect => 'Seç';
@@ -2054,26 +2051,63 @@ class AppL10nTr extends AppL10n {
       'Bu bir tahmin — gerçek ilerleme kişiden kişiye değişir.';
 
   @override
-  String get onbWhatsInsideTitle => 'İçeride ne var';
-
-  @override
-  String get onbWhatsInsideSubtitle => 'Dört sekme, her şey yerli yerinde:';
-
-  @override
-  String get onbTourHomeDesc => 'Günün özeti: seri, plan, beslenme, su';
-
-  @override
-  String get onbTourWorkoutDesc => 'Rutin kur, setlerini kaydet, geçmişe bak';
-
-  @override
-  String get onbTourNutritionDesc =>
-      'Öğün ekle: ara, barkod okut, makroları izle';
-
-  @override
-  String get onbTourProgressDesc => 'Kilo ve ölçüm gir, gelişimi grafikte gör';
-
-  @override
   String get onbStart => 'Başlayalım';
+
+  @override
+  String get onbTrainingTitle => 'Antrenmanın';
+
+  @override
+  String get onbTrainingSubtitle =>
+      'İki soru — sana uygun bir programla başlayalım.';
+
+  @override
+  String get onbExperienceQ => 'Ne kadar süredir antrenman yapıyorsun?';
+
+  @override
+  String get onbExpBeginner => 'Yeni başlıyorum';
+
+  @override
+  String get onbExpSome => 'Bir süredir yapıyorum';
+
+  @override
+  String get onbExpLong => 'Uzun süredir yapıyorum';
+
+  @override
+  String get onbDaysQ => 'Haftada kaç gün antrenman yapmak istersin?';
+
+  @override
+  String get onbDays23 => '2–3 gün';
+
+  @override
+  String get onbDays4 => '4 gün';
+
+  @override
+  String get onbDays56 => '5–6 gün';
+
+  @override
+  String get onbProgramTitle => 'Senin için önerimiz';
+
+  @override
+  String get onbProgramSubtitle =>
+      'Cevaplarına göre seçtik. Rutinler hesabına eklenir, sonra istediğin gibi değiştirebilirsin.';
+
+  @override
+  String get onbProgramRestNote =>
+      'Başlangıçta dinlenme günü gelişimi hızlandırır — bu yüzden haftada 4 gün öneriyoruz.';
+
+  @override
+  String get onbProgramUse => 'Bu programla başla';
+
+  @override
+  String get onbProgramSkip => 'Kendim kuracağım';
+
+  @override
+  String get onbProgramSkipDesc =>
+      'Rutinini sonra Antrenman sekmesinden kurarsın; hazır programlar Keşfet\'te.';
+
+  @override
+  String get onbProgramInstallError =>
+      'Program eklenemedi — Antrenman → Keşfet\'ten ekleyebilirsin.';
 
   @override
   String get onbGoalsNumberError =>

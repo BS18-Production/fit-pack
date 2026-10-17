@@ -676,32 +676,3 @@ class _FoodLogRow extends StatelessWidget {
     );
   }
 }
-
-/// Custom yemek + Yemekler ekranında ortak birim seçenekleri (docs/14 —
-/// locale'e göre). Seçilen etiket yemeğin `unitLabel`'ına YAZILIR (içerik):
-/// eski/karışık dilde kayıtlı etiketler için çağıran taraf, mevcut değeri
-/// listeye ekleyerek dropdown'ı korur ([unitOptionsWith]).
-List<String> unitOptions(AppL10n l) => [
-  l.unitPortion,
-  l.unitPiece,
-  l.unitSlice,
-  l.unitBowl,
-  l.unitWaterGlass,
-  l.unitCup,
-  l.unitTablespoon,
-  l.unitHandful,
-  l.unitClove,
-  l.unitScoop,
-  l.unitCan,
-];
-
-/// Seçenekler + (listede olmayan) mevcut kayıtlı birim — dropdown value'su
-/// items'ta yoksa Flutter assert atar; farklı dilde kaydedilmiş birimler
-/// böyle korunur.
-List<String> unitOptionsWith(AppL10n l, String? current) {
-  final options = unitOptions(l);
-  if (current != null && !options.contains(current)) {
-    return [current, ...options];
-  }
-  return options;
-}

@@ -76,9 +76,11 @@ class _ProfileBody extends ConsumerWidget {
 
   const _ProfileBody({required this.profile});
 
-  Future<void> _save(WidgetRef ref, UserProfileData updated) async {
-    await ref.read(userProfileDaoProvider).updateProfile(updated);
-    // userProfileProvider reaktif (H-05) → düzenleme kendiliğinden yansır.
+  /// Yalnız düzenlenen alanı yazar — [profile] diyalog açılırken alınmış
+  /// kopya, eskimiş olabilir (CR-013). userProfileProvider reaktif →
+  /// düzenleme kendiliğinden yansır.
+  Future<void> _save(WidgetRef ref, UserProfileCompanion patch) async {
+    await ref.read(userProfileDaoProvider).updateFields(patch);
   }
 
   static String _fmtDate(DateTime d) =>
@@ -96,7 +98,7 @@ class _ProfileBody extends ConsumerWidget {
       current: profile.gender,
     );
     if (picked != null) {
-      await _save(ref, profile.copyWith(gender: Value(picked)));
+      await _save(ref, UserProfileCompanion(gender: Value(picked)));
     }
   }
 
@@ -109,7 +111,7 @@ class _ProfileBody extends ConsumerWidget {
       current: profile.activityLevel,
     );
     if (picked != null) {
-      await _save(ref, profile.copyWith(activityLevel: Value(picked)));
+      await _save(ref, UserProfileCompanion(activityLevel: Value(picked)));
     }
   }
 
@@ -126,7 +128,7 @@ class _ProfileBody extends ConsumerWidget {
           isInt: false,
           min: 120,
           max: 230,
-          apply: (v) => profile.copyWith(heightCm: Value(v.toDouble())));
+          apply: (v) => UserProfileCompanion(heightCm: Value(v.toDouble())));
     }
     final cm = await showDialog<double>(
       context: context,
@@ -134,7 +136,7 @@ class _ProfileBody extends ConsumerWidget {
           title: l.settingsHeight, initialCm: profile.heightCm ?? 175),
     );
     if (cm != null) {
-      await _save(ref, profile.copyWith(heightCm: Value(cm)));
+      await _save(ref, UserProfileCompanion(heightCm: Value(cm)));
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppL10n.of(context).commonSaved)),
@@ -153,7 +155,7 @@ class _ProfileBody extends ConsumerWidget {
       helpText: AppL10n.of(context).settingsPickBirthDate,
     );
     if (picked != null) {
-      await _save(ref, profile.copyWith(birthDate: Value(picked)));
+      await _save(ref, UserProfileCompanion(birthDate: Value(picked)));
     }
   }
 
@@ -166,7 +168,7 @@ class _ProfileBody extends ConsumerWidget {
     required bool isInt,
     required num min,
     required num max,
-    required UserProfileData Function(num value) apply,
+    required UserProfileCompanion Function(num value) apply,
   }) async {
     final result = await showNumberEditDialog(
       context,
@@ -210,7 +212,7 @@ class _ProfileBody extends ConsumerWidget {
                   isInt: true,
                   min: 800,
                   max: 6000,
-                  apply: (v) => profile.copyWith(kcalGoal: v.toInt())),
+                  apply: (v) => UserProfileCompanion(kcalGoal: Value(v.toInt()))),
             ),
             SettingTile(
               icon: Icons.egg_alt_outlined,
@@ -223,7 +225,7 @@ class _ProfileBody extends ConsumerWidget {
                   isInt: true,
                   min: 30,
                   max: 400,
-                  apply: (v) => profile.copyWith(proteinGoal: v.toInt())),
+                  apply: (v) => UserProfileCompanion(proteinGoal: Value(v.toInt()))),
             ),
           ],
         ),
@@ -253,7 +255,7 @@ class _ProfileBody extends ConsumerWidget {
                   isInt: false,
                   min: units.weightFromKg(40).floor(),
                   max: units.weightFromKg(250).ceil(),
-                  apply: (v) => profile.copyWith(
+                  apply: (v) => UserProfileCompanion(
                       goalWeightKg: Value(units.weightToKg(v)))),
             ),
             // Güncel kilo/bel/kol tek form üzerinden girilir (İlerleme'deki ile

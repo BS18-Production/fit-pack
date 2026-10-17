@@ -17,6 +17,15 @@ class UserProfileDao extends DatabaseAccessor<AppDatabase> with _$UserProfileDao
   Future<bool> updateProfile(UserProfileData entry) =>
       update(userProfile).replace(entry);
 
+  /// Yalnız [patch]'te verilen kolonları yazar (CR-013). Ekranın elindeki
+  /// profil kopyası eskimiş olabilir — diyalog açıkken senkron başka bir alanı
+  /// güncellemiş olabilir. Tüm satırı o kopyadan yazmak (`replace`) o değişikliği
+  /// ve senkron kolonlarını geri alırdı. Senkron kolonları tetikleyiciye kalır.
+  Future<void> updateFields(UserProfileCompanion patch) async {
+    await ensureProfile();
+    await update(userProfile).write(patch);
+  }
+
   Future<void> ensureProfile() async {
     final existing = await getProfile();
     if (existing == null) {

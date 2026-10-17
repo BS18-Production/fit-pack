@@ -231,13 +231,14 @@ class AppDatabase extends _$AppDatabase {
         for (final sql in seedSyncMetaSql) {
           await m.database.customStatement(sql);
         }
+        // Aşağıda güncel tanım kuruluyor → açılış onarımı yeniden kurmasın.
+        await m.database.customStatement(writeTriggerRevSql);
         for (final t in syncedTableNames) {
           await m.database.customStatement(createUidIndexSql(t));
           await m.database.customStatement(createInsertTriggerSql(t));
           await m.database.customStatement(createUpdateTriggerSql(t));
           await m.database.customStatement(createDeleteTriggerSql(t));
         }
-        await m.database.customStatement(writeTriggerRevSql);
       },
 
       // Sürümden sürüme göç. Her `from` için bir sonraki adıma yol tarif edilir.

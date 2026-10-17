@@ -29,6 +29,9 @@ class NotificationPrefs {
   // ayar yüzünden iPhone'da alttayken mola sonu hiç bildirilmiyordu
   // (Samet, 2026-10-07) — artık ilk mola başlarken bir kez sorulur.
   final bool restPrompted;
+  // "Sıradaki antrenmanını hatırlatayım mı?" önerisi (docs/51 karar 4) ilk
+  // antrenmandan sonra bir kez gösterildi mi. Kurulumda izin istenmez.
+  final bool recallPrompted;
 
   const NotificationPrefs({
     this.restEnabled = false,
@@ -44,11 +47,16 @@ class NotificationPrefs {
     this.mealEnabled = false,
     this.mealCtaDismissed = false,
     this.restPrompted = false,
+    this.recallPrompted = false,
   });
 
   /// İlk molada bildirim izni istenmeli mi: kullanıcı bildirimi hiç açmadı ve
   /// daha önce sorulmadı. Bir kez sorulur; reddederse Ayarlar'dan açar.
   bool get shouldOfferRest => !restEnabled && !restPrompted;
+
+  /// Antrenman sonunda geri çağırma önerisi gösterilmeli mi: hatırlatıcı
+  /// kapalı ve daha önce sorulmadı.
+  bool get shouldOfferRecall => !workoutEnabled && !recallPrompted;
 
   NotificationPrefs copyWith({
     bool? restEnabled,
@@ -64,6 +72,7 @@ class NotificationPrefs {
     bool? mealEnabled,
     bool? mealCtaDismissed,
     bool? restPrompted,
+    bool? recallPrompted,
   }) =>
       NotificationPrefs(
         restEnabled: restEnabled ?? this.restEnabled,
@@ -79,6 +88,7 @@ class NotificationPrefs {
         mealEnabled: mealEnabled ?? this.mealEnabled,
         mealCtaDismissed: mealCtaDismissed ?? this.mealCtaDismissed,
         restPrompted: restPrompted ?? this.restPrompted,
+        recallPrompted: recallPrompted ?? this.recallPrompted,
       );
 }
 
@@ -96,6 +106,7 @@ class NotificationPrefsNotifier extends Notifier<NotificationPrefs> {
   static const _kMeal = 'notif_meal';
   static const _kMealCta = 'notif_meal_cta_dismissed';
   static const _kRestPrompted = 'notif_rest_prompted';
+  static const _kRecallPrompted = 'notif_recall_prompted';
 
   @override
   NotificationPrefs build() {
@@ -119,7 +130,20 @@ class NotificationPrefsNotifier extends Notifier<NotificationPrefs> {
       mealEnabled: p.getBool(_kMeal) ?? false,
       mealCtaDismissed: p.getBool(_kMealCta) ?? false,
       restPrompted: p.getBool(_kRestPrompted) ?? false,
+      recallPrompted: p.getBool(_kRecallPrompted) ?? false,
     );
+  }
+
+  /// Yeni hesap bu cihazda kurulumu bitirdi (docs/50 karar 3): haftalık
+  /// değerlendirme bildirimi açık başlar. Kullanıcı bu ayarı daha önce
+  /// seçtiyse (anahtar var) dokunulmaz — mevcut kullanıcı etkilenmez.
+  /// Diskten okur/yazar; tembel `state` henüz yüklenmemiş olabilir.
+  Future<bool> enableWeeklyReviewByDefault() async {
+    final p = await SharedPreferences.getInstance();
+    if (p.containsKey(_kWeekly)) return false;
+    await p.setBool(_kWeekly, true);
+    await _load();
+    return true;
   }
 
   Future<void> update(NotificationPrefs next) async {
@@ -138,6 +162,7 @@ class NotificationPrefsNotifier extends Notifier<NotificationPrefs> {
     await p.setBool(_kMeal, next.mealEnabled);
     await p.setBool(_kMealCta, next.mealCtaDismissed);
     await p.setBool(_kRestPrompted, next.restPrompted);
+    await p.setBool(_kRecallPrompted, next.recallPrompted);
   }
 }
 

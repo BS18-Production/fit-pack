@@ -9,6 +9,7 @@ import '../../data/database/app_database.dart';
 import '../../data/database/daos/workout_dao.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
+import 'recall_offer.dart';
 import 'record_calc.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
@@ -86,6 +87,8 @@ class WorkoutSummaryScreen extends ConsumerWidget {
                 AppSpacing.vGapxl_,
                 WorkoutRecordsCard(records: s.records, units: units),
               ],
+              // İlk antrenmandan sonra bir kez: geri çağırma önerisi (docs/51).
+              const RecallOffer(),
               AppSpacing.vGapxl_,
               Text(AppL10n.of(context).wsExercises,
                   style: context.texts.titleMedium),

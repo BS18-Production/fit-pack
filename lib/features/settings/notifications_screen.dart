@@ -80,23 +80,12 @@ class NotificationsScreen extends ConsumerWidget {
   Future<void> _setWorkout(
       BuildContext context, WidgetRef ref, bool enabled) async {
     if (enabled && !await _ensurePermission(context, ref)) return;
+    // Geri çağırma (docs/51): kurma/iptal uygulama kökündeki dinleyicide —
+    // tercih değişince plan baştan kurulur (app.dart `_syncRecall`).
     final prefs = ref.read(notificationPrefsProvider);
-    final next = prefs.copyWith(workoutEnabled: enabled);
-    await ref.read(notificationPrefsProvider.notifier).update(next);
-    if (!context.mounted) return;
-    final svc = ref.read(notificationServiceProvider);
-    if (enabled) {
-      final l = AppL10n.of(context);
-      await svc.scheduleDaily(
-        id: NotificationService.idWorkout,
-        hour: next.workoutHour,
-        minute: next.workoutMinute,
-        title: l.notifWorkoutTitle,
-        body: l.notifWorkoutBody,
-      );
-    } else {
-      await svc.cancel(NotificationService.idWorkout);
-    }
+    await ref
+        .read(notificationPrefsProvider.notifier)
+        .update(prefs.copyWith(workoutEnabled: enabled, recallPrompted: true));
   }
 
   Future<void> _setWater(
@@ -159,18 +148,11 @@ class NotificationsScreen extends ConsumerWidget {
     await ref.read(notificationPrefsProvider.notifier).update(next);
     if (!context.mounted) return;
 
-    // Açıksa yeni saatle yeniden kur.
+    // Açıksa yeni saatle yeniden kur. Antrenman: geri çağırmanın varsayılan
+    // saati — tercih dinleyicisi planı kendisi yeniden kurar (docs/51).
     final l = AppL10n.of(context);
     final svc = ref.read(notificationServiceProvider);
-    if (isWorkout && next.workoutEnabled) {
-      await svc.scheduleDaily(
-        id: NotificationService.idWorkout,
-        hour: next.workoutHour,
-        minute: next.workoutMinute,
-        title: l.notifWorkoutTitle,
-        body: l.notifWorkoutBody,
-      );
-    } else if (!isWorkout && next.waterEnabled) {
+    if (!isWorkout && next.waterEnabled) {
       await svc.scheduleDaily(
         id: NotificationService.idWater,
         hour: next.waterHour,
@@ -248,13 +230,15 @@ class NotificationsScreen extends ConsumerWidget {
               SwitchListTile(
                 secondary: const FitPackIcon.material(Icons.fitness_center_rounded),
                 title: Text(l.notifWorkout),
+                subtitle: Text(l.notifWorkoutSub),
                 value: prefs.workoutEnabled,
                 onChanged: (v) => _setWorkout(context, ref, v),
               ),
               if (prefs.workoutEnabled)
                 SettingTile(
                   icon: Icons.schedule_rounded,
-                  title: l.notifTime,
+                  title: l.notifWorkoutFallbackTime,
+                  subtitle: l.notifWorkoutFallbackTimeSub,
                   value: _fmt(prefs.workoutHour, prefs.workoutMinute),
                   onTap: () => _pickTime(context, ref, isWorkout: true),
                 ),

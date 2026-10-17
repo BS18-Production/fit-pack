@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/notifications/notification_prefs.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
@@ -201,6 +202,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         messenger
             .showSnackBar(SnackBar(content: Text(l.onbProgramInstallError)));
       }
+    }
+
+    // Yeni hesap (docs/50 karar 3): haftalık değerlendirme bildirimi açık
+    // başlar. Bildirim izni burada İSTENMEZ (docs/51 karar 4); kurulum
+    // uygulama kökünde, izin gelince bildirim görünür hale gelir.
+    try {
+      await ref
+          .read(notificationPrefsProvider.notifier)
+          .enableWeeklyReviewByDefault();
+    } catch (e) {
+      debugPrint('[fitpack.onboarding] haftalık bildirim ayarı yazılamadı '
+          '| HATA: $e');
     }
 
     // Home provider'ları reaktif: profil, kilo ve rutinler DB'ye yazılınca

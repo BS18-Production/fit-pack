@@ -1085,6 +1085,15 @@ class _WeightMini extends ConsumerWidget {
                       goalKg: goalKg,
                     ),
                   ),
+                  if (trend.isTrend) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      l.homeWeightTrend7d,
+                      style: context.texts.labelSmall?.copyWith(
+                        color: c.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ],
               ],
             ],

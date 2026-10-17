@@ -4152,4 +4152,123 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get assistantMuscleOther => 'Diğer';
+
+  @override
+  String bmFromHealth(String app) {
+    return 'Sağlık · $app';
+  }
+
+  @override
+  String get bmHideTitle => 'Ölçümü gizle';
+
+  @override
+  String bmHideMsg(String date) {
+    return '$date tarihli tartı ölçümü gizlensin mi? Sağlık uygulamasındaki kayıt değişmez.';
+  }
+
+  @override
+  String get healthWeightRow => 'Kilo ve yağ oranı';
+
+  @override
+  String get healthWeightOn => 'Açık · tartı uygulamalarından';
+
+  @override
+  String get healthWeightOff => 'Kapalı';
+
+  @override
+  String get healthConsentTitle => 'Tartı ölçümlerin Fit Pack\'e gelsin';
+
+  @override
+  String get healthConsentWhat =>
+      'Okunan: tartı uygulamalarının Apple Sağlık / Health Connect\'e yazdığı kilo ve vücut yağ oranı. Başka bir şey değil.';
+
+  @override
+  String get healthConsentWhere =>
+      'Fit Pack hesabında saklanır; sunucular Avrupa Birliği\'nde (Almanya).';
+
+  @override
+  String get healthConsentWhy =>
+      'Yalnız ilerleme grafiğin, kilo eğilimin ve haftalık değerlendirmen için kullanılır.';
+
+  @override
+  String get healthConsentNoShare =>
+      'Reklamda kullanılmaz, satılmaz, üçüncü taraflarla paylaşılmaz.';
+
+  @override
+  String get healthConsentWithdraw =>
+      'Rızanı istediğin an Ayarlar → Sağlık\'tan geri alabilirsin; içe alınan ölçümler o zaman silinir.';
+
+  @override
+  String get healthConsentLegal =>
+      'Bu, sağlık verilerinin işlenmesine ilişkin açık rızandır (KVKK md. 6, GDPR md. 9).';
+
+  @override
+  String get healthConsentAccept => 'Kabul ediyorum';
+
+  @override
+  String get healthConsentDecline => 'Şimdi değil';
+
+  @override
+  String get healthWithdrawTitle => 'Rızayı geri al';
+
+  @override
+  String get healthWithdrawMsg =>
+      'Tartıdan içe aktarma durur ve şimdiye kadar içe alınan ölçümler silinir (buluttan da). Sonra yeniden rıza verirsen yalnız yeni ölçümler gelir.';
+
+  @override
+  String get healthWithdrawDelete => 'Ölçümleri sil';
+
+  @override
+  String get privacyTitle => 'Gizlilik politikası';
+
+  @override
+  String get privacySubtitle => 'Hangi verileri, nerede işliyoruz; hakların';
+
+  @override
+  String get privacyAuthLink =>
+      'Verilerini nasıl kullanıyoruz (gizlilik politikası)';
+
+  @override
+  String get homeWeightTrend7d => '7 günlük trend';
+
+  @override
+  String get bmTrendLegend => 'nokta: günlük · çizgi: trend';
+
+  @override
+  String get adaptiveTdeeTitle => 'Gerçek harcaman (tahmin)';
+
+  @override
+  String adaptiveTdeeValue(int kcal, int days) {
+    return '~$kcal kcal/gün · $days tamamlanmış gün ve kilo eğiliminden';
+  }
+
+  @override
+  String adaptiveTdeeAtGoal(int goal, String change) {
+    return '$goal kcal hedefinle: haftada yaklaşık $change';
+  }
+
+  @override
+  String adaptiveTdeeNeedDays(int need, int have) {
+    return 'Son 4 haftada $need gün \'tamamlandı\' işaretli olmalı (şu an $have).';
+  }
+
+  @override
+  String adaptiveTdeeNeedWeighIns(int count, int days) {
+    return 'En az $count tartı ölçümü, $days güne yayılmış olmalı.';
+  }
+
+  @override
+  String get adaptiveTdeeInconsistent =>
+      'Tahmin için kayıtlar eksik görünüyor — tamamlandı işaretli günlerin tam girildiğini kontrol et.';
+
+  @override
+  String get adaptiveTdeeNote =>
+      'Tahmindir (1 kg ≈ 7.700 kcal). Hedefin kendiliğinden değişmez.';
+
+  @override
+  String get healthWriteWorkouts => 'Antrenmanları Sağlık\'a yaz';
+
+  @override
+  String get healthWriteWorkoutsNote =>
+      'Canlı seanslar Apple Sağlık / Health Connect\'te görünür (saat ve ad; kalori yazılmaz).';
 }

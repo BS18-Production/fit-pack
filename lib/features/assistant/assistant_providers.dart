@@ -79,7 +79,7 @@ final assistantSnapshotProvider = StreamProvider.autoDispose<AssistantData>((
             DateTime.parse(key),
         },
         foods: {for (final f in await nut.getAllFoods()) f.id: f},
-        measurements: await body.getAllMeasurements(),
+        measurements: await body.getDailyMeasurements(),
         scheduledWeekdays: {
           for (final r in await wo.getActiveRoutines())
             if (r.scheduledWeekday != null) r.scheduledWeekday!,

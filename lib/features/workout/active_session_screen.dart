@@ -34,6 +34,7 @@ import 'workout_draft.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
 import '../../shared/widgets/fitpack_icon.dart';
+import '../health/body_providers.dart';
 
 /// Aktif Antrenman Seansı (Antrenman V2 Faz C — docs/09-workout-v2.md).
 /// Set tablosu (KG/tekrar/RPE/✓), set tipleri, dinlenme sayacı, canlı süre,
@@ -1190,6 +1191,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
 
     _clearDraft(); // seans DB'ye yazıldı — taslağı sil
+    // docs/44: tercih açıksa canlı seans Sağlık'a yazılır; hata seansı bozmaz.
+    unawaited(exportFinishedSession(ref, sessionId).catchError((_) {}));
     // Home/Progress provider'ları reaktif (H-05): seans+setler DB'ye yazılınca
     // momentum hero, haftalık istatistik, seri hepsi kendiliğinden tazelenir —
     // elle invalidate gerekmez (eski kod momentum provider'larını atlıyordu).

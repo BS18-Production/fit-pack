@@ -5,7 +5,8 @@ import '../tables/achievement_tables.dart';
 part 'user_profile_dao.g.dart';
 
 @DriftAccessor(tables: [UserProfile])
-class UserProfileDao extends DatabaseAccessor<AppDatabase> with _$UserProfileDaoMixin {
+class UserProfileDao extends DatabaseAccessor<AppDatabase>
+    with _$UserProfileDaoMixin {
   UserProfileDao(super.db);
 
   Future<UserProfileData?> getProfile() =>
@@ -29,15 +30,29 @@ class UserProfileDao extends DatabaseAccessor<AppDatabase> with _$UserProfileDao
   Future<void> ensureProfile() async {
     final existing = await getProfile();
     if (existing == null) {
-      await insertProfile(UserProfileCompanion(
-        startDate: Value(DateTime.now()),
-      ));
+      await insertProfile(
+        UserProfileCompanion(startDate: Value(DateTime.now())),
+      );
     }
   }
 
   /// Reaktif onboarding kontrolü — router redirect'i bunu izler.
   Stream<UserProfileData?> watchProfile() =>
       (select(userProfile)..limit(1)).watchSingleOrNull();
+
+  /// Sağlık verisi açık rızası (docs/41 §3). [version] = kabul edilen metin
+  /// sürümü; `null` = rıza geri alındı. Her iki kararda zaman yazılır (ispat).
+  Future<void> setHealthConsent(int? version, {DateTime? now}) async {
+    await ensureProfile();
+    await (update(userProfile)).write(
+      UserProfileCompanion(
+        // Geri alma da zamanla yazılır: sunucu rızayı zamana göre ilerletir
+        // (health_consent_monotonic) — eski profil kopyası ezemez (Codex P1).
+        healthConsentAt: Value(now ?? DateTime.now()),
+        healthConsentVersion: Value(version),
+      ),
+    );
+  }
 
   /// Kilo hedefinin yönünü yazar (docs/22 §3.4): 'lose' | 'maintain' |
   /// 'gain', ya da `null` (seçimi kaldır).
@@ -51,10 +66,14 @@ class UserProfileDao extends DatabaseAccessor<AppDatabase> with _$UserProfileDao
     await ensureProfile();
     final profile = await getProfile();
     if (profile!.goalDirection == direction) return;
-    await updateProfile(profile.copyWith(
-      goalDirection: Value(direction),
-      goalDirectionSince: Value(direction == null ? null : (now ?? DateTime.now())),
-    ));
+    await updateProfile(
+      profile.copyWith(
+        goalDirection: Value(direction),
+        goalDirectionSince: Value(
+          direction == null ? null : (now ?? DateTime.now()),
+        ),
+      ),
+    );
   }
 
   /// P-10 Onboarding tamamlandığında çağrılır: hedefleri yazar + onboarded=1.

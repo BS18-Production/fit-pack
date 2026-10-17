@@ -96,9 +96,9 @@ final weeklyReviewProvider =
       },
       kcalGoal: profile?.kcalGoal ?? 0,
       proteinGoal: profile?.proteinGoal ?? 0,
-      measurements: await body.getMeasurementsInRange(
+      measurements: await body.getDailyMeasurementsInRange(
           addDays(start, -14), end),
-      bodyWeightKg: (await body.getLatestWeight())?.weightKg,
+      bodyWeightKg: (await body.getDailyLatestWeight())?.weightKg,
       goalDirection: GoalDirection.tryParse(profile?.goalDirection),
       goalDirectionSince: profile?.goalDirectionSince,
     ));
@@ -131,7 +131,7 @@ final goalConflictProvider = StreamProvider.autoDispose<bool>((ref) {
   return watchTables(db, [db.userProfile, db.bodyMeasurements], () async {
     final UserProfileData? p =
         await ref.read(userProfileDaoProvider).getProfile();
-    final w = (await ref.read(bodyDaoProvider).getLatestWeight())?.weightKg;
+    final w = (await ref.read(bodyDaoProvider).getDailyLatestWeight())?.weightKg;
     return goalConflicts(
       direction: GoalDirection.tryParse(p?.goalDirection),
       goalWeightKg: p?.goalWeightKg,

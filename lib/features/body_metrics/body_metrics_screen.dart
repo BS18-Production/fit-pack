@@ -17,16 +17,22 @@ import '../../data/database/app_database.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/app_state_views.dart';
 import '../../shared/widgets/glass.dart';
+import '../../core/utils/daily_body.dart';
 import '../activity/activity_calendar.dart';
 import '../home/providers/home_providers.dart';
 import '../progress_photos/progress_photos_providers.dart';
 import '../../shared/widgets/fitpack_icon.dart';
+import '../../core/utils/weight_trend.dart';
 
 /// **Reaktif** (H-05): ölçüm eklenince/silinince kendiliğinden tazelenir.
 final allMeasurementsProvider = StreamProvider<List<BodyMeasurement>>((ref) {
   final db = ref.watch(databaseProvider);
   return watchTables(db, [db.bodyMeasurements],
-      () => ref.read(bodyDaoProvider).getAllMeasurements());
+      () async => [
+            // Gizlenen tartı satırları listede de görünmez (docs/40 W-6).
+            for (final m in await ref.read(bodyDaoProvider).getAllMeasurements())
+              if (m.hidden != true) m,
+          ]);
 });
 
 class BodyMetricsScreen extends ConsumerWidget {
@@ -109,9 +115,12 @@ class BodyMetricsScreen extends ConsumerWidget {
           ];
         }
 
-        final latest = measurements.first;
+        // Özet ve grafik günde tek değerden (docs/40 W-4): aynı gün elle +
+        // tartı iki nokta çizmesin. Liste aşağıda tüm satırları gösterir.
+        final daily = dailyMeasurements(measurements);
+        final latest = daily.first;
         // Grafik için kilolu ölçümler, eskiden yeniye.
-        final weighted = measurements.where((m) => m.weightKg != null).toList()
+        final weighted = daily.where((m) => m.weightKg != null).toList()
           ..sort((a, b) => a.date.compareTo(b.date));
         final goalWeight =
             ref.watch(userProfileProvider).valueOrNull?.goalWeightKg;
@@ -141,14 +150,25 @@ class BodyMetricsScreen extends ConsumerWidget {
                   measurement: m,
                   units: units,
                   onDelete: () async {
+                    final imported = !isManualMeasurement(m);
+                    final day = context.dateFmt('d MMM yyyy').format(m.date);
                     final ok = await confirmAction(
                       context,
-                      title: AppL10n.of(context).bmDeleteTitle,
-                      message: AppL10n.of(context).bmDeleteMsg(
-                          context.dateFmt('d MMM yyyy').format(m.date)),
+                      title: imported
+                          ? AppL10n.of(context).bmHideTitle
+                          : AppL10n.of(context).bmDeleteTitle,
+                      message: imported
+                          ? AppL10n.of(context).bmHideMsg(day)
+                          : AppL10n.of(context).bmDeleteMsg(day),
                     );
                     if (!ok) return;
-                    await ref.read(bodyDaoProvider).deleteMeasurement(m.id);
+                    // Tartıdan gelen satır silinmez, gizlenir (docs/40 W-6):
+                    // silinseydi bir sonraki okumada geri gelirdi.
+                    if (imported) {
+                      await ref.read(bodyDaoProvider).hideMeasurement(m.id);
+                    } else {
+                      await ref.read(bodyDaoProvider).deleteMeasurement(m.id);
+                    }
                     // Kilo okuyan provider'lar reaktif (H-05) → silme sonrası
                     // Home "Son Kilo", TDEE, kalori tahmini kendiliğinden güncel.
                   },
@@ -234,6 +254,20 @@ class _WeightChartCard extends StatelessWidget {
             units.weightFromKg(m.weightKg!)))
         .toList();
 
+    // Trend çizgisi (docs/42): ham ölçümler soluk nokta, trend kalın çizgi.
+    // Trend hazır değilse (T-3) eskisi gibi tek çizgi.
+    final points = [
+      for (final m in measurements) (date: m.date, kg: m.weightKg!),
+    ];
+    final showTrend = trendReady(points);
+    final trendSpots = showTrend
+        ? [
+            for (final p in weightTrendSeries(points))
+              FlSpot(p.date.millisecondsSinceEpoch.toDouble(),
+                  units.weightFromKg(p.kg)),
+          ]
+        : const <FlSpot>[];
+
     final weights =
         measurements.map((m) => units.weightFromKg(m.weightKg!)).toList();
     var minY = weights.reduce((a, b) => a < b ? a : b);
@@ -262,6 +296,15 @@ class _WeightChartCard extends StatelessWidget {
               children: [
                 Text(AppL10n.of(context).bmWeightTrend,
                     style: context.texts.titleSmall),
+                if (showTrend) ...[
+                  AppSpacing.hGapSm,
+                  Flexible(
+                    child: Text(AppL10n.of(context).bmTrendLegend,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.texts.labelSmall?.copyWith(
+                            color: context.colors.onSurfaceVariant)),
+                  ),
+                ],
                 const Spacer(),
                 if (goalWeight != null)
                   Text(
@@ -358,8 +401,24 @@ class _WeightChartCard extends StatelessWidget {
                     ),
                   ),
                   lineBarsData: [
+                    if (showTrend)
+                      // Ham günlük ölçümler: yalnız soluk nokta.
+                      LineChartBarData(
+                        spots: spots,
+                        barWidth: 0,
+                        color: Colors.transparent,
+                        dotData: FlDotData(
+                          show: true,
+                          getDotPainter: (spot, _, _, index) =>
+                              FlDotCirclePainter(
+                            radius: 2.5,
+                            color: color.withValues(alpha: 0.35),
+                            strokeWidth: 0,
+                          ),
+                        ),
+                      ),
                     LineChartBarData(
-                      spots: spots,
+                      spots: showTrend ? trendSpots : spots,
                       isCurved: true,
                       curveSmoothness: 0.3,
                       preventCurveOverShooting: true,
@@ -371,6 +430,8 @@ class _WeightChartCard extends StatelessWidget {
                         getDotPainter: (spot, _, _, index) =>
                             FlDotCirclePainter(
                           radius: index == spots.length - 1 ? 4 : 2.5,
+                          // Trend modunda çizginin üstüne nokta konmaz (ham
+                          // noktalar ayrı katmanda); yalnız son değer.
                           color: color,
                           strokeWidth: 0,
                         ),
@@ -551,17 +612,26 @@ class _MeasurementCard extends StatelessWidget {
           [
             if (measurement.weightKg != null)
               units.weight(measurement.weightKg!),
+            if (measurement.bodyFatPct != null)
+              '${l.bmBodyFat} %${measurement.bodyFatPct!.toStringAsFixed(1)}',
             if (measurement.waistCm != null)
               '${l.bmWaist} ${units.length(measurement.waistCm!)}',
             if (measurement.armCm != null)
               '${l.bmArm} ${units.length(measurement.armCm!)}',
             if (measurement.chestCm != null)
               '${l.bmChest} ${units.length(measurement.chestCm!)}',
-          ].join('  ·  '),
+          ].join('  ·  ') +
+              (isManualMeasurement(measurement)
+                  ? ''
+                  : '\n${l.bmFromHealth(measurement.sourceApp ?? l.healthSection)}'),
         ),
         trailing: IconButton(
-          tooltip: AppL10n.of(context).commonDelete,
-          icon: const FitPackIcon.material(Icons.delete_outline_rounded),
+          tooltip: isManualMeasurement(measurement)
+              ? AppL10n.of(context).commonDelete
+              : AppL10n.of(context).bmHideTitle,
+          icon: FitPackIcon.material(isManualMeasurement(measurement)
+              ? Icons.delete_outline_rounded
+              : Icons.visibility_off_outlined),
           onPressed: onDelete,
         ),
       ),

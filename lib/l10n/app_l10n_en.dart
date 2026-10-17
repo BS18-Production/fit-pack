@@ -3558,7 +3558,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get assistantPrivacy =>
-      'Only your question and fixed routing definitions go to Gemini; workout, nutrition and measurement records stay on your device. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.';
+      'Only your question and fixed routing definitions go to Gemini; your workout, nutrition and measurement records are not sent to Google. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.';
 
   @override
   String get assistantPrivacyAccept => 'I understand, send question';
@@ -4202,4 +4202,122 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get assistantMuscleOther => 'Other';
+
+  @override
+  String bmFromHealth(String app) {
+    return 'Health · $app';
+  }
+
+  @override
+  String get bmHideTitle => 'Hide measurement';
+
+  @override
+  String bmHideMsg(String date) {
+    return 'Hide the scale measurement from $date? The record in your health app stays unchanged.';
+  }
+
+  @override
+  String get healthWeightRow => 'Weight and body fat';
+
+  @override
+  String get healthWeightOn => 'On · from your scale apps';
+
+  @override
+  String get healthWeightOff => 'Off';
+
+  @override
+  String get healthConsentTitle => 'Bring in your scale measurements';
+
+  @override
+  String get healthConsentWhat =>
+      'Read: weight and body fat percentage that your scale apps write to Apple Health / Health Connect. Nothing else.';
+
+  @override
+  String get healthConsentWhere =>
+      'Stored in your Fit Pack account; servers are in the European Union (Germany).';
+
+  @override
+  String get healthConsentWhy =>
+      'Used only for your progress chart, weight trend and weekly review.';
+
+  @override
+  String get healthConsentNoShare =>
+      'Never used for ads, never sold or shared with third parties.';
+
+  @override
+  String get healthConsentWithdraw =>
+      'You can withdraw anytime in Settings → Health; imported measurements are then deleted.';
+
+  @override
+  String get healthConsentLegal =>
+      'This is your explicit consent to the processing of health data (GDPR Art. 9, KVKK Art. 6).';
+
+  @override
+  String get healthConsentAccept => 'I agree';
+
+  @override
+  String get healthConsentDecline => 'Not now';
+
+  @override
+  String get healthWithdrawTitle => 'Withdraw consent';
+
+  @override
+  String get healthWithdrawMsg =>
+      'Importing from your scale stops and the measurements already imported are deleted (also from the cloud). If you consent again later, only new measurements are imported.';
+
+  @override
+  String get healthWithdrawDelete => 'Delete measurements';
+
+  @override
+  String get privacyTitle => 'Privacy policy';
+
+  @override
+  String get privacySubtitle => 'What data we process, where, and your rights';
+
+  @override
+  String get privacyAuthLink => 'How we use your data (privacy policy)';
+
+  @override
+  String get homeWeightTrend7d => '7-day trend';
+
+  @override
+  String get bmTrendLegend => 'dots: daily · line: trend';
+
+  @override
+  String get adaptiveTdeeTitle => 'Your actual expenditure (estimate)';
+
+  @override
+  String adaptiveTdeeValue(int kcal, int days) {
+    return '~$kcal kcal/day · from $days completed days and your weight trend';
+  }
+
+  @override
+  String adaptiveTdeeAtGoal(int goal, String change) {
+    return 'With your $goal kcal goal: about $change per week';
+  }
+
+  @override
+  String adaptiveTdeeNeedDays(int need, int have) {
+    return 'Needs $need days marked complete in the last 4 weeks (you have $have).';
+  }
+
+  @override
+  String adaptiveTdeeNeedWeighIns(int count, int days) {
+    return 'Needs at least $count weigh-ins spread over $days days.';
+  }
+
+  @override
+  String get adaptiveTdeeInconsistent =>
+      'Logs look incomplete for an estimate — check that completed days are fully logged.';
+
+  @override
+  String get adaptiveTdeeNote =>
+      'Estimate (1 kg ≈ 7,700 kcal). Your goal is not changed automatically.';
+
+  @override
+  String get healthWriteWorkouts => 'Save workouts to Health';
+
+  @override
+  String get healthWriteWorkoutsNote =>
+      'Live sessions appear in Apple Health / Health Connect (time and name; no calories).';
 }

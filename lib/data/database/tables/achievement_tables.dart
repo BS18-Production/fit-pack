@@ -37,4 +37,9 @@ class UserProfile extends Table with SyncColumns {
   // Yönün seçildiği an. "Geçmişe uygulanmaz" kuralının ölçüsü: bu tarihten
   // önceki haftalar yön bilinmiyormuş gibi yorumlanır.
   DateTimeColumn get goalDirectionSince => dateTime().nullable()();
+
+  // v17 (docs/41 §3): sağlık verisi açık rızası — ispat için zaman + metin
+  // sürümü senkronlanır. NULL = rıza yok → tartıdan içe aktarma çalışmaz.
+  DateTimeColumn get healthConsentAt => dateTime().nullable()();
+  IntColumn get healthConsentVersion => integer().nullable()();
 }

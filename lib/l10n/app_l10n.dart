@@ -6076,7 +6076,7 @@ abstract class AppL10n {
   /// No description provided for @assistantPrivacy.
   ///
   /// In en, this message translates to:
-  /// **'Only your question and fixed routing definitions go to Gemini; workout, nutrition and measurement records stay on your device. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.'**
+  /// **'Only your question and fixed routing definitions go to Gemini; your workout, nutrition and measurement records are not sent to Google. With free Gemini, Google may use the text and model output to improve products, with possible human review. Do not enter identity, contact or private health information. Ready questions run on your device.'**
   String get assistantPrivacy;
 
   /// No description provided for @assistantPrivacyAccept.
@@ -7075,6 +7075,198 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Other'**
   String get assistantMuscleOther;
+
+  /// No description provided for @bmFromHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health · {app}'**
+  String bmFromHealth(String app);
+
+  /// No description provided for @bmHideTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide measurement'**
+  String get bmHideTitle;
+
+  /// No description provided for @bmHideMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide the scale measurement from {date}? The record in your health app stays unchanged.'**
+  String bmHideMsg(String date);
+
+  /// No description provided for @healthWeightRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight and body fat'**
+  String get healthWeightRow;
+
+  /// No description provided for @healthWeightOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On · from your scale apps'**
+  String get healthWeightOn;
+
+  /// No description provided for @healthWeightOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get healthWeightOff;
+
+  /// No description provided for @healthConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bring in your scale measurements'**
+  String get healthConsentTitle;
+
+  /// No description provided for @healthConsentWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'Read: weight and body fat percentage that your scale apps write to Apple Health / Health Connect. Nothing else.'**
+  String get healthConsentWhat;
+
+  /// No description provided for @healthConsentWhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Stored in your Fit Pack account; servers are in the European Union (Germany).'**
+  String get healthConsentWhere;
+
+  /// No description provided for @healthConsentWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'Used only for your progress chart, weight trend and weekly review.'**
+  String get healthConsentWhy;
+
+  /// No description provided for @healthConsentNoShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Never used for ads, never sold or shared with third parties.'**
+  String get healthConsentNoShare;
+
+  /// No description provided for @healthConsentWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'You can withdraw anytime in Settings → Health; imported measurements are then deleted.'**
+  String get healthConsentWithdraw;
+
+  /// No description provided for @healthConsentLegal.
+  ///
+  /// In en, this message translates to:
+  /// **'This is your explicit consent to the processing of health data (GDPR Art. 9, KVKK Art. 6).'**
+  String get healthConsentLegal;
+
+  /// No description provided for @healthConsentAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree'**
+  String get healthConsentAccept;
+
+  /// No description provided for @healthConsentDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get healthConsentDecline;
+
+  /// No description provided for @healthWithdrawTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw consent'**
+  String get healthWithdrawTitle;
+
+  /// No description provided for @healthWithdrawMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing from your scale stops and the measurements already imported are deleted (also from the cloud). If you consent again later, only new measurements are imported.'**
+  String get healthWithdrawMsg;
+
+  /// No description provided for @healthWithdrawDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete measurements'**
+  String get healthWithdrawDelete;
+
+  /// No description provided for @privacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get privacyTitle;
+
+  /// No description provided for @privacySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What data we process, where, and your rights'**
+  String get privacySubtitle;
+
+  /// No description provided for @privacyAuthLink.
+  ///
+  /// In en, this message translates to:
+  /// **'How we use your data (privacy policy)'**
+  String get privacyAuthLink;
+
+  /// No description provided for @homeWeightTrend7d.
+  ///
+  /// In en, this message translates to:
+  /// **'7-day trend'**
+  String get homeWeightTrend7d;
+
+  /// No description provided for @bmTrendLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'dots: daily · line: trend'**
+  String get bmTrendLegend;
+
+  /// No description provided for @adaptiveTdeeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your actual expenditure (estimate)'**
+  String get adaptiveTdeeTitle;
+
+  /// No description provided for @adaptiveTdeeValue.
+  ///
+  /// In en, this message translates to:
+  /// **'~{kcal} kcal/day · from {days} completed days and your weight trend'**
+  String adaptiveTdeeValue(int kcal, int days);
+
+  /// No description provided for @adaptiveTdeeAtGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'With your {goal} kcal goal: about {change} per week'**
+  String adaptiveTdeeAtGoal(int goal, String change);
+
+  /// No description provided for @adaptiveTdeeNeedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs {need} days marked complete in the last 4 weeks (you have {have}).'**
+  String adaptiveTdeeNeedDays(int need, int have);
+
+  /// No description provided for @adaptiveTdeeNeedWeighIns.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs at least {count} weigh-ins spread over {days} days.'**
+  String adaptiveTdeeNeedWeighIns(int count, int days);
+
+  /// No description provided for @adaptiveTdeeInconsistent.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs look incomplete for an estimate — check that completed days are fully logged.'**
+  String get adaptiveTdeeInconsistent;
+
+  /// No description provided for @adaptiveTdeeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate (1 kg ≈ 7,700 kcal). Your goal is not changed automatically.'**
+  String get adaptiveTdeeNote;
+
+  /// No description provided for @healthWriteWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'Save workouts to Health'**
+  String get healthWriteWorkouts;
+
+  /// No description provided for @healthWriteWorkoutsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Live sessions appear in Apple Health / Health Connect (time and name; no calories).'**
+  String get healthWriteWorkoutsNote;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

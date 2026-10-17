@@ -95,13 +95,11 @@ void main() {
     expect(c.read(healthPrefsProvider).connected, isTrue);
   });
 
-  test('kanca olmadan disk silinse de bellek eski kalır (hatanın kendisi)',
+  test('kanca olmadan da sağlık dönemi tercihi yeniden okutur (docs/40)',
       () async {
+    // health-next: temizlik `healthEpoch`'u artırır, notifier diskten yeniden
+    // okur — kanca ikinci güvence.
     expect(await AccountSwitchGuard.apply(db, userB), AccountSwitch.wiped);
-    expect(c.read(healthPrefsProvider).connected, isTrue,
-        reason: 'invalidate edilmeyen provider eski değeri tutar');
-
-    c.invalidate(healthPrefsProvider);
     await expectCleared();
   });
 }

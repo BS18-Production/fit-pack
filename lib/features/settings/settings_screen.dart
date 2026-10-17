@@ -16,6 +16,7 @@ import '../../core/theme/theme_mode_provider.dart';
 import '../../l10n/app_l10n.dart';
 import '../insights/weekly_review_reminder.dart';
 import '../health/health_settings_section.dart';
+import '../legal/privacy_policy_sheet.dart';
 import '../../shared/widgets/setting_tiles.dart';
 import '../../core/router/app_routes.dart';
 import '../../shared/widgets/fitpack_icon.dart';
@@ -245,6 +246,14 @@ class SettingsScreen extends ConsumerWidget {
                   applicationName: AppConstants.appName,
                   applicationVersion: AppConstants.appVersion,
                 ),
+              ),
+              SettingTile(
+                key: const ValueKey('settings.privacy'),
+                icon: Icons.privacy_tip_outlined,
+                title: l.privacyTitle,
+                subtitle: l.privacySubtitle,
+                trailing: const FitPackIcon.material(Icons.chevron_right_rounded),
+                onTap: () => showPrivacyPolicy(context),
               ),
               SettingTile(
                 icon: Icons.public_rounded,

@@ -30,8 +30,8 @@ void main() {
     'assistant_quality_events',
   };
 
-  group('Schema v16', () {
-    test('schemaVersion 16\'te (artırınca bu test bilinçli kırılır)',
+  group('Schema v17', () {
+    test('schemaVersion 17\'de (artırınca bu test bilinçli kırılır)',
         () async {
       // Bu assertion bir TRIPWIRE'dır: biri schemaVersion'ı artırınca
       // burası kırılır → onUpgrade adımı + yeni göç testi eklemeden
@@ -49,11 +49,14 @@ void main() {
       // saati düzeltmesi — tetikleyiciler changed_at_ms'e clock_offset_ms
       // terimini ekliyor, tabloya dokunulmuyor (docs/23 §2) · v13→v14:
       // routines +programKey — hazır program kataloğu (docs/28) · v14→v15:
-      // +nutrition_days — beslenme günü tamamlandı (docs/37).
+      // +nutrition_days — beslenme günü tamamlandı (docs/37) · v15→v16:
+      // asistan kalite olayları (docs/38) · v16→v17: body_measurements
+      // +source/+sourceRef/+sourceApp/+hidden, user_profile sağlık rızası
+      // (docs/40, docs/41).
       // Lossless göç testleri: migrations/migration_v*_to_v*_test.dart.
       final db = newTestDatabase();
       addTearDown(db.close);
-      expect(db.schemaVersion, 16);
+      expect(db.schemaVersion, 17);
     });
 
     test('temiz kurulum (onCreate) beklenen tabloları yaratır', () async {

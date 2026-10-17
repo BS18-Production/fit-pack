@@ -14,10 +14,15 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-    <!-- Sağlık entegrasyonu Faz 1 (docs/39): yalnız adım OKUMA. Her faz
+    <!-- Sağlık entegrasyonu Faz 1 (docs/39): adım OKUMA. Her faz
          yalnız kendi veri türünün iznini ekler (en az veri — Play sağlık
          politikası). Yazma ve arka plan izni yok. -->
     <uses-permission android:name="android.permission.health.READ_STEPS"/>
+    <!-- Faz 1b (docs/40): tartıdan kilo + yağ oranı OKUMA. -->
+    <uses-permission android:name="android.permission.health.READ_WEIGHT"/>
+    <uses-permission android:name="android.permission.health.READ_BODY_FAT"/>
+    <!-- Faz 2 (docs/44): canlı seansı Health Connect'e YAZMA (okuma yok). -->
+    <uses-permission android:name="android.permission.health.WRITE_EXERCISE"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
     <application

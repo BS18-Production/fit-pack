@@ -3,4 +3,6 @@
 /* Galeri: ilerleme fotoğrafı seçimi (docs/19). */
 "NSPhotoLibraryUsageDescription" = "İlerleme fotoğrafını galeriden seçmek için kullanılır. Fotoğraf uygulamaya kopyalanır ve bu cihazda kalır.";
 /* Sağlık: Faz 1 yalnız adım okur (docs/39). */
-"NSHealthShareUsageDescription" = "Günlük adım sayını Ana Sayfa'da göstermek için okur. Adımlar bu cihazda kalır ve kalori hedefini değiştirmez.";
+"NSHealthShareUsageDescription" = "Günlük adımlarını (bu cihazda kalır) ve onay verirsen tartı uygulamalarının yazdığı kilo ve yağ oranını (Fit Pack hesabında saklanır) okur. Reklamda kullanılmaz, paylaşılmaz.";
+/* Sağlık yazma: docs/44 — yalnız canlı seans, kalori yok. */
+"NSHealthUpdateUsageDescription" = "Açarsan canlı Fit Pack antrenmanlarını (saat ve ad; kalori yok) Apple Sağlık'a kaydeder.";

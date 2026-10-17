@@ -5,6 +5,8 @@ import '../../core/i18n/formatting.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 import '../../shared/widgets/setting_tiles.dart';
+import 'body_consent_sheet.dart';
+import 'body_providers.dart';
 import 'health_prefs.dart';
 import 'step_providers.dart';
 import 'step_sheets.dart';
@@ -88,6 +90,47 @@ class _HealthSettingsSectionState extends ConsumerState<HealthSettingsSection> {
             title: l.healthDisconnect,
             subtitle: l.healthDisconnectNote,
             onTap: _busy ? null : () => _changeConnection(install: false),
+          ),
+        // Tartıdan kilo + yağ oranı (docs/40): açık rıza ile açılır, tek
+        // dokunuşla geri alınır (docs/41 §3).
+        if (link != StepLinkState.needsInstall)
+          SettingTile(
+            key: const ValueKey('health.weightConsent'),
+            icon: Icons.monitor_weight_outlined,
+            title: l.healthWeightRow,
+            subtitle: ref.watch(healthConsentProvider)
+                ? l.healthWeightOn
+                : l.healthWeightOff,
+            trailing: const FitPackIcon.material(Icons.chevron_right_rounded),
+            onTap: _busy
+                ? null
+                : () => ref.read(healthConsentProvider)
+                      ? showBodyConsentWithdrawDialog(context, ref)
+                      : showBodyConsentSheet(context),
+          ),
+        if (link != StepLinkState.needsInstall)
+          SettingTile(
+            key: const ValueKey('health.writeWorkouts'),
+            icon: Icons.fitness_center_rounded,
+            title: l.healthWriteWorkouts,
+            subtitle: l.healthWriteWorkoutsNote,
+            trailing: Switch(
+              value: ref.watch(healthPrefsProvider).writeWorkouts,
+              onChanged: _busy
+                  ? null
+                  : (v) async {
+                      // Bağımlılıklar await'ten ÖNCE (Codex P2).
+                      final sink = ref.read(workoutSinkProvider);
+                      final prefs = ref.read(healthPrefsProvider.notifier);
+                      final epoch = healthEpoch.value;
+                      // Açarken yazma izni istenir (docs/44 H-4).
+                      if (v) await sink.requestWriteAccess();
+                      // İzin penceresi açıkken hesap değiştiyse eski işlem
+                      // yeni hesabın tercihini açmasın (Codex yeni P1).
+                      if (healthEpoch.value != epoch) return;
+                      await prefs.setWriteWorkouts(v);
+                    },
+            ),
           ),
         SettingTile(
           key: const ValueKey('health.goalSetting'),

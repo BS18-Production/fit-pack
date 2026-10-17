@@ -151,6 +151,9 @@ class AccountSwitchGuard {
     AppDatabase db, {
     PhotoStorage? photos,
   }) async {
+    // Sağlık dönemi temizlikten ÖNCE artar (Codex P1): süren tartı içe alma
+    // ve antrenman yazma işleri, silinecek tabloya ya da yeni hesaba yazamaz.
+    healthEpoch.value++;
     // Temizlik mezar taşı ÜRETMEZ: bu kullanıcı silmesi değil, cihazın
     // önceki hesaptan arındırılması. İz bırakırsa o izler yeni kullanıcının
     // hesabıyla sunucuya gider ve **onun** kayıtlarını siler (docs/20 §7.3).

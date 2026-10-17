@@ -6,6 +6,8 @@
 > (Verime sor / Gemini), docs/41 (gizlilik), docs/43 (gerçek harcama),
 > docs/49 (Sıradaki antrenman kartı).
 
+> **Karar (Samet, 2026-10-17, "devam et" — önerilenler):** Faz 1 + 2 uygula; ilk sürümde 2 satır (antrenman + beslenme), dinlenme satırı sonra; haftalık bildirim yalnız yeni hesaplarda açık; Faz 3 (Gemini) para kazanma kararına kadar bekler.
+
 ## Karar özeti
 
 **Sorun.** Uygulama veriyi topluyor ve büyük kısmını yorumluyor ama

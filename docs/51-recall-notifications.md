@@ -5,6 +5,8 @@
 > (öğün hatırlatıcısı), docs/25 (mola zamanlayıcısı), docs/22 §5 (haftalık
 > değerlendirme bildirimi), docs/16 §5 (bildirim ayarları), docs/41 (gizlilik).
 
+> **Karar (Samet, 2026-10-17, "devam et" — önerilenler):** yön uygun; ara eşiği 2 gün; mevcut sabit saatli antrenman hatırlatıcısı yeni türe dönüşür; izin ilk antrenman bitince istenir.
+
 ## Karar özeti
 
 **Sorun.** Uygulamayı açmayan kullanıcıya hiçbir şey hatırlatılmıyor. docs/49

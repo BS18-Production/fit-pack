@@ -196,6 +196,38 @@ String? prevLabel(WorkoutSet? s, String measure, Units units) {
   }
 }
 
+/// Bitirişte yazılacak seans satırı. Mantıksal gün = [sessionDate] (bugün ya
+/// da geçmişe çekilmiş); gerçek başlangıç saati bu güne taşınır. Canlı modda
+/// süre korunur; geçmiş kayıtta ([manual]) saat 12:00, süre yok.
+WorkoutSessionsCompanion finishedSessionRow({
+  required String title,
+  required int? routineId,
+  required DateTime sessionDate,
+  required DateTime startedAt,
+  required Duration elapsed,
+  required bool manual,
+}) {
+  final hour = manual ? 12 : startedAt.hour;
+  final minute = manual ? 0 : startedAt.minute;
+  final started = DateTime(
+    sessionDate.year,
+    sessionDate.month,
+    sessionDate.day,
+    hour,
+    minute,
+  );
+  final ended = manual ? null : started.add(elapsed);
+  return WorkoutSessionsCompanion(
+    date: Value(started),
+    phase: const Value(0),
+    workoutType: Value(title),
+    routineId: Value(routineId),
+    startedAt: Value(started),
+    endedAt: Value(ended),
+    durationMin: manual ? const Value(null) : Value(elapsed.inMinutes),
+  );
+}
+
 /// Bitirişte yazılacak setler (`insertSessionWithSets`): veri girilmemiş ve
 /// tamamlanmamış setler atlanır, set numarası hareket içinde 1'den sayar.
 List<WorkoutSetsCompanion> sessionSetRows(

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -909,30 +908,19 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
     setState(() => _saving = true);
     final dao = ref.read(workoutDaoProvider);
-    // Mantıksal gün = _sessionDate (bugün ya da geçmişe çekilmiş). Gerçek
-    // başlangıç saatini bu güne taşı; canlı modda süreyi koru, manuel modda yok.
-    final tod = _isManual
-        ? const TimeOfDay(hour: 12, minute: 0)
-        : TimeOfDay.fromDateTime(_startedAt);
-    final started = DateTime(
-        _sessionDate.year, _sessionDate.month, _sessionDate.day, tod.hour, tod.minute);
-    final ended = _isManual ? null : started.add(_elapsed);
 
     final int sessionId;
     try {
       // Seans + setler tek transaction'da: yarıda kesilirse DB'de yarım
       // seans kalmaz, taslak da durur → kullanıcı yeniden deneyebilir.
       sessionId = await dao.insertSessionWithSets(
-        WorkoutSessionsCompanion(
-          date: Value(started),
-          phase: const Value(0),
-          workoutType: Value(_title),
-          routineId: Value(_routineId),
-          startedAt: Value(started),
-          endedAt: Value(ended),
-          durationMin: _isManual
-              ? const Value(null)
-              : Value(_elapsed.inMinutes),
+        finishedSessionRow(
+          title: _title,
+          routineId: _routineId,
+          sessionDate: _sessionDate,
+          startedAt: _startedAt,
+          elapsed: _elapsed,
+          manual: _isManual,
         ),
         (id) => sessionSetRows(id, _exercises),
       );

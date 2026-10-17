@@ -5,6 +5,7 @@ import '../../data/database/app_database.dart';
 import '../../data/database/daos/sync_meta_dao.dart';
 import '../../data/database/tables/sync_columns.dart';
 import '../../data/services/photo_storage.dart';
+import '../sync/sync_apply.dart';
 import '../sync/sync_controller.dart' show syncLog;
 import '../health/health_prefs.dart';
 import '../workout/workout_draft.dart';
@@ -153,12 +154,8 @@ class AccountSwitchGuard {
     // Temizlik mezar taşı ÜRETMEZ: bu kullanıcı silmesi değil, cihazın
     // önceki hesaptan arındırılması. İz bırakırsa o izler yeni kullanıcının
     // hesabıyla sunucuya gider ve **onun** kayıtlarını siler (docs/20 §7.3).
-    await db.customStatement(setCaptureSql(false));
-    try {
-      await _wipeTables(db);
-    } finally {
-      await db.customStatement(setCaptureSql(true));
-    }
+    // Bayrak temizliğin transaction'ı İÇİNDE kapanıp açılır (docs/46 §1).
+    await SyncApply(db).withCaptureOff(() => _wipeTables(db));
     // Temizlikten arta kalan iz varsa (eski sürümden) da silinir.
     await db.customStatement('DELETE FROM sync_tombstones');
     // Profil satırı silindi → boş profil yeniden kurulur (onboarded = false,

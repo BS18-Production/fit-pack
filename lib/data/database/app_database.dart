@@ -174,6 +174,26 @@ class AppDatabase extends _$AppDatabase {
     // Çekme yarıda kaldıysa bayrak kapalı kalmış olabilir → aç.
     await customStatement(setCaptureSql(true));
 
+    // Tetikleyici TANIMI değiştiyse (docs/46 §3) eskileri düşür; aşağıdaki
+    // döngü eksikleri güncel tanımla kurar. Hepsi tek transaction: yarıda
+    // kalırsa hiçbiri düşmemiş olur, bir sonraki açılış yeniden dener.
+    final rev = await customSelect(readTriggerRevSql).getSingle();
+    if ((int.tryParse(rev.read<String>('v')) ?? 1) < syncTriggerRev) {
+      await transaction(() async {
+        for (final table in syncedTableNames) {
+          await customStatement(dropInsertTriggerSql(table));
+          await customStatement(dropUpdateTriggerSql(table));
+          await customStatement(dropDeleteTriggerSql(table));
+        }
+        await _installMissingSyncTriggers();
+        await customStatement(writeTriggerRevSql);
+      });
+      return;
+    }
+    await _installMissingSyncTriggers();
+  }
+
+  Future<void> _installMissingSyncTriggers() async {
     final rows = await customSelect(
       "SELECT name FROM sqlite_master WHERE type = 'trigger'",
     ).get();
@@ -217,6 +237,7 @@ class AppDatabase extends _$AppDatabase {
           await m.database.customStatement(createUpdateTriggerSql(t));
           await m.database.customStatement(createDeleteTriggerSql(t));
         }
+        await m.database.customStatement(writeTriggerRevSql);
       },
 
       // Sürümden sürüme göç. Her `from` için bir sonraki adıma yol tarif edilir.

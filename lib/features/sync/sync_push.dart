@@ -495,7 +495,7 @@ class SyncPush {
 
     var resolved = 0;
     final types = apply.columnTypes(table);
-    await apply.withCaptureOff(() => db.transaction(() async {
+    await apply.withCaptureOff(() async {
           for (final uid in uids) {
             final server = byUid[uid];
             if (server != null) {
@@ -511,7 +511,7 @@ class SyncPush {
             );
             resolved++;
           }
-        }));
+        });
     return resolved;
   }
 
@@ -551,7 +551,7 @@ class SyncPush {
     // Temiz işaretleme de bir yazmadır; tetikleyici `sync_state` değişimini
     // zaten görmezden gelir, ama `server_rev` yazması onu uyandırmasın diye
     // bayrak kapatılır (docs/20 K-4).
-    await apply.withCaptureOff(() => db.transaction(() async {
+    await apply.withCaptureOff(() async {
           for (final row in accepted) {
             await db.customStatement(
               'UPDATE $table SET sync_state = 0, user_id = ?, server_rev = ? '
@@ -559,7 +559,7 @@ class SyncPush {
               [userId, row.serverRev, row.uid, stamps[row.uid]],
             );
           }
-        }));
+        });
   }
 
   /// Yerel satırı sunucu JSON'una çevirir:

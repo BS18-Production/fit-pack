@@ -206,7 +206,7 @@ class SyncPull {
           '(imleç $cursor → $lastRev)');
 
       // ── UYGULAMA AŞAMASI — kısa transaction, tetikleyiciler susturulmuş ──
-      await apply.withCaptureOff(() => db.transaction(() async {
+      await apply.withCaptureOff(() async {
             for (final server in page) {
               // Satır başına ayrı kayıt noktası: tek bozuk satır (ör. yerelde
               // NOT NULL olan alanı boş gelen) sayfanın geri kalanını geri
@@ -232,7 +232,7 @@ class SyncPull {
             if (lastRev > cursor) {
               await _meta.write(cursorKey, _laggedCursor(lastRev).toString());
             }
-          }));
+          });
 
       if (lastRev <= cursor) {
         // Sunucu ilerlemedi (sürümsüz satır ya da bozuk sıralama) — sonsuz
@@ -298,7 +298,7 @@ class SyncPull {
       final sirali = [...page]
         ..sort((a, b) => _silmeSirasi(b) - _silmeSirasi(a));
 
-      await apply.withCaptureOff(() => db.transaction(() async {
+      await apply.withCaptureOff(() async {
             for (final mark in sirali) {
               final table = mark['table_name'];
               final uid = mark['uid'];
@@ -317,7 +317,7 @@ class SyncPull {
             if (lastRev > cursor) {
               await _meta.write(cursorKey, _laggedCursor(lastRev).toString());
             }
-          }));
+          });
 
       if (lastRev <= cursor) break;
       cursor = lastRev;
@@ -330,7 +330,7 @@ class SyncPull {
     // uzlaştırma bütün işaretleri baştan okuyup yeniden dener.
     var atlanan = 0;
     if (ertelenen.isNotEmpty) {
-      await apply.withCaptureOff(() => db.transaction(() async {
+      await apply.withCaptureOff(() async {
             for (final (table, uid) in ertelenen.reversed) {
               final n = await _isolated(
                   () => _deleteLocal(table, uid), '$table/$uid silme');
@@ -340,7 +340,7 @@ class SyncPull {
                 applied += n;
               }
             }
-          }));
+          });
     }
 
     // Silinen satırlar `updated` sayılır: kullanıcı açısından "veri değişti".

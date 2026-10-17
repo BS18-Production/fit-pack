@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/prefs/week_start_provider.dart';
+import '../../core/utils/current_day.dart';
 import '../../data/providers.dart';
 import '../../data/reactive.dart';
 import '../../data/database/app_database.dart';
@@ -38,17 +39,18 @@ class TodayRoutine {
   bool get isRestDay => today == null;
 }
 
-/// "Bugün" içerdiği için gün dönümünde `app.dart` bunu invalidate eder
-/// (stream tablo değişimini bilir ama gece yarısını bilmez).
+/// "Bugün" içerdiği için [currentDayProvider]'ı izler (stream tablo
+/// değişimini bilir ama gece yarısını bilmez).
 final todayRoutineProvider = StreamProvider<TodayRoutine>((ref) {
   final db = ref.watch(databaseProvider);
+  final day = ref.watch(currentDayProvider);
   return watchTables(db, [db.routines], () async {
     final routines = await ref.read(workoutDaoProvider).getActiveRoutines();
     final scheduled =
         routines.where((r) => r.scheduledWeekday != null).toList();
     if (scheduled.isEmpty) return const TodayRoutine();
 
-    final wd = DateTime.now().weekday; // 1=Pzt..7=Paz
+    final wd = day.weekday; // 1=Pzt..7=Paz
     Routine? today;
     for (final r in scheduled) {
       if (r.scheduledWeekday == wd) {
@@ -75,15 +77,16 @@ final todayRoutineProvider = StreamProvider<TodayRoutine>((ref) {
 /// Bu hafta antrenman sayısı + toplam hacim (landing istatistik).
 typedef WeekStats = ({int sessions, int volumeKg});
 
-/// "Bu hafta" içerdiği için gün dönümünde `app.dart` bunu invalidate eder.
+/// "Bu hafta" içerdiği için [currentDayProvider]'ı izler.
 final weekWorkoutStatsProvider = StreamProvider<WeekStats>((ref) {
   final db = ref.watch(databaseProvider);
   final weekStart = ref.watch(weekStartProvider);
+  final day = ref.watch(currentDayProvider);
   return watchTables(db, [db.workoutSessions, db.workoutSets], () async {
     final dao = ref.read(workoutDaoProvider);
-    final start = startOfWeek(DateTime.now(), weekStart);
-    final sessions = await dao.getSessionsByDateRange(
-        start, start.add(const Duration(days: 7)));
+    final start = startOfWeek(day, weekStart);
+    final sessions =
+        await dao.getSessionsByDateRange(start, addDays(start, 7));
     int volume = 0;
     if (sessions.isNotEmpty) {
       final setsBySession =

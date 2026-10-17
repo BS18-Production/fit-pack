@@ -185,9 +185,11 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
   // bitiş HARİÇ. `isBetweenValues` SQL BETWEEN üretir (iki uç dahil); tam gece
   // yarısına yazılan kayıtlar (tarih seçici / "dünü kopyala") iki güne birden
   // sayılırdı. Bu yüzden aralık sorgularında >= start AND < end kullanılır.
+  // Bitiş ertesi takvim günü (`d + 1`), `+24 saat` DEĞİL: yaz saati gününde
+  // 24 saat sonrası gece yarısı olmaz (CR-011).
   Future<List<FoodLog>> getLogsForDate(DateTime date) {
     final start = DateTime(date.year, date.month, date.day);
-    final end = start.add(const Duration(days: 1));
+    final end = DateTime(date.year, date.month, date.day + 1);
     return (select(foodLogs)
           ..where((l) =>
               l.date.isBiggerOrEqualValue(start) & l.date.isSmallerThanValue(end))
@@ -200,7 +202,7 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
   /// göremez.
   Future<List<FoodLogWithFood>> getLogsWithFoodForDate(DateTime date) async {
     final start = DateTime(date.year, date.month, date.day);
-    final end = start.add(const Duration(days: 1));
+    final end = DateTime(date.year, date.month, date.day + 1);
     final query = select(foodLogs).join([
       innerJoin(foods, foods.id.equalsExp(foodLogs.foodId)),
     ])

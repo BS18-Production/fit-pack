@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/providers.dart';
+import '../../../core/utils/current_day.dart';
 import '../../../data/reactive.dart';
+import '../../insights/insight_window.dart';
 import '../dashboard_stats.dart';
 import '../workout_activity.dart';
 
@@ -13,9 +15,11 @@ import '../workout_activity.dart';
 
 /// Son 30 gün: antrenman sayısı + toplam hacim + tahmini yakılan kalori.
 /// (Takvim ayı yerine kayan pencere — momentum hero ayın 1'inde de dolu kalır.)
+/// Pencere asistanla AYNI kuraldan: bugün dahil 30 gün (CR-011).
 final last30WorkoutStatsProvider = StreamProvider.autoDispose<WorkoutAggregate>(
   (ref) {
     final db = ref.watch(databaseProvider);
+    final day = ref.watch(currentDayProvider);
     return watchTables(
       db,
       [db.workoutSessions, db.workoutSets, db.bodyMeasurements],
@@ -23,18 +27,8 @@ final last30WorkoutStatsProvider = StreamProvider.autoDispose<WorkoutAggregate>(
         final wo = ref.read(workoutDaoProvider);
         final bw =
             (await ref.read(bodyDaoProvider).getLatestWeight())?.weightKg;
-        final today = DateTime.now();
-        final start = DateTime(
-          today.year,
-          today.month,
-          today.day,
-        ).subtract(const Duration(days: 30));
-        final end = DateTime(
-          today.year,
-          today.month,
-          today.day,
-        ).add(const Duration(days: 1));
-        final sessions = await wo.getSessionsByDateRange(start, end);
+        final w = windowFor(InsightPeriod.last30Days, day);
+        final sessions = await wo.getSessionsByDateRange(w.start!, w.end);
         final sets = await wo.getSetsForSessions(
           sessions.map((s) => s.id).toList(),
         );
@@ -53,6 +47,7 @@ final last30WorkoutStatsProvider = StreamProvider.autoDispose<WorkoutAggregate>(
 final recentWorkoutActivityProvider =
     StreamProvider.autoDispose<List<WorkoutActivityDay>>((ref) {
       final db = ref.watch(databaseProvider);
+      ref.watch(currentDayProvider); // gün dönümü (CR-010)
       return watchTables(
         db,
         [db.workoutSessions, db.workoutSets, db.bodyMeasurements],
@@ -81,20 +76,13 @@ final recentWorkoutActivityProvider =
 /// null → içgörü kartı gösterilmez.
 final topProgressProvider = StreamProvider.autoDispose<TopProgress?>((ref) {
   final db = ref.watch(databaseProvider);
+  final day = ref.watch(currentDayProvider);
   return watchTables(db, [db.workoutSessions, db.workoutSets], () async {
     final wo = ref.read(workoutDaoProvider);
-    final today = DateTime.now();
-    final start = DateTime(
-      today.year,
-      today.month,
-      today.day,
-    ).subtract(const Duration(days: 42));
-    final end = DateTime(
-      today.year,
-      today.month,
-      today.day,
-    ).add(const Duration(days: 1));
-    final points = await wo.getWeightedSetPointsInRange(start, end);
+    final points = await wo.getWeightedSetPointsInRange(
+      addDays(day, -42),
+      addDays(day, 1),
+    );
     return topProgressExercise(points);
   });
 });

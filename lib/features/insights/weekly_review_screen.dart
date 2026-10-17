@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/i18n/formatting.dart';
+import '../../core/utils/current_day.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
@@ -120,7 +121,7 @@ class _WeekHeader extends StatelessWidget {
     final locale = Localizations.localeOf(context).toString();
     final f = DateFormat.MMMd(locale);
     // Bitiş hariç → ekranda son gün gösterilir.
-    final son = period.end.subtract(const Duration(days: 1));
+    final son = addDays(period.end, -1);
     return Row(
       children: [
         IconButton(

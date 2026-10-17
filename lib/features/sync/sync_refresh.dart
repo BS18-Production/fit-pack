@@ -18,8 +18,10 @@ import 'sync_pull.dart';
 ///
 /// Çekme dört yerden tetiklenir: giriş kapısı, uygulamanın öne gelmesi, hesap
 /// ekranındaki "Şimdi eşitle" ve gönderimde ret. İlk üçü indirdiğini ekrana
-/// yansıtmak zorunda; uygulama henüz tam reaktif olmadığı için (H-05 ertelendi)
-/// okuma provider'ları elle tazelenir. Liste üç dosyaya kopyalansaydı biri
+/// yansıtmak zorunda. Okuma provider'ları reaktif (`watchTables`, H-05) ve
+/// çekme ham SQL yazdığı tabloları `notifyUpdates` ile bildirir
+/// (`SyncPull`, docs/20 §6.3); [onChanged] ise güne ve kullanıcıya bağlı
+/// önbellekleri ayrıca tazeleyen tek liste. Liste üç dosyaya kopyalansaydı biri
 /// eksik kalır ve "veri indi ama ekran eski" hatası doğardı (CONVENTIONS §2).
 ///
 /// Bağımlılıklar `Ref` yerine **açıkça** alınır: sınıf böylece Riverpod

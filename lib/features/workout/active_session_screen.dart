@@ -31,6 +31,7 @@ import 'set_prefill.dart';
 import 'set_timer.dart';
 import 'weight_step.dart';
 import 'active_session_model.dart';
+import 'session_rest_sound.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
@@ -100,16 +101,16 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   DateTime? _restDeadline;
   DateTime? _restStartedAt; // kilit ekranı ilerleme çubuğu (docs/45)
   int _restRemaining = 0; // yalnız görüntü için (deadline'dan türetilir)
-  // Mola sesi/titreşimi Android yerel servisinde mi (docs/25)? true ise
-  // ekran çalmaz; false ise (iOS, servis başlatılamadı) uygulama içi yol.
-  bool _nativeRest = false;
-  Timer? _countdownTimer; // uygulama içi yol: geri sayım sesinin başlangıcı
   // Süren mola kurulumu (servis + bildirim). Kilit ekranı eylemi dönmeden
   // beklenir — iOS ardından uygulamayı yeniden askıya alır.
   Future<void>? _restSetup;
   // dispose'ta ref kullanılmaz — servisler baştan yakalanır.
-  late final RestAlarm _restAlarm = ref.read(restAlarmProvider);
   late final FeedbackService _feedback = ref.read(feedbackServiceProvider);
+  // Mola sesi/titreşimi/bildirimi — yerel servis ya da uygulama içi yol.
+  // İlk molada kurulur; dispose'ta kurulmadıysa ref'e dokunulmaz.
+  SessionRestSound? _restSoundOrNull;
+  SessionRestSound get _restSound => _restSoundOrNull ??=
+      SessionRestSound(ref.read(restAlarmProvider), _feedback);
   late final WorkoutLiveActivity _live = ref.read(workoutLiveActivityProvider);
   bool _disposing = false;
 
@@ -169,40 +170,22 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         state == AppLifecycleState.resumed) {
       _syncRestNotification();
     }
-    if (state == AppLifecycleState.resumed) _restAlarm.dismissDone();
+    if (state == AppLifecycleState.resumed) _restSound.dismissDone();
   }
 
   bool get _inForeground =>
       WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed;
 
-  /// Mola sonu bildirimini duruma göre kurar ya da kaldırır (docs/45 §3).
-  ///
-  /// Kurulur: dinlenme sürüyor, uygulama ön planda DEĞİL, bildirim açık ve
-  /// sesi Android yerel servisi vermiyor (docs/25). Yalnız `paused` anında
-  /// kurmak yetmiyordu: kilit ekranından "Seti tamamla" ile başlayan
-  /// dinlenme uygulama zaten arkadayken başlar — o molanın bildirimi hiç
-  /// kurulmazdı. Artık dinlenme başlarken/değişirken de çağrılır.
+  /// Mola sonu bildirimini kurar ya da kaldırır (bkz.
+  /// [SessionRestSound.syncNotification]).
   Future<void> _syncRestNotification() {
     if (!mounted) return Future.value();
-    final service = ref.read(notificationServiceProvider);
-    final prefs = ref.read(notificationPrefsProvider);
-    final deadline = _restDeadline;
-    final now = DateTime.now();
-    if (_nativeRest ||
-        _inForeground ||
-        deadline == null ||
-        !deadline.isAfter(now) ||
-        !prefs.restEnabled) {
-      return service.cancelRestDone();
-    }
-    final l = AppL10n.of(context);
-    return service.scheduleRestDone(
-      at: deadline,
-      title: l.notifRestDoneTitle,
-      body: l.notifRestDoneBody,
-      earlyTitle: l.notifRestEndingTitle,
-      earlyBody: l.notifRestEndingBody,
-      sound: prefs.restSoundEnabled ? prefs.restSound : null,
+    return _restSound.syncNotification(
+      service: ref.read(notificationServiceProvider),
+      prefs: ref.read(notificationPrefsProvider),
+      deadline: _restDeadline,
+      inForeground: _inForeground,
+      l: AppL10n.of(context),
     );
   }
 
@@ -507,12 +490,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _disposing = true; // _saveDraft → _syncLive context'e dokunmasın
     _ticker?.cancel();
     _restTimer?.cancel();
-    _countdownTimer?.cancel();
-    if (_restDeadline != null) {
-      // Seanstan çıkıldı/bitti: çalan mola servisi de kapansın.
-      _restAlarm.stop();
-      _feedback.stopCountdown();
-    }
+    _restSoundOrNull?.dispose(restRunning: _restDeadline != null);
     // Yazıp hemen ekrandan çıkıldıysa bekleyen yazımı tamamla. _saveDraft
     // ref kullanmaz; temizlenmiş/başka yerden silinmiş taslağı yazmaz.
     if (_draftDebounce?.isActive ?? false) _saveDraft();
@@ -857,35 +835,18 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   /// 3 sn önce tek parça geri sayım sesini başlatır.
   Future<void> _armRestAlarm() async {
     final deadline = _restDeadline;
-    _countdownTimer?.cancel();
-    _feedback.stopCountdown();
+    _restSound.resetCountdown();
     if (deadline == null) return;
     final prefs = ref.read(notificationPrefsProvider);
-    final l = AppL10n.of(context);
-    final native = await _restAlarm.start(
-      deadline: deadline,
-      sound: prefs.restSoundEnabled,
-      soundFile: prefs.restSound,
-      title: l.labelRest,
-      // Boş = "bitti" bildirimi yok (kullanıcı mola bildirimini kapattı).
-      doneTitle: prefs.restEnabled ? l.notifRestDoneTitle : '',
-      doneBody: l.notifRestDoneBody,
-    );
+    final native = await _restSound.startNative(
+        deadline: deadline, prefs: prefs, l: AppL10n.of(context));
     // Beklerken süre değiştiyse/atlandıysa bu çağrının sonucu eskidi.
     if (!mounted || _restDeadline != deadline) return;
-    _nativeRest = native;
+    _restSound.native = native;
     await _syncRestNotification();
     if (native || !prefs.restSoundEnabled) return;
-    final plan = countdownPlan(deadline.difference(DateTime.now()).inMilliseconds);
-    if (plan == null) return;
-    _countdownTimer = Timer(Duration(milliseconds: plan.delayMs), () {
-      if (_restDeadline != deadline) return;
-      // Zamanlayıcı geç düştüyse dosyanın doğru yerinden başla.
-      final now = countdownPlan(deadline.difference(DateTime.now()).inMilliseconds);
-      if (now != null) {
-        _feedback.playCountdown(offsetMs: now.offsetMs, sound: prefs.restSound);
-      }
-    });
+    _restSound.scheduleCountdown(
+        deadline, prefs.restSound, () => _restDeadline == deadline);
   }
 
   /// Bir sonraki tıkı **hedeften yeniden hesaplayarak** kurar; `Timer.periodic`
@@ -913,7 +874,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         prevLeft: _restRemaining, left: left, overdueMs: -leftMs);
     setState(() => _restRemaining = left > 0 ? left : 0);
     // Bitiş titreşimi: Android'de servis veriyor (çift titreşim olmasın).
-    if (cue == RestCue.done && !_nativeRest) _feedback.restDone();
+    if (cue == RestCue.done) _restSound.restDoneIfInApp();
     if (left <= 0) {
       _restTimer?.cancel();
       _restDeadline = null;
@@ -934,11 +895,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   void _skipRest() {
     _restTimer?.cancel();
-    _countdownTimer?.cancel();
     _restDeadline = null;
     _restStartedAt = null;
-    _feedback.stopCountdown();
-    _restAlarm.stop();
+    _restSound.stop();
     _restSetup = ref.read(notificationServiceProvider).cancelRestDone();
     setState(() => _restRemaining = 0);
     _saveDraft();

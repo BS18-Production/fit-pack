@@ -14,14 +14,22 @@ Sahip Claude-5.
 - [x] CR-004 gönderim sürerken silinen kayıt geri geliyordu (silme
       tetikleyicisi + `trigger_rev` açılış onarımı; şema değişmedi).
 - [x] 1006 test, analiz temiz; main'e birleşti, push yok.
-- [ ] Samet cihazda: öğün ekle → hemen "Geri al" → "Şimdi eşitle" → başka
-      cihazda öğün yok.
+- [~] Samet cihazda: öğün ekle → hemen "Geri al" → "Şimdi eşitle" → başka
+      cihazda öğün yok. Samet atladı ("olmuştur"); testlerle kapsanıyor.
 - [x] CR-001 hesap değişiminde senkronun sahiplik sınırı
       ([docs/47](docs/47-sync-account-ownership.md)): gönderim/çekme yalnız
       oturum = yerel sahip iken; yolda kalan iş hesap değişince yazılmaz.
       1018 test; main'e birleşti, push yok.
-- [ ] Sonra: CR-012 mola servisi, CR-009 açılışta ağ beklemesi, CR-007 sağlık
-      tercihi, CR-023 belge çelişkileri. CR-006 (Android yayın) yayın zamanına.
+- [x] CR-009 açılışta sürüm kontrolü en fazla 1,5 sn bekletir, CR-012 eski
+      mola kapanışı yeni molanın servisini kapatmaz, CR-007 hesap silinince
+      sağlık tercihinin bellek kopyası sıfırlanır, CR-023 şema sürümü ve
+      reaktiflik yorumları koda uyduruldu. 1024 test; main `caea6ef`, iPhone'a
+      kuruldu, push yok.
+- [ ] Samet Android'de (Samsung bağlanınca): kısa mola bitince 1 sn içinde
+      yeni mola → bildirim/ses/titreşim sürüyor mu (CR-012).
+- [ ] health-next birleşince: `app_database.dart` `schemaVersion` üstü yorum
+      güncel sürümü anlatsın (CR-023 kalanı).
+- [ ] CR-006 (Android yayın) yayın zamanına; P2/P3 kalanları raporda.
 
 ## Geri bildirim turu (8 madde) — 2026-10-11/12 · [docs/45](docs/45-feedback-round-oct11.md)
 

@@ -31,6 +31,12 @@ gönderim/çekme hiçbir şey yazmaz; başka hesaba ait satır gönderilmez. Şe
 sunucu değişmedi. 1018 test. Raporun P1'lerinden yalnız CR-006 (Android
 yayın ayarları) kaldı — yayın zamanına.
 
+**P2/P3 turu (aynı gün):** açılışta sürüm kontrolü ilk ekranı en fazla 1,5 sn
+bekletir (CR-009); Android'de eski molanın gecikmeli kapanışı yeni molayı
+susturmaz (CR-012); hesap silinince sağlık tercihinin bellek kopyası da
+sıfırlanır (CR-007); şema sürümü belgelerde tek yerde, koda yönlendirir
+(CR-023). 1024 test, iPhone'a kuruldu.
+
 ## Geri bildirim turu — kilit ekranı, mola sesi, takvim · 2026-10-12
 
 [docs/45](docs/45-feedback-round-oct11.md). Kilit ekranında antrenman başına

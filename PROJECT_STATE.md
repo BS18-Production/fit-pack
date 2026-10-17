@@ -59,6 +59,15 @@ göç doğrulandı (veri yerinde, senkron çalışıyor). Üretim sunucusuna
 telefonun kendi yedeğine girer; veri erişim/taşıma talebi iletişim adresiyle
 (adres henüz boş — yayından önce doldurulmalı). 1097 test.
 
+## Yeni kullanıcı deneyimi · 2026-10-17 (docs/49)
+
+Kurulum artık antrenmanla başlıyor: deneyim + haftada kaç gün → 9 hazır
+programdan biri önerilir, tek dokunuşla eklenir ("Kendim kuracağım" açık).
+Beslenme sorusu kilo + hedefe indi (boy/cinsiyet/yaş Profil'den). Ana sayfada
+"Sıradaki antrenman" kartı (güne bağlı olmayan rutinlerde döngüyle sıradaki)
+ve hesabın ilk 14 gününde 3 adımlık ilk hafta rehberi. Yeni cihazda eski
+hesaba ilk kullanım ipuçları gösterilmez. 1123 test.
+
 ## Geri bildirim turu — kilit ekranı, mola sesi, takvim · 2026-10-12
 
 [docs/45](docs/45-feedback-round-oct11.md). Kilit ekranında antrenman başına

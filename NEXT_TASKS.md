@@ -55,6 +55,12 @@ Sahip Claude-5.
       sağlayıcı/etiket dosyaları. main `a4fe487`, iPhone'a kuruldu.
 - [ ] Hareket kütüphanesi önerisi docs/48 (`docs/core-exercise-list`): 219
       hareket — Samet'in 3 kararı.
+- [x] Yeni kullanıcı deneyimi (docs/49): kurulumda deneyim + gün → program
+      önerisi, kısa beslenme sayfası, "Sıradaki antrenman" kartı, ilk hafta
+      rehberi, yeni cihazda ipucu düzeltmesi. main `171ac75`, 1123 test,
+      iPhone + Samsung'a kuruldu.
+- [ ] Samet: Samsung'da yeni hesapla kurulum denemesi; Berna ilk hafta
+      denemesi. docs/15 eski akışı anlatıyor → güncellenecek.
 - [ ] Gizlilik politikası iletişim adresi (yayından önce).
 - [ ] CR-006 yayın.
 - [ ] Samet Android'de (Samsung bağlanınca): kısa mola bitince 1 sn içinde

@@ -27,8 +27,9 @@ String photoAngleLabel(AppL10n l, String angle) => switch (angle) {
 /// **İlerleme fotoğrafları galerisi** (docs/19 §2 dilim 1).
 ///
 /// Tarihe göre gruplu ızgara + açı süzgeci + iki fotoğraf seçip
-/// karşılaştırma. Fotoğraflar cihazdan çıkmaz; ekranın başında bunu söyleyen
-/// kalıcı bir satır var — kullanıcı "yedeklendi" sanmasın.
+/// karşılaştırma. Fotoğraflar sunucumuza yüklenmez; telefonun kendi yedeğine
+/// (iCloud / Google) girer (CR-015). Ekranın başındaki kalıcı satır ikisini de
+/// söyler — kullanıcı ne "sunucuda yedeklendi" ne "hiçbir yere gitmez" sansın.
 class ProgressPhotosScreen extends ConsumerStatefulWidget {
   const ProgressPhotosScreen({super.key});
 

@@ -4588,7 +4588,7 @@ abstract class AppL10n {
   /// No description provided for @ppEntrySub.
   ///
   /// In en, this message translates to:
-  /// **'{count} photo(s) · on this device only'**
+  /// **'{count} photo(s) · never uploaded'**
   String ppEntrySub(int count);
 
   /// No description provided for @ppEntryEmpty.
@@ -4666,7 +4666,7 @@ abstract class AppL10n {
   /// No description provided for @ppDeleteMsg.
   ///
   /// In en, this message translates to:
-  /// **'This photo has no backup; it can\'t be restored once deleted.'**
+  /// **'This photo isn\'t backed up on our server; once deleted, it can\'t be restored in the app.'**
   String get ppDeleteMsg;
 
   /// No description provided for @ppCompare.
@@ -4696,7 +4696,7 @@ abstract class AppL10n {
   /// No description provided for @ppDeviceOnly.
   ///
   /// In en, this message translates to:
-  /// **'Photos are stored on this device only: not backed up, not saved to your gallery, and deleted if you switch accounts.'**
+  /// **'Photos are never uploaded to our server or saved to your gallery; they\'re stored on this phone. If your phone\'s own backup (iCloud / Google) is on, they\'re included in it. They\'re deleted from this phone if you switch accounts.'**
   String get ppDeviceOnly;
 
   /// No description provided for @ppLoadError.

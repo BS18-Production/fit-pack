@@ -14,8 +14,10 @@ import 'package:path_provider/path_provider.dart';
 /// okumada [resolve] ile çözülür.
 ///
 /// **Gizlilik (§6):** dosyalar uygulama konteynerinde durur, cihaz galerisine
-/// yazılmaz — galeriye yazmak onları bulut yedeğine ve öteki uygulamalara
-/// açardı.
+/// yazılmaz — galeriye yazmak onları galeri senkronuna ve öteki uygulamalara
+/// açardı. Senkrona girmez, sunucuya gitmez; ama işletim sisteminin uygulama
+/// yedeğinden (iCloud / Google) bilerek dışlanmaz — telefon değişince
+/// fotoğraflar kaybolmasın (CR-015, Samet kararı 2026-10-17).
 class PhotoStorage {
   final Future<Directory> Function() _root;
 

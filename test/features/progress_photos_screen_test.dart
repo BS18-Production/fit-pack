@@ -66,11 +66,13 @@ void main() {
     }
   }
 
-  testWidgets('boş galeri: "yalnız bu cihazda" notu + ekleme çağrısı',
+  testWidgets('boş galeri: "sunucuya yüklenmez" notu + ekleme çağrısı',
       (tester) async {
     await ac(tester);
-    expect(find.textContaining('yalnız bu cihazda saklanır'), findsOneWidget,
-        reason: 'kullanıcı fotoğrafların yedeklendiğini sanmamalı');
+    expect(find.textContaining('sunucumuza yüklenmez'), findsOneWidget,
+        reason: 'kullanıcı fotoğrafların sunucuda yedeklendiğini sanmamalı');
+    expect(find.textContaining('kendi yedeği (iCloud / Google)'), findsOneWidget,
+        reason: 'işletim sistemi yedeğine girdiği de söylenmeli (CR-015)');
     expect(find.text('Henüz fotoğraf yok'), findsOneWidget);
     expect(find.text('Fotoğraf ekle'), findsWidgets);
   });

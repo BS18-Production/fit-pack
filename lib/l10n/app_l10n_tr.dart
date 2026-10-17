@@ -2628,7 +2628,7 @@ class AppL10nTr extends AppL10n {
 
   @override
   String ppEntrySub(int count) {
-    return '$count fotoğraf · yalnız bu cihazda';
+    return '$count fotoğraf · sunucuya yüklenmez';
   }
 
   @override
@@ -2669,7 +2669,8 @@ class AppL10nTr extends AppL10n {
   String get ppDeleteTitle => 'Fotoğraf silinsin mi?';
 
   @override
-  String get ppDeleteMsg => 'Bu fotoğrafın yedeği yok; silinince geri gelmez.';
+  String get ppDeleteMsg =>
+      'Bu fotoğraf bizim sunucumuzda yedeklenmez; silinince uygulamadan geri getirilemez.';
 
   @override
   String get ppCompare => 'Karşılaştır';
@@ -2689,7 +2690,7 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get ppDeviceOnly =>
-      'Fotoğraflar yalnız bu cihazda saklanır: yedeklenmez, galeriye yazılmaz ve hesap değişiminde silinir.';
+      'Fotoğraflar sunucumuza yüklenmez, galeriye yazılmaz; bu telefonda saklanır. Telefonunun kendi yedeği (iCloud / Google) açıksa onun içinde de yer alır. Hesap değiştirince bu telefondan silinir.';
 
   @override
   String get ppLoadError => 'Fotoğraflar yüklenemedi';

@@ -99,6 +99,36 @@ void main() {
     expect(await ctrl.pendingCount(), 0, reason: 'hepsi gönderilmiş olmalı');
   });
 
+  test('yalnız silme kaldığında da tur çalışır (CR-002)', () async {
+    // Gönderilmiş tek kayıt silinince canlı tabloda bekleyen satır kalmaz,
+    // iş yalnız mezar taşındadır. Sayım onu görmezse tur hiç başlamaz ve
+    // silme sunucuya gitmez — kayıt başka cihazda yaşamaya devam eder.
+    await addRoutine('Push');
+    await ctrl.syncNow();
+    expect(remote.store['routines'], hasLength(1));
+
+    await db.customStatement('DELETE FROM routines');
+    expect(await ctrl.pendingCount(), 1, reason: 'silme de bekleyen iştir');
+
+    await ctrl.syncNow();
+
+    expect(remote.calls, contains('deleteRows:routines'));
+    expect(remote.store['routines'], isEmpty, reason: 'sunucudan silinmeli');
+    expect(await ctrl.pendingCount(), 0);
+  });
+
+  test('yalnız yerelde kalan tablonun mezar taşı bekleyen sayılmaz',
+      () async {
+    // Fotoğraf silmeleri sunucuya hiç gitmez (docs/19 K-2). Sayılsalardı
+    // kuyruk asla boşalmaz, her yazmada boş tur atılırdı.
+    await db.customStatement(
+        "INSERT INTO sync_tombstones (table_name, uid, changed_at_ms, "
+        "local_seq, sync_state) VALUES ('progress_photos', 'p1', 1, 1, 1)");
+
+    expect(await ctrl.pendingCount(), 0);
+    expect(await ctrl.hasPending(), isFalse);
+  });
+
   test('son sonuç okunabilir (Aşama G arayüzü için)', () async {
     await addRoutine('Push');
     await ctrl.syncNow();

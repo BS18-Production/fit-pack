@@ -77,8 +77,12 @@ class AccountSwitchGuard {
     return AccountSwitch.wiped;
   }
 
-  /// Gönderilmeyi bekleyen satır sayısı (giden kutusu + mezar taşları).
+  /// Sunucuya ulaşmamış satır sayısı (giden kutusu + mezar taşları).
   /// Hesap değişiminde "kaç kayıt kaybolacak?" sorusunun cevabı.
+  ///
+  /// **Kalıcı hatalı satırlar da sayılır** (`sync_state = 2`, docs/20 §9):
+  /// otomatik gönderim kuyruğundan çıkmışlardır ama yüklenmemişlerdir —
+  /// cihazdaki tek kopyadır. Kuyruktan çıkmak yedeklenmek değildir (CR-005).
   ///
   /// **İlerleme fotoğrafları BİLİNÇLİ olarak sayılır**, senkron göstergesi
   /// onları atladığı halde (docs/19 K-2): sunucuya hiç gitmezler, yani hesap
@@ -89,7 +93,8 @@ class AccountSwitchGuard {
     var total = 0;
     for (final table in [...syncedTableNames, 'sync_tombstones']) {
       final row = await db
-          .customSelect('SELECT COUNT(*) c FROM $table WHERE sync_state = 1')
+          .customSelect(
+              'SELECT COUNT(*) c FROM $table WHERE sync_state IN (1, 2)')
           .getSingle();
       total += row.read<int>('c');
     }

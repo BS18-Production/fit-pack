@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/onboarding/first_run_hints.dart';
 import '../../core/router/app_routes.dart';
 import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
@@ -32,8 +33,10 @@ class AuthGate extends ChangeNotifier {
     this._db, {
     Future<void> Function(String userId)? pull,
     void Function()? onLocalDataWiped,
+    void Function()? onOnboardedFromAccount,
   })  : _pull = pull,
-        _onLocalDataWiped = onLocalDataWiped {
+        _onLocalDataWiped = onLocalDataWiped,
+        _onOnboardedFromAccount = onOnboardedFromAccount {
     try {
       _sub = Supabase.instance.client.auth.onAuthStateChange.listen(_onAuth);
     } catch (_) {
@@ -52,6 +55,11 @@ class AuthGate extends ChangeNotifier {
   /// diskteki tercihleri siler ama yaşayan provider'lar bellekteki eski
   /// hesabın değerini tutar; bu kanca onları yeniden yükletir.
   final void Function()? _onLocalDataWiped;
+
+  /// Profil kurulumu bu cihazda değil, hesabın sunucudaki profilinden geldi
+  /// (yeni telefon / yeniden kurulum — docs/49 E). İlk-kullanım ipuçları bu
+  /// kullanıcıya gösterilmez: uygulamayı zaten biliyor.
+  final void Function()? _onOnboardedFromAccount;
 
   StreamSubscription<AuthState>? _sub;
 
@@ -112,7 +120,7 @@ class AuthGate extends ChangeNotifier {
       _pendingConflictRows = 0;
       _appliedUserId = userId;
       await _runPull(userId);
-      await _readOnboarded();
+      await _readOnboardedAfterPull();
     } catch (e) {
       _accountError = true;
       syncLog('hesap değişimi tamamlanamadı', error: e);
@@ -121,6 +129,11 @@ class AuthGate extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// Oturum olayı olmadan hesap uygulama yolunu çalıştırır (testler için —
+  /// gerçekte [_onAuth] tetikler).
+  @visibleForTesting
+  Future<void> applyAccountForTest(String userId) => _applyAccount(userId);
 
   /// §7.5: "Tekrar dene" — hesap kontrolünü baştan çalıştırır.
   Future<void> retryAccountCheck() async {
@@ -238,7 +251,7 @@ class AuthGate extends ChangeNotifier {
       // Pull başarısızsa (ağ yok) yereldekiyle devam; kapı kararı ağa bağlı değil.
       await _runPull(userId);
       _appliedUserId = userId;
-      await _readOnboarded();
+      await _readOnboardedAfterPull();
     } catch (e) {
       // Kontrol başarısızsa içeri ALMA — sızıntı riskine karşı kapı kapalı
       // kalır, kullanıcı tekrar deneyebilir (§7.5).
@@ -255,7 +268,7 @@ class AuthGate extends ChangeNotifier {
   Future<void> _backgroundPull(String userId) async {
     final before = _onboarded;
     await _runPull(userId);
-    await _readOnboarded();
+    await _readOnboardedAfterPull();
     if (_onboarded != before) notifyListeners();
   }
 
@@ -273,6 +286,15 @@ class AuthGate extends ChangeNotifier {
   Future<void> _readOnboarded() async {
     final profile = await _db.userProfileDao.getProfile();
     _onboarded = profile?.onboarded ?? false;
+  }
+
+  /// Çekmeden sonra okur. Kurulum bayrağı burada açıldıysa kurulum bu
+  /// cihazda yapılmadı, sunucudan geldi ([_onOnboardedFromAccount]).
+  /// Bu cihazdaki kurulum [markOnboarded] ile açılır, buradan geçmez.
+  Future<void> _readOnboardedAfterPull() async {
+    final before = _onboarded;
+    await _readOnboarded();
+    if (!before && _onboarded) _onOnboardedFromAccount?.call();
   }
 
   @override
@@ -293,6 +315,9 @@ final authGateProvider = Provider<AuthGate>((ref) {
     // Hesaba bağlı bellek durumları (CR-007). Adım bağlantısı ve haftası
     // `healthPrefsProvider`'ı izlediği için kendiliğinden yenilenir.
     onLocalDataWiped: () => ref.invalidate(healthPrefsProvider),
+    // Kurulum sunucudan geldi → ilk-kullanım ipuçları gösterilmez (docs/49 E).
+    onOnboardedFromAccount: () =>
+        ref.read(firstRunHintsProvider.notifier).markAllSeen(),
   );
   ref.onDispose(gate.dispose);
   return gate;

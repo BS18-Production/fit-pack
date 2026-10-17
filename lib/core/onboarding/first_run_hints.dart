@@ -42,6 +42,20 @@ class FirstRunHints extends Notifier<Set<FirstRunHint>> {
     await prefs.setBool(_key(h), true);
   }
 
+  /// Tüm ipuçlarını görüldü yazar. Kurulumu bu cihazda yapmamış, hesabıyla
+  /// gelen kullanıcı için (yeni telefon / yeniden kurulum — docs/49 E): açılışta
+  /// henüz giriş yapılmadığından [initialize] onu yeni kullanıcı sanmıştı.
+  ///
+  /// `state` diske yazdıktan SONRA güncellenir: sağlayıcı bu çağrıyla ilk kez
+  /// kuruluyorsa `_load` eski diski okuyup erken yazılmış state'i ezerdi.
+  Future<void> markAllSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    for (final h in FirstRunHint.values) {
+      await prefs.setBool(_key(h), true);
+    }
+    state = FirstRunHint.values.toSet();
+  }
+
   /// Doğrudan prefs'ten kontrol — `state`'e güvenmez. Provider tembel
   /// (lazy) olduğundan ilk `ref.read` anında `build()`ün güvenli "hepsi
   /// görüldü" varsayılanı döner ve asenkron `_load` henüz bitmemiş olur;

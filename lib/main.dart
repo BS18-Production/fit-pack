@@ -73,7 +73,9 @@ void main() async {
   await container.read(updateGateProvider).refreshWithin();
 
   // İlk-kullanım ipuçları (docs/15 §B): mevcut kullanıcıya güncelleme sonrası
-  // coach mark gösterme — yalnız yeni onboarding'den geçenler görür.
+  // coach mark gösterme — yalnız yeni onboarding'den geçenler görür. Taze
+  // kurulumda oturum henüz yok; hesabıyla gelen kullanıcıyı kapı girişten
+  // sonra ayrıca işaretler (`onOnboardedFromAccount`, docs/49 E).
   await FirstRunHints.initialize(onboarded: gate.onboarded);
 
   runApp(

@@ -343,6 +343,66 @@ abstract class AppL10n {
   /// **'Create a routine or start an empty workout'**
   String get homeStartSubtitle;
 
+  /// No description provided for @homeUpNextSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 exercise} other{{count} exercises}} · ~{mins} min'**
+  String homeUpNextSubtitle(int count, int mins);
+
+  /// No description provided for @homeNoRoutineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick your first workout'**
+  String get homeNoRoutineTitle;
+
+  /// No description provided for @homeNoRoutineSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start right away with a ready-made program or build your own routine.'**
+  String get homeNoRoutineSubtitle;
+
+  /// No description provided for @homePickProgram.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a program'**
+  String get homePickProgram;
+
+  /// No description provided for @homeBuildRoutine.
+  ///
+  /// In en, this message translates to:
+  /// **'Build your own routine'**
+  String get homeBuildRoutine;
+
+  /// No description provided for @homeFirstWeekTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'FIRST WEEK'**
+  String get homeFirstWeekTitle;
+
+  /// No description provided for @homeFirstWeekProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/3 done'**
+  String homeFirstWeekProgress(int done);
+
+  /// No description provided for @homeFirstWeekWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish your first workout'**
+  String get homeFirstWeekWorkout;
+
+  /// No description provided for @homeFirstWeekMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your first meal'**
+  String get homeFirstWeekMeal;
+
+  /// No description provided for @homeFirstWeekWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Log your first weight'**
+  String get homeFirstWeekWeight;
+
   /// No description provided for @homeRestTitle.
   ///
   /// In en, this message translates to:

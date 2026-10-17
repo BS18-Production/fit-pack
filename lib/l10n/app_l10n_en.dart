@@ -143,6 +143,47 @@ class AppL10nEn extends AppL10n {
   String get homeStartSubtitle => 'Create a routine or start an empty workout';
 
   @override
+  String homeUpNextSubtitle(int count, int mins) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count exercises',
+      one: '1 exercise',
+    );
+    return '$_temp0 · ~$mins min';
+  }
+
+  @override
+  String get homeNoRoutineTitle => 'Pick your first workout';
+
+  @override
+  String get homeNoRoutineSubtitle =>
+      'Start right away with a ready-made program or build your own routine.';
+
+  @override
+  String get homePickProgram => 'Pick a program';
+
+  @override
+  String get homeBuildRoutine => 'Build your own routine';
+
+  @override
+  String get homeFirstWeekTitle => 'FIRST WEEK';
+
+  @override
+  String homeFirstWeekProgress(int done) {
+    return '$done/3 done';
+  }
+
+  @override
+  String get homeFirstWeekWorkout => 'Finish your first workout';
+
+  @override
+  String get homeFirstWeekMeal => 'Log your first meal';
+
+  @override
+  String get homeFirstWeekWeight => 'Log your first weight';
+
+  @override
   String get homeRestTitle => 'Rest day today';
 
   @override

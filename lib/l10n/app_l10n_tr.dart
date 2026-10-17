@@ -143,6 +143,46 @@ class AppL10nTr extends AppL10n {
   String get homeStartSubtitle => 'Rutin oluştur ya da boş antrenman başlat';
 
   @override
+  String homeUpNextSubtitle(int count, int mins) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hareket',
+    );
+    return '$_temp0 · ~$mins dk';
+  }
+
+  @override
+  String get homeNoRoutineTitle => 'İlk antrenmanını seç';
+
+  @override
+  String get homeNoRoutineSubtitle =>
+      'Hazır bir programla hemen başla ya da kendi rutinini kur.';
+
+  @override
+  String get homePickProgram => 'Hazır program seç';
+
+  @override
+  String get homeBuildRoutine => 'Kendi rutinini kur';
+
+  @override
+  String get homeFirstWeekTitle => 'İLK HAFTA';
+
+  @override
+  String homeFirstWeekProgress(int done) {
+    return '$done/3 tamam';
+  }
+
+  @override
+  String get homeFirstWeekWorkout => 'İlk antrenmanını bitir';
+
+  @override
+  String get homeFirstWeekMeal => 'İlk öğününü ekle';
+
+  @override
+  String get homeFirstWeekWeight => 'İlk kilonu gir';
+
+  @override
   String get homeRestTitle => 'Bugün dinlenme günü';
 
   @override

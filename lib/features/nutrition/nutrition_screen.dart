@@ -76,10 +76,26 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
     // artık reaktif provider'ların işi (elle invalidate yok).
     final dao = ref.read(nutritionDaoProvider);
     final l = AppL10n.of(context);
-    await dao.deleteFoodLog(item.log.id);
+    final messenger = ScaffoldMessenger.of(context);
+    final errorColor = context.colors.error;
+    // Hata şeridi — gerçek hata loga, kullanıcıya kısa mesaj (CR-019).
+    void fail(String what, Object e, String message) {
+      debugPrint('[fitpack.nutrition] $what | HATA: $e');
+      messenger
+        ..clearSnackBars()
+        ..showSnackBar(
+          SnackBar(content: Text(message), backgroundColor: errorColor),
+        );
+    }
+
+    try {
+      await dao.deleteFoodLog(item.log.id);
+    } catch (e) {
+      fail('öğün silinemedi', e, l.commonDeleteFailed);
+      return;
+    }
     // Kayıt/toplam provider'ları reaktif (H-05) → silme kendiliğinden yansır.
     if (!context.mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
     messenger.clearSnackBars();
     messenger.showSnackBar(
       SnackBar(
@@ -90,18 +106,22 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
         action: SnackBarAction(
           label: l.commonUndo,
           onPressed: () async {
-            await dao.insertFoodLog(
-              FoodLogsCompanion(
-                date: Value(item.log.date),
-                mealType: Value(item.log.mealType),
-                foodId: Value(item.log.foodId),
-                grams: Value(item.log.grams),
-                computedKcal: Value(item.log.computedKcal),
-                computedProtein: Value(item.log.computedProtein),
-                computedCarb: Value(item.log.computedCarb),
-                computedFat: Value(item.log.computedFat),
-              ),
-            );
+            try {
+              await dao.insertFoodLog(
+                FoodLogsCompanion(
+                  date: Value(item.log.date),
+                  mealType: Value(item.log.mealType),
+                  foodId: Value(item.log.foodId),
+                  grams: Value(item.log.grams),
+                  computedKcal: Value(item.log.computedKcal),
+                  computedProtein: Value(item.log.computedProtein),
+                  computedCarb: Value(item.log.computedCarb),
+                  computedFat: Value(item.log.computedFat),
+                ),
+              );
+            } catch (e) {
+              fail('silme geri alınamadı', e, l.commonUndoFailed);
+            }
             // Reaktif provider'lar (H-05) geri-al eklemesini kendiliğinden yansıtır.
           },
         ),

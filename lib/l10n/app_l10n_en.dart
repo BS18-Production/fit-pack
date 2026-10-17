@@ -81,6 +81,15 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String get commonSaveFailed => 'Couldn\'t save, try again';
+
+  @override
+  String get commonDeleteFailed => 'Couldn\'t delete, try again';
+
+  @override
+  String get commonUndoFailed => 'Couldn\'t undo, try again';
+
+  @override
   String get macroProtein => 'Protein';
 
   @override

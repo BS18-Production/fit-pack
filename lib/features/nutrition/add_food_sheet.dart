@@ -211,12 +211,25 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   Future<void> _undo() async {
     final last = _lastAdded;
     if (last == null) return;
-    await ref.read(nutritionDaoProvider).deleteFoodLogs(last.ids);
+    try {
+      await ref.read(nutritionDaoProvider).deleteFoodLogs(last.ids);
+    } catch (e) {
+      // Şerit yerinde kalır → kullanıcı tekrar deneyebilir (CR-019).
+      debugPrint('[fitpack.nutrition] geri al başarısız | HATA: $e');
+      if (mounted) _showError(AppL10n.of(context).commonUndoFailed);
+      return;
+    }
     if (!mounted) return;
     setState(() {
       _lastAdded = null;
       _sessionCount = (_sessionCount - 1).clamp(0, 1 << 30);
     });
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: context.colors.error),
+    );
   }
 
   /// Eklenen besin "Son eklediklerin"in başına geçer (panel açıkken de).
@@ -292,21 +305,29 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
     );
     if (result == null || !mounted) return;
     final dao = ref.read(nutritionDaoProvider);
-    final id = await dao.insertFood(
-      FoodsCompanion(
-        name: Value(result.name),
-        kcalPer100g: Value(result.kcalPer100g),
-        proteinPer100g: Value(result.proteinPer100g),
-        carbPer100g: Value(result.carbPer100g),
-        fatPer100g: Value(result.fatPer100g),
-        source: const Value('custom'),
-        isCustom: const Value(true),
-        isRecipe: const Value(false),
-        defaultPortionGrams: Value(result.defaultGrams),
-        unitLabel: Value(result.unitLabel),
-      ),
-    );
-    final food = await dao.getFoodById(id);
+    final Food? loaded;
+    try {
+      final id = await dao.insertFood(
+        FoodsCompanion(
+          name: Value(result.name),
+          kcalPer100g: Value(result.kcalPer100g),
+          proteinPer100g: Value(result.proteinPer100g),
+          carbPer100g: Value(result.carbPer100g),
+          fatPer100g: Value(result.fatPer100g),
+          source: const Value('custom'),
+          isCustom: const Value(true),
+          isRecipe: const Value(false),
+          defaultPortionGrams: Value(result.defaultGrams),
+          unitLabel: Value(result.unitLabel),
+        ),
+      );
+      loaded = await dao.getFoodById(id);
+    } catch (e) {
+      debugPrint('[fitpack.nutrition] özel besin kaydedilemedi | HATA: $e');
+      if (mounted) _showError(AppL10n.of(context).commonSaveFailed);
+      return;
+    }
+    final food = loaded;
     if (food == null || !mounted) return;
     setState(() {
       _addToList(food);

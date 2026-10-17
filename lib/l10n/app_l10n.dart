@@ -223,6 +223,24 @@ abstract class AppL10n {
   /// **'Must be between {min} and {max}'**
   String commonRangeError(String min, String max);
 
+  /// Generic SnackBar when a user-initiated write fails (CR-019).
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save, try again'**
+  String get commonSaveFailed;
+
+  /// No description provided for @commonDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete, try again'**
+  String get commonDeleteFailed;
+
+  /// No description provided for @commonUndoFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t undo, try again'**
+  String get commonUndoFailed;
+
   /// No description provided for @macroProtein.
   ///
   /// In en, this message translates to:

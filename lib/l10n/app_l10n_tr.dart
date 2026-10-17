@@ -81,6 +81,15 @@ class AppL10nTr extends AppL10n {
   }
 
   @override
+  String get commonSaveFailed => 'Kaydedilemedi, tekrar dene';
+
+  @override
+  String get commonDeleteFailed => 'Silinemedi, tekrar dene';
+
+  @override
+  String get commonUndoFailed => 'Geri alınamadı, tekrar dene';
+
+  @override
   String get macroProtein => 'Protein';
 
   @override

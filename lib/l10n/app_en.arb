@@ -47,6 +47,12 @@
       }
     }
   },
+  "commonSaveFailed": "Couldn't save, try again",
+  "@commonSaveFailed": {
+    "description": "Generic SnackBar when a user-initiated write fails (CR-019)."
+  },
+  "commonDeleteFailed": "Couldn't delete, try again",
+  "commonUndoFailed": "Couldn't undo, try again",
   "macroProtein": "Protein",
   "macroCarbs": "Carbs",
   "macroFat": "Fat",

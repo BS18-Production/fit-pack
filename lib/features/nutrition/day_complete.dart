@@ -50,6 +50,23 @@ class DayCompleteCard extends ConsumerWidget {
   final DateTime date;
   final bool isToday;
 
+  /// İşaretle / geri aç. Yazma başarısızsa durum değişmez; kullanıcıya kısa
+  /// mesaj, gerçek hata loga (CR-019).
+  static Future<void> _write(
+      BuildContext context, Future<void> Function() write) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final message = AppL10n.of(context).commonSaveFailed;
+    final errorColor = context.colors.error;
+    try {
+      await write();
+    } catch (e) {
+      debugPrint('[fitpack.nutrition] gün durumu yazılamadı | HATA: $e');
+      messenger.showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: errorColor),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
@@ -80,7 +97,9 @@ class DayCompleteCard extends ConsumerWidget {
       child: InkWell(
         // İşaretsizken satırın tamamı onay düğmesi; işaretliyken geri alma
         // ayrı düğmede (yanlışlıkla kaldırılmasın).
-        onTap: done ? null : () => dao.markDayComplete(date),
+        onTap: done
+            ? null
+            : () => _write(context, () => dao.markDayComplete(date)),
         child: Padding(
           padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md, vertical: AppSpacing.sm),
@@ -110,7 +129,7 @@ class DayCompleteCard extends ConsumerWidget {
               if (done)
                 TextButton(
                   key: const ValueKey('nutrition.dayReopen'),
-                  onPressed: () => dao.reopenDay(date),
+                  onPressed: () => _write(context, () => dao.reopenDay(date)),
                   child: Text(l.nutritionDayReopen),
                 ),
             ],

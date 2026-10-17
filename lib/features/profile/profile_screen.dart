@@ -79,8 +79,25 @@ class _ProfileBody extends ConsumerWidget {
   /// Yalnız düzenlenen alanı yazar — [profile] diyalog açılırken alınmış
   /// kopya, eskimiş olabilir (CR-013). userProfileProvider reaktif →
   /// düzenleme kendiliğinden yansır.
-  Future<void> _save(WidgetRef ref, UserProfileCompanion patch) async {
-    await ref.read(userProfileDaoProvider).updateFields(patch);
+  ///
+  /// Başarısızsa kısa mesaj gösterir, gerçek hata loga (CR-019); `false`
+  /// döner ki çağıran "Kaydedildi" demesin.
+  Future<bool> _save(
+      BuildContext context, WidgetRef ref, UserProfileCompanion patch) async {
+    if (!context.mounted) return false;
+    final messenger = ScaffoldMessenger.of(context);
+    final message = AppL10n.of(context).commonSaveFailed;
+    final errorColor = context.colors.error;
+    try {
+      await ref.read(userProfileDaoProvider).updateFields(patch);
+      return true;
+    } catch (e) {
+      debugPrint('[fitpack.profile] profil yazılamadı | HATA: $e');
+      messenger.showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: errorColor),
+      );
+      return false;
+    }
   }
 
   static String _fmtDate(DateTime d) =>
@@ -97,8 +114,8 @@ class _ProfileBody extends ConsumerWidget {
       ],
       current: profile.gender,
     );
-    if (picked != null) {
-      await _save(ref, UserProfileCompanion(gender: Value(picked)));
+    if (picked != null && context.mounted) {
+      await _save(context, ref, UserProfileCompanion(gender: Value(picked)));
     }
   }
 
@@ -110,8 +127,8 @@ class _ProfileBody extends ConsumerWidget {
       options: [for (final k in activityLevelKeys) (k, activityLabel(l, k))],
       current: profile.activityLevel,
     );
-    if (picked != null) {
-      await _save(ref, UserProfileCompanion(activityLevel: Value(picked)));
+    if (picked != null && context.mounted) {
+      await _save(context, ref, UserProfileCompanion(activityLevel: Value(picked)));
     }
   }
 
@@ -135,9 +152,10 @@ class _ProfileBody extends ConsumerWidget {
       builder: (_) => _FtInDialog(
           title: l.settingsHeight, initialCm: profile.heightCm ?? 175),
     );
-    if (cm != null) {
-      await _save(ref, UserProfileCompanion(heightCm: Value(cm)));
-      if (context.mounted) {
+    if (cm != null && context.mounted) {
+      final ok =
+          await _save(context, ref, UserProfileCompanion(heightCm: Value(cm)));
+      if (ok && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppL10n.of(context).commonSaved)),
         );
@@ -154,8 +172,8 @@ class _ProfileBody extends ConsumerWidget {
       lastDate: DateTime(now.year - 10, 12, 31), // en az 10 yaş
       helpText: AppL10n.of(context).settingsPickBirthDate,
     );
-    if (picked != null) {
-      await _save(ref, UserProfileCompanion(birthDate: Value(picked)));
+    if (picked != null && context.mounted) {
+      await _save(context, ref, UserProfileCompanion(birthDate: Value(picked)));
     }
   }
 
@@ -179,9 +197,9 @@ class _ProfileBody extends ConsumerWidget {
       min: min,
       max: max,
     );
-    if (result != null) {
-      await _save(ref, apply(result));
-      if (context.mounted) {
+    if (result != null && context.mounted) {
+      final ok = await _save(context, ref, apply(result));
+      if (ok && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppL10n.of(context).commonSaved)),
         );

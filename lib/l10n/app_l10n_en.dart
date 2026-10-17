@@ -81,6 +81,15 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String get commonSaveFailed => 'Couldn\'t save, try again';
+
+  @override
+  String get commonDeleteFailed => 'Couldn\'t delete, try again';
+
+  @override
+  String get commonUndoFailed => 'Couldn\'t undo, try again';
+
+  @override
   String get macroProtein => 'Protein';
 
   @override
@@ -2640,7 +2649,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String ppEntrySub(int count) {
-    return '$count photo(s) · on this device only';
+    return '$count photo(s) · never uploaded';
   }
 
   @override
@@ -2682,7 +2691,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get ppDeleteMsg =>
-      'This photo has no backup; it can\'t be restored once deleted.';
+      'This photo isn\'t backed up on our server; once deleted, it can\'t be restored in the app.';
 
   @override
   String get ppCompare => 'Compare';
@@ -2702,7 +2711,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get ppDeviceOnly =>
-      'Photos are stored on this device only: not backed up, not saved to your gallery, and deleted if you switch accounts.';
+      'Photos are never uploaded to our server or saved to your gallery; they\'re stored on this phone. If your phone\'s own backup (iCloud / Google) is on, they\'re included in it. They\'re deleted from this phone if you switch accounts.';
 
   @override
   String get ppLoadError => 'Couldn\'t load photos';

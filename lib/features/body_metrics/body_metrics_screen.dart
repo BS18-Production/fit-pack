@@ -164,8 +164,9 @@ class BodyMetricsScreen extends ConsumerWidget {
   }
 }
 
-/// İlerleme fotoğraflarına giriş (docs/19). Sayıyı ve "yalnız bu cihazda"
-/// bilgisini taşır — kullanıcı fotoğrafların yedeklenmediğini baştan bilsin.
+/// İlerleme fotoğraflarına giriş (docs/19). Sayıyı ve "sunucuya yüklenmez"
+/// bilgisini taşır — kullanıcı fotoğrafların bizde yedeklenmediğini baştan
+/// bilsin.
 class _PhotosEntryCard extends ConsumerWidget {
   const _PhotosEntryCard();
 

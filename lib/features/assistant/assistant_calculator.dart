@@ -124,6 +124,22 @@ class AssistantData {
     this.scheduledWeekdays = const {},
     this.profile,
   });
+
+  /// Aynı veri, başka bir anda: saat ilerleyince veritabanı yeniden okunmaz.
+  AssistantData at(DateTime now) => AssistantData(
+    now: now,
+    weekStart: weekStart,
+    sessions: sessions,
+    sets: sets,
+    exercises: exercises,
+    points: points,
+    logs: logs,
+    completedDays: completedDays,
+    foods: foods,
+    measurements: measurements,
+    scheduledWeekdays: scheduledWeekdays,
+    profile: profile,
+  );
 }
 
 AssistantAnswer calculateAssistant(AssistantSelection s, AssistantData d) {

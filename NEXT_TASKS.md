@@ -39,10 +39,14 @@ Sahip Claude-5.
 - [ ] CR-024 göçü `20261017120000_assistant_requests_retention.sql` yazıldı,
       UYGULANMADI → Dev'de uygula + `supabase/tests/assistant_requests_retention.sql`,
       sonra Samet onayıyla üretim (sunucu kilidi Claude-2'de).
-- [ ] CR-022 Samet kararı: (a) Ayarlar'a "Dışa aktar" ekranı (önerilen —
-      health-next gizlilik politikası bunu vaat ediyor) mı, (b) politikadan
-      çıkar + motoru sil mi. Silinirse `csv`, `cupertino_icons`,
-      `riverpod_annotation`, `phosphor_flutter` (+ neon_design_test) çıkar.
+- [ ] CR-022 → KARAR (Samet, 2026-10-17): uygulama içi "Dışa aktar" yalnız
+      premium özelliği olacak; şimdi GELİŞTİRİLMEYECEK. Motor (`ExportService`)
+      SİLİNMEZ, olduğu gibi bekler. Planı: monetizasyon işi açılınca
+      (a) premium: Ayarlar → Dışa aktar (CSV / JSON, tek dokunuş);
+      (b) herkes: kanuni veri erişim/taşıma hakkı (KVKK md. 11, GDPR md. 15/20)
+      ücretli yapılamaz → ücretsiz yol destek e-postasıyla talep. Gizlilik
+      politikası (health-next `assets/legal/privacy_*.md:44`) buna göre
+      yazılmalı: "uygulama içinden (premium) veya destek e-postasıyla".
 - [ ] Bekleyen: CR-018 büyük ekranları bölme, CR-021 delete_user göçü
       (Claude-2), CR-006 yayın.
 - [ ] Samet Android'de (Samsung bağlanınca): kısa mola bitince 1 sn içinde

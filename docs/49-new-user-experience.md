@@ -1,6 +1,7 @@
 # 49 — Yeni kullanıcı deneyimi: ilk açılıştan ilk haftaya
 
-> **Durum:** Öneri — Samet'in kararı bekleniyor. Kod yok.
+> **Durum:** Onaylandı (Samet, 2026-10-17: "onaylıyorum hepsini başlat") —
+> A–E + karar 2 (öneri bir kez) + karar 3 (kısalsın) + karar 4 (Berna denemesi).
 > **İlgili:** docs/15 (Onboarding V2, Temmuz), docs/28 (hazır program
 > kataloğu), docs/18 (zorunlu hesap), docs/38 (asistan).
 

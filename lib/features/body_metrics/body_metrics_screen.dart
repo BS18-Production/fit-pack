@@ -23,6 +23,9 @@ import '../home/providers/home_providers.dart';
 import '../progress_photos/progress_photos_providers.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 import '../../core/utils/weight_trend.dart';
+import '../insights/weekly_review_screen.dart';
+import '../progress/training_progress_providers.dart';
+import '../progress/training_progress_view.dart';
 
 /// **Reaktif** (H-05): ölçüm eklenince/silinince kendiliğinden tazelenir.
 final allMeasurementsProvider = StreamProvider<List<BodyMeasurement>>((ref) {
@@ -43,13 +46,24 @@ class BodyMetricsScreen extends ConsumerWidget {
     final measurementsAsync = ref.watch(allMeasurementsProvider);
 
     final l = AppL10n.of(context);
+    // Parça (docs/56): son seçilen; ilk açılışta Antrenman, antrenman verisi
+    // yoksa Vücut.
+    final training = ref.watch(trainingProgressProvider).valueOrNull;
+    final segment = ref.watch(progressSegmentProvider) ??
+        (training != null && training.isEmpty
+            ? ProgressSegment.body
+            : ProgressSegment.training);
+    final isBody = segment == ProgressSegment.body;
+    final tabPadding = EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md,
+        AppSpacing.lg, context.bottomScrollInset);
     return Scaffold(
       appBar: AppBar(title: Text(l.navProgress)),
       // İlk-kullanım ipucu (docs/15 §B): sekmeye ilk girişte kilo/ölçüm
       // girmeyi işaret eder; bir kez gösterilir.
       // Alt boşluk: içerik buzlu gezinme çubuğunun altından aktığı için
       // (extendBody) iç Scaffold FAB'ı çubuğun arkasına koyar — yukarı kaldır.
-      bottomNavigationBar: Padding(
+      // "Ölçüm Ekle" yalnız Vücut parçasında.
+      bottomNavigationBar: !isBody ? null : Padding(
         padding:
             EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg,
                 MediaQuery.paddingOf(context).bottom + AppSpacing.sm),
@@ -69,18 +83,38 @@ class BodyMetricsScreen extends ConsumerWidget {
             message: (l) => l.hintProgress, child: button);
         }),
       ),
-      body: ListView(
-        // Alt boşluk: çubuk + nefes + FAB payı (fabScrollInset).
-        padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg,
-            AppSpacing.lg, context.fabScrollInset),
+      body: Column(
         children: [
-          // Aktivite takvimi — ölçüm olsun olmasın her zaman görünür.
-          const ActivityCalendar(),
-          AppSpacing.vGapLg,
-          // İlerleme fotoğrafları (docs/19): kilo grafiğinin eksik yarısı.
-          const _PhotosEntryCard(),
-          AppSpacing.vGapLg,
-          ..._measurementSection(context, ref, measurementsAsync),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.xs, AppSpacing.lg, 0),
+            child: _SegmentPicker(
+              segment: segment,
+              onChanged: (s) =>
+                  ref.read(progressSegmentProvider.notifier).select(s),
+            ),
+          ),
+          Expanded(
+            child: switch (segment) {
+              ProgressSegment.training =>
+                TrainingProgressView(padding: tabPadding),
+              ProgressSegment.week => WeeklyReviewView(padding: tabPadding),
+              ProgressSegment.body => ListView(
+                  // Alt boşluk: çubuk + nefes + FAB payı (fabScrollInset).
+                  padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md,
+                      AppSpacing.lg, context.fabScrollInset),
+                  children: [
+                    // Aktivite takvimi — ölçüm olsun olmasın her zaman görünür.
+                    const ActivityCalendar(),
+                    AppSpacing.vGapLg,
+                    // İlerleme fotoğrafları (docs/19): kilo grafiğinin eksik yarısı.
+                    const _PhotosEntryCard(),
+                    AppSpacing.vGapLg,
+                    ..._measurementSection(context, ref, measurementsAsync),
+                  ],
+                ),
+            },
+          ),
         ],
       ),
     );
@@ -191,6 +225,50 @@ class BodyMetricsScreen extends ConsumerWidget {
 
   void _showAddMeasurementDialog(BuildContext context, WidgetRef ref) {
     showAddMeasurementSheet(context);
+  }
+}
+
+/// Antrenman · Vücut · Hafta seçici (docs/56). Her parça ≥48 yüksek.
+class _SegmentPicker extends StatelessWidget {
+  final ProgressSegment segment;
+  final ValueChanged<ProgressSegment> onChanged;
+  const _SegmentPicker({required this.segment, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    String label(ProgressSegment s) => switch (s) {
+          ProgressSegment.training => l.prog3cSegTraining,
+          ProgressSegment.body => l.prog3cSegBody,
+          ProgressSegment.week => l.prog3cSegWeek,
+        };
+    return Semantics(
+      container: true,
+      label: l.prog3cSegmentLabel,
+      child: SizedBox(
+        width: double.infinity,
+        child: SegmentedButton<ProgressSegment>(
+          key: const ValueKey('progress.segments'),
+          showSelectedIcon: false,
+          style: const ButtonStyle(
+            minimumSize: WidgetStatePropertyAll(Size(0, AppA11y.minTapTarget)),
+            tapTargetSize: MaterialTapTargetSize.padded,
+          ),
+          segments: [
+            for (final s in ProgressSegment.values)
+              ButtonSegment(
+                value: s,
+                label: Text(label(s),
+                    key: ValueKey('progress.segment.${s.name}'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+              ),
+          ],
+          selected: {segment},
+          onSelectionChanged: (v) => onChanged(v.first),
+        ),
+      ),
+    );
   }
 }
 

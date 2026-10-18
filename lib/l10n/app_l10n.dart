@@ -7909,6 +7909,114 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Done'**
   String get asKbDone;
+
+  /// No description provided for @prog3cSegTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get prog3cSegTraining;
+
+  /// No description provided for @prog3cSegBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Body'**
+  String get prog3cSegBody;
+
+  /// No description provided for @prog3cSegWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get prog3cSegWeek;
+
+  /// No description provided for @prog3cSegmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress section'**
+  String get prog3cSegmentLabel;
+
+  /// No description provided for @prog3cTopTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Main lifts'**
+  String get prog3cTopTitle;
+
+  /// No description provided for @prog3cTopNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily best estimated 1RM · last 8 weeks'**
+  String get prog3cTopNote;
+
+  /// No description provided for @prog3cE1rm.
+  ///
+  /// In en, this message translates to:
+  /// **'est. 1RM'**
+  String get prog3cE1rm;
+
+  /// No description provided for @prog3cLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'latest {value}'**
+  String prog3cLatest(String value);
+
+  /// No description provided for @prog3cDelta.
+  ///
+  /// In en, this message translates to:
+  /// **'{delta} · 4 weeks'**
+  String prog3cDelta(String delta);
+
+  /// No description provided for @prog3cNoCurve.
+  ///
+  /// In en, this message translates to:
+  /// **'One more training day for a trend'**
+  String get prog3cNoCurve;
+
+  /// No description provided for @prog3cRecordsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Records in the last 30 days'**
+  String get prog3cRecordsTitle;
+
+  /// No description provided for @prog3cNoRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'No new records in the last 30 days'**
+  String get prog3cNoRecords;
+
+  /// No description provided for @prog3cVolumeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly volume'**
+  String get prog3cVolumeTitle;
+
+  /// No description provided for @prog3cVolumeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 8 weeks · weeks without logs stay empty'**
+  String get prog3cVolumeNote;
+
+  /// No description provided for @prog3cNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'no data'**
+  String get prog3cNoData;
+
+  /// No description provided for @prog3cEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 more workout to compare} other{{count} more workouts to compare}}'**
+  String prog3cEmptyTitle(int count);
+
+  /// No description provided for @prog3cEmptyMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Log workouts on two different days and your progress shows up here.'**
+  String get prog3cEmptyMsg;
+
+  /// No description provided for @prog3cStartWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to training'**
+  String get prog3cStartWorkout;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

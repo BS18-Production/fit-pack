@@ -32,16 +32,31 @@ import '../../shared/widgets/fitpack_icon.dart';
 /// docs/22 kuralları aynen geçerli: verisi olmayan bölüm gizlenmez ("Kayıt
 /// yok" der); kayıtsız günden yargı çıkmaz; düşüş "kötü" diye boyanmaz;
 /// puan yok, hareketler toplanmaz.
-class WeeklyReviewScreen extends ConsumerStatefulWidget {
+class WeeklyReviewScreen extends StatelessWidget {
   /// Açılışta kaç hafta geriye bakılır (0 bu hafta).
   final int initialOffset;
   const WeeklyReviewScreen({super.key, this.initialOffset = 0});
 
   @override
-  ConsumerState<WeeklyReviewScreen> createState() => _WeeklyReviewScreenState();
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(AppL10n.of(context).wrTitle)),
+        body: WeeklyReviewView(initialOffset: initialOffset),
+      );
 }
 
-class _WeeklyReviewScreenState extends ConsumerState<WeeklyReviewScreen> {
+/// Değerlendirmenin gövdesi — hem kendi rotası (`/insights/week`) hem
+/// İlerleme → Hafta parçası (docs/56 §2) kullanır.
+class WeeklyReviewView extends ConsumerStatefulWidget {
+  final int initialOffset;
+  // null: ekran kenar boşluğu (AppSpacing.screen).
+  final EdgeInsets? padding;
+  const WeeklyReviewView({super.key, this.initialOffset = 0, this.padding});
+
+  @override
+  ConsumerState<WeeklyReviewView> createState() => _WeeklyReviewViewState();
+}
+
+class _WeeklyReviewViewState extends ConsumerState<WeeklyReviewView> {
   /// Kaç hafta geriye bakılıyor — geçici ekran durumu (CONVENTIONS §2).
   late int _offset = widget.initialOffset;
 
@@ -49,22 +64,26 @@ class _WeeklyReviewScreenState extends ConsumerState<WeeklyReviewScreen> {
   void initState() {
     super.initState();
     // Değerlendirme hangi yoldan açılırsa açılsın "Haftan hazır" kartı
-    // kalkar (docs/50 Faz 2) — kapanış aralığı dışında etkisiz.
-    ref
-        .read(weekReadyOpenedProvider.notifier)
-        .markOpened(DateTime.now(), ref.read(weekStartProvider));
+    // kalkar (docs/50 Faz 2) — kapanış aralığı dışında etkisiz. Çizimden
+    // sonra: gömülü (İlerleme → Hafta) kurulumda ağaç kurulurken sağlayıcı
+    // değiştirilemez.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref
+          .read(weekReadyOpenedProvider.notifier)
+          .markOpened(DateTime.now(), ref.read(weekStartProvider));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
     final async = ref.watch(weeklyReviewProvider(_offset));
+    final padding = widget.padding ?? AppSpacing.screen;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l.wrTitle)),
-      body: async.when(
+    return async.when(
         loading: () => ListView(
-          padding: AppSpacing.screen,
+          padding: padding,
           children: [
             Skeleton.card(height: 72),
             AppSpacing.vGapMd,
@@ -78,7 +97,7 @@ class _WeeklyReviewScreenState extends ConsumerState<WeeklyReviewScreen> {
           onRetry: () => ref.invalidate(weeklyReviewProvider(_offset)),
         ),
         data: (r) => ListView(
-          padding: AppSpacing.screen,
+          padding: padding,
           children: [
             _WeekHeader(
               period: r.period,
@@ -111,7 +130,6 @@ class _WeeklyReviewScreenState extends ConsumerState<WeeklyReviewScreen> {
             AppSpacing.vGapXl,
           ],
         ),
-      ),
     );
   }
 }

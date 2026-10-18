@@ -4729,4 +4729,71 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get asKbDone => 'Done';
+
+  @override
+  String get prog3cSegTraining => 'Training';
+
+  @override
+  String get prog3cSegBody => 'Body';
+
+  @override
+  String get prog3cSegWeek => 'Week';
+
+  @override
+  String get prog3cSegmentLabel => 'Progress section';
+
+  @override
+  String get prog3cTopTitle => 'Main lifts';
+
+  @override
+  String get prog3cTopNote => 'Daily best estimated 1RM · last 8 weeks';
+
+  @override
+  String get prog3cE1rm => 'est. 1RM';
+
+  @override
+  String prog3cLatest(String value) {
+    return 'latest $value';
+  }
+
+  @override
+  String prog3cDelta(String delta) {
+    return '$delta · 4 weeks';
+  }
+
+  @override
+  String get prog3cNoCurve => 'One more training day for a trend';
+
+  @override
+  String get prog3cRecordsTitle => 'Records in the last 30 days';
+
+  @override
+  String get prog3cNoRecords => 'No new records in the last 30 days';
+
+  @override
+  String get prog3cVolumeTitle => 'Weekly volume';
+
+  @override
+  String get prog3cVolumeNote => 'Last 8 weeks · weeks without logs stay empty';
+
+  @override
+  String get prog3cNoData => 'no data';
+
+  @override
+  String prog3cEmptyTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more workouts to compare',
+      one: '1 more workout to compare',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get prog3cEmptyMsg =>
+      'Log workouts on two different days and your progress shows up here.';
+
+  @override
+  String get prog3cStartWorkout => 'Go to training';
 }

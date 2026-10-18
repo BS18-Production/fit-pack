@@ -4700,4 +4700,71 @@ class AppL10nTr extends AppL10n {
   String today3aAddMealHint(String meal) {
     return 'Öğün ekle: $meal';
   }
+
+  @override
+  String get prog3cSegTraining => 'Antrenman';
+
+  @override
+  String get prog3cSegBody => 'Vücut';
+
+  @override
+  String get prog3cSegWeek => 'Hafta';
+
+  @override
+  String get prog3cSegmentLabel => 'İlerleme bölümü';
+
+  @override
+  String get prog3cTopTitle => 'Ana hareketler';
+
+  @override
+  String get prog3cTopNote => 'Günlük en iyi tahmini 1RM · son 8 hafta';
+
+  @override
+  String get prog3cE1rm => 'tahmini 1RM';
+
+  @override
+  String prog3cLatest(String value) {
+    return 'son $value';
+  }
+
+  @override
+  String prog3cDelta(String delta) {
+    return '$delta · 4 hafta';
+  }
+
+  @override
+  String get prog3cNoCurve => 'Eğri için bir antrenman günü daha';
+
+  @override
+  String get prog3cRecordsTitle => 'Son 30 günün rekorları';
+
+  @override
+  String get prog3cNoRecords => 'Son 30 günde yeni rekor yok';
+
+  @override
+  String get prog3cVolumeTitle => 'Haftalık hacim';
+
+  @override
+  String get prog3cVolumeNote => 'Son 8 hafta · kayıt olmayan hafta boş';
+
+  @override
+  String get prog3cNoData => 'kayıt yok';
+
+  @override
+  String prog3cEmptyTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Karşılaştırma için $count antrenman daha',
+      one: 'Karşılaştırma için 1 antrenman daha',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get prog3cEmptyMsg =>
+      'İki farklı günde antrenman kaydedince gelişimin burada görünür.';
+
+  @override
+  String get prog3cStartWorkout => 'Antrenmana git';
 }

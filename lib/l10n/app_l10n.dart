@@ -3523,6 +3523,18 @@ abstract class AppL10n {
   /// **'If you take a 2-day break or miss a planned day, I\'ll remind you around your usual time (at most 2 a day). Turn it off in Settings → Notifications.'**
   String get recallOfferBody;
 
+  /// No description provided for @recallOfferOnbTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Want reminders for your workouts?'**
+  String get recallOfferOnbTitle;
+
+  /// No description provided for @recallOfferOnbBody.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ll remind you of your first workout, and of the next one if you take a 2-day break (at most 2 a day). Turn it off in Settings → Notifications.'**
+  String get recallOfferOnbBody;
+
   /// No description provided for @recallOfferYes.
   ///
   /// In en, this message translates to:

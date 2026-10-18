@@ -35,7 +35,8 @@ void main() {
   Future<ProviderContainer> pump(WidgetTester t,
       {required int sessions,
       required _FakeNotifications svc,
-      Map<String, Object> prefs = const {}}) async {
+      Map<String, Object> prefs = const {},
+      bool onboarding = false}) async {
     SharedPreferences.setMockInitialValues(prefs);
     for (var i = 0; i < sessions; i++) {
       await db.workoutDao.insertSession(WorkoutSessionsCompanion.insert(
@@ -48,11 +49,11 @@ void main() {
     addTearDown(c.dispose);
     await t.pumpWidget(UncontrolledProviderScope(
       container: c,
-      child: const MaterialApp(
+      child: MaterialApp(
         locale: Locale('tr'),
         localizationsDelegates: AppL10n.localizationsDelegates,
         supportedLocales: AppL10n.supportedLocales,
-        home: Scaffold(body: RecallOffer()),
+        home: Scaffold(body: RecallOffer(onboarding: onboarding)),
       ),
     ));
     await t.pumpAndSettle();
@@ -105,5 +106,18 @@ void main() {
     expect(find.byKey(const ValueKey('recall.offer')), findsNothing);
     expect(svc.asked, 0);
     expect(c.read(notificationPrefsProvider).workoutEnabled, isTrue);
+  });
+
+  testWidgets('kurulumda antrenman olmadan da sorulur; Evet → açık, bir daha sorulmaz',
+      (t) async {
+    final svc = _FakeNotifications(true);
+    final c = await pump(t, sessions: 0, svc: svc, onboarding: true);
+    expect(find.text('Antrenmanlarını hatırlatayım mı?'), findsOneWidget);
+    await t.tap(find.byKey(const ValueKey('recall.yes')));
+    await t.pumpAndSettle();
+    expect(svc.asked, 1);
+    final p = c.read(notificationPrefsProvider);
+    expect(p.workoutEnabled, isTrue);
+    expect(p.shouldOfferRecall, isFalse);
   });
 }

@@ -62,6 +62,9 @@ hatırlatıcısı ise doğru deseni zaten kurmuş: veri varsa bildirim yok.
   antrenmanını hatırlatayım mı?" İzin yalnız "Evet" denince istenir. Mola
   bildirimi izni daha önce alındıysa soru sorulmaz, ayar açılır, kullanıcıya
   bilgi verilir.
+  **Ek (Samet, 2026-10-18):** aynı soru kurulumun son sayfasında ("Planın
+  hazır") da bir kez sorulur; yoksa ilk hafta hatırlatması izin gelmeden
+  zamanı geçerdi. Cevap ortak bayrağa yazılır, özet ekranında tekrar çıkmaz.
 - **Sınırlar:**
   - Bu türden **günde en fazla 2**, **haftada en fazla 6** bildirim
     (Samet, 2026-10-18; ilk öneri 1/3'tü). İkincisi olağan saatten 3 saat

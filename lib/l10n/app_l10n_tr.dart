@@ -1962,6 +1962,13 @@ class AppL10nTr extends AppL10n {
       '2 gün ara verirsen ya da planlı günü kaçırırsan, olağan saatine göre hatırlatırım (günde en fazla 2). Ayarlar → Bildirimler\'den kapatabilirsin.';
 
   @override
+  String get recallOfferOnbTitle => 'Antrenmanlarını hatırlatayım mı?';
+
+  @override
+  String get recallOfferOnbBody =>
+      'İlk antrenmanını ve 2 gün ara verdiğinde sıradakini hatırlatırım (günde en fazla 2). Ayarlar → Bildirimler\'den kapatabilirsin.';
+
+  @override
   String get recallOfferYes => 'Evet, hatırlat';
 
   @override

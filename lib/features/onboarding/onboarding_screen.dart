@@ -14,6 +14,7 @@ import '../auth/auth_gate.dart';
 import '../explore/program_catalog.dart';
 import '../explore/program_install.dart';
 import '../explore/program_labels.dart';
+import '../workout/recall_offer.dart';
 import 'onboarding_calc.dart';
 import 'program_recommendation.dart';
 import '../../shared/widgets/fitpack_icon.dart';
@@ -756,6 +757,8 @@ class _PlanPage extends ConsumerWidget {
             ),
           ),
         ],
+        // İlk hafta hatırlatması izin ister (docs/51 2. tur): bir kez burada.
+        const RecallOffer(onboarding: true),
       ],
     );
   }

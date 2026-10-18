@@ -20,8 +20,15 @@ final _isFirstWorkoutProvider = FutureProvider.autoDispose<bool>(
 ///
 /// Mola bildirimi için izin zaten alındıysa soru sorulmaz: hatırlatıcı açılır,
 /// kullanıcıya bilgi verilir (docs/51 "İzin zamanı").
+///
+/// [onboarding]: kurulumun son sayfasında da bir kez sorulur (Samet,
+/// 2026-10-18) — yoksa ilk hafta hatırlatması izin gelmeden zamanı geçer.
+/// Orada "ilk antrenman" koşulu aranmaz; cevap (evet/hayır) ortak
+/// `recallPrompted` bayrağına yazılır, soru özet ekranında tekrar çıkmaz.
 class RecallOffer extends ConsumerStatefulWidget {
-  const RecallOffer({super.key});
+  const RecallOffer({super.key, this.onboarding = false});
+
+  final bool onboarding;
 
   @override
   ConsumerState<RecallOffer> createState() => _RecallOfferState();
@@ -71,7 +78,8 @@ class _RecallOfferState extends ConsumerState<RecallOffer> {
   @override
   Widget build(BuildContext context) {
     final prefs = ref.watch(notificationPrefsProvider);
-    final first = ref.watch(_isFirstWorkoutProvider).valueOrNull ?? false;
+    final first = widget.onboarding ||
+        (ref.watch(_isFirstWorkoutProvider).valueOrNull ?? false);
     if (_closed || !first || !prefs.shouldOfferRecall) {
       return const SizedBox.shrink();
     }
@@ -108,13 +116,16 @@ class _RecallOfferState extends ConsumerState<RecallOffer> {
                 ),
                 AppSpacing.hGapMd,
                 Expanded(
-                  child: Text(l.recallOfferTitle,
+                  child: Text(
+                      widget.onboarding
+                          ? l.recallOfferOnbTitle
+                          : l.recallOfferTitle,
                       style: context.texts.titleSmall),
                 ),
               ],
             ),
             AppSpacing.vGapSm,
-            Text(l.recallOfferBody,
+            Text(widget.onboarding ? l.recallOfferOnbBody : l.recallOfferBody,
                 style: context.texts.bodySmall
                     ?.copyWith(color: context.colors.onSurfaceVariant)),
             AppSpacing.vGapMd,

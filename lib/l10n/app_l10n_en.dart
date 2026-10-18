@@ -1973,6 +1973,13 @@ class AppL10nEn extends AppL10n {
       'If you take a 2-day break or miss a planned day, I\'ll remind you around your usual time (at most 2 a day). Turn it off in Settings → Notifications.';
 
   @override
+  String get recallOfferOnbTitle => 'Want reminders for your workouts?';
+
+  @override
+  String get recallOfferOnbBody =>
+      'I\'ll remind you of your first workout, and of the next one if you take a 2-day break (at most 2 a day). Turn it off in Settings → Notifications.';
+
+  @override
   String get recallOfferYes => 'Yes, remind me';
 
   @override

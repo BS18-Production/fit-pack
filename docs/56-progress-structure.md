@@ -1,7 +1,7 @@
 # 56 — İlerleme sekmesi: Antrenman / Vücut / Hafta (Faz 3C)
 
 18 Ekim 2026 · Kaynak: deneyim araştırması 02 U05, 06 "İlerleme" satırı,
-review/A2 hata #6. Durum: **öneri, Samet onayı bekliyor.**
+review/A2 hata #6. Durum: **onaylandı.**
 
 ## Karar özeti
 

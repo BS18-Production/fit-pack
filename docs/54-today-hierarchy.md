@@ -1,8 +1,7 @@
 # 54 — Ana sayfa: "Bugün" hiyerarşisi (Faz 3A)
 
 18 Ekim 2026 · Kaynak: deneyim araştırması 06 §"Bugün hiyerarşisi" ve
-"Belirlenimci bağlam kuralları", 12 v2 §4, review/A2 ve A4. Durum: **öneri,
-Samet onayı bekliyor.**
+"Belirlenimci bağlam kuralları", 12 v2 §4, review/A2 ve A4. Durum: **onaylandı.**
 
 ## Karar özeti
 

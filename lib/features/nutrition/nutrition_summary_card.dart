@@ -35,7 +35,7 @@ class NutritionSummaryCard extends StatelessWidget {
       kcalGoal: kcalGoal,
       proteinGoal: proteinGoal,
     );
-    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.15 || MediaQuery.sizeOf(context).width < 360;
     return GlassCard(
       onTap: onTap,
       child: Column(
@@ -93,6 +93,9 @@ class NutritionSummaryCard extends StatelessWidget {
             },
           ),
           AppSpacing.vGapSm,
+          Text(l.expProteinRemaining(context.numFmt.format(
+            (proteinGoal - protein).clamp(0, proteinGoal).round())),
+            style: context.texts.titleSmall),
           Text(
             l.journalProteinRing,
             style: context.texts.labelSmall?.copyWith(

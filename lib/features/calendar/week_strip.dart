@@ -65,6 +65,7 @@ class _WeekStripState extends ConsumerState<WeekStrip> {
             children: [
               IconButton(
                 key: const ValueKey('weekStrip.prev'),
+                style: IconButton.styleFrom(backgroundColor: context.colors.surfaceContainer),
                 tooltip: l.calPrevWeek,
                 icon: const FitPackIcon.material(Icons.chevron_left_rounded),
                 onPressed: () => setState(() => _offset--),
@@ -83,7 +84,7 @@ class _WeekStripState extends ConsumerState<WeekStrip> {
                       child: Text(
                         _rangeLabel(context, days, now),
                         textAlign: TextAlign.center,
-                        style: context.texts.titleSmall
+                        style: context.texts.labelLarge
                             ?.copyWith(fontWeight: FontWeight.w800),
                       ),
                     ),
@@ -92,6 +93,7 @@ class _WeekStripState extends ConsumerState<WeekStrip> {
               ),
               IconButton(
                 key: const ValueKey('weekStrip.next'),
+                style: IconButton.styleFrom(backgroundColor: context.colors.surfaceContainer),
                 tooltip: l.calNextWeek,
                 icon: const FitPackIcon.material(Icons.chevron_right_rounded),
                 onPressed:

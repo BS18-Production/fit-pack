@@ -4,6 +4,7 @@ import 'package:fit_pack/data/database/app_database.dart';
 import 'package:fit_pack/data/providers.dart';
 import 'package:fit_pack/features/auth/auth_gate.dart';
 import 'package:fit_pack/features/onboarding/onboarding_screen.dart';
+import 'package:fit_pack/features/home/providers/weekly_goal_provider.dart';
 import 'package:fit_pack/l10n/app_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,6 +61,7 @@ void main() {
       ProviderScope(
         overrides: [
           databaseProvider.overrideWithValue(db),
+          weeklyGoalAccountProvider.overrideWithValue('onboarding-test'),
           authGateProvider.overrideWithValue(gate),
         ],
         child: MaterialApp.router(

@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../cloud/auth_service.dart';
+import 'auth_errors.dart';
 import 'auth_gate.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 
@@ -65,10 +66,10 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           .showSnackBar(SnackBar(content: Text(l.cloudResetOk)));
     } on AuthException catch (e) {
       // En olası sebep: bağlantının süresi dolmuş / oturum düşmüş.
-      if (mounted) setState(() => _error = e.message);
+      if (mounted) setState(() => _error = authErrorLabel(AppL10n.of(context), e));
     } catch (e) {
       if (mounted) {
-        setState(() => _error = AppL10n.of(context).cloudConnErr(e.toString()));
+        setState(() => _error = authErrorLabel(AppL10n.of(context), e));
       }
     } finally {
       if (mounted) setState(() => _busy = false);

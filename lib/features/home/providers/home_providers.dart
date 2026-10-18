@@ -6,6 +6,7 @@ import '../../../data/reactive.dart';
 import '../../../data/database/app_database.dart';
 import '../../../data/database/daos/nutrition_dao.dart';
 import '../streak_calc.dart';
+import 'weekly_goal_provider.dart';
 import '../../../core/utils/weight_trend.dart';
 
 /// Ana Sayfa okuma provider'ları — hepsi **reaktif** (H-05, `watchTables`):
@@ -71,28 +72,18 @@ final weightTrendProvider = StreamProvider<WeightTrend>((ref) {
   });
 });
 
-/// Haftalık hedef bazlı antrenman serisi (streak_calc). Hedef = planlanmış
-/// rutin günü sayısı (benzersiz haftalık gün); plan kurulmamışsa 1 — haftada
-/// en az bir antrenman seriyi sürdürür. Hafta sınırı kullanıcının "haftanın
-/// ilk günü" tercihine göre.
+/// Haftalık hedef docs/52 tek kaynağından; hafta sınırı kullanıcı tercihidir.
 final weeklyStreakProvider = StreamProvider<WeeklyStreak>((ref) {
   final db = ref.watch(databaseProvider);
+  final goal = ref.watch(weeklyGoalProvider.future);
   final weekStart = ref.watch(weekStartProvider);
   ref.watch(currentDayProvider); // hafta dönümü (CR-010)
   return watchTables(db, [db.workoutSessions, db.routines], () async {
     final dao = ref.read(workoutDaoProvider);
     final sessions = await dao.getAllSessions();
-    final routines = await dao.getActiveRoutines();
-
-    final scheduledDays = routines
-        .where((r) => r.scheduledWeekday != null)
-        .map((r) => r.scheduledWeekday!)
-        .toSet()
-        .length;
-
     return computeWeeklyStreak(
       sessionDates: sessions.map((s) => s.date),
-      weeklyGoal: scheduledDays == 0 ? 1 : scheduledDays,
+      weeklyGoal: await goal,
       now: DateTime.now(),
       weekStart: weekStart,
     );

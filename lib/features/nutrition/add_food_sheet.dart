@@ -12,9 +12,11 @@ import '../../data/providers.dart';
 import '../../data/services/openfoodfacts_service.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/progress_indicators.dart';
+import '../../shared/widgets/app_state_views.dart';
 import 'barcode_flow.dart';
 import 'food_search.dart';
 import 'food_labels.dart';
+import 'custom_food_dialog.dart';
 import 'meal_types.dart';
 import 'nutrition_habits.dart' show mealForTime;
 import 'nutrition_providers.dart' show selectedDateProvider;
@@ -40,6 +42,7 @@ Future<void> showAddFoodSheet(
   BuildContext context, {
   String? mealType,
   bool startWithBarcode = false,
+  bool autofocusSearch = false,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -50,7 +53,7 @@ Future<void> showAddFoodSheet(
     useSafeArea: true,
     backgroundColor: context.colors.surface,
     builder: (_) =>
-        AddFoodSheet(mealType: mealType, startWithBarcode: startWithBarcode),
+        AddFoodSheet(mealType: mealType, startWithBarcode: startWithBarcode, autofocusSearch: autofocusSearch),
   );
 }
 
@@ -65,7 +68,8 @@ class AddFoodSheet extends ConsumerStatefulWidget {
   /// null → günün saatine göre öğün (bugünse), yoksa öğle.
   final String? mealType;
   final bool startWithBarcode;
-  const AddFoodSheet({super.key, this.mealType, this.startWithBarcode = false});
+  final bool autofocusSearch;
+  const AddFoodSheet({super.key, this.mealType, this.startWithBarcode = false, this.autofocusSearch = false});
 
   @override
   ConsumerState<AddFoodSheet> createState() => _AddFoodSheetState();
@@ -79,6 +83,7 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   Map<int, int> _recentRank = {};
   Map<int, double> _lastGrams = {};
   bool _loading = true;
+  bool _loadError = false;
   String? _category; // null = Tümü
   Food? _editing; // miktar paneli açık besin
   bool _saving = false;
@@ -115,17 +120,23 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   }
 
   Future<void> _load() async {
-    final dao = ref.read(nutritionDaoProvider);
-    final foods = await dao.getAllFoods();
-    final recent = await dao.getRecentPortions();
-    if (!mounted) return;
-    setState(() {
-      _all = foods;
-      _recent = recent;
-      _recentRank = {for (final (i, r) in recent.indexed) r.food.id: i};
-      _lastGrams = {for (final r in recent) r.food.id: r.grams};
-      _loading = false;
-    });
+    setState(() { _loading = true; _loadError = false; });
+    try {
+      final dao = ref.read(nutritionDaoProvider);
+      final foods = await dao.getAllFoods();
+      final recent = await dao.getRecentPortions();
+      if (!mounted) return;
+      setState(() {
+        _all = foods;
+        _recent = recent;
+        _recentRank = {for (final (i, r) in recent.indexed) r.food.id: i};
+        _lastGrams = {for (final r in recent) r.food.id: r.grams};
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loadError = true);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   String get _query => _search.text.trim();
@@ -228,12 +239,13 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   // ───────── kısayollar ─────────
 
   Future<void> _scan() async {
-    final food = await scanBarcodeToFood(context, ref);
-    if (food == null || !mounted) return;
-    setState(() {
-      _addToList(food);
-      _editing = food;
-    });
+    try {
+      final food = await scanBarcodeToFood(context, ref);
+      if (food == null || !mounted) return;
+      setState(() { _addToList(food); _editing = food; });
+    } catch (_) {
+      if (mounted) _showError(AppL10n.of(context).commonSaveFailed);
+    }
   }
 
   Future<void> _quick() async {
@@ -278,9 +290,9 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   }
 
   Future<void> _custom() async {
-    final result = await showDialog<_CustomFood>(
+    final result = await showDialog<CustomFood>(
       context: context,
-      builder: (_) => const _CustomFoodDialog(),
+      builder: (_) => const CustomFoodDialog(),
     );
     if (result == null || !mounted) return;
     final dao = ref.read(nutritionDaoProvider);
@@ -399,6 +411,7 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
               ),
               child: _SearchField(
                 controller: _search,
+                autofocus: widget.autofocusSearch && !widget.startWithBarcode,
                 onChanged: (_) => setState(() {
                   _offResults = const [];
                   _editing = null;
@@ -409,6 +422,18 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
             Expanded(
               child: _loading
                   ? const Center(child: CircularProgressIndicator())
+                  : _loadError
+                  ? ErrorState(message: l.nutritionLoadError, onRetry: _load)
+                  : editing != null
+                  ? SingleChildScrollView(controller: scroll, child: FoodAmountPanel(
+                key: ValueKey(editing.id),
+                food: editing,
+                initial: _portion(editing),
+                addLabel: _addToMeal(l, _meal),
+                saving: _saving,
+                onClose: () => setState(() => _editing = null),
+                onAdd: (grams) => _add(editing, grams),
+              ))
                   : CustomScrollView(
                       controller: scroll,
                       keyboardDismissBehavior:
@@ -498,16 +523,7 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
                       ],
                     ),
             ),
-            if (editing != null)
-              _AmountPanel(
-                key: ValueKey(editing.id),
-                food: editing,
-                initial: _portion(editing),
-                addLabel: _addToMeal(l, _meal),
-                saving: _saving,
-                onClose: () => setState(() => _editing = null),
-                onAdd: (grams) => _add(editing, grams),
-              ),
+
           ],
         ),
       ),
@@ -728,10 +744,12 @@ class _AddedBanner extends StatelessWidget {
 
 class _SearchField extends StatelessWidget {
   final TextEditingController controller;
+  final bool autofocus;
   final ValueChanged<String> onChanged;
   final VoidCallback onScan;
   const _SearchField({
     required this.controller,
+    this.autofocus = false,
     required this.onChanged,
     required this.onScan,
   });
@@ -741,6 +759,7 @@ class _SearchField extends StatelessWidget {
     final l = AppL10n.of(context);
     return TextField(
       controller: controller,
+      autofocus: autofocus,
       textInputAction: TextInputAction.search,
       onChanged: onChanged,
       decoration: InputDecoration(
@@ -786,7 +805,17 @@ class _Shortcuts extends StatelessWidget {
         AppSpacing.lg,
         AppSpacing.xs,
       ),
-      child: Row(
+      child: MediaQuery.sizeOf(context).width < 360 ||
+          MediaQuery.textScalerOf(context).scale(1) > 1.3
+        ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            _ShortcutTile(icon: Icons.qr_code_scanner_rounded, label: l.afScan, onTap: onScan),
+            AppSpacing.vGapSm,
+            _ShortcutTile(icon: Icons.bolt_rounded, label: l.afQuick, onTap: onQuick),
+            AppSpacing.vGapSm,
+            _ShortcutTile(icon: Icons.edit_note_rounded, label: l.afCustom, onTap: onCustom),
+          ])
+        : Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: _ShortcutTile(
@@ -847,8 +876,7 @@ class _ShortcutTile extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
                 style: context.texts.labelMedium?.copyWith(
                   color: c.onSurface,
                   fontWeight: FontWeight.w600,
@@ -1132,14 +1160,14 @@ class _NoResults extends StatelessWidget {
 
 /// Satıra dokununca alttan açılır: canlı kalori + makrolar, birim/gram,
 /// −/+ ve hazır miktar çipleri, "Öğle yemeğine ekle".
-class _AmountPanel extends StatefulWidget {
+class FoodAmountPanel extends StatefulWidget {
   final Food food;
   final FoodPortion initial;
   final String addLabel;
   final bool saving;
   final VoidCallback onClose;
   final ValueChanged<double> onAdd;
-  const _AmountPanel({
+  const FoodAmountPanel({
     super.key,
     required this.food,
     required this.initial,
@@ -1150,10 +1178,10 @@ class _AmountPanel extends StatefulWidget {
   });
 
   @override
-  State<_AmountPanel> createState() => _AmountPanelState();
+  State<FoodAmountPanel> createState() => FoodAmountPanelState();
 }
 
-class _AmountPanelState extends State<_AmountPanel> {
+class FoodAmountPanelState extends State<FoodAmountPanel> {
   late bool _unitMode = hasUnit(widget.food);
   late double _grams = widget.initial.grams;
   late final TextEditingController _field = TextEditingController(
@@ -1163,8 +1191,16 @@ class _AmountPanelState extends State<_AmountPanel> {
   double get _portionG => widget.food.defaultPortionGrams ?? 100;
   double get _units => _grams / _portionG;
 
-  String _fieldText() =>
-      _unitMode ? fmtNum(_round(_units)) : '${_grams.round()}';
+  String _fieldText() {
+    final fmt = context.numFmt..turnOffGrouping();
+    return fmt.format(_unitMode ? _round(_units) : _grams);
+  }
+
+  bool get _validAmount {
+    final value = double.tryParse(_field.text.replaceAll(',', '.'));
+    final grams = _unitMode ? (value ?? 0) * _portionG : value;
+    return grams != null && grams.isFinite && grams > 0 && grams <= 5000;
+  }
 
   double _round(double v) => (v * 100).round() / 100;
 
@@ -1310,6 +1346,7 @@ class _AmountPanelState extends State<_AmountPanel> {
           Row(
             children: [
               IconButton.filledTonal(
+                tooltip: l.expAmountDecrease,
                 onPressed: () => _step(-1),
                 icon: const FitPackIcon.material(Icons.remove_rounded),
               ),
@@ -1329,6 +1366,7 @@ class _AmountPanelState extends State<_AmountPanel> {
                     ],
                     style: context.texts.titleMedium,
                     decoration: InputDecoration(
+                      labelText: l.expAmount,
                       isDense: true,
                       suffixText: _unitMode
                           ? '$unitLabel · ${_grams.round()} g'
@@ -1336,7 +1374,7 @@ class _AmountPanelState extends State<_AmountPanel> {
                     ),
                     onChanged: (v) {
                       final n = double.tryParse(v.replaceAll(',', '.'));
-                      if (n == null || n <= 0) return;
+                      if (n == null || n <= 0) { setState(() {}); return; }
                       _setGrams(
                         _unitMode ? n * _portionG : n,
                         syncField: false,
@@ -1346,6 +1384,7 @@ class _AmountPanelState extends State<_AmountPanel> {
                 ),
               ),
               IconButton.filledTonal(
+                tooltip: l.expAmountIncrease,
                 onPressed: () => _step(1),
                 icon: const FitPackIcon.material(Icons.add_rounded),
               ),
@@ -1381,7 +1420,7 @@ class _AmountPanelState extends State<_AmountPanel> {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: widget.saving ? null : () => widget.onAdd(_grams),
+              onPressed: widget.saving || !_validAmount ? null : () => widget.onAdd(_grams),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
@@ -1501,201 +1540,6 @@ class _QuickAddDialogState extends State<_QuickAddDialog> {
         ),
         FilledButton(onPressed: _save, child: Text(l.nhUsualAdd)),
       ],
-    );
-  }
-}
-
-/// Custom food creator sonucu — porsiyon değerleri /100g'a çevrilir.
-class _CustomFood {
-  final String name;
-  final double kcalPer100g;
-  final double proteinPer100g;
-  final double carbPer100g;
-  final double fatPer100g;
-  final double defaultGrams;
-  final String? unitLabel; // null → birim yok (sadece gram)
-
-  _CustomFood({
-    required this.name,
-    required this.kcalPer100g,
-    required this.proteinPer100g,
-    required this.carbPer100g,
-    required this.fatPer100g,
-    required this.defaultGrams,
-    required this.unitLabel,
-  });
-}
-
-/// Kullanıcı kendi yemeğini girer. "Yediğin porsiyon" mantığı: toplam
-/// gram + o porsiyonun toplam kcal/P/K/Y'si → /100g'a çevrilip kaydedilir
-/// (tekrar kullanılabilir). Örn: "3 Yumurtalı Omlet" 220 g, 320 kcal...
-class _CustomFoodDialog extends StatefulWidget {
-  const _CustomFoodDialog();
-
-  @override
-  State<_CustomFoodDialog> createState() => _CustomFoodDialogState();
-}
-
-class _CustomFoodDialogState extends State<_CustomFoodDialog> {
-  final _formKey = GlobalKey<FormState>();
-  final _name = TextEditingController();
-  final _grams = TextEditingController(text: '100');
-  final _kcal = TextEditingController();
-  final _protein = TextEditingController();
-  final _carb = TextEditingController();
-  final _fat = TextEditingController();
-  // Birim: "porsiyon" varsayılan (locale'e göre, ilk build'de atanır).
-  // null → "birim yok" (sadece gram).
-  String? _unit;
-  bool _unitInitialized = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_unitInitialized) {
-      _unitInitialized = true;
-      _unit = AppL10n.of(context).unitPortion;
-    }
-  }
-
-  @override
-  void dispose() {
-    for (final c in [_name, _grams, _kcal, _protein, _carb, _fat]) {
-      c.dispose();
-    }
-    super.dispose();
-  }
-
-  double _num(TextEditingController c) =>
-      double.tryParse(c.text.trim().replaceAll(',', '.')) ?? 0;
-
-  void _save() {
-    if (!_formKey.currentState!.validate()) return;
-    final g = _num(_grams);
-    final f = 100 / g; // porsiyon → /100g
-    Navigator.pop(
-      context,
-      _CustomFood(
-        name: _name.text.trim(),
-        kcalPer100g: _num(_kcal) * f,
-        proteinPer100g: _num(_protein) * f,
-        carbPer100g: _num(_carb) * f,
-        fatPer100g: _num(_fat) * f,
-        defaultGrams: g,
-        unitLabel: _unit,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppL10n.of(context);
-    return AlertDialog(
-      title: Text(l.nutritionCustomTitle),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                l.nutritionCustomHelp,
-                style: context.texts.bodySmall?.copyWith(
-                  color: context.colors.onSurfaceVariant,
-                ),
-              ),
-              AppSpacing.vGapMd,
-              TextFormField(
-                controller: _name,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: l.nutritionFoodName),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? l.commonEnterName : null,
-              ),
-              AppSpacing.vGapMd,
-              DropdownButtonFormField<String?>(
-                initialValue: _unit,
-                decoration: InputDecoration(labelText: l.nutritionUnit),
-                items: [
-                  DropdownMenuItem(
-                    value: null,
-                    child: Text(l.nutritionNoUnitOption),
-                  ),
-                  ...unitOptionsWith(l, _unit).map(
-                    (u) => DropdownMenuItem(
-                      value: u,
-                      child: Text(l.nutritionOneUnit(u)),
-                    ),
-                  ),
-                ],
-                onChanged: (v) => setState(() => _unit = v),
-              ),
-              AppSpacing.vGapMd,
-              _NumberField(
-                controller: _grams,
-                label: _unit == null
-                    ? l.nutritionPortionGrams
-                    : l.nutritionUnitGramsQuestion(_unit!),
-                requiredField: true,
-              ),
-              AppSpacing.vGapMd,
-              _NumberField(
-                controller: _kcal,
-                label: l.nutritionTotalKcal,
-                requiredField: true,
-              ),
-              AppSpacing.vGapMd,
-              _NumberField(
-                controller: _protein,
-                label: '${l.macroProtein} (g)',
-              ),
-              AppSpacing.vGapMd,
-              _NumberField(controller: _carb, label: '${l.macroCarbs} (g)'),
-              AppSpacing.vGapMd,
-              _NumberField(controller: _fat, label: '${l.macroFat} (g)'),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l.commonCancel),
-        ),
-        FilledButton(onPressed: _save, child: Text(l.commonSave)),
-      ],
-    );
-  }
-}
-
-class _NumberField extends StatelessWidget {
-  final TextEditingController controller;
-  final String label;
-  final bool requiredField;
-
-  const _NumberField({
-    required this.controller,
-    required this.label,
-    this.requiredField = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
-      decoration: InputDecoration(labelText: label),
-      validator: (raw) {
-        final l = AppL10n.of(context);
-        final t = (raw ?? '').trim().replaceAll(',', '.');
-        if (t.isEmpty) return requiredField ? l.commonRequired : null;
-        final v = double.tryParse(t);
-        if (v == null) return l.commonInvalidNumber;
-        if (requiredField && v <= 0) return l.commonMustBePositive;
-        if (v < 0) return l.commonNotNegative;
-        return null;
-      },
     );
   }
 }

@@ -223,8 +223,8 @@ class _SectionTitle extends StatelessWidget {
 }
 
 /// "+0,4 kg" / "−1,0 kg" — işaretli, birimle.
-String _signed(Units u, double kg) {
-  final s = u.weight(kg.abs());
+String _signed(BuildContext context, Units u, double kg) {
+  final s = '${context.numFmt.format(u.weightFromKg(kg.abs()))} ${u.weightUnit}';
   if (kg > 0) return '+$s';
   if (kg < 0) return '−$s';
   return s;
@@ -422,11 +422,11 @@ class _KpiGrid extends ConsumerWidget {
     final weight = _KpiTile(
       icon: Icons.monitor_weight_rounded,
       label: l.wrKpiWeight,
-      value: kg.weekAvg == null ? '—' : u.weightValue(kg.weekAvg!),
+      value: kg.weekAvg == null ? '—' : context.numFmt.format(u.weightFromKg(kg.weekAvg!)),
       unit: kg.weekAvg == null ? null : u.weightUnit,
       delta: kg.delta == null || kg.singleMeasurement
           ? null
-          : _Delta(_signed(u, kg.delta!), kg.delta!.sign.toInt(),
+          : _Delta(_signed(context, u, kg.delta!), kg.delta!.sign.toInt(),
               weightTone(kg.meaning)),
       notes: kg.count == 0
           ? [l.wrNoRecord]

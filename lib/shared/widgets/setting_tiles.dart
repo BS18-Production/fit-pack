@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import 'fitpack_icon.dart';
@@ -116,7 +117,7 @@ class SettingsSectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.lg, AppSpacing.xl, AppSpacing.lg, AppSpacing.sm),
       child: Text(
-        title.toUpperCase(),
+        context.upper(title),
         style: context.texts.labelSmall?.copyWith(
           color: context.colors.onSurfaceVariant,
           letterSpacing: 1.2,

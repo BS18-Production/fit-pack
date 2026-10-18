@@ -7573,6 +7573,168 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Live sessions appear in Apple Health / Health Connect (time and name; no calories).'**
   String get healthWriteWorkoutsNote;
+
+  /// No description provided for @expDraftError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your workout in progress. Try again.'**
+  String get expDraftError;
+
+  /// No description provided for @expFirstMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Today 0 / {goal} kcal · Add your first meal'**
+  String expFirstMeal(String goal);
+
+  /// No description provided for @expPlanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested from your goal — adjust freely. You can change these anytime in Profile.'**
+  String get expPlanSubtitle;
+
+  /// No description provided for @expMeasurementError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the measurement. Try again.'**
+  String get expMeasurementError;
+
+  /// No description provided for @expAuthConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect. Check your internet and try again.'**
+  String get expAuthConnection;
+
+  /// No description provided for @expAuthCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect email or password.'**
+  String get expAuthCredentials;
+
+  /// No description provided for @expAuthUnconfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your email before signing in.'**
+  String get expAuthUnconfirmed;
+
+  /// No description provided for @expAuthExists.
+  ///
+  /// In en, this message translates to:
+  /// **'An account already uses this email. Try signing in.'**
+  String get expAuthExists;
+
+  /// No description provided for @expAuthRateLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Wait a moment and try again.'**
+  String get expAuthRateLimit;
+
+  /// No description provided for @expAuthPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a different password with at least 6 characters.'**
+  String get expAuthPassword;
+
+  /// No description provided for @expAuthGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not complete the request. Try again.'**
+  String get expAuthGeneric;
+
+  /// No description provided for @expConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your email'**
+  String get expConfirmTitle;
+
+  /// No description provided for @expConfirmHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your inbox and spam folder. If you opened the link on another device, return here and sign in. You can also continue with Google.'**
+  String get expConfirmHelp;
+
+  /// No description provided for @expResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend confirmation email'**
+  String get expResend;
+
+  /// No description provided for @expChangeEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Change email address'**
+  String get expChangeEmail;
+
+  /// No description provided for @expEmailSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation email sent.'**
+  String get expEmailSent;
+
+  /// No description provided for @expAmountDecrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease amount'**
+  String get expAmountDecrease;
+
+  /// No description provided for @expAmountIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase amount'**
+  String get expAmountIncrease;
+
+  /// No description provided for @expAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get expAmount;
+
+  /// No description provided for @expUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get expUpdate;
+
+  /// No description provided for @expBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get expBarcode;
+
+  /// No description provided for @expCreateFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your own food'**
+  String get expCreateFood;
+
+  /// No description provided for @expYesterdayMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Add yesterday’s meal'**
+  String get expYesterdayMeal;
+
+  /// No description provided for @expProteinRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g protein left'**
+  String expProteinRemaining(String grams);
+
+  /// No description provided for @expTodayLeftBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {protein} g protein and {kcal} kcal left.'**
+  String expTodayLeftBoth(String protein, String kcal);
+
+  /// No description provided for @expTodayLeftProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {protein} g protein left.'**
+  String expTodayLeftProtein(String protein);
+
+  /// No description provided for @expTodayLeftKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {kcal} kcal left.'**
+  String expTodayLeftKcal(String kcal);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

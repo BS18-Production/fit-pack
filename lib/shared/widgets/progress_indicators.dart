@@ -1,3 +1,4 @@
+import '../../core/i18n/formatting.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
@@ -85,7 +86,7 @@ class CalorieRing extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    over ? '+${remaining.abs()}' : '$remaining',
+                    over ? '+${context.numFmt.format(remaining.abs())}' : context.numFmt.format(remaining),
                     style: titleStyle?.copyWith(color: foreground),
                   ),
                   Text(label, style: subStyle),
@@ -212,7 +213,7 @@ class MacroInlineText extends StatelessWidget {
       color: context.colors.onSurfaceVariant,
     );
     TextSpan macro(String letter, double value, Color color) => TextSpan(
-      text: '$letter${value.round()}',
+      text: '$letter${context.numFmt.format(value.round())}',
       style: base?.copyWith(color: color, fontWeight: FontWeight.w700),
     );
     return Text.rich(
@@ -228,8 +229,9 @@ class MacroInlineText extends StatelessWidget {
           if (suffix != null) TextSpan(text: suffix),
         ],
       ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+      maxLines: MediaQuery.sizeOf(context).width < 360 ||
+          MediaQuery.textScalerOf(context).scale(1) > 1.15 ? null : 1,
+      overflow: TextOverflow.clip,
     );
   }
 }
@@ -279,8 +281,8 @@ class MacroBar extends StatelessWidget {
             const Spacer(),
             Text(
               hasGoal
-                  ? '${current.round()} / $goal $unit'
-                  : '${current.round()} $unit',
+                  ? '${context.numFmt.format(current.round())} / ${context.numFmt.format(goal)} $unit'
+                  : '${context.numFmt.format(current.round())} $unit',
               style: valueStyle?.copyWith(
                 color: over ? context.semantic.warning : null,
               ),

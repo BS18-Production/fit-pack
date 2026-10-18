@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import '../cloud/auth_service.dart';
+import 'auth_errors.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 import '../legal/privacy_policy_sheet.dart';
 
@@ -42,6 +43,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   /// Nötr bilgi mesajı (hata DEĞİL) — kayıt sonrası "e-postanı doğrula".
   /// Kırmızı hata rengiyle gösterilmez.
   String? _info;
+  String? _confirmationEmail;
 
   @override
   void dispose() {
@@ -74,15 +76,36 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           setState(() {
             _isLogin = true;
             _info = AppL10n.of(context).cloudSignupOk;
+            _confirmationEmail = email;
           });
         }
       }
     } on AuthException catch (e) {
-      setState(() => _error = e.message);
+      if (mounted) {
+        setState(() {
+          _error = authErrorLabel(AppL10n.of(context), e);
+          if (e.code == 'email_not_confirmed') {
+            _confirmationEmail = _emailCtrl.text.trim();
+          }
+        });
+      }
     } catch (e) {
       if (mounted) {
-        setState(() => _error = AppL10n.of(context).cloudConnErr(e.toString()));
+        setState(() => _error = authErrorLabel(AppL10n.of(context), e));
       }
+    } finally {
+      if (mounted) setState(() => _busy = _Busy.none);
+    }
+  }
+
+  Future<void> _resend() async {
+    if (_busy != _Busy.none || _confirmationEmail == null) return;
+    setState(() { _busy = _Busy.email; _error = null; });
+    try {
+      await ref.read(authServiceProvider).resendConfirmation(_confirmationEmail!);
+      if (mounted) setState(() => _info = AppL10n.of(context).expEmailSent);
+    } catch (e) {
+      if (mounted) setState(() => _error = authErrorLabel(AppL10n.of(context), e));
     } finally {
       if (mounted) setState(() => _busy = _Busy.none);
     }
@@ -102,7 +125,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       // metin onları gizliyordu (ör. Supabase'in "Unacceptable audience in
       // id_token" reddi yapılandırma hatası gibi değil, iptal gibi okunuyordu).
       if (mounted) {
-        setState(() => _error = AppL10n.of(context).cloudConnErr(e.toString()));
+        setState(() => _error = authErrorLabel(AppL10n.of(context), e));
       }
     } finally {
       if (mounted) setState(() => _busy = _Busy.none);
@@ -161,16 +184,35 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       ?.copyWith(color: context.colors.error)),
             ],
             AppSpacing.vGapLg,
+            if (_confirmationEmail != null) ...[
+              AppSpacing.vGapLg,
+              Text(l.expConfirmTitle, style: context.texts.titleLarge),
+              AppSpacing.vGapSm,
+              SelectableText(_confirmationEmail!),
+              AppSpacing.vGapSm,
+              Text(l.expConfirmHelp),
+              TextButton(
+                key: const ValueKey('auth.resend'),
+                onPressed: _busy == _Busy.none ? _resend : null,
+                child: Text(l.expResend),
+              ),
+              TextButton(
+                onPressed: _busy == _Busy.none ? () => setState(() {
+                  _confirmationEmail = null; _info = null; _error = null;
+                }) : null,
+                child: Text(l.expChangeEmail),
+              ),
+            ],
             // Ayırıcı: "ya da e-posta ile devam et".
             Row(
               children: [
                 const Expanded(child: Divider()),
                 AppSpacing.hGapMd,
-                Text(
-                  l.cloudOrEmail,
+                Flexible(flex: 4, child: Text(
+                  l.cloudOrEmail, textAlign: TextAlign.center,
                   style: context.texts.bodySmall
                       ?.copyWith(color: context.colors.onSurfaceVariant),
-                ),
+                )),
                 AppSpacing.hGapMd,
                 const Expanded(child: Divider()),
               ],
@@ -249,6 +291,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         _isLogin = !_isLogin;
                         _error = null;
                         _info = null;
+                        _confirmationEmail = null;
                       }),
               child: Text(_isLogin ? l.cloudNoAccount : l.cloudHaveAccount),
             ),
@@ -296,10 +339,10 @@ class _ForgotPasswordDialogState extends ConsumerState<_ForgotPasswordDialog> {
       if (mounted) Navigator.of(context).pop(true);
     } on AuthException catch (e) {
       // Genelde hız sınırı ("too many requests") — kullanıcıya göster.
-      if (mounted) setState(() => _error = e.message);
+      if (mounted) setState(() => _error = authErrorLabel(AppL10n.of(context), e));
     } catch (e) {
       if (mounted) {
-        setState(() => _error = AppL10n.of(context).cloudConnErr(e.toString()));
+        setState(() => _error = authErrorLabel(AppL10n.of(context), e));
       }
     } finally {
       if (mounted) setState(() => _busy = false);

@@ -1,3 +1,4 @@
+import 'exercise_daily_best.dart';
 import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -394,11 +395,11 @@ class _ChartTab extends ConsumerWidget {
       data: (points) {
         final units = ref.watch(unitsProvider);
         // Grafik görüntü biriminde çizilir (hesap kg — docs/16 §3).
-        final e1rms = points
-            .where((p) => p.e1rm != null)
-            .map((p) => units.weightFromKg(p.e1rm!))
-            .toList();
-        if (e1rms.length < 2) {
+        final daily = dailyBestE1rm(points);
+        final e1rms = daily.map((p) => units.weightFromKg(p.e1rm)).toList();
+        double dayX(DateTime d) => DateTime.utc(d.year, d.month, d.day)
+            .millisecondsSinceEpoch / Duration.millisecondsPerDay;
+        if (e1rms.isEmpty) {
           return EmptyState(
             icon: Icons.show_chart_rounded,
             title: AppL10n.of(context).edChartEmpty,
@@ -408,7 +409,7 @@ class _ChartTab extends ConsumerWidget {
         }
         final spots = [
           for (var i = 0; i < e1rms.length; i++)
-            FlSpot(i.toDouble(), e1rms[i])
+            FlSpot(dayX(daily[i].date), e1rms[i])
         ];
         final minY = e1rms.reduce((a, b) => a < b ? a : b);
         final maxY = e1rms.reduce((a, b) => a > b ? a : b);
@@ -426,6 +427,8 @@ class _ChartTab extends ConsumerWidget {
               AppSpacing.vGapLg,
               Expanded(
                 child: LineChart(LineChartData(
+                  minX: spots.length == 1 ? spots.first.x - .5 : spots.first.x,
+                  maxX: spots.length == 1 ? spots.first.x + .5 : spots.last.x,
                   minY: minY - pad,
                   maxY: maxY + pad,
                   gridData: FlGridData(
@@ -439,22 +442,39 @@ class _ChartTab extends ConsumerWidget {
                         sideTitles: SideTitles(showTitles: false)),
                     topTitles: const AxisTitles(
                         sideTitles: SideTitles(showTitles: false)),
-                    bottomTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
+                    bottomTitles: AxisTitles(sideTitles: SideTitles(
+                      showTitles: true, reservedSize: 32,
+                      interval: (spots.last.x - spots.first.x).clamp(1, double.infinity),
+                      getTitlesWidget: (v, meta) {
+                        if (v != spots.first.x && v != spots.last.x) return const SizedBox.shrink();
+                        return SideTitleWidget(meta: meta,
+                          fitInside: SideTitleFitInsideData.fromTitleMeta(meta),
+                          child: Text(context.dateFmt('d MMM').format(
+                            DateTime.fromMillisecondsSinceEpoch((v * Duration.millisecondsPerDay).round(), isUtc: true)),
+                            style: context.texts.labelSmall));
+                      },
+                    )),
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: 40,
-                        getTitlesWidget: (v, _) => Text('${v.round()}',
+                        interval: ((maxY - minY + 2 * pad) / 4).ceilToDouble(),
+                        getTitlesWidget: (v, _) => Text(context.numFmt.format(v.round()),
                             style: context.texts.labelSmall),
                       ),
                     ),
                   ),
+                  lineTouchData: LineTouchData(touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (_) => context.colors.inverseSurface,
+                    getTooltipItems: (spots) => [for (final p in spots) LineTooltipItem(
+                      '${context.numFmt.format(p.y)} ${units.weightUnit}\n${context.dateFmt('d MMM yyyy').format(daily[p.spotIndex].date)}',
+                      TextStyle(color: context.colors.onInverseSurface))],
+                  )),
                   borderData: FlBorderData(show: false),
                   lineBarsData: [
                     LineChartBarData(
                       spots: spots,
-                      isCurved: true,
+                      isCurved: false,
                       barWidth: 3,
                       color: context.colors.primary,
                       dotData: const FlDotData(show: true),

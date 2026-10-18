@@ -8,6 +8,7 @@ import '../../data/providers.dart';
 import '../../data/reactive.dart';
 import '../cloud/auth_service.dart';
 import 'assistant_calculator.dart';
+import '../home/providers/weekly_goal_provider.dart';
 import 'assistant_routing.dart';
 
 final assistantRouterProvider = FutureProvider<FrozenAssistantRouter>(
@@ -37,6 +38,7 @@ final assistantSnapshotProvider = StreamProvider.autoDispose<AssistantData>((
   ref,
 ) {
   ref.watch(currentUserProvider); // hesap değişiminde eski sonuç gösterilmez
+  final goal = ref.watch(weeklyGoalProvider.future);
   final day = ref.watch(currentDayProvider);
   final weekStart = ref.watch(weekStartProvider);
   final db = ref.watch(databaseProvider);
@@ -64,6 +66,7 @@ final assistantSnapshotProvider = StreamProvider.autoDispose<AssistantData>((
       final sessions = await wo.getAllSessions();
       return AssistantData(
         now: day,
+        weeklyGoal: await goal,
         weekStart: weekStart,
         sessions: sessions.where((v) => v.date.isBefore(end)).toList(),
         sets: await wo.getSetsForSessions(sessions.map((v) => v.id).toList()),

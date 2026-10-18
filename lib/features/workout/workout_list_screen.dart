@@ -326,27 +326,9 @@ class _Stat extends StatelessWidget {
           ),
         ),
         AppSpacing.vGapSm,
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Flexible(
-              child: Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: context.texts.headlineSmall,
-              ),
-            ),
-            AppSpacing.hGapXs,
-            Text(
-              unit,
-              style: context.texts.bodySmall?.copyWith(
-                color: context.colors.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
+        Text(value, style: context.texts.headlineSmall),
+        Text(unit, style: context.texts.bodySmall?.copyWith(
+          color: context.colors.onSurfaceVariant)),
       ],
     );
   }
@@ -599,16 +581,12 @@ class _RoutineCard extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Flexible(
-                              child: Text(
-                                routine.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: context.texts.titleSmall,
-                              ),
-                            ),
+                            Text(routine.name,
+                              maxLines: 2,
+                              style: context.texts.titleSmall),
                             if (dayShort != null) ...[
                               AppSpacing.hGapSm,
                               WorkoutChip(

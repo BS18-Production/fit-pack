@@ -63,6 +63,7 @@ void main() {
     tester.view.physicalSize = Size(width * 2, 1704);
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.reset);
+    await db.userProfileDao.ensureProfile();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [

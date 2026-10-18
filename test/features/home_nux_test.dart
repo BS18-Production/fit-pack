@@ -6,6 +6,8 @@ import 'package:fit_pack/features/health/step_providers.dart';
 import 'package:fit_pack/features/health/step_source.dart';
 import 'package:fit_pack/features/home/first_week.dart';
 import 'package:fit_pack/features/home/home_screen.dart';
+import 'package:fit_pack/features/workout/workout_draft.dart';
+import 'package:fit_pack/shared/widgets/progress_indicators.dart';
 import 'package:fit_pack/features/workout/routine_providers.dart';
 import 'package:fit_pack/l10n/app_l10n.dart';
 import 'package:flutter/material.dart';
@@ -120,7 +122,7 @@ void main() {
     });
     tearDown(() => db.close());
 
-    Future<void> ac(WidgetTester tester, {DateTime? hesap}) async {
+    Future<void> ac(WidgetTester tester, {DateTime? hesap, bool draftError = false}) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
@@ -128,6 +130,7 @@ void main() {
       await tester.pumpWidget(ProviderScope(
         overrides: [
           databaseProvider.overrideWithValue(db),
+          if (draftError) activeDraftProvider.overrideWith((ref) => throw StateError('disk')),
           stepSourceProvider.overrideWithValue(
             FakeStepSource(status: StepPlatformStatus.unavailable),
           ),
@@ -162,6 +165,23 @@ void main() {
       expect(find.byKey(const ValueKey('home.noRoutine')), findsOneWidget);
       expect(find.text('Hazır program seç'), findsOneWidget);
       expect(find.text('Kendi rutinini kur'), findsOneWidget);
+    });
+
+    testWidgets('ilk gün: eylem görünür, boş halka ve grafik yok', (tester) async {
+      await ac(tester);
+      expect(find.byKey(const ValueKey('home.firstMeal')), findsOneWidget);
+      expect(find.byType(CalorieRing), findsNothing);
+      final button = tester.getRect(find.byKey(const ValueKey('home.pickProgram')));
+      expect(button.bottom, lessThan(700));
+      expect(button.top, greaterThan(0));
+      expect(find.text('Verime sor'), findsNothing);
+    });
+
+    testWidgets('taslak hatası yeni başlat yerine yeniden deneme gösterir', (tester) async {
+      await ac(tester, draftError: true);
+      expect(find.text('Devam eden antrenman okunamadı. Yeniden dene.'), findsOneWidget);
+      expect(find.text('Tekrar dene'), findsOneWidget);
+      expect(find.byKey(const ValueKey('home.pickProgram')), findsNothing);
     });
 
     testWidgets('güne bağlı olmayan rutinlerde sıradaki gösterilir',

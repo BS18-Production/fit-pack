@@ -179,19 +179,13 @@ void main() {
         reason: 'yeni antrenman başlatma yarışmaz');
   });
 
-  testWidgets('hiç kayıt yok: ritim kartı başlatma metni + son 30 gün 0',
-      (tester) async {
+  testWidgets('hiç kayıt yok: boş ritim ve son 30 gün gizlenir', (tester) async {
     await db.userProfileDao.ensureProfile();
     await ac(tester, const HomeScreen());
-
-    await tester.scrollUntilVisible(find.text('Ritmini başlat'), 200,
-        scrollable: find.byType(Scrollable).first);
-    expect(find.text('Ritmini başlat'), findsOneWidget);
-    expect(
-        find.text(
-            'Haftalık hedef: 1 antrenman · dinlenme günleri seriyi bozmaz'),
-        findsOneWidget);
-    expect(find.text('SON 30 GÜN'), findsOneWidget);
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -1800));
+    await tester.pump();
+    expect(find.text('Ritmini başlat'), findsNothing);
+    expect(find.text('SON 30 GÜN'), findsNothing);
   });
 
   testWidgets('dinlenme günü: dinlenme kartı + sıradaki rutin',

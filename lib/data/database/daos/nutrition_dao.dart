@@ -230,6 +230,26 @@ class NutritionDao extends DatabaseAccessor<AppDatabase> with _$NutritionDaoMixi
   Future<int> insertFoodLog(FoodLogsCompanion entry) =>
       into(foodLogs).insert(entry);
 
+  /// Aynı kaydı günceller; tarih/kimlik ve kaydedildiği andaki besin oranı korunur.
+  /// Mevcut UPDATE tetikleyicisi senkron sırasını otomatik artırır.
+  Future<void> updateFoodLogAmount(int id, double grams) async {
+    if (!grams.isFinite || grams <= 0 || grams > 5000) {
+      throw ArgumentError.value(grams);
+    }
+    await transaction(() async {
+      final log = await (select(foodLogs)..where((l) => l.id.equals(id))).getSingle();
+      if (log.grams <= 0) throw StateError('Geçersiz eski miktar');
+      final ratio = grams / log.grams;
+      await (update(foodLogs)..where((l) => l.id.equals(id))).write(FoodLogsCompanion(
+        grams: Value(grams),
+        computedKcal: Value(log.computedKcal * ratio),
+        computedProtein: Value(log.computedProtein * ratio),
+        computedCarb: Value(log.computedCarb * ratio),
+        computedFat: Value(log.computedFat * ratio),
+      ));
+    });
+  }
+
   /// Aktivite takvimi (docs/10-activity-calendar.md): tarih aralığındaki
   /// günlük makro toplamları. Gün başına TEK kayıt (00:00'a normalize) — ay
   /// görünümü tek sorguyla doldurulur (N+1 yok).

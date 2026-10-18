@@ -171,7 +171,7 @@ class _WorkoutActivityCardState extends ConsumerState<WorkoutActivityCard> {
                             spots: spots,
                             color: c.primary,
                             barWidth: 2.5,
-                            isCurved: true,
+                            isCurved: false,
                             preventCurveOverShooting: true,
                             shadow: Shadow(
                               color: c.primary.withValues(alpha: .35),

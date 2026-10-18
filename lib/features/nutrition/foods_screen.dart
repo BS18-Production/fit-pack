@@ -50,11 +50,18 @@ class _FoodsScreenState extends ConsumerState<FoodsScreen> {
   }
 
   Future<void> _scan() async {
-    final food = await scanBarcodeToFood(context, ref);
-    if (food == null || !mounted) return;
-    // allFoodsProvider reaktif (H-05) → tarama sonrası liste kendiliğinden güncel.
-    _searchController.text = food.name;
-    setState(() => _query = food.name);
+    try {
+      final food = await scanBarcodeToFood(context, ref);
+      if (food == null || !mounted) return;
+      // allFoodsProvider reaktif (H-05) → liste kendiliğinden güncel.
+      _searchController.text = food.name;
+      setState(() => _query = food.name);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppL10n.of(context).commonSaveFailed)));
+      }
+    }
   }
 
   Future<void> _create() async {

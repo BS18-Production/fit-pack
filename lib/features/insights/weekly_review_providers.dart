@@ -6,6 +6,7 @@ import '../../data/database/app_database.dart';
 import '../../data/providers.dart';
 import '../../data/reactive.dart';
 import 'weekly_review.dart';
+import '../home/providers/weekly_goal_provider.dart';
 
 /// Haftalık değerlendirme (docs/22). Parametre = kaç hafta geriye:
 /// 0 bu hafta, 1 geçen hafta.
@@ -17,6 +18,7 @@ import 'weekly_review.dart';
 /// fonksiyondan geçer (W-9).
 final weeklyReviewProvider =
     StreamProvider.autoDispose.family<WeeklyReview, int>((ref, offset) {
+  final goal = ref.watch(weeklyGoalProvider.future);
   final db = ref.watch(databaseProvider);
   final weekStart = ref.watch(weekStartProvider);
   final day = ref.watch(currentDayProvider); // hafta dönümü (CR-010)
@@ -79,6 +81,7 @@ final weeklyReviewProvider =
     }
 
     return buildWeeklyReview(WeeklyReviewInput(
+      weeklyGoal: await goal,
       weekStart: start,
       now: now,
       sessions: sessions,

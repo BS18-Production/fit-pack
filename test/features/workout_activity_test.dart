@@ -17,7 +17,7 @@ void main() {
     expect(days.first.date, DateTime(2026, 12, 28));
     expect(days.last.date, DateTime(2027, 1, 3));
     expect(days.length, 7);
-    expect(days.every((d) => d.sessions == 0 && d.kcal == 0), isTrue);
+    expect(days.every((d) => d.sessions == 0 && d.kcal == null), isTrue);
   });
   test('aynı günün seansları mevcut kalori formülüyle toplanır', () {
     final days = calculate([session(1, DateTime(2027, 1, 3, 10)),
@@ -25,11 +25,11 @@ void main() {
     expect(days.last.sessions, 2);
     expect(days.last.kcal, 630);
   });
-  test('kilo yok: kayıtlı seans tahmini null, kayıtsız gün gerçek kayıt toplamı 0', () {
+  test('kilo yok: kayıtlı seans tahmini null, kayıtsız gün boşluk', () {
     final days = calculate([session(1, now)], weight: null);
     expect(days.last.kcal, isNull);
     expect(days.last.sessions, 1);
-    expect(days.first.kcal, 0);
+    expect(days.first.kcal, isNull);
   });
   test('eksik süre, bilinen diğer seansın kısmi toplamı olarak gösterilmez', () {
     final days = calculate([session(1, now), session(2, now, minutes: null)]);

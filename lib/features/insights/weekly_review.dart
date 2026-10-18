@@ -92,6 +92,7 @@ class WeeklyReviewInput {
 
   /// Aktif rutinlerin planladığı haftalık günler (`DateTime.weekday`).
   final Set<int> scheduledWeekdays;
+  final int? weeklyGoal;
 
   /// Rutinlerdeki hedef tekrar üst sınırı, harekete göre (odak kuralı 2).
   final Map<int, int> targetRepsMaxByExercise;
@@ -128,6 +129,7 @@ class WeeklyReviewInput {
     this.prevSetsBySession = const {},
     this.exercises = const {},
     this.scheduledWeekdays = const {},
+    this.weeklyGoal,
     this.targetRepsMaxByExercise = const {},
     this.progressPoints = const [],
     this.foodLogs = const [],
@@ -373,7 +375,7 @@ WorkoutSection _workout(WeeklyReviewInput i) {
       bodyWeightKg: i.bodyWeightKg,
     ).volumeKg,
     kcalBurned: agg.kcalBurned,
-    planned: i.scheduledWeekdays.isEmpty ? null : i.scheduledWeekdays.length,
+    planned: i.weeklyGoal ?? (i.scheduledWeekdays.isEmpty ? null : i.scheduledWeekdays.length),
   );
 }
 

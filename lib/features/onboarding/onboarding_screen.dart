@@ -6,6 +6,7 @@ import '../../core/notifications/notification_prefs.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/units/units.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
@@ -868,7 +869,7 @@ class _ProgressDots extends StatelessWidget {
           final active = i <= current;
           return Expanded(
             child: AnimatedContainer(
-              duration: AppDuration.normal,
+              duration: motionDuration(context, AppDuration.normal),
               height: 4,
               margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
               decoration: BoxDecoration(

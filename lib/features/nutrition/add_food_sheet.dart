@@ -656,7 +656,9 @@ class _MealPicker extends StatelessWidget {
             ),
           ),
       ],
+      // Görünür çip aynı; dokunma alanı 48 yüksek (A6).
       child: Container(
+        constraints: const BoxConstraints(minHeight: AppA11y.minTapTarget),
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.sm,
           AppSpacing.xs,

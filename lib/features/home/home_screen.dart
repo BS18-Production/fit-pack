@@ -5,6 +5,7 @@ import '../../core/i18n/formatting.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/units/units.dart';
 import '../../core/utils/weight_goal.dart';
 import '../../l10n/app_l10n.dart';
@@ -918,7 +919,7 @@ class _RhythmCard extends ConsumerWidget {
             borderRadius: AppRadius.brPill,
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: (done / goal).clamp(0.0, 1.0)),
-              duration: AppDuration.normal,
+              duration: motionDuration(context, AppDuration.normal),
               curve: Curves.easeOutCubic,
               builder: (_, v, _) => LinearProgressIndicator(
                 value: v,
@@ -1319,7 +1320,7 @@ class _WaterMini extends ConsumerWidget {
               borderRadius: AppRadius.brSm,
               child: TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0, end: pct),
-                duration: AppDuration.normal,
+                duration: motionDuration(context, AppDuration.normal),
                 curve: Curves.easeOutCubic,
                 builder: (_, v, _) => LinearProgressIndicator(
                   value: v,

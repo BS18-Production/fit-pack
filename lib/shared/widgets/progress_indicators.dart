@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../l10n/app_l10n.dart';
 
 /// Modern beslenme/ilerleme görselleştirme bileşenleri.
@@ -67,7 +68,7 @@ class CalorieRing extends StatelessWidget {
       height: size,
       child: TweenAnimationBuilder<double>(
         tween: Tween(begin: 0, end: pct.clamp(0.0, 1.0)),
-        duration: AppDuration.slow,
+        duration: motionDuration(context, AppDuration.slow),
         curve: Curves.easeOutCubic,
         builder: (_, animated, _) {
           return CustomPaint(
@@ -294,7 +295,7 @@ class MacroBar extends StatelessWidget {
           borderRadius: AppRadius.brSm,
           child: TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: pct.clamp(0.0, 1.0)),
-            duration: AppDuration.slow,
+            duration: motionDuration(context, AppDuration.slow),
             curve: Curves.easeOutCubic,
             builder: (_, v, _) => LinearProgressIndicator(
               value: hasGoal ? v : 0,

@@ -28,6 +28,10 @@ import '../../core/prefs/week_start_provider.dart';
 import '../nutrition/nutrition_habit_widgets.dart';
 import 'first_week.dart';
 import 'today_lines.dart';
+import 'today_task.dart';
+import '../nutrition/meal_types.dart';
+import '../nutrition/nutrition_habits.dart' show mealForTime;
+import '../nutrition/add_food_sheet.dart' show showAddFoodSheet;
 import '../workout/progression.dart' show ProgressionKind;
 import 'week_ready.dart';
 import '../insights/weekly_review.dart';
@@ -146,11 +150,12 @@ class _Header extends StatelessWidget {
                         ),
                       ),
                       AppSpacing.vGapXs,
+                      // Tarih logonun altında (docs/54 §3): karşılama tek
+                      // satıra iner, ilk ekranda görev alanına yer kalır.
                       Text(
-                        context.upper(l.journalSubtitle),
-                        style: context.texts.labelSmall?.copyWith(
+                        context.dateFmt('d MMMM, EEEE').format(DateTime.now()),
+                        style: context.texts.labelMedium?.copyWith(
                           color: c.onSurfaceVariant,
-                          letterSpacing: 1,
                         ),
                       ),
                     ],
@@ -168,14 +173,12 @@ class _Header extends StatelessWidget {
                 ),
               ],
             ),
-            AppSpacing.vGapXl,
-            Text(l.journalTitle, style: context.texts.headlineMedium),
-            AppSpacing.vGapXs,
+            AppSpacing.vGapMd,
             Text(
-              context.dateFmt('d MMMM, EEEE').format(DateTime.now()),
-              style: context.texts.bodySmall?.copyWith(
-                color: c.onSurfaceVariant,
-              ),
+              l.journalTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.texts.titleLarge,
             ),
           ],
         ),
@@ -186,43 +189,62 @@ class _Header extends StatelessWidget {
 
 // ──────────────────────────────────────────────── Birincil aksiyon (durum)
 
-/// Bugünün eylemi — öncelik sırası (docs/24 §2): devam eden seans →
-/// planlı rutin → dinlenme günü → döngüde sıradaki rutin → rutin yok
-/// (docs/49 §3). Yalnız BUGÜNE bakar.
+/// Bugünün TEK birincil görevi (docs/54 §2): karar [todayTask]'ta; bu kart
+/// yalnız çizer. Yalnız BUGÜNE bakar.
 class _PrimaryActionCard extends ConsumerWidget {
   const _PrimaryActionCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Devam eden seans varken "yeni antrenman başlat" yarışmaz (docs/23 §3.2).
-    final draftAsync = ref.watch(activeDraftProvider);
-    if (draftAsync.hasError) {
-      return ErrorState(
-        message: AppL10n.of(context).expDraftError,
-        onRetry: () => ref.invalidate(activeDraftProvider),
-      );
-    }
-    // Yenilemede (invalidate) eski değer dururken iskelete düşme — kart
-    // titremesin; yalnız ilk yüklemede iskelet.
-    if (draftAsync.isLoading && !draftAsync.hasValue) {
-      return Skeleton.card(height: 150);
-    }
-    final draft = draftAsync.valueOrNull;
-    if (draft != null) return _ResumeCard(draft: draft);
+    final task = ref.watch(todayTaskProvider);
+    return switch (task.kind) {
+      TodayTaskKind.loading => Skeleton.card(height: 150),
+      TodayTaskKind.draftError => ErrorState(
+          message: AppL10n.of(context).expDraftError,
+          onRetry: () => ref.invalidate(activeDraftProvider),
+        ),
+      TodayTaskKind.resume => _ResumeCard(draft: task.draft!),
+      TodayTaskKind.finishedToday => _FinishedTodayCard(session: task.session!),
+      TodayTaskKind.routineError => ErrorState(
+          message: AppL10n.of(context).whLoadError,
+          onRetry: () => ref.invalidate(todayRoutineProvider),
+        ),
+      TodayTaskKind.plannedToday => _TrainingDayCard(routine: task.routine!),
+      TodayTaskKind.restDay => _RestDayCard(nextName: task.nextName),
+      TodayTaskKind.upNext => _UpNextCard(routine: task.routine!),
+      TodayTaskKind.noRoutine => const _NoRoutineCard(),
+    };
+  }
+}
 
-    return ref
-        .watch(todayRoutineProvider)
-        .when(
-          loading: () => Skeleton.card(height: 150),
-          error: (_, _) => ErrorState(message: AppL10n.of(context).whLoadError,
-            onRetry: () => ref.invalidate(todayRoutineProvider)),
-          data: (tr) {
-            if (tr.today != null) return _TrainingDayCard(routine: tr.today!);
-            if (tr.next != null) return _RestDayCard(nextName: tr.next!.name);
-            if (tr.upNext != null) return _UpNextCard(routine: tr.upNext!);
-            return const _NoRoutineCard();
-          },
-        );
+/// Bugün antrenman bitti (docs/54 D1): ana eylem özet; yeniden başlatmak
+/// ikincil bağlantı — aynı rutini tekrar başlatmak ana çağrı olmaz.
+class _FinishedTodayCard extends StatelessWidget {
+  final WorkoutSession session;
+  const _FinishedTodayCard({required this.session});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    final mins = session.durationMin;
+    return _GradientActionCard(
+      key: const ValueKey('home.finishedToday'),
+      kicker: l.today3aFinishedKicker,
+      title: session.workoutType,
+      subtitle: mins != null && mins > 0
+          ? l.today3aFinishedSub(mins)
+          : l.today3aFinishedSubNoTime,
+      action: l.today3aViewSummary,
+      actionIcon: Icons.check_circle_rounded,
+      onTap: () => context.push(AppRoutes.summary(session.id)),
+      secondary: TextButton(
+        key: const ValueKey('home.trainAnyway'),
+        style: TextButton.styleFrom(
+            minimumSize: const Size(0, AppA11y.minTapTarget)),
+        onPressed: () => context.go(AppRoutes.workout),
+        child: Text(l.today3aTrainAnyway),
+      ),
+    );
   }
 }
 
@@ -232,7 +254,11 @@ class _GradientActionCard extends StatelessWidget {
   final String kicker, title, subtitle, action;
   final IconData actionIcon;
   final VoidCallback onTap;
+  // Ana düğmenin altında isteğe bağlı ikincil eylem (ör. "Yine de antrenman").
+  final Widget? secondary;
   const _GradientActionCard({
+    super.key,
+    this.secondary,
     required this.kicker,
     required this.title,
     required this.subtitle,
@@ -305,6 +331,8 @@ class _GradientActionCard extends StatelessWidget {
               ),
             ),
           ),
+          if (secondary != null)
+            Align(alignment: Alignment.center, child: secondary),
         ],
       ),
     );
@@ -570,9 +598,35 @@ class _TodayLines extends ConsumerWidget {
                   l.expTodayLeftKcal(context.numFmt.format(kcal ?? 0)),
               },
               onTap: () => context.go(AppRoutes.nutrition),
+              // Ana sayfadan doğrudan kayıt (docs/54 D2): öğün saate göre
+              // seçilir, panelde değiştirilebilir.
+              action: _AddMealButton(meal: mealForTime(DateTime.now())),
             ),
         ],
       ),
+    );
+  }
+}
+
+class _AddMealButton extends ConsumerWidget {
+  final String meal;
+  const _AddMealButton({required this.meal});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
+    // Yalnız "+" (48×48): dar ekran ve büyük yazıda satırı taşırmaz; adı
+    // ekran okuyucuya ipucundan gelir.
+    return IconButton.filledTonal(
+      key: const ValueKey('home.todayLine.addMeal'),
+      tooltip: l.today3aAddMealHint(mealName(l, meal)),
+      constraints: const BoxConstraints(
+          minWidth: AppA11y.minTapTarget, minHeight: AppA11y.minTapTarget),
+      onPressed: () {
+        ref.read(selectedDateProvider.notifier).state = DateTime.now();
+        showAddFoodSheet(context, mealType: meal);
+      },
+      icon: const FitPackIcon.material(Icons.add_rounded, size: AppIconSize.md),
     );
   }
 }
@@ -581,11 +635,13 @@ class _TodayLine extends StatelessWidget {
   final IconData icon;
   final String text;
   final VoidCallback onTap;
+  final Widget? action; // satır sonunda ayrı eylem (ok yerine)
   const _TodayLine({
     super.key,
     required this.icon,
     required this.text,
     required this.onTap,
+    this.action,
   });
 
   @override
@@ -608,11 +664,14 @@ class _TodayLine extends StatelessWidget {
                   style: context.texts.bodyMedium?.copyWith(color: c.onSurface),
                 ),
               ),
-              FitPackIcon.material(
-                Icons.chevron_right_rounded,
-                color: c.outline,
-                size: AppIconSize.sm,
-              ),
+              if (action != null)
+                action!
+              else
+                FitPackIcon.material(
+                  Icons.chevron_right_rounded,
+                  color: c.outline,
+                  size: AppIconSize.sm,
+                ),
             ],
           ),
         ),
@@ -645,19 +704,44 @@ class _WeekReadyCard extends ConsumerWidget {
             FocusKind.reviewCalories => l.wrFocusCalories,
             FocusKind.keepRhythm => l.wrFocusKeep,
           };
+    final c = context.colors;
+    // İkincil kart (docs/54 §2): birincil görevle aynı ağırlıkta yarışmaz.
     return Padding(
       key: const ValueKey('home.weekReady'),
       padding: const EdgeInsets.only(top: AppSpacing.lg),
-      child: _GradientActionCard(
-        kicker: l.homeWeekReadyKicker,
-        title: l.homeWeekReadyTitle,
-        subtitle: subtitle,
-        action: l.homeWeekReadyOpen,
-        actionIcon: Icons.insights_rounded,
-        onTap: () {
-          ref.read(weekReadyOpenedProvider.notifier).markOpened(now, weekStart);
-          context.push(AppRoutes.weeklyReviewWeeksBack(offset));
-        },
+      child: _Card(
+        child: InkWell(
+          borderRadius: AppRadius.brMd,
+          onTap: () {
+            ref.read(weekReadyOpenedProvider.notifier).markOpened(now, weekStart);
+            context.push(AppRoutes.weeklyReviewWeeksBack(offset));
+          },
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: AppA11y.minTapTarget),
+            child: Row(
+              children: [
+                FitPackIcon.material(Icons.insights_rounded,
+                    color: c.primary, size: AppIconSize.md),
+                AppSpacing.hGapMd,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l.homeWeekReadyTitle,
+                          style: context.texts.titleSmall),
+                      if (subtitle.isNotEmpty)
+                        Text(subtitle,
+                            style: context.texts.bodySmall
+                                ?.copyWith(color: c.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+                FitPackIcon.material(Icons.chevron_right_rounded,
+                    color: c.outline, size: AppIconSize.sm),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

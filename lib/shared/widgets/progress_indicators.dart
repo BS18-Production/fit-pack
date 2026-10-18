@@ -278,14 +278,27 @@ class MacroBar extends StatelessWidget {
               decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             AppSpacing.hGapSm,
-            Text(label, style: labelStyle),
+            // Dar ekran + büyük yazıda etiket kısalır, değer küçülür; satır
+            // taşmaz (docs/54 dar ekran testi yakaladı).
+            Flexible(
+              child: Text(label,
+                  maxLines: 1, overflow: TextOverflow.ellipsis, style: labelStyle),
+            ),
+            AppSpacing.hGapSm,
             const Spacer(),
-            Text(
-              hasGoal
-                  ? '${context.numFmt.format(current.round())} / ${context.numFmt.format(goal)} $unit'
-                  : '${context.numFmt.format(current.round())} $unit',
-              style: valueStyle?.copyWith(
-                color: over ? context.semantic.warning : null,
+            Flexible(
+              flex: 2,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(
+                  hasGoal
+                      ? '${context.numFmt.format(current.round())} / ${context.numFmt.format(goal)} $unit'
+                      : '${context.numFmt.format(current.round())} $unit',
+                  style: valueStyle?.copyWith(
+                    color: over ? context.semantic.warning : null,
+                  ),
+                ),
               ),
             ),
           ],

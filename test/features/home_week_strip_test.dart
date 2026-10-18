@@ -244,10 +244,15 @@ void main() {
     await db.userProfileDao.ensureProfile();
     await dar(tester, const HomeScreen());
     expect(tester.takeException(), isNull);
-    await tester.scrollUntilVisible(find.text('BUGÜNÜN PLANI'), 200,
+    // Bugün seans kaydedildi → birincil görev "Bugün tamam" (docs/54 D1).
+    await tester.scrollUntilVisible(find.text('BUGÜN TAMAM'), 200,
         scrollable: find.byType(Scrollable).first);
     expect(tester.takeException(), isNull);
-    expect(find.text('BUGÜNÜN PLANI'), findsOneWidget);
+    expect(find.text('BUGÜN TAMAM'), findsOneWidget);
+    // Listenin sonuna kadar kaydır — alttaki kartlar da taşmamalı.
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -4000));
+    await tester.pump();
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('dar ekran + büyük yazı: ay görünümü taşmaz', (tester) async {

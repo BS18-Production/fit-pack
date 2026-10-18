@@ -7909,6 +7909,42 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Done'**
   String get asKbDone;
+
+  /// No description provided for @today3aFinishedKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'DONE TODAY'**
+  String get today3aFinishedKicker;
+
+  /// No description provided for @today3aFinishedSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved · {mins} min'**
+  String today3aFinishedSub(int mins);
+
+  /// No description provided for @today3aFinishedSubNoTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get today3aFinishedSubNoTime;
+
+  /// No description provided for @today3aViewSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'View summary'**
+  String get today3aViewSummary;
+
+  /// No description provided for @today3aTrainAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Train anyway'**
+  String get today3aTrainAnyway;
+
+  /// No description provided for @today3aAddMealHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add meal: {meal}'**
+  String today3aAddMealHint(String meal);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

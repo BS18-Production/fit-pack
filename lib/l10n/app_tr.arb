@@ -1791,5 +1791,11 @@
   "asTypeFailure": "Tükenişe kadar",
   "asSetType": "Set türü",
   "asKbNext": "Sonraki",
-  "asKbDone": "Bitti"
+  "asKbDone": "Bitti",
+  "today3aFinishedKicker": "BUGÜN TAMAM",
+  "today3aFinishedSub": "Kaydedildi · {mins} dk",
+  "today3aFinishedSubNoTime": "Kaydedildi",
+  "today3aViewSummary": "Özeti gör",
+  "today3aTrainAnyway": "Yine de antrenman yap",
+  "today3aAddMealHint": "Öğün ekle: {meal}"
 }

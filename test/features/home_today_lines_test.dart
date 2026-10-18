@@ -248,7 +248,7 @@ void main() {
     testWidgets('Pazartesi "Haftan hazır" görünür', (tester) async {
       await ac(tester, now: DateTime(2026, 10, 19, 10));
       expect(find.byKey(const ValueKey('home.weekReady')), findsOneWidget);
-      expect(find.text('HAFTAN HAZIR'), findsOneWidget);
+      expect(find.text('Haftalık değerlendirmen hazır'), findsOneWidget);
     });
 
     testWidgets('Pazar 21:00 görünür', (tester) async {

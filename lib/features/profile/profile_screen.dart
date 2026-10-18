@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:drift/drift.dart' show Value;
 
 import '../../core/i18n/enum_labels.dart';
+import '../../core/i18n/formatting.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
@@ -224,7 +225,7 @@ class _ProfileBody extends ConsumerWidget {
             SettingTile(
               icon: Icons.local_fire_department_rounded,
               title: l.settingsKcalGoal,
-              value: '${profile.kcalGoal} kcal',
+              value: '${context.numFmt.format(profile.kcalGoal)} kcal',
               onTap: () => _editNumber(context, ref,
                   title: l.settingsKcalGoal,
                   unit: 'kcal',
@@ -237,7 +238,7 @@ class _ProfileBody extends ConsumerWidget {
             SettingTile(
               icon: Icons.egg_alt_outlined,
               title: l.settingsProteinGoal,
-              value: '${profile.proteinGoal} g',
+              value: '${context.numFmt.format(profile.proteinGoal)} g',
               onTap: () => _editNumber(context, ref,
                   title: l.settingsProteinGoal,
                   unit: 'g',

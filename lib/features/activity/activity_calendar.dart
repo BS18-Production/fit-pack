@@ -73,7 +73,7 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      visualDensity: VisualDensity.compact,
+                      tooltip: AppL10n.of(context).calPrevMonth,
                       icon: const FitPackIcon.material(Icons.chevron_left_rounded),
                       onPressed: () => _shiftMonth(-1),
                     ),
@@ -87,7 +87,7 @@ class _ActivityCalendarState extends ConsumerState<ActivityCalendar> {
                       ),
                     ),
                     IconButton(
-                      visualDensity: VisualDensity.compact,
+                      tooltip: AppL10n.of(context).calNextMonth,
                       icon: const FitPackIcon.material(Icons.chevron_right_rounded),
                       onPressed: _isCurrentMonth ? null : () => _shiftMonth(1),
                     ),
@@ -177,9 +177,8 @@ class _WeekdayLabels extends StatelessWidget {
                 child: Text(
                   d,
                   style: context.texts.labelSmall?.copyWith(
-                    color: context.colors.onSurfaceVariant.withValues(
-                      alpha: 0.7,
-                    ),
+                    // Tam renk: %70 alfa 4,5:1 eşiğinin altındaydı (A6).
+                    color: context.colors.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -230,6 +229,7 @@ class _MonthGrid extends StatelessWidget {
       cells.add(
         _DayCell(
           day: day,
+          date: date,
           activity: act,
           kcalGoal: kcalGoal,
           proteinGoal: proteinGoal,
@@ -248,8 +248,9 @@ class _MonthGrid extends StatelessWidget {
       crossAxisCount: 7,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 4,
-      crossAxisSpacing: 2,
+      // Aralıksız: hücre ~46 pt (7 sütun dar kartta 48'e sığmaz; A6).
+      mainAxisSpacing: 2,
+      crossAxisSpacing: 0,
       children: cells,
     );
   }
@@ -257,12 +258,14 @@ class _MonthGrid extends StatelessWidget {
 
 class _DayCell extends StatelessWidget {
   final int day;
+  final DateTime date;
   final DayActivity? activity;
   final int kcalGoal, proteinGoal, waterGoal;
   final bool isToday, isFuture;
   final VoidCallback? onTap;
   const _DayCell({
     required this.day,
+    required this.date,
     required this.activity,
     required this.kcalGoal,
     required this.proteinGoal,
@@ -289,12 +292,24 @@ class _DayCell extends StatelessWidget {
             _p(a.waterMl.toDouble(), waterGoal),
           ];
 
-    return InkWell(
+    // Ekran okuyucu özeti (A6): "12 Ekim, antrenman, kalori %80, protein %60".
+    final l = AppL10n.of(context);
+    String pct(double v) => '%${(v * 100).round()}';
+    final label = [
+      context.dateFmt('d MMMM').format(date),
+      if (a != null && a.hasWorkout) l.navWorkout,
+      if (a != null) 'kcal ${pct(progresses[0])}',
+      if (a != null) 'protein ${pct(progresses[1])}',
+    ].join(', ');
+    return Semantics(
+      label: label,
+      button: onTap != null,
+      excludeSemantics: true,
+      child: InkWell(
       onTap: onTap,
       borderRadius: AppRadius.brSm,
-      child: Opacity(
-        opacity: isFuture ? 0.35 : 1,
-        child: CustomPaint(
+      // Gelecek günde halka yok, rakam okunur renkte (eski %35 opaklık 3:1 idi).
+      child: CustomPaint(
           painter: _RingsPainter(
             progresses: progresses,
             colors: [
@@ -334,7 +349,11 @@ class _DayCell extends StatelessWidget {
               child: Text(
                 '$day',
                 style: context.texts.labelSmall?.copyWith(
-                  color: isToday ? c.primary : c.onSurface,
+                  color: isToday
+                      ? c.primary
+                      : isFuture
+                          ? c.onSurfaceVariant
+                          : c.onSurface,
                   fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
                 ),
               ),

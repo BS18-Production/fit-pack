@@ -3,7 +3,7 @@ import '../workout/calorie_estimate.dart';
 
 typedef WorkoutActivityDay = ({DateTime date, int sessions, int? kcal});
 
-/// Son yedi takvim günü. Seans yoksa 0 kayıtlı yakım; bir seansın tahmini
+/// Son yedi takvim günü. Seans yoksa kayıt yok (null); bir seansın tahmini
 /// hesaplanamıyorsa gün null kalır. Eksik tahmin 0 ya da kısmi toplam olmaz.
 List<WorkoutActivityDay> workoutActivityDays({
   required DateTime now,
@@ -40,7 +40,7 @@ List<WorkoutActivityDay> workoutActivityDays({
     return (
       date: date,
       sessions: daySessions.length,
-      kcal: missing ? null : total.round(),
+      kcal: daySessions.isEmpty || missing ? null : total.round(),
     );
   });
 }

@@ -23,6 +23,9 @@ import '../home/providers/home_providers.dart';
 import '../progress_photos/progress_photos_providers.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 import '../../core/utils/weight_trend.dart';
+import '../insights/weekly_review_screen.dart';
+import '../progress/training_progress_providers.dart';
+import '../progress/training_progress_view.dart';
 
 /// **Reaktif** (H-05): ölçüm eklenince/silinince kendiliğinden tazelenir.
 final allMeasurementsProvider = StreamProvider<List<BodyMeasurement>>((ref) {
@@ -43,41 +46,75 @@ class BodyMetricsScreen extends ConsumerWidget {
     final measurementsAsync = ref.watch(allMeasurementsProvider);
 
     final l = AppL10n.of(context);
+    // Parça (docs/56): son seçilen; ilk açılışta Antrenman, antrenman verisi
+    // yoksa Vücut.
+    final training = ref.watch(trainingProgressProvider).valueOrNull;
+    final segment = ref.watch(progressSegmentProvider) ??
+        (training != null && training.isEmpty
+            ? ProgressSegment.body
+            : ProgressSegment.training);
+    final isBody = segment == ProgressSegment.body;
+    final tabPadding = EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md,
+        AppSpacing.lg, context.bottomScrollInset);
     return Scaffold(
       appBar: AppBar(title: Text(l.navProgress)),
       // İlk-kullanım ipucu (docs/15 §B): sekmeye ilk girişte kilo/ölçüm
       // girmeyi işaret eder; bir kez gösterilir.
       // Alt boşluk: içerik buzlu gezinme çubuğunun altından aktığı için
       // (extendBody) iç Scaffold FAB'ı çubuğun arkasına koyar — yukarı kaldır.
-      floatingActionButton: Padding(
+      // "Ölçüm Ekle" yalnız Vücut parçasında.
+      bottomNavigationBar: !isBody ? null : Padding(
         padding:
-            EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
-        child: CoachMark(
-          hint: FirstRunHint.progress,
-          message: (l) => l.hintProgress,
-          child: FloatingActionButton.extended(
+            EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.sm, AppSpacing.lg,
+                MediaQuery.paddingOf(context).bottom + AppSpacing.sm),
+        child: Builder(builder: (context) {
+          final button = FilledButton.icon(
             // Beslenme + İlerleme FAB'ları sekme yığınında birlikte canlı
             // (IndexedStack) — varsayılan ortak hero etiketi sayfa geçişinde
             // "multiple heroes share the same tag" hatası veriyordu.
-            heroTag: null,
             onPressed: () => _showAddMeasurementDialog(context, ref),
             icon: const FitPackIcon.material(Icons.add_rounded),
             label: Text(l.bmAddMeasurement),
-          ),
-        ),
+          );
+          final hasWeight = measurementsAsync.valueOrNull
+              ?.any((m) => (m.weightKg ?? 0) > 0) ?? false;
+          if (hasWeight || !measurementsAsync.hasValue) return button;
+          return CoachMark(hint: FirstRunHint.progress,
+            message: (l) => l.hintProgress, child: button);
+        }),
       ),
-      body: ListView(
-        // Alt boşluk: çubuk + nefes + FAB payı (fabScrollInset).
-        padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.lg,
-            AppSpacing.lg, context.fabScrollInset),
+      body: Column(
         children: [
-          // Aktivite takvimi — ölçüm olsun olmasın her zaman görünür.
-          const ActivityCalendar(),
-          AppSpacing.vGapLg,
-          // İlerleme fotoğrafları (docs/19): kilo grafiğinin eksik yarısı.
-          const _PhotosEntryCard(),
-          AppSpacing.vGapLg,
-          ..._measurementSection(context, ref, measurementsAsync),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.xs, AppSpacing.lg, 0),
+            child: _SegmentPicker(
+              segment: segment,
+              onChanged: (s) =>
+                  ref.read(progressSegmentProvider.notifier).select(s),
+            ),
+          ),
+          Expanded(
+            child: switch (segment) {
+              ProgressSegment.training =>
+                TrainingProgressView(padding: tabPadding),
+              ProgressSegment.week => WeeklyReviewView(padding: tabPadding),
+              ProgressSegment.body => ListView(
+                  // Alt boşluk: çubuk + nefes + FAB payı (fabScrollInset).
+                  padding: EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md,
+                      AppSpacing.lg, context.fabScrollInset),
+                  children: [
+                    // Aktivite takvimi — ölçüm olsun olmasın her zaman görünür.
+                    const ActivityCalendar(),
+                    AppSpacing.vGapLg,
+                    // İlerleme fotoğrafları (docs/19): kilo grafiğinin eksik yarısı.
+                    const _PhotosEntryCard(),
+                    AppSpacing.vGapLg,
+                    ..._measurementSection(context, ref, measurementsAsync),
+                  ],
+                ),
+            },
+          ),
         ],
       ),
     );
@@ -164,10 +201,17 @@ class BodyMetricsScreen extends ConsumerWidget {
                     if (!ok) return;
                     // Tartıdan gelen satır silinmez, gizlenir (docs/40 W-6):
                     // silinseydi bir sonraki okumada geri gelirdi.
-                    if (imported) {
-                      await ref.read(bodyDaoProvider).hideMeasurement(m.id);
-                    } else {
-                      await ref.read(bodyDaoProvider).deleteMeasurement(m.id);
+                    try {
+                      if (imported) {
+                        await ref.read(bodyDaoProvider).hideMeasurement(m.id);
+                      } else {
+                        await ref.read(bodyDaoProvider).deleteMeasurement(m.id);
+                      }
+                    } catch (_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(AppL10n.of(context).expMeasurementError)));
+                      }
                     }
                     // Kilo okuyan provider'lar reaktif (H-05) → silme sonrası
                     // Home "Son Kilo", TDEE, kalori tahmini kendiliğinden güncel.
@@ -184,6 +228,50 @@ class BodyMetricsScreen extends ConsumerWidget {
   }
 }
 
+/// Antrenman · Vücut · Hafta seçici (docs/56). Her parça ≥48 yüksek.
+class _SegmentPicker extends StatelessWidget {
+  final ProgressSegment segment;
+  final ValueChanged<ProgressSegment> onChanged;
+  const _SegmentPicker({required this.segment, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    String label(ProgressSegment s) => switch (s) {
+          ProgressSegment.training => l.prog3cSegTraining,
+          ProgressSegment.body => l.prog3cSegBody,
+          ProgressSegment.week => l.prog3cSegWeek,
+        };
+    return Semantics(
+      container: true,
+      label: l.prog3cSegmentLabel,
+      child: SizedBox(
+        width: double.infinity,
+        child: SegmentedButton<ProgressSegment>(
+          key: const ValueKey('progress.segments'),
+          showSelectedIcon: false,
+          style: const ButtonStyle(
+            minimumSize: WidgetStatePropertyAll(Size(0, AppA11y.minTapTarget)),
+            tapTargetSize: MaterialTapTargetSize.padded,
+          ),
+          segments: [
+            for (final s in ProgressSegment.values)
+              ButtonSegment(
+                value: s,
+                label: Text(label(s),
+                    key: ValueKey('progress.segment.${s.name}'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+              ),
+          ],
+          selected: {segment},
+          onSelectionChanged: (v) => onChanged(v.first),
+        ),
+      ),
+    );
+  }
+}
+
 /// İlerleme fotoğraflarına giriş (docs/19). Sayıyı ve "sunucuya yüklenmez"
 /// bilgisini taşır — kullanıcı fotoğrafların bizde yedeklenmediğini baştan
 /// bilsin.
@@ -193,7 +281,13 @@ class _PhotosEntryCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
-    final n = ref.watch(progressPhotosProvider).valueOrNull?.length ?? 0;
+    final photos = ref.watch(progressPhotosProvider);
+    if (photos.hasError) {
+      return ErrorState(message: l.bmLoadError,
+          onRetry: () => ref.invalidate(progressPhotosProvider));
+    }
+    if (photos.isLoading) return Skeleton.card(height: 100);
+    final n = photos.valueOrNull?.length ?? 0;
     return GlassCard(
       onTap: () => context.push(AppRoutes.progressPhotos),
       child: Row(
@@ -292,26 +386,15 @@ class _WeightChartCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            Wrap(
+              spacing: AppSpacing.md, runSpacing: AppSpacing.xs,
               children: [
-                Text(AppL10n.of(context).bmWeightTrend,
-                    style: context.texts.titleSmall),
-                if (showTrend) ...[
-                  AppSpacing.hGapSm,
-                  Flexible(
-                    child: Text(AppL10n.of(context).bmTrendLegend,
-                        overflow: TextOverflow.ellipsis,
-                        style: context.texts.labelSmall?.copyWith(
-                            color: context.colors.onSurfaceVariant)),
-                  ),
-                ],
-                const Spacer(),
-                if (goalWeight != null)
-                  Text(
-                      AppL10n.of(context).bmGoalLine(units.weight(goalWeight!)),
-                      style: context.texts.labelSmall?.copyWith(
-                          color: context.semantic.success,
-                          fontWeight: FontWeight.w600)),
+                Text(AppL10n.of(context).bmWeightTrend, style: context.texts.titleSmall),
+                if (showTrend) Text(AppL10n.of(context).bmTrendLegend,
+                  style: context.texts.labelSmall?.copyWith(color: context.colors.onSurfaceVariant)),
+                if (goalWeight != null) Text(
+                  AppL10n.of(context).bmGoalLine(units.weight(goalWeight!)),
+                  style: context.texts.labelSmall?.copyWith(color: context.semantic.success)),
               ],
             ),
             AppSpacing.vGapLg,
@@ -362,9 +445,9 @@ class _WeightChartCard extends StatelessWidget {
                           if (value != firstX && value != lastX) {
                             return const SizedBox.shrink();
                           }
-                          return Padding(
-                            padding:
-                                const EdgeInsets.only(top: AppSpacing.xs),
+                          return SideTitleWidget(
+                            meta: meta, space: AppSpacing.xs,
+                            fitInside: SideTitleFitInsideData.fromTitleMeta(meta),
                             child: Text(
                               dateFmt.format(
                                   DateTime.fromMillisecondsSinceEpoch(
@@ -391,11 +474,12 @@ class _WeightChartCard extends StatelessWidget {
                         ]),
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
+                      getTooltipColor: (_) => context.colors.inverseSurface,
                       getTooltipItems: (touched) => touched
                           .map((t) => LineTooltipItem(
-                                '${t.y.toStringAsFixed(1)} ${units.weightUnit}\n${dateFmt.format(DateTime.fromMillisecondsSinceEpoch(t.x.toInt()))}',
+                                '${context.numFmt.format(t.y)} ${units.weightUnit}\n${dateFmt.format(DateTime.fromMillisecondsSinceEpoch(t.x.toInt()))}',
                                 context.texts.labelMedium!.copyWith(
-                                    color: context.colors.onPrimary),
+                                    color: context.colors.onInverseSurface),
                               ))
                           .toList(),
                     ),
@@ -500,9 +584,9 @@ class _SummaryCard extends StatelessWidget {
                 style: context.texts.titleSmall),
             AppSpacing.vGapMd,
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _MetricTile(
+                Expanded(child: _MetricTile(
                   label: AppL10n.of(context).bmWeight,
                   value: latest.weightKg != null
                       ? units.weight(latest.weightKg!)
@@ -513,19 +597,19 @@ class _SummaryCard extends StatelessWidget {
                       ? null
                       : AppL10n.of(context).bmDiffSince(sinceDate),
                   unit: units.weightUnit,
-                ),
-                _MetricTile(
+                )),
+                Expanded(child: _MetricTile(
                   label: AppL10n.of(context).bmWaist,
                   value: latest.waistCm != null
                       ? units.length(latest.waistCm!)
                       : '—',
-                ),
-                _MetricTile(
+                )),
+                Expanded(child: _MetricTile(
                   label: AppL10n.of(context).bmArm,
                   value: latest.armCm != null
                       ? units.length(latest.armCm!)
                       : '—',
-                ),
+                )),
               ],
             ),
           ],
@@ -579,7 +663,7 @@ class _MetricTile extends StatelessWidget {
                       : Icons.arrow_upward_rounded,
                   size: 12,
                   color: diffColor),
-              Text('${diff!.abs().toStringAsFixed(1)} $unit',
+              Text('${context.numFmt.format(diff!.abs())} $unit',
                   style: context.texts.labelSmall?.copyWith(color: diffColor)),
             ],
           ),
@@ -613,7 +697,7 @@ class _MeasurementCard extends StatelessWidget {
             if (measurement.weightKg != null)
               units.weight(measurement.weightKg!),
             if (measurement.bodyFatPct != null)
-              '${l.bmBodyFat} %${measurement.bodyFatPct!.toStringAsFixed(1)}',
+              '${l.bmBodyFat} %${context.numFmt.format(measurement.bodyFatPct!)}',
             if (measurement.waistCm != null)
               '${l.bmWaist} ${units.length(measurement.waistCm!)}',
             if (measurement.armCm != null)

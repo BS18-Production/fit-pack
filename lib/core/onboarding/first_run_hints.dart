@@ -137,11 +137,23 @@ class _CoachMarkState extends ConsumerState<CoachMark> {
         .isUnseen(widget.hint);
     if (!unseen || !mounted || _done || _entry != null) return;
 
+    // Hedef ekran dışındaysa önce görünür alana kaydır (A2 #1: Antrenman
+    // sekmesinde "Keşfet" ekranın altındaydı; ekran kararıyor, balon
+    // görünmüyordu).
+    if (Scrollable.maybeOf(context) != null) {
+      await Scrollable.ensureVisible(context,
+          alignment: 0.1, duration: AppDuration.normal);
+      if (!mounted || _done || _entry != null) return;
+    }
     final box = context.findRenderObject() as RenderBox?;
     if (box == null || !box.attached || !box.hasSize || box.size.isEmpty) {
       return;
     }
     final rect = box.localToGlobal(Offset.zero) & box.size;
+    // Kaydırma yetmediyse (liste kısa / hedef yine dışarıda) ipucu açılmaz;
+    // sonraki girişte yeniden denenir (görüldü sayılmaz).
+    final screen = Offset.zero & MediaQuery.sizeOf(context);
+    if (!rect.overlaps(screen) || rect.intersect(screen).height < 24) return;
 
     _entry = OverlayEntry(
       builder: (overlayCtx) => _CoachMarkOverlay(
@@ -180,8 +192,12 @@ class _CoachMarkOverlay extends StatelessWidget {
     final l = AppL10n.of(context);
     final c = context.colors;
     final screen = MediaQuery.sizeOf(context);
-    // Balon, hedefin boş tarafına: hedef alt yarıdaysa üstüne, değilse altına.
-    final targetInLowerHalf = targetRect.center.dy > screen.height * 0.55;
+    // Görünen kısım: uzun hedef ekrandan taşabilir — balon ve delik ekranda
+    // kalan parçaya göre konur.
+    final hole = targetRect.intersect(Offset.zero & screen);
+    // Balon, hedefin geniş boş tarafına; ekran dışına itilmez.
+    final targetInLowerHalf = hole.top > screen.height - hole.bottom;
+    final maxEdge = screen.height * 0.6;
 
     final bubble = Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -224,7 +240,7 @@ class _CoachMarkOverlay extends StatelessWidget {
             Positioned.fill(
               child: CustomPaint(
                 painter: _SpotlightPainter(
-                  hole: targetRect.inflate(6),
+                  hole: hole.inflate(6),
                   ringColor: c.primary,
                 ),
               ),
@@ -232,9 +248,11 @@ class _CoachMarkOverlay extends StatelessWidget {
             Positioned(
               left: AppSpacing.xl,
               right: AppSpacing.xl,
-              top: targetInLowerHalf ? null : targetRect.bottom + 14,
+              top: targetInLowerHalf
+                  ? null
+                  : (hole.bottom + 14).clamp(0.0, maxEdge),
               bottom: targetInLowerHalf
-                  ? screen.height - targetRect.top + 14
+                  ? (screen.height - hole.top + 14).clamp(0.0, maxEdge)
                   : null,
               child: bubble,
             ),

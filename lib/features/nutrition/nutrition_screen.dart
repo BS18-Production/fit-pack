@@ -19,9 +19,11 @@ import '../home/providers/home_providers.dart';
 import 'warm_nutrition_summary.dart';
 import 'meal_copy_sheet.dart';
 import 'add_food_sheet.dart';
+import 'edit_food_log_sheet.dart';
 import 'meal_types.dart';
 import 'nutrition_habit_widgets.dart';
 import 'day_complete.dart';
+import 'yesterday_meal.dart';
 import 'nutrition_providers.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 
@@ -229,17 +231,27 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
             ),
             AppSpacing.vGapLg,
             totalsAsync.when(
-              data: (totals) => profileAsync.maybeWhen(
-                data: (profile) => WarmNutritionSummary(
+              data: (totals) => profileAsync.when(
+                data: (profile) => profile == null
+                  ? ErrorState(message: l.nutritionLoadError,
+                      onRetry: () => ref.invalidate(userProfileProvider))
+                  : WarmNutritionSummary(
                   totals: totals,
-                  kcalGoal: profile?.kcalGoal ?? 2200,
-                  proteinGoal: profile?.proteinGoal ?? 180,
-                  onGoals: () => context.push(AppRoutes.settings),
+                  kcalGoal: profile.kcalGoal,
+                  proteinGoal: profile.proteinGoal,
+                  onGoals: () => context.push(AppRoutes.profile),
                 ),
-                orElse: () => Skeleton.card(height: 280),
+                loading: () => Skeleton.card(height: 280),
+                error: (_, _) => ErrorState(
+                  message: l.nutritionLoadError,
+                  onRetry: () => ref.invalidate(userProfileProvider),
+                ),
               ),
               loading: () => Skeleton.card(height: 280),
-              error: (_, _) => const SizedBox.shrink(),
+              error: (_, _) => ErrorState(
+                message: l.nutritionLoadError,
+                onRetry: () => _invalidateAll(ref),
+              ),
             ),
             AppSpacing.vGapXl,
             // Makrolar her kayıtta görünür (Samet, 2026-10-11) — görünüm
@@ -370,7 +382,7 @@ class _NutritionScreenState extends ConsumerState<NutritionScreen> {
     WidgetRef ref, {
     String? mealType,
   }) {
-    showAddFoodSheet(context, mealType: mealType);
+    showAddFoodSheet(context, mealType: mealType, autofocusSearch: mealType == null);
   }
 }
 
@@ -589,6 +601,8 @@ class _MealSectionState extends State<_MealSection> {
               onDelete: () => widget.onDelete(item),
             ),
           ),
+        if (widget.items.isEmpty)
+          YesterdayMealShortcut(mealType: widget.mealType),
         if (widget.showUsual)
           UsualMealCard(mealType: widget.mealType, compact: true),
       ],
@@ -629,7 +643,9 @@ class _FoodLogRow extends StatelessWidget {
         ),
       ),
       onDismissed: (_) => onDelete(),
-      child: Padding(
+      child: InkWell(
+        onTap: () => showEditFoodLogSheet(context, item),
+        child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
           children: [
@@ -672,6 +688,7 @@ class _FoodLogRow extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -4465,4 +4465,306 @@ class AppL10nTr extends AppL10n {
   @override
   String get healthWriteWorkoutsNote =>
       'Canlı seanslar Apple Sağlık / Health Connect\'te görünür (saat ve ad; kalori yazılmaz).';
+
+  @override
+  String get expDraftError => 'Devam eden antrenman okunamadı. Yeniden dene.';
+
+  @override
+  String expFirstMeal(String goal) {
+    return 'Bugün 0 / $goal kcal';
+  }
+
+  @override
+  String get expPlanSubtitle =>
+      'Hedefine göre önerildi — istediğin gibi değiştir. Sonradan Profil’den de güncelleyebilirsin.';
+
+  @override
+  String get expMeasurementError => 'Ölçüm değiştirilemedi. Yeniden dene.';
+
+  @override
+  String get expAuthConnection =>
+      'Bağlantı kurulamadı. İnternetini kontrol edip yeniden dene.';
+
+  @override
+  String get expAuthCredentials => 'E-posta veya şifre yanlış.';
+
+  @override
+  String get expAuthUnconfirmed => 'Giriş yapmadan önce e-postanı doğrula.';
+
+  @override
+  String get expAuthExists =>
+      'Bu e-posta ile bir hesap var. Giriş yapmayı dene.';
+
+  @override
+  String get expAuthRateLimit =>
+      'Çok sık denedin. Biraz bekleyip yeniden dene.';
+
+  @override
+  String get expAuthPassword => 'Farklı, en az 6 karakterli bir şifre seç.';
+
+  @override
+  String get expAuthGeneric => 'İşlem tamamlanamadı. Yeniden dene.';
+
+  @override
+  String get expConfirmTitle => 'E-postanı doğrula';
+
+  @override
+  String get expConfirmHelp =>
+      'Gelen kutunu ve spam klasörünü kontrol et. Bağlantıyı başka cihazda açtıysan buraya dönüp giriş yap. Google ile de devam edebilirsin.';
+
+  @override
+  String get expResend => 'Doğrulama e-postasını yeniden gönder';
+
+  @override
+  String get expChangeEmail => 'E-posta adresini değiştir';
+
+  @override
+  String get expEmailSent => 'Doğrulama e-postası gönderildi.';
+
+  @override
+  String get expAmountDecrease => 'Miktarı azalt';
+
+  @override
+  String get expAmountIncrease => 'Miktarı artır';
+
+  @override
+  String get expAmount => 'Miktar';
+
+  @override
+  String get expUpdate => 'Güncelle';
+
+  @override
+  String get expBarcode => 'Barkod';
+
+  @override
+  String get expCreateFood => 'Kendi besinini oluştur';
+
+  @override
+  String get expYesterdayMeal => 'Dünkü gibi ekle';
+
+  @override
+  String expProteinRemaining(String grams) {
+    return '$grams g protein kaldı';
+  }
+
+  @override
+  String expTodayLeftBoth(String protein, String kcal) {
+    return 'Bugün $protein g protein, $kcal kcal kaldı.';
+  }
+
+  @override
+  String expTodayLeftProtein(String protein) {
+    return 'Bugün $protein g protein kaldı.';
+  }
+
+  @override
+  String expTodayLeftKcal(String kcal) {
+    return 'Bugün $kcal kcal kaldı.';
+  }
+
+  @override
+  String get asExitMsg2 =>
+      'Kaydedersen ana sayfadaki Devam et kartından kaldığın yerden sürersin. Mola ve kilit ekranı kartı durur.';
+
+  @override
+  String get asSaveAndExit => 'Kaydet ve çık';
+
+  @override
+  String get asDiscardAndExit => 'Sil ve çık';
+
+  @override
+  String get asDraftSaveError =>
+      'Antrenman kaydedilemedi — çıkmadan önce tekrar dene';
+
+  @override
+  String get asFinishIncompleteTitle => 'Antrenmanı bitir?';
+
+  @override
+  String asFinishIncompleteMsg(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count set tamamlanmadı.',
+      one: '1 set tamamlanmadı.',
+    );
+    return '$_temp0 Girdiğin değerler kaydedilir, boş setler atlanır.';
+  }
+
+  @override
+  String get asFinishAnyway => 'Tamamlananlarla bitir';
+
+  @override
+  String get asEnterValueFirst => 'Önce bu setin değerini gir';
+
+  @override
+  String asSuggestWithPrev(String value, String prev) {
+    return '✓ ile $value kaydedilir · geçen sefer $prev';
+  }
+
+  @override
+  String asPrevOnly(String prev) {
+    return 'Geçen sefer $prev';
+  }
+
+  @override
+  String get asRestMinus => '−15 sn';
+
+  @override
+  String get asRestPlus => '+15 sn';
+
+  @override
+  String get asRestMinusHint => 'Molayı 15 saniye kısalt';
+
+  @override
+  String get asRestPlusHint => 'Molayı 15 saniye uzat';
+
+  @override
+  String asRestStarted(String time) {
+    return 'Dinlenme başladı, $time';
+  }
+
+  @override
+  String asSemCompleteSet(int n, String value) {
+    return 'Set $n tamamla: $value';
+  }
+
+  @override
+  String asSemCompleteSetEmpty(int n) {
+    return 'Set $n tamamla';
+  }
+
+  @override
+  String asSemUndoSet(int n) {
+    return 'Set $n tamamlandı. Geri almak için dokun';
+  }
+
+  @override
+  String asSemField(int n, String field) {
+    return 'Set $n $field';
+  }
+
+  @override
+  String asSemSuggestion(String value) {
+    return 'öneri $value';
+  }
+
+  @override
+  String asSemSetOptions(int n, String type) {
+    return 'Set $n, $type. Set türü ve RPE';
+  }
+
+  @override
+  String asSetOptionsTitle(int n) {
+    return 'Set $n';
+  }
+
+  @override
+  String get asTypeNormal => 'Normal';
+
+  @override
+  String get asTypeWarmup => 'Isınma';
+
+  @override
+  String get asTypeDrop => 'Drop set';
+
+  @override
+  String get asTypeFailure => 'Tükenişe kadar';
+
+  @override
+  String get asSetType => 'Set türü';
+
+  @override
+  String get asKbNext => 'Sonraki';
+
+  @override
+  String get asKbDone => 'Bitti';
+
+  @override
+  String get today3aFinishedKicker => 'BUGÜN TAMAM';
+
+  @override
+  String today3aFinishedSub(int mins) {
+    return 'Kaydedildi · $mins dk';
+  }
+
+  @override
+  String get today3aFinishedSubNoTime => 'Kaydedildi';
+
+  @override
+  String get today3aViewSummary => 'Özeti gör';
+
+  @override
+  String get today3aTrainAnyway => 'Yine de antrenman yap';
+
+  @override
+  String today3aAddMealHint(String meal) {
+    return 'Öğün ekle: $meal';
+  }
+
+  @override
+  String get prog3cSegTraining => 'Antrenman';
+
+  @override
+  String get prog3cSegBody => 'Vücut';
+
+  @override
+  String get prog3cSegWeek => 'Hafta';
+
+  @override
+  String get prog3cSegmentLabel => 'İlerleme bölümü';
+
+  @override
+  String get prog3cTopTitle => 'Ana hareketler';
+
+  @override
+  String get prog3cTopNote => 'Günlük en iyi tahmini 1RM · son 8 hafta';
+
+  @override
+  String get prog3cE1rm => 'tahmini 1RM';
+
+  @override
+  String prog3cLatest(String value) {
+    return 'son $value';
+  }
+
+  @override
+  String prog3cDelta(String delta) {
+    return '$delta · 4 hafta';
+  }
+
+  @override
+  String get prog3cNoCurve => 'Eğri için bir antrenman günü daha';
+
+  @override
+  String get prog3cRecordsTitle => 'Son 30 günün rekorları';
+
+  @override
+  String get prog3cNoRecords => 'Son 30 günde yeni rekor yok';
+
+  @override
+  String get prog3cVolumeTitle => 'Haftalık hacim';
+
+  @override
+  String get prog3cVolumeNote => 'Son 8 hafta · kayıt olmayan hafta boş';
+
+  @override
+  String get prog3cNoData => 'kayıt yok';
+
+  @override
+  String prog3cEmptyTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Karşılaştırma için $count antrenman daha',
+      one: 'Karşılaştırma için 1 antrenman daha',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get prog3cEmptyMsg =>
+      'İki farklı günde antrenman kaydedince gelişimin burada görünür.';
+
+  @override
+  String get prog3cStartWorkout => 'Antrenmana git';
 }

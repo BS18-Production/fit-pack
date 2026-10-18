@@ -1,0 +1,316 @@
+// Ana ekranların erişilebilirlik kabulü (deneyim araştırması A6, 12 v2 §3):
+// Ana sayfa, Beslenme, İlerleme, Yemek Ekle, aktif seans ve mola — üç düzende
+// Flutter'ın dört kılavuzu (48/44 hedef, adlı hedef, metin kontrastı) geçer.
+// A11Y_OUT verilirse düğüm dökümü dosyaya yazılır.
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:fit_pack/core/feedback/feedback_service.dart';
+import 'package:fit_pack/core/feedback/rest_sound.dart';
+import 'package:fit_pack/core/notifications/notification_service.dart';
+import 'package:fit_pack/core/router/app_router.dart';
+import 'package:fit_pack/core/onboarding/first_run_hints.dart';
+import 'package:fit_pack/core/router/app_routes.dart';
+import 'package:fit_pack/core/theme/app_theme.dart';
+import 'package:fit_pack/data/providers.dart';
+import 'package:fit_pack/features/health/step_providers.dart';
+import 'package:fit_pack/features/health/step_source.dart';
+import 'package:fit_pack/features/update/app_version_gate.dart';
+import 'package:fit_pack/l10n/app_l10n.dart';
+import 'package:fit_pack/shared/widgets/glass.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../helpers/design_fixture.dart';
+import '../helpers/test_database.dart';
+import '../helpers/fake_step_source.dart';
+
+final _out = StringBuffer();
+void _log(String s) => _out.writeln(s);
+
+class _SilentFeedback extends FeedbackService {
+  @override
+  void warmUp([RestSound sound = RestSound.fallback]) {}
+  @override
+  void playCountdown({int offsetMs = 0, RestSound? sound}) {}
+  @override
+  void stopCountdown() {}
+  @override
+  void restDone() {}
+  @override
+  void setDone() {}
+  @override
+  void record() {}
+}
+
+class _NoNotifications extends NotificationService {
+  @override
+  Future<void> scheduleRestDone({
+    required DateTime at,
+    required String title,
+    required String body,
+    String? earlyTitle,
+    String? earlyBody,
+    RestSound? sound,
+  }) async {}
+  @override
+  Future<void> cancelRestDone() async {}
+  @override
+  Future<bool> requestPermission() async => false;
+}
+
+void _mockPlatform() {
+  final m = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+  const codec = StandardMessageCodec();
+  for (final name in ['toggle', 'isEnabled']) {
+    m.setMockMessageHandler(
+      'dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.$name',
+      (_) async =>
+          codec.encodeMessage(<Object?>[name == 'isEnabled' ? false : null]),
+    );
+  }
+  for (final ch in [
+    'fit_pack/live_activity',
+    'fit_pack/rest_timer',
+    'fit_pack/audio_session',
+  ]) {
+    m.setMockMethodCallHandler(MethodChannel(ch), (c) async => false);
+  }
+}
+
+/// Dokunulabilir / metin alanı semantik düğümleri: global boyut + ad.
+void _dumpNodes(WidgetTester tester, String where) {
+  final view = tester.binding.renderViews.first;
+  final root = view.owner!.semanticsOwner!.rootSemanticsNode!;
+  final dpr = tester.view.devicePixelRatio;
+  var unnamed = 0, small = 0, total = 0, fields = 0, fieldsNoLabel = 0;
+  final lines = <String>[];
+  void visit(SemanticsNode n) {
+    final d = n.getSemanticsData();
+    final tappable =
+        d.hasAction(SemanticsAction.tap) || d.hasAction(SemanticsAction.longPress);
+    // ignore: deprecated_member_use
+    final isField = d.hasFlag(SemanticsFlag.isTextField);
+    if ((tappable || isField) && !n.isInvisible && !n.isMergedIntoParent) {
+      var m = Matrix4.identity();
+      for (SemanticsNode? p = n; p != null; p = p.parent) {
+        if (p.transform != null) m = p.transform! * m;
+      }
+      final r = MatrixUtils.transformRect(m, n.rect);
+      final w = r.width / dpr, h = r.height / dpr;
+      final onScreen = r.bottom > 0 && r.top < tester.view.physicalSize.height;
+      if (!onScreen) {
+        n.visitChildren((c) {
+          visit(c);
+          return true;
+        });
+        return;
+      }
+      final name = [d.label, d.value, d.tooltip, d.hint]
+          .where((s) => s.trim().isNotEmpty)
+          .join(' | ')
+          .replaceAll('\n', ' ');
+      total++;
+      if (isField) {
+        fields++;
+        if (d.label.trim().isEmpty) fieldsNoLabel++;
+      }
+      final noName = name.isEmpty;
+      if (noName) unnamed++;
+      final isSmall = tappable && (w < 48 || h < 48);
+      if (isSmall) small++;
+      if (noName || isSmall || isField) {
+        lines.add(
+            '    ${isField ? 'FIELD' : 'TAP  '} ${w.toStringAsFixed(0)}x${h.toStringAsFixed(0)}'
+            ' @(${(r.left / dpr).toStringAsFixed(0)},${(r.top / dpr).toStringAsFixed(0)})'
+            ' ${noName ? '<<ADSIZ>>' : '"$name"'}'
+            '${d.label.trim().isEmpty && !noName ? ' (label boş; yalnız ${d.value.isNotEmpty ? 'value' : d.hint.isNotEmpty ? 'hint' : 'tooltip'})' : ''}');
+      }
+    }
+    n.visitChildren((c) {
+      visit(c);
+      return true;
+    });
+  }
+
+  visit(root);
+  _log('  [$where] ekrandaki etkileşimli düğüm=$total, adsız=$unnamed, '
+      '<48 hedef=$small, metin alanı=$fields (label boş=$fieldsNoLabel)');
+  lines.forEach(_log);
+}
+
+Future<void> _guidelines(WidgetTester tester, String where) async {
+  for (final g in [
+    ('androidTapTarget(48)', androidTapTargetGuideline),
+    ('iOSTapTarget(44)', iOSTapTargetGuideline),
+    ('labeledTapTarget', labeledTapTargetGuideline),
+    ('textContrast', textContrastGuideline),
+  ]) {
+    final e = await g.$2.evaluate(tester);
+    final reasons = (e.reason ?? '')
+        .split('\n')
+        .where((l) => l.trim().isNotEmpty)
+        .toList();
+    _log('  [$where] ${g.$1}: ${e.passed ? 'GEÇTİ' : 'KALDI (${reasons.length} satır)'}');
+    expect(e.passed, isTrue, reason: '$where · ${g.$1}\n${e.reason}');
+    if (!e.passed) {
+      for (final r in reasons.take(40)) {
+        _log('      $r');
+      }
+    }
+  }
+}
+
+void main() {
+  tearDownAll(() async {
+    final path = Platform.environment['A11Y_OUT'];
+    if (path != null) await File(path).writeAsString(_out.toString());
+  });
+
+  for (final sc in [
+    (name: 'dark-tr', dark: true, locale: 'tr', width: 393.0, scale: 1.0),
+    (name: 'light-en', dark: false, locale: 'en', width: 393.0, scale: 1.0),
+    (name: 'large-en', dark: true, locale: 'en', width: 320.0, scale: 1.6),
+  ]) {
+    testWidgets('erişilebilirlik kılavuzları ${sc.name}', (tester) async {
+      final handle = tester.ensureSemantics();
+      final prevOnError = FlutterError.onError;
+      FlutterError.onError = (d) { final t = d.toString(); final i = t.indexOf('relevant error-causing widget'); _log('  !! HATA: ${d.exceptionAsString()} | ${i>0 ? t.substring(i, (i+300).clamp(0,t.length)).replaceAll('\n',' ') : ''}'); };
+      addTearDown(() => FlutterError.onError = prevOnError);
+      _mockPlatform();
+      SharedPreferences.setMockInitialValues({});
+      await FirstRunHints.initialize(onboarded: true);
+      final db = newTestDatabase();
+      await seedDesignFixture(db);
+      final gate = DesignFixtureGate(db);
+      final update = UpdateGate(AppVersionGate(
+          currentBuild: () async => 1, fetchMinimum: () async => null));
+      final router = createAppRouter(gate: gate, updateGate: update);
+      final boundary = GlobalKey();
+      tester.view.physicalSize = Size(sc.width * 2, 1704);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(tester.view.reset);
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        router.dispose();
+        gate.dispose();
+        update.dispose();
+        await db.close();
+      });
+      Future<void> settle() async {
+        for (var i = 0; i < 8; i++) {
+          await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+          await tester.pump(const Duration(milliseconds: 100));
+        }
+        final ex = tester.takeException();
+        if (ex != null) _log('  !! istisna: $ex');
+      }
+
+      Future<void> capture(String name) async {
+        final dir = Platform.environment['FITPACK_CAPTURE_DIR'];
+        if (dir == null) return;
+        await tester.runAsync(() async {
+          final render = boundary.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
+          final image = await render.toImage(pixelRatio: 2);
+          final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+          await Directory(dir).create(recursive: true);
+          await File('$dir/${sc.name}-$name.png')
+              .writeAsBytes(bytes!.buffer.asUint8List());
+          image.dispose();
+        });
+      }
+
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+          stepSourceProvider.overrideWithValue(
+              FakeStepSource(status: StepPlatformStatus.unavailable)),
+          feedbackServiceProvider.overrideWithValue(_SilentFeedback()),
+          notificationServiceProvider.overrideWithValue(_NoNotifications()),
+        ],
+        child: RepaintBoundary(
+          key: boundary,
+          child: MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            theme: sc.dark ? AppTheme.dark : AppTheme.light,
+            locale: Locale(sc.locale),
+            localizationsDelegates: AppL10n.localizationsDelegates,
+            supportedLocales: AppL10n.supportedLocales,
+            routerConfig: router,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(sc.scale)),
+              child: GlassBackground(child: child!),
+            ),
+          ),
+        ),
+      ));
+      await tester.runAsync(() async {
+        await GoogleFonts.pendingFonts();
+        for (final font in [
+          ('MaterialIcons', 'fonts/MaterialIcons-Regular.otf'),
+          ('packages/phosphor_flutter/PhosphorRegular',
+              'packages/phosphor_flutter/lib/fonts/Phosphor.ttf'),
+          ('packages/phosphor_flutter/PhosphorFill',
+              'packages/phosphor_flutter/lib/fonts/Phosphor-Fill.ttf'),
+        ]) {
+          await (FontLoader(font.$1)..addFont(rootBundle.load(font.$2))).load();
+        }
+      });
+      _log('=== ${sc.name} (${sc.width.toInt()} genişlik, yazı x${sc.scale}) ===');
+      await settle();
+      for (final route in [
+        AppRoutes.home,
+        AppRoutes.nutrition,
+        AppRoutes.progress,
+      ]) {
+        router.go(route);
+        await settle();
+        _dumpNodes(tester, route);
+        await _guidelines(tester, route);
+      }
+      // Yemek ekle paneli (ana sayfa öğle öğünü).
+      router.go(AppRoutes.home);
+      await settle();
+      final homeScroll = find.byType(Scrollable).first;
+      await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('journal.meal.lunch')), 150,
+          scrollable: homeScroll);
+      await settle();
+      await tester.tap(find.byKey(const ValueKey('journal.meal.lunch')));
+      await settle();
+      _dumpNodes(tester, 'food-sheet');
+      await _guidelines(tester, 'food-sheet');
+      router.pop();
+      await settle();
+
+      // Aktif seans (rutin 1).
+      router.push(AppRoutes.workoutActiveRoutine(1));
+      await settle();
+      await capture('session');
+      _dumpNodes(tester, 'session');
+      await _guidelines(tester, 'session');
+      // İlk seti tamamla → mola şeridi.
+      final done = find.byKey(const ValueKey('set.complete.0'));
+      if (done.evaluate().isNotEmpty) {
+        await tester.tap(done);
+        await settle();
+        await capture('session-rest');
+        _dumpNodes(tester, 'session+rest');
+        await _guidelines(tester, 'session+rest');
+      } else {
+        _log('  set.complete.0 bulunamadı');
+      }
+      // Ekranı kapat (sayaçlar dursun).
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      handle.dispose();
+    });
+  }
+}

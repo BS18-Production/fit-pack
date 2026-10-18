@@ -5,6 +5,7 @@ import '../../core/i18n/formatting.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/units/units.dart';
 import '../../core/utils/weight_goal.dart';
 import '../../l10n/app_l10n.dart';
@@ -27,12 +28,15 @@ import '../../core/prefs/week_start_provider.dart';
 import '../nutrition/nutrition_habit_widgets.dart';
 import 'first_week.dart';
 import 'today_lines.dart';
+import 'today_task.dart';
+import '../nutrition/meal_types.dart';
+import '../nutrition/nutrition_habits.dart' show mealForTime;
+import '../nutrition/add_food_sheet.dart' show showAddFoodSheet;
 import '../workout/progression.dart' show ProgressionKind;
 import 'week_ready.dart';
 import '../insights/weekly_review.dart';
 import '../insights/weekly_review_providers.dart';
 import 'rhythm_state.dart';
-import 'streak_calc.dart';
 import '../assistant/assistant_screen.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 
@@ -50,6 +54,8 @@ class HomeScreen extends ConsumerWidget {
     // Zemin (GlassBackground) app.dart'ta TÜM ekranlara bir kez verilir;
     // burada tekrar kurulmaz. Alt boşluk: içerik buzlu çubuğun altından
     // aktığı için bottomScrollInset.
+    final progress = ref.watch(firstWeekProgressProvider).valueOrNull;
+    final hasRecords = progress != null && (progress.workout || progress.meal);
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () async {
@@ -73,31 +79,33 @@ class HomeScreen extends ConsumerWidget {
             AppSpacing.xl,
             context.bottomScrollInset,
           ),
-          children: const [
-            _Header(),
+          children: [
+            const _Header(),
             AppSpacing.vGapLg,
-            WeekStrip(),
-            _WeekReadyCard(),
-            AppSpacing.vGapXl,
-            _CompactNutrition(),
+            const _PrimaryActionCard(),
+            const _TodayLines(),
             AppSpacing.vGapLg,
-            _PrimaryActionCard(),
-            _TodayLines(),
-            _FirstWeekCard(),
+            const WeekStrip(),
+            const _WeekReadyCard(),
+            AppSpacing.vGapLg,
+            const _CompactNutrition(),
+            const _FirstWeekCard(),
             AppSpacing.vGapXl,
-            _DayLogHeader(),
+            const _DayLogHeader(),
             AppSpacing.vGapMd,
-            TodayMealsCard(),
+            const TodayMealsCard(),
             AppSpacing.vGapMd,
-            UsualMealCard(),
-            AppSpacing.vGapXl,
-            WorkoutActivityCard(),
-            AppSpacing.vGapXl,
-            _RhythmCard(),
-            AssistantEntryCard(),
-            AppSpacing.vGapXl,
-            _InsightCard(),
-            _CompactHealthRow(),
+            const UsualMealCard(),
+            if (hasRecords) ...[
+              AppSpacing.vGapXl,
+              const WorkoutActivityCard(),
+              AppSpacing.vGapXl,
+              const _RhythmCard(),
+              const AssistantEntryCard(),
+              AppSpacing.vGapXl,
+              const _InsightCard(),
+            ],
+            const _CompactHealthRow(),
           ],
         ),
       ),
@@ -142,11 +150,12 @@ class _Header extends StatelessWidget {
                         ),
                       ),
                       AppSpacing.vGapXs,
+                      // Tarih logonun altında (docs/54 §3): karşılama tek
+                      // satıra iner, ilk ekranda görev alanına yer kalır.
                       Text(
-                        context.upper(l.journalSubtitle),
-                        style: context.texts.labelSmall?.copyWith(
+                        context.dateFmt('d MMMM, EEEE').format(DateTime.now()),
+                        style: context.texts.labelMedium?.copyWith(
                           color: c.onSurfaceVariant,
-                          letterSpacing: 1,
                         ),
                       ),
                     ],
@@ -164,14 +173,12 @@ class _Header extends StatelessWidget {
                 ),
               ],
             ),
-            AppSpacing.vGapXl,
-            Text(l.journalTitle, style: context.texts.headlineMedium),
-            AppSpacing.vGapXs,
+            AppSpacing.vGapMd,
             Text(
-              context.dateFmt('d MMMM, EEEE').format(DateTime.now()),
-              style: context.texts.bodySmall?.copyWith(
-                color: c.onSurfaceVariant,
-              ),
+              l.journalTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: context.texts.titleLarge,
             ),
           ],
         ),
@@ -182,30 +189,62 @@ class _Header extends StatelessWidget {
 
 // ──────────────────────────────────────────────── Birincil aksiyon (durum)
 
-/// Bugünün eylemi — öncelik sırası (docs/24 §2): devam eden seans →
-/// planlı rutin → dinlenme günü → döngüde sıradaki rutin → rutin yok
-/// (docs/49 §3). Yalnız BUGÜNE bakar.
+/// Bugünün TEK birincil görevi (docs/54 §2): karar [todayTask]'ta; bu kart
+/// yalnız çizer. Yalnız BUGÜNE bakar.
 class _PrimaryActionCard extends ConsumerWidget {
   const _PrimaryActionCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Devam eden seans varken "yeni antrenman başlat" yarışmaz (docs/23 §3.2).
-    final draft = ref.watch(activeDraftProvider).valueOrNull;
-    if (draft != null) return _ResumeCard(draft: draft);
+    final task = ref.watch(todayTaskProvider);
+    return switch (task.kind) {
+      TodayTaskKind.loading => Skeleton.card(height: 150),
+      TodayTaskKind.draftError => ErrorState(
+          message: AppL10n.of(context).expDraftError,
+          onRetry: () => ref.invalidate(activeDraftProvider),
+        ),
+      TodayTaskKind.resume => _ResumeCard(draft: task.draft!),
+      TodayTaskKind.finishedToday => _FinishedTodayCard(session: task.session!),
+      TodayTaskKind.routineError => ErrorState(
+          message: AppL10n.of(context).whLoadError,
+          onRetry: () => ref.invalidate(todayRoutineProvider),
+        ),
+      TodayTaskKind.plannedToday => _TrainingDayCard(routine: task.routine!),
+      TodayTaskKind.restDay => _RestDayCard(nextName: task.nextName),
+      TodayTaskKind.upNext => _UpNextCard(routine: task.routine!),
+      TodayTaskKind.noRoutine => const _NoRoutineCard(),
+    };
+  }
+}
 
-    return ref
-        .watch(todayRoutineProvider)
-        .when(
-          loading: () => Skeleton.card(height: 150),
-          error: (_, _) => const _StartWorkoutCard(),
-          data: (tr) {
-            if (tr.today != null) return _TrainingDayCard(routine: tr.today!);
-            if (tr.next != null) return _RestDayCard(nextName: tr.next!.name);
-            if (tr.upNext != null) return _UpNextCard(routine: tr.upNext!);
-            return const _NoRoutineCard();
-          },
-        );
+/// Bugün antrenman bitti (docs/54 D1): ana eylem özet; yeniden başlatmak
+/// ikincil bağlantı — aynı rutini tekrar başlatmak ana çağrı olmaz.
+class _FinishedTodayCard extends StatelessWidget {
+  final WorkoutSession session;
+  const _FinishedTodayCard({required this.session});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppL10n.of(context);
+    final mins = session.durationMin;
+    return _GradientActionCard(
+      key: const ValueKey('home.finishedToday'),
+      kicker: l.today3aFinishedKicker,
+      title: session.workoutType,
+      subtitle: mins != null && mins > 0
+          ? l.today3aFinishedSub(mins)
+          : l.today3aFinishedSubNoTime,
+      action: l.today3aViewSummary,
+      actionIcon: Icons.check_circle_rounded,
+      onTap: () => context.push(AppRoutes.summary(session.id)),
+      secondary: TextButton(
+        key: const ValueKey('home.trainAnyway'),
+        style: TextButton.styleFrom(
+            minimumSize: const Size(0, AppA11y.minTapTarget)),
+        onPressed: () => context.go(AppRoutes.workout),
+        child: Text(l.today3aTrainAnyway),
+      ),
+    );
   }
 }
 
@@ -215,7 +254,11 @@ class _GradientActionCard extends StatelessWidget {
   final String kicker, title, subtitle, action;
   final IconData actionIcon;
   final VoidCallback onTap;
+  // Ana düğmenin altında isteğe bağlı ikincil eylem (ör. "Yine de antrenman").
+  final Widget? secondary;
   const _GradientActionCard({
+    super.key,
+    this.secondary,
     required this.kicker,
     required this.title,
     required this.subtitle,
@@ -288,6 +331,8 @@ class _GradientActionCard extends StatelessWidget {
               ),
             ),
           ),
+          if (secondary != null)
+            Align(alignment: Alignment.center, child: secondary),
         ],
       ),
     );
@@ -546,16 +591,42 @@ class _TodayLines extends ConsumerWidget {
               text: switch (food) {
                 NutritionLineFirstMeal() => l.homeTodayFirstMeal,
                 NutritionLineRemaining(:final proteinG?, :final kcal?) =>
-                  l.homeTodayLeftBoth(proteinG, kcal),
+                  l.expTodayLeftBoth(context.numFmt.format(proteinG), context.numFmt.format(kcal)),
                 NutritionLineRemaining(:final proteinG?) =>
-                  l.homeTodayLeftProtein(proteinG),
+                  l.expTodayLeftProtein(context.numFmt.format(proteinG)),
                 NutritionLineRemaining(:final kcal) =>
-                  l.homeTodayLeftKcal(kcal ?? 0),
+                  l.expTodayLeftKcal(context.numFmt.format(kcal ?? 0)),
               },
               onTap: () => context.go(AppRoutes.nutrition),
+              // Ana sayfadan doğrudan kayıt (docs/54 D2): öğün saate göre
+              // seçilir, panelde değiştirilebilir.
+              action: _AddMealButton(meal: mealForTime(DateTime.now())),
             ),
         ],
       ),
+    );
+  }
+}
+
+class _AddMealButton extends ConsumerWidget {
+  final String meal;
+  const _AddMealButton({required this.meal});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppL10n.of(context);
+    // Yalnız "+" (48×48): dar ekran ve büyük yazıda satırı taşırmaz; adı
+    // ekran okuyucuya ipucundan gelir.
+    return IconButton.filledTonal(
+      key: const ValueKey('home.todayLine.addMeal'),
+      tooltip: l.today3aAddMealHint(mealName(l, meal)),
+      constraints: const BoxConstraints(
+          minWidth: AppA11y.minTapTarget, minHeight: AppA11y.minTapTarget),
+      onPressed: () {
+        ref.read(selectedDateProvider.notifier).state = DateTime.now();
+        showAddFoodSheet(context, mealType: meal);
+      },
+      icon: const FitPackIcon.material(Icons.add_rounded, size: AppIconSize.md),
     );
   }
 }
@@ -564,11 +635,13 @@ class _TodayLine extends StatelessWidget {
   final IconData icon;
   final String text;
   final VoidCallback onTap;
+  final Widget? action; // satır sonunda ayrı eylem (ok yerine)
   const _TodayLine({
     super.key,
     required this.icon,
     required this.text,
     required this.onTap,
+    this.action,
   });
 
   @override
@@ -591,11 +664,14 @@ class _TodayLine extends StatelessWidget {
                   style: context.texts.bodyMedium?.copyWith(color: c.onSurface),
                 ),
               ),
-              FitPackIcon.material(
-                Icons.chevron_right_rounded,
-                color: c.outline,
-                size: AppIconSize.sm,
-              ),
+              if (action != null)
+                action!
+              else
+                FitPackIcon.material(
+                  Icons.chevron_right_rounded,
+                  color: c.outline,
+                  size: AppIconSize.sm,
+                ),
             ],
           ),
         ),
@@ -628,19 +704,44 @@ class _WeekReadyCard extends ConsumerWidget {
             FocusKind.reviewCalories => l.wrFocusCalories,
             FocusKind.keepRhythm => l.wrFocusKeep,
           };
+    final c = context.colors;
+    // İkincil kart (docs/54 §2): birincil görevle aynı ağırlıkta yarışmaz.
     return Padding(
       key: const ValueKey('home.weekReady'),
       padding: const EdgeInsets.only(top: AppSpacing.lg),
-      child: _GradientActionCard(
-        kicker: l.homeWeekReadyKicker,
-        title: l.homeWeekReadyTitle,
-        subtitle: subtitle,
-        action: l.homeWeekReadyOpen,
-        actionIcon: Icons.insights_rounded,
-        onTap: () {
-          ref.read(weekReadyOpenedProvider.notifier).markOpened(now, weekStart);
-          context.push(AppRoutes.weeklyReviewWeeksBack(offset));
-        },
+      child: _Card(
+        child: InkWell(
+          borderRadius: AppRadius.brMd,
+          onTap: () {
+            ref.read(weekReadyOpenedProvider.notifier).markOpened(now, weekStart);
+            context.push(AppRoutes.weeklyReviewWeeksBack(offset));
+          },
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: AppA11y.minTapTarget),
+            child: Row(
+              children: [
+                FitPackIcon.material(Icons.insights_rounded,
+                    color: c.primary, size: AppIconSize.md),
+                AppSpacing.hGapMd,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l.homeWeekReadyTitle,
+                          style: context.texts.titleSmall),
+                      if (subtitle.isNotEmpty)
+                        Text(subtitle,
+                            style: context.texts.bodySmall
+                                ?.copyWith(color: c.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+                FitPackIcon.material(Icons.chevron_right_rounded,
+                    color: c.outline, size: AppIconSize.sm),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -690,63 +791,6 @@ class _FirstWeekStep extends StatelessWidget {
                 size: AppIconSize.sm,
               ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StartWorkoutCard extends StatelessWidget {
-  const _StartWorkoutCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return _Card(
-      padding: EdgeInsets.zero,
-      child: InkWell(
-        onTap: () => context.go(AppRoutes.workout),
-        borderRadius: AppRadius.brLg,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: AppSpacing.lg,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: context.colors.primary.withValues(alpha: 0.12),
-                  borderRadius: AppRadius.brMd,
-                ),
-                child: FitPackIcon.material(
-                  Icons.fitness_center_rounded,
-                  color: context.colors.primary,
-                ),
-              ),
-              AppSpacing.hGapMd,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppL10n.of(context).homeStartTitle,
-                      style: context.texts.titleMedium,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      AppL10n.of(context).homeStartSubtitle,
-                      style: context.texts.bodySmall?.copyWith(
-                        color: context.colors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              FitPackIcon.material(Icons.chevron_right_rounded, color: context.colors.outline),
-            ],
-          ),
         ),
       ),
     );
@@ -875,10 +919,17 @@ class _RhythmCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
     final c = context.colors;
-    final streak =
-        ref.watch(weeklyStreakProvider).valueOrNull ??
-        const WeeklyStreak(weeks: 0, thisWeekDone: 0, weeklyGoal: 1);
-    final month = ref.watch(last30WorkoutStatsProvider).valueOrNull;
+    final streakAsync = ref.watch(weeklyStreakProvider);
+    final monthAsync = ref.watch(last30WorkoutStatsProvider);
+    if (streakAsync.hasError || monthAsync.hasError) {
+      return ErrorState(message: l.whLoadError, onRetry: () {
+        ref.invalidate(weeklyStreakProvider);
+        ref.invalidate(last30WorkoutStatsProvider);
+      });
+    }
+    final streak = streakAsync.valueOrNull;
+    final month = monthAsync.valueOrNull;
+    if (streak == null || month == null) return Skeleton.card(height: 150);
     final units = ref.watch(unitsProvider);
     final fmt = context.numFmt;
 
@@ -952,7 +1003,7 @@ class _RhythmCard extends ConsumerWidget {
             borderRadius: AppRadius.brPill,
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: (done / goal).clamp(0.0, 1.0)),
-              duration: AppDuration.normal,
+              duration: motionDuration(context, AppDuration.normal),
               curve: Curves.easeOutCubic,
               builder: (_, v, _) => LinearProgressIndicator(
                 value: v,
@@ -976,19 +1027,19 @@ class _RhythmCard extends ConsumerWidget {
             child: Row(
               children: [
                 _RhythmStat(
-                  value: fmt.format(month?.sessions ?? 0),
+                  value: fmt.format(month.sessions),
                   label: l.homeStatWorkouts,
                 ),
                 VerticalDivider(color: c.outlineVariant, width: AppSpacing.xl),
                 _RhythmStat(
                   value: fmt.format(
-                    units.weightFromKg(month?.volumeKg ?? 0).round(),
+                    units.weightFromKg(month.volumeKg).round(),
                   ),
                   label: l.homeStatVolume(units.weightUnit),
                 ),
                 VerticalDivider(color: c.outlineVariant, width: AppSpacing.xl),
                 _RhythmStat(
-                  value: fmt.format(month?.kcalBurned ?? 0),
+                  value: fmt.format(month.kcalBurned),
                   label: l.homeStatKcalEstimated,
                 ),
               ],
@@ -1086,7 +1137,31 @@ class _CompactNutrition extends ConsumerWidget {
   const _CompactNutrition();
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(userProfileProvider).valueOrNull;
+    final profileAsync = ref.watch(userProfileProvider);
+    if (profileAsync.hasError) {
+      return ErrorState(
+        message: AppL10n.of(context).nutritionLoadError,
+        onRetry: () => ref.invalidate(userProfileProvider),
+      );
+    }
+    final profile = profileAsync.valueOrNull;
+    if (profile == null) return const SizedBox.shrink();
+    final progress = ref.watch(firstWeekProgressProvider).valueOrNull;
+    if (progress != null && !progress.workout && !progress.meal) {
+      return GlassCard(
+        key: const ValueKey('home.firstMeal'),
+        onTap: () {
+          ref.read(selectedDateProvider.notifier).state = DateTime.now();
+          context.go(AppRoutes.nutrition);
+        },
+        // Tam genişlik: halka yerine tek satır, diğer kartlarla hizalı.
+        child: SizedBox(
+          width: double.infinity,
+          child: Text(AppL10n.of(context).expFirstMeal(
+            context.numFmt.format(profile.kcalGoal))),
+        ),
+      );
+    }
     return ref
         .watch(todayNutritionProvider)
         .when(
@@ -1100,8 +1175,8 @@ class _CompactNutrition extends ConsumerWidget {
             protein: nutrition.protein,
             carb: nutrition.carb,
             fat: nutrition.fat,
-            kcalGoal: profile?.kcalGoal ?? 2200,
-            proteinGoal: profile?.proteinGoal ?? 180,
+            kcalGoal: profile.kcalGoal,
+            proteinGoal: profile.proteinGoal,
             onTap: () {
               ref.read(selectedDateProvider.notifier).state = DateTime.now();
               context.go(AppRoutes.nutrition);
@@ -1120,7 +1195,12 @@ class _InsightCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
-    final top = ref.watch(topProgressProvider).valueOrNull;
+    final topAsync = ref.watch(topProgressProvider);
+    if (topAsync.hasError) {
+      return ErrorState(message: l.whLoadError,
+        onRetry: () => ref.invalidate(topProgressProvider));
+    }
+    final top = topAsync.valueOrNull;
     if (top == null) return const SizedBox.shrink();
     final units = ref.watch(unitsProvider);
     final c = context.colors;
@@ -1244,28 +1324,45 @@ class _WaterMini extends ConsumerWidget {
   const _WaterMini();
 
   // todayWaterProvider reaktif (H-05) → su ekleme/sıfırlama kendiliğinden yansır.
-  Future<void> _add(WidgetRef ref, int ml) async {
-    await ref.read(nutritionDaoProvider).addWater(DateTime.now(), ml);
-  }
-
-  Future<void> _reset(WidgetRef ref) async {
-    await ref.read(nutritionDaoProvider).resetWater(DateTime.now());
+  Future<void> _write(BuildContext context, WidgetRef ref, {int? ml}) async {
+    try {
+      final dao = ref.read(nutritionDaoProvider);
+      if (ml == null) { await dao.resetWater(DateTime.now()); }
+      else { await dao.addWater(DateTime.now(), ml); }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppL10n.of(context).commonSaveFailed)));
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppL10n.of(context);
     final accent = context.semantic.info;
-    final goalMl =
-        ref.watch(userProfileProvider).valueOrNull?.waterGoalMl ?? 2500;
-    final ml = ref.watch(todayWaterProvider).valueOrNull ?? 0;
+    final profileAsync = ref.watch(userProfileProvider);
+    if (profileAsync.hasError) {
+      return ErrorState(message: l.nutritionLoadError,
+        onRetry: () => ref.invalidate(userProfileProvider));
+    }
+    final profile = profileAsync.valueOrNull;
+    if (profile == null) return Skeleton.card(height: 100);
+    final goalMl = profile.waterGoalMl;
+    final water = ref.watch(todayWaterProvider);
+    if (water.hasError) {
+      return ErrorState(message: l.nutritionLoadError,
+          onRetry: () => ref.invalidate(todayWaterProvider));
+    }
+    final ml = water.valueOrNull;
+    if (ml == null) return Skeleton.card(height: 100);
     final pct = (ml / goalMl).clamp(0.0, 1.0);
-    final liters = (ml / 1000).toStringAsFixed(1);
-    final goalL = (goalMl / 1000).toStringAsFixed(1);
+    final liters = context.numFmt.format(ml / 1000);
+    final goalL = context.numFmt.format(goalMl / 1000);
 
     return _Card(
       child: GestureDetector(
-        onLongPress: () => _reset(ref),
+        onLongPress: () => _write(context, ref),
         behavior: HitTestBehavior.opaque,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1307,7 +1404,7 @@ class _WaterMini extends ConsumerWidget {
               borderRadius: AppRadius.brSm,
               child: TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0, end: pct),
-                duration: AppDuration.normal,
+                duration: motionDuration(context, AppDuration.normal),
                 curve: Curves.easeOutCubic,
                 builder: (_, v, _) => LinearProgressIndicator(
                   value: v,
@@ -1323,7 +1420,7 @@ class _WaterMini extends ConsumerWidget {
               child: _MiniAction(
                 label: l.homeWaterAdd,
                 accent: accent,
-                onTap: () => _add(ref, 250),
+                onTap: () => _write(context, ref, ml: 250),
               ),
             ),
           ],
@@ -1352,7 +1449,7 @@ class _MiniAction extends StatelessWidget {
         onTap: onTap,
         borderRadius: AppRadius.brPill,
         child: Container(
-          height: 34,
+          height: AppA11y.minTapTarget,
           alignment: Alignment.center,
           child: Text(
             label,

@@ -7573,6 +7573,486 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Live sessions appear in Apple Health / Health Connect (time and name; no calories).'**
   String get healthWriteWorkoutsNote;
+
+  /// No description provided for @expDraftError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your workout in progress. Try again.'**
+  String get expDraftError;
+
+  /// No description provided for @expFirstMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Today 0 / {goal} kcal'**
+  String expFirstMeal(String goal);
+
+  /// No description provided for @expPlanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested from your goal — adjust freely. You can change these anytime in Profile.'**
+  String get expPlanSubtitle;
+
+  /// No description provided for @expMeasurementError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the measurement. Try again.'**
+  String get expMeasurementError;
+
+  /// No description provided for @expAuthConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect. Check your internet and try again.'**
+  String get expAuthConnection;
+
+  /// No description provided for @expAuthCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect email or password.'**
+  String get expAuthCredentials;
+
+  /// No description provided for @expAuthUnconfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your email before signing in.'**
+  String get expAuthUnconfirmed;
+
+  /// No description provided for @expAuthExists.
+  ///
+  /// In en, this message translates to:
+  /// **'An account already uses this email. Try signing in.'**
+  String get expAuthExists;
+
+  /// No description provided for @expAuthRateLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Wait a moment and try again.'**
+  String get expAuthRateLimit;
+
+  /// No description provided for @expAuthPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a different password with at least 6 characters.'**
+  String get expAuthPassword;
+
+  /// No description provided for @expAuthGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not complete the request. Try again.'**
+  String get expAuthGeneric;
+
+  /// No description provided for @expConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your email'**
+  String get expConfirmTitle;
+
+  /// No description provided for @expConfirmHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your inbox and spam folder. If you opened the link on another device, return here and sign in. You can also continue with Google.'**
+  String get expConfirmHelp;
+
+  /// No description provided for @expResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend confirmation email'**
+  String get expResend;
+
+  /// No description provided for @expChangeEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Change email address'**
+  String get expChangeEmail;
+
+  /// No description provided for @expEmailSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation email sent.'**
+  String get expEmailSent;
+
+  /// No description provided for @expAmountDecrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease amount'**
+  String get expAmountDecrease;
+
+  /// No description provided for @expAmountIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase amount'**
+  String get expAmountIncrease;
+
+  /// No description provided for @expAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get expAmount;
+
+  /// No description provided for @expUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get expUpdate;
+
+  /// No description provided for @expBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get expBarcode;
+
+  /// No description provided for @expCreateFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your own food'**
+  String get expCreateFood;
+
+  /// No description provided for @expYesterdayMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Add yesterday’s meal'**
+  String get expYesterdayMeal;
+
+  /// No description provided for @expProteinRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g protein left'**
+  String expProteinRemaining(String grams);
+
+  /// No description provided for @expTodayLeftBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {protein} g protein and {kcal} kcal left.'**
+  String expTodayLeftBoth(String protein, String kcal);
+
+  /// No description provided for @expTodayLeftProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {protein} g protein left.'**
+  String expTodayLeftProtein(String protein);
+
+  /// No description provided for @expTodayLeftKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {kcal} kcal left.'**
+  String expTodayLeftKcal(String kcal);
+
+  /// No description provided for @asExitMsg2.
+  ///
+  /// In en, this message translates to:
+  /// **'If you save, pick up where you left off from the Continue card on Home. The rest timer and lock screen card stop.'**
+  String get asExitMsg2;
+
+  /// No description provided for @asSaveAndExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and exit'**
+  String get asSaveAndExit;
+
+  /// No description provided for @asDiscardAndExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard and exit'**
+  String get asDiscardAndExit;
+
+  /// No description provided for @asDraftSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the workout — try again before leaving'**
+  String get asDraftSaveError;
+
+  /// No description provided for @asFinishIncompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish workout?'**
+  String get asFinishIncompleteTitle;
+
+  /// No description provided for @asFinishIncompleteMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 set isn\'t done.} other{{count} sets aren\'t done.}} Entered values are saved, empty sets are skipped.'**
+  String asFinishIncompleteMsg(int count);
+
+  /// No description provided for @asFinishAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish with completed'**
+  String get asFinishAnyway;
+
+  /// No description provided for @asEnterValueFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter this set\'s value first'**
+  String get asEnterValueFirst;
+
+  /// No description provided for @asSuggestWithPrev.
+  ///
+  /// In en, this message translates to:
+  /// **'✓ logs {value} · last time {prev}'**
+  String asSuggestWithPrev(String value, String prev);
+
+  /// No description provided for @asPrevOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time {prev}'**
+  String asPrevOnly(String prev);
+
+  /// No description provided for @asRestMinus.
+  ///
+  /// In en, this message translates to:
+  /// **'−15 s'**
+  String get asRestMinus;
+
+  /// No description provided for @asRestPlus.
+  ///
+  /// In en, this message translates to:
+  /// **'+15 s'**
+  String get asRestPlus;
+
+  /// No description provided for @asRestMinusHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shorten rest by 15 seconds'**
+  String get asRestMinusHint;
+
+  /// No description provided for @asRestPlusHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Extend rest by 15 seconds'**
+  String get asRestPlusHint;
+
+  /// No description provided for @asRestStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest started, {time}'**
+  String asRestStarted(String time);
+
+  /// No description provided for @asSemCompleteSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete set {n}: {value}'**
+  String asSemCompleteSet(int n, String value);
+
+  /// No description provided for @asSemCompleteSetEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete set {n}'**
+  String asSemCompleteSetEmpty(int n);
+
+  /// No description provided for @asSemUndoSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {n} done. Tap to undo'**
+  String asSemUndoSet(int n);
+
+  /// No description provided for @asSemField.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {n} {field}'**
+  String asSemField(int n, String field);
+
+  /// No description provided for @asSemSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'suggested {value}'**
+  String asSemSuggestion(String value);
+
+  /// No description provided for @asSemSetOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {n}, {type}. Set type and RPE'**
+  String asSemSetOptions(int n, String type);
+
+  /// No description provided for @asSetOptionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {n}'**
+  String asSetOptionsTitle(int n);
+
+  /// No description provided for @asTypeNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get asTypeNormal;
+
+  /// No description provided for @asTypeWarmup.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm-up'**
+  String get asTypeWarmup;
+
+  /// No description provided for @asTypeDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop set'**
+  String get asTypeDrop;
+
+  /// No description provided for @asTypeFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'To failure'**
+  String get asTypeFailure;
+
+  /// No description provided for @asSetType.
+  ///
+  /// In en, this message translates to:
+  /// **'Set type'**
+  String get asSetType;
+
+  /// No description provided for @asKbNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get asKbNext;
+
+  /// No description provided for @asKbDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get asKbDone;
+
+  /// No description provided for @today3aFinishedKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'DONE TODAY'**
+  String get today3aFinishedKicker;
+
+  /// No description provided for @today3aFinishedSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved · {mins} min'**
+  String today3aFinishedSub(int mins);
+
+  /// No description provided for @today3aFinishedSubNoTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get today3aFinishedSubNoTime;
+
+  /// No description provided for @today3aViewSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'View summary'**
+  String get today3aViewSummary;
+
+  /// No description provided for @today3aTrainAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Train anyway'**
+  String get today3aTrainAnyway;
+
+  /// No description provided for @today3aAddMealHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add meal: {meal}'**
+  String today3aAddMealHint(String meal);
+
+  /// No description provided for @prog3cSegTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get prog3cSegTraining;
+
+  /// No description provided for @prog3cSegBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Body'**
+  String get prog3cSegBody;
+
+  /// No description provided for @prog3cSegWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get prog3cSegWeek;
+
+  /// No description provided for @prog3cSegmentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress section'**
+  String get prog3cSegmentLabel;
+
+  /// No description provided for @prog3cTopTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Main lifts'**
+  String get prog3cTopTitle;
+
+  /// No description provided for @prog3cTopNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily best estimated 1RM · last 8 weeks'**
+  String get prog3cTopNote;
+
+  /// No description provided for @prog3cE1rm.
+  ///
+  /// In en, this message translates to:
+  /// **'est. 1RM'**
+  String get prog3cE1rm;
+
+  /// No description provided for @prog3cLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'latest {value}'**
+  String prog3cLatest(String value);
+
+  /// No description provided for @prog3cDelta.
+  ///
+  /// In en, this message translates to:
+  /// **'{delta} · 4 weeks'**
+  String prog3cDelta(String delta);
+
+  /// No description provided for @prog3cNoCurve.
+  ///
+  /// In en, this message translates to:
+  /// **'One more training day for a trend'**
+  String get prog3cNoCurve;
+
+  /// No description provided for @prog3cRecordsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Records in the last 30 days'**
+  String get prog3cRecordsTitle;
+
+  /// No description provided for @prog3cNoRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'No new records in the last 30 days'**
+  String get prog3cNoRecords;
+
+  /// No description provided for @prog3cVolumeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly volume'**
+  String get prog3cVolumeTitle;
+
+  /// No description provided for @prog3cVolumeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 8 weeks · weeks without logs stay empty'**
+  String get prog3cVolumeNote;
+
+  /// No description provided for @prog3cNoData.
+  ///
+  /// In en, this message translates to:
+  /// **'no data'**
+  String get prog3cNoData;
+
+  /// No description provided for @prog3cEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 more workout to compare} other{{count} more workouts to compare}}'**
+  String prog3cEmptyTitle(int count);
+
+  /// No description provided for @prog3cEmptyMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Log workouts on two different days and your progress shows up here.'**
+  String get prog3cEmptyMsg;
+
+  /// No description provided for @prog3cStartWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to training'**
+  String get prog3cStartWorkout;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

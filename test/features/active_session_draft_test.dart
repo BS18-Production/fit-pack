@@ -336,12 +336,12 @@ void main() {
         find.text('Uygulandı: her sete +1.25${nb}kg, 8 tekrar'),
         findsOneWidget,
       );
-      // Boş alanların ipucu uyarlanmış öneri: 61.25 kg × 8.
+      // Boş alanların ipucu uyarlanmış öneri: 61,25 kg × 8 (yerel ondalık).
       final hints = [
         for (final f in tester.widgetList<TextField>(find.byType(TextField)))
           f.decoration?.hintText,
       ];
-      expect(hints.sublist(0, 2), ['61.25', '8']);
+      expect(hints.sublist(0, 2), ['61,25', '8']);
       await close(tester);
     });
   });

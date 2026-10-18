@@ -1697,5 +1697,123 @@
   "adaptiveTdeeInconsistent": "Tahmin için kayıtlar eksik görünüyor — tamamlandı işaretli günlerin tam girildiğini kontrol et.",
   "adaptiveTdeeNote": "Tahmindir (1 kg ≈ 7.700 kcal). Hedefin kendiliğinden değişmez.",
   "healthWriteWorkouts": "Antrenmanları Sağlık'a yaz",
-  "healthWriteWorkoutsNote": "Canlı seanslar Apple Sağlık / Health Connect'te görünür (saat ve ad; kalori yazılmaz)."
+  "healthWriteWorkoutsNote": "Canlı seanslar Apple Sağlık / Health Connect'te görünür (saat ve ad; kalori yazılmaz).",
+  "expDraftError": "Devam eden antrenman okunamadı. Yeniden dene.",
+  "expFirstMeal": "Bugün 0 / {goal} kcal",
+  "expPlanSubtitle": "Hedefine göre önerildi — istediğin gibi değiştir. Sonradan Profil’den de güncelleyebilirsin.",
+  "@expFirstMeal": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "expMeasurementError": "Ölçüm değiştirilemedi. Yeniden dene.",
+  "expAuthConnection": "Bağlantı kurulamadı. İnternetini kontrol edip yeniden dene.",
+  "expAuthCredentials": "E-posta veya şifre yanlış.",
+  "expAuthUnconfirmed": "Giriş yapmadan önce e-postanı doğrula.",
+  "expAuthExists": "Bu e-posta ile bir hesap var. Giriş yapmayı dene.",
+  "expAuthRateLimit": "Çok sık denedin. Biraz bekleyip yeniden dene.",
+  "expAuthPassword": "Farklı, en az 6 karakterli bir şifre seç.",
+  "expAuthGeneric": "İşlem tamamlanamadı. Yeniden dene.",
+  "expConfirmTitle": "E-postanı doğrula",
+  "expConfirmHelp": "Gelen kutunu ve spam klasörünü kontrol et. Bağlantıyı başka cihazda açtıysan buraya dönüp giriş yap. Google ile de devam edebilirsin.",
+  "expResend": "Doğrulama e-postasını yeniden gönder",
+  "expChangeEmail": "E-posta adresini değiştir",
+  "expEmailSent": "Doğrulama e-postası gönderildi.",
+  "expAmountDecrease": "Miktarı azalt",
+  "expAmountIncrease": "Miktarı artır",
+  "expAmount": "Miktar",
+  "expUpdate": "Güncelle",
+  "expBarcode": "Barkod",
+  "expCreateFood": "Kendi besinini oluştur",
+  "expYesterdayMeal": "Dünkü gibi ekle",
+  "expProteinRemaining": "{grams} g protein kaldı",
+  "@expProteinRemaining": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "expTodayLeftBoth": "Bugün {protein} g protein, {kcal} kcal kaldı.",
+  "expTodayLeftProtein": "Bugün {protein} g protein kaldı.",
+  "expTodayLeftKcal": "Bugün {kcal} kcal kaldı.",
+  "@expTodayLeftBoth": {
+    "placeholders": {
+      "protein": {
+        "type": "String"
+      },
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "@expTodayLeftProtein": {
+    "placeholders": {
+      "protein": {
+        "type": "String"
+      }
+    }
+  },
+  "@expTodayLeftKcal": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "asExitMsg2": "Kaydedersen ana sayfadaki Devam et kartından kaldığın yerden sürersin. Mola ve kilit ekranı kartı durur.",
+  "asSaveAndExit": "Kaydet ve çık",
+  "asDiscardAndExit": "Sil ve çık",
+  "asDraftSaveError": "Antrenman kaydedilemedi — çıkmadan önce tekrar dene",
+  "asFinishIncompleteTitle": "Antrenmanı bitir?",
+  "asFinishIncompleteMsg": "{count, plural, =1{1 set tamamlanmadı.} other{{count} set tamamlanmadı.}} Girdiğin değerler kaydedilir, boş setler atlanır.",
+  "asFinishAnyway": "Tamamlananlarla bitir",
+  "asEnterValueFirst": "Önce bu setin değerini gir",
+  "asSuggestWithPrev": "✓ ile {value} kaydedilir · geçen sefer {prev}",
+  "asPrevOnly": "Geçen sefer {prev}",
+  "asRestMinus": "−15 sn",
+  "asRestPlus": "+15 sn",
+  "asRestMinusHint": "Molayı 15 saniye kısalt",
+  "asRestPlusHint": "Molayı 15 saniye uzat",
+  "asRestStarted": "Dinlenme başladı, {time}",
+  "asSemCompleteSet": "Set {n} tamamla: {value}",
+  "asSemCompleteSetEmpty": "Set {n} tamamla",
+  "asSemUndoSet": "Set {n} tamamlandı. Geri almak için dokun",
+  "asSemField": "Set {n} {field}",
+  "asSemSuggestion": "öneri {value}",
+  "asSemSetOptions": "Set {n}, {type}. Set türü ve RPE",
+  "asSetOptionsTitle": "Set {n}",
+  "asTypeNormal": "Normal",
+  "asTypeWarmup": "Isınma",
+  "asTypeDrop": "Drop set",
+  "asTypeFailure": "Tükenişe kadar",
+  "asSetType": "Set türü",
+  "asKbNext": "Sonraki",
+  "asKbDone": "Bitti",
+  "today3aFinishedKicker": "BUGÜN TAMAM",
+  "today3aFinishedSub": "Kaydedildi · {mins} dk",
+  "today3aFinishedSubNoTime": "Kaydedildi",
+  "today3aViewSummary": "Özeti gör",
+  "today3aTrainAnyway": "Yine de antrenman yap",
+  "today3aAddMealHint": "Öğün ekle: {meal}",
+  "prog3cSegTraining": "Antrenman",
+  "prog3cSegBody": "Vücut",
+  "prog3cSegWeek": "Hafta",
+  "prog3cSegmentLabel": "İlerleme bölümü",
+  "prog3cTopTitle": "Ana hareketler",
+  "prog3cTopNote": "Günlük en iyi tahmini 1RM · son 8 hafta",
+  "prog3cE1rm": "tahmini 1RM",
+  "prog3cLatest": "son {value}",
+  "prog3cDelta": "{delta} · 4 hafta",
+  "prog3cNoCurve": "Eğri için bir antrenman günü daha",
+  "prog3cRecordsTitle": "Son 30 günün rekorları",
+  "prog3cNoRecords": "Son 30 günde yeni rekor yok",
+  "prog3cVolumeTitle": "Haftalık hacim",
+  "prog3cVolumeNote": "Son 8 hafta · kayıt olmayan hafta boş",
+  "prog3cNoData": "kayıt yok",
+  "prog3cEmptyTitle": "{count, plural, =1{Karşılaştırma için 1 antrenman daha} other{Karşılaştırma için {count} antrenman daha}}",
+  "prog3cEmptyMsg": "İki farklı günde antrenman kaydedince gelişimin burada görünür.",
+  "prog3cStartWorkout": "Antrenmana git"
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../data/providers.dart';
 import '../../data/reactive.dart';
 import '../../l10n/app_l10n.dart';
@@ -148,7 +149,7 @@ class _MealTile extends ConsumerWidget {
           child: Column(
             children: [
               AnimatedContainer(
-                duration: _animation,
+                duration: motionDuration(context, _animation),
                 width: _badge,
                 height: _badge,
                 decoration: BoxDecoration(

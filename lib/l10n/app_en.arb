@@ -2782,5 +2782,139 @@
   "adaptiveTdeeInconsistent": "Logs look incomplete for an estimate — check that completed days are fully logged.",
   "adaptiveTdeeNote": "Estimate (1 kg ≈ 7,700 kcal). Your goal is not changed automatically.",
   "healthWriteWorkouts": "Save workouts to Health",
-  "healthWriteWorkoutsNote": "Live sessions appear in Apple Health / Health Connect (time and name; no calories)."
+  "healthWriteWorkoutsNote": "Live sessions appear in Apple Health / Health Connect (time and name; no calories).",
+  "expDraftError": "Could not load your workout in progress. Try again.",
+  "expFirstMeal": "Today 0 / {goal} kcal",
+  "expPlanSubtitle": "Suggested from your goal — adjust freely. You can change these anytime in Profile.",
+  "@expFirstMeal": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "expMeasurementError": "Could not change the measurement. Try again.",
+  "expAuthConnection": "Could not connect. Check your internet and try again.",
+  "expAuthCredentials": "Incorrect email or password.",
+  "expAuthUnconfirmed": "Confirm your email before signing in.",
+  "expAuthExists": "An account already uses this email. Try signing in.",
+  "expAuthRateLimit": "Too many attempts. Wait a moment and try again.",
+  "expAuthPassword": "Choose a different password with at least 6 characters.",
+  "expAuthGeneric": "Could not complete the request. Try again.",
+  "expConfirmTitle": "Confirm your email",
+  "expConfirmHelp": "Check your inbox and spam folder. If you opened the link on another device, return here and sign in. You can also continue with Google.",
+  "expResend": "Resend confirmation email",
+  "expChangeEmail": "Change email address",
+  "expEmailSent": "Confirmation email sent.",
+  "expAmountDecrease": "Decrease amount",
+  "expAmountIncrease": "Increase amount",
+  "expAmount": "Amount",
+  "expUpdate": "Update",
+  "expBarcode": "Barcode",
+  "expCreateFood": "Create your own food",
+  "expYesterdayMeal": "Add yesterday’s meal",
+  "expProteinRemaining": "{grams} g protein left",
+  "@expProteinRemaining": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "expTodayLeftBoth": "Today: {protein} g protein and {kcal} kcal left.",
+  "expTodayLeftProtein": "Today: {protein} g protein left.",
+  "expTodayLeftKcal": "Today: {kcal} kcal left.",
+  "@expTodayLeftBoth": {
+    "placeholders": {
+      "protein": {
+        "type": "String"
+      },
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "@expTodayLeftProtein": {
+    "placeholders": {
+      "protein": {
+        "type": "String"
+      }
+    }
+  },
+  "@expTodayLeftKcal": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "asExitMsg2": "If you save, pick up where you left off from the Continue card on Home. The rest timer and lock screen card stop.",
+  "asSaveAndExit": "Save and exit",
+  "asDiscardAndExit": "Discard and exit",
+  "asDraftSaveError": "Couldn't save the workout — try again before leaving",
+  "asFinishIncompleteTitle": "Finish workout?",
+  "asFinishIncompleteMsg": "{count, plural, =1{1 set isn't done.} other{{count} sets aren't done.}} Entered values are saved, empty sets are skipped.",
+  "@asFinishIncompleteMsg": {"placeholders": {"count": {"type": "int"}}},
+  "asFinishAnyway": "Finish with completed",
+  "asEnterValueFirst": "Enter this set's value first",
+  "asSuggestWithPrev": "✓ logs {value} · last time {prev}",
+  "@asSuggestWithPrev": {"placeholders": {"value": {"type": "String"}, "prev": {"type": "String"}}},
+  "asPrevOnly": "Last time {prev}",
+  "@asPrevOnly": {"placeholders": {"prev": {"type": "String"}}},
+  "asRestMinus": "−15 s",
+  "asRestPlus": "+15 s",
+  "asRestMinusHint": "Shorten rest by 15 seconds",
+  "asRestPlusHint": "Extend rest by 15 seconds",
+  "asRestStarted": "Rest started, {time}",
+  "@asRestStarted": {"placeholders": {"time": {"type": "String"}}},
+  "asSemCompleteSet": "Complete set {n}: {value}",
+  "@asSemCompleteSet": {"placeholders": {"n": {"type": "int"}, "value": {"type": "String"}}},
+  "asSemCompleteSetEmpty": "Complete set {n}",
+  "@asSemCompleteSetEmpty": {"placeholders": {"n": {"type": "int"}}},
+  "asSemUndoSet": "Set {n} done. Tap to undo",
+  "@asSemUndoSet": {"placeholders": {"n": {"type": "int"}}},
+  "asSemField": "Set {n} {field}",
+  "@asSemField": {"placeholders": {"n": {"type": "int"}, "field": {"type": "String"}}},
+  "asSemSuggestion": "suggested {value}",
+  "@asSemSuggestion": {"placeholders": {"value": {"type": "String"}}},
+  "asSemSetOptions": "Set {n}, {type}. Set type and RPE",
+  "@asSemSetOptions": {"placeholders": {"n": {"type": "int"}, "type": {"type": "String"}}},
+  "asSetOptionsTitle": "Set {n}",
+  "@asSetOptionsTitle": {"placeholders": {"n": {"type": "int"}}},
+  "asTypeNormal": "Normal",
+  "asTypeWarmup": "Warm-up",
+  "asTypeDrop": "Drop set",
+  "asTypeFailure": "To failure",
+  "asSetType": "Set type",
+  "asKbNext": "Next",
+  "asKbDone": "Done",
+  "today3aFinishedKicker": "DONE TODAY",
+  "today3aFinishedSub": "Saved · {mins} min",
+  "@today3aFinishedSub": {"placeholders": {"mins": {"type": "int"}}},
+  "today3aFinishedSubNoTime": "Saved",
+  "today3aViewSummary": "View summary",
+  "today3aTrainAnyway": "Train anyway",
+  "today3aAddMealHint": "Add meal: {meal}",
+  "@today3aAddMealHint": {"placeholders": {"meal": {"type": "String"}}},
+  "prog3cSegTraining": "Training",
+  "prog3cSegBody": "Body",
+  "prog3cSegWeek": "Week",
+  "prog3cSegmentLabel": "Progress section",
+  "prog3cTopTitle": "Main lifts",
+  "prog3cTopNote": "Daily best estimated 1RM · last 8 weeks",
+  "prog3cE1rm": "est. 1RM",
+  "prog3cLatest": "latest {value}",
+  "@prog3cLatest": {"placeholders": {"value": {"type": "String"}}},
+  "prog3cDelta": "{delta} · 4 weeks",
+  "@prog3cDelta": {"placeholders": {"delta": {"type": "String"}}},
+  "prog3cNoCurve": "One more training day for a trend",
+  "prog3cRecordsTitle": "Records in the last 30 days",
+  "prog3cNoRecords": "No new records in the last 30 days",
+  "prog3cVolumeTitle": "Weekly volume",
+  "prog3cVolumeNote": "Last 8 weeks · weeks without logs stay empty",
+  "prog3cNoData": "no data",
+  "prog3cEmptyTitle": "{count, plural, =1{1 more workout to compare} other{{count} more workouts to compare}}",
+  "@prog3cEmptyTitle": {"placeholders": {"count": {"type": "int"}}},
+  "prog3cEmptyMsg": "Log workouts on two different days and your progress shows up here.",
+  "prog3cStartWorkout": "Go to training"
 }

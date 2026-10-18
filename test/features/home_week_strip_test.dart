@@ -179,19 +179,13 @@ void main() {
         reason: 'yeni antrenman başlatma yarışmaz');
   });
 
-  testWidgets('hiç kayıt yok: ritim kartı başlatma metni + son 30 gün 0',
-      (tester) async {
+  testWidgets('hiç kayıt yok: boş ritim ve son 30 gün gizlenir', (tester) async {
     await db.userProfileDao.ensureProfile();
     await ac(tester, const HomeScreen());
-
-    await tester.scrollUntilVisible(find.text('Ritmini başlat'), 200,
-        scrollable: find.byType(Scrollable).first);
-    expect(find.text('Ritmini başlat'), findsOneWidget);
-    expect(
-        find.text(
-            'Haftalık hedef: 1 antrenman · dinlenme günleri seriyi bozmaz'),
-        findsOneWidget);
-    expect(find.text('SON 30 GÜN'), findsOneWidget);
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -1800));
+    await tester.pump();
+    expect(find.text('Ritmini başlat'), findsNothing);
+    expect(find.text('SON 30 GÜN'), findsNothing);
   });
 
   testWidgets('dinlenme günü: dinlenme kartı + sıradaki rutin',
@@ -250,10 +244,15 @@ void main() {
     await db.userProfileDao.ensureProfile();
     await dar(tester, const HomeScreen());
     expect(tester.takeException(), isNull);
-    await tester.scrollUntilVisible(find.text('BUGÜNÜN PLANI'), 200,
+    // Bugün seans kaydedildi → birincil görev "Bugün tamam" (docs/54 D1).
+    await tester.scrollUntilVisible(find.text('BUGÜN TAMAM'), 200,
         scrollable: find.byType(Scrollable).first);
     expect(tester.takeException(), isNull);
-    expect(find.text('BUGÜNÜN PLANI'), findsOneWidget);
+    expect(find.text('BUGÜN TAMAM'), findsOneWidget);
+    // Listenin sonuna kadar kaydır — alttaki kartlar da taşmamalı.
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -4000));
+    await tester.pump();
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('dar ekran + büyük yazı: ay görünümü taşmaz', (tester) async {

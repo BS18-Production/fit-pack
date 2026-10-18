@@ -1,8 +1,10 @@
+import '../../core/i18n/formatting.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../l10n/app_l10n.dart';
 
 /// Modern beslenme/ilerleme görselleştirme bileşenleri.
@@ -66,7 +68,7 @@ class CalorieRing extends StatelessWidget {
       height: size,
       child: TweenAnimationBuilder<double>(
         tween: Tween(begin: 0, end: pct.clamp(0.0, 1.0)),
-        duration: AppDuration.slow,
+        duration: motionDuration(context, AppDuration.slow),
         curve: Curves.easeOutCubic,
         builder: (_, animated, _) {
           return CustomPaint(
@@ -85,7 +87,7 @@ class CalorieRing extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    over ? '+${remaining.abs()}' : '$remaining',
+                    over ? '+${context.numFmt.format(remaining.abs())}' : context.numFmt.format(remaining),
                     style: titleStyle?.copyWith(color: foreground),
                   ),
                   Text(label, style: subStyle),
@@ -212,7 +214,7 @@ class MacroInlineText extends StatelessWidget {
       color: context.colors.onSurfaceVariant,
     );
     TextSpan macro(String letter, double value, Color color) => TextSpan(
-      text: '$letter${value.round()}',
+      text: '$letter${context.numFmt.format(value.round())}',
       style: base?.copyWith(color: color, fontWeight: FontWeight.w700),
     );
     return Text.rich(
@@ -228,8 +230,9 @@ class MacroInlineText extends StatelessWidget {
           if (suffix != null) TextSpan(text: suffix),
         ],
       ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+      maxLines: MediaQuery.sizeOf(context).width < 360 ||
+          MediaQuery.textScalerOf(context).scale(1) > 1.15 ? null : 1,
+      overflow: TextOverflow.clip,
     );
   }
 }
@@ -275,14 +278,27 @@ class MacroBar extends StatelessWidget {
               decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             AppSpacing.hGapSm,
-            Text(label, style: labelStyle),
+            // Dar ekran + büyük yazıda etiket kısalır, değer küçülür; satır
+            // taşmaz (docs/54 dar ekran testi yakaladı).
+            Flexible(
+              child: Text(label,
+                  maxLines: 1, overflow: TextOverflow.ellipsis, style: labelStyle),
+            ),
+            AppSpacing.hGapSm,
             const Spacer(),
-            Text(
-              hasGoal
-                  ? '${current.round()} / $goal $unit'
-                  : '${current.round()} $unit',
-              style: valueStyle?.copyWith(
-                color: over ? context.semantic.warning : null,
+            Flexible(
+              flex: 2,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(
+                  hasGoal
+                      ? '${context.numFmt.format(current.round())} / ${context.numFmt.format(goal)} $unit'
+                      : '${context.numFmt.format(current.round())} $unit',
+                  style: valueStyle?.copyWith(
+                    color: over ? context.semantic.warning : null,
+                  ),
+                ),
               ),
             ),
           ],
@@ -292,7 +308,7 @@ class MacroBar extends StatelessWidget {
           borderRadius: AppRadius.brSm,
           child: TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: pct.clamp(0.0, 1.0)),
-            duration: AppDuration.slow,
+            duration: motionDuration(context, AppDuration.slow),
             curve: Curves.easeOutCubic,
             builder: (_, v, _) => LinearProgressIndicator(
               value: hasGoal ? v : 0,

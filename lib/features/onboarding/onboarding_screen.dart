@@ -6,6 +6,7 @@ import '../../core/notifications/notification_prefs.dart';
 import '../../core/router/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/units/units.dart';
 import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
@@ -17,6 +18,8 @@ import '../explore/program_labels.dart';
 import '../workout/recall_offer.dart';
 import 'onboarding_calc.dart';
 import 'program_recommendation.dart';
+import '../home/weekly_goal.dart';
+import '../home/providers/weekly_goal_provider.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 
 /// İlk açılış akışı (docs/15 V2 + docs/49 "ilk antrenmanın hazır").
@@ -169,6 +172,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       // Boy/cinsiyet/yaş artık sorulmuyor (docs/49 karar 3): profilde
       // (ör. senkronla gelen) değer varsa korunur, üzerine boş yazılmaz.
       final existing = await dao.getProfile();
+      // Haftalık hedef (docs/52) yardımcı bilgi: yazılamazsa kurulum
+      // yarıda kalmaz — hedef program/plan önceliğinden hesaplanır.
+      if (_days != null) {
+        try {
+          await ref.read(selectedWeeklyGoalProvider.notifier)
+              .setGoal(onboardingWeeklyGoal(_days!));
+        } catch (_) {}
+      }
       await dao.completeOnboarding(
         kcalGoal: kcal,
         proteinGoal: protein,
@@ -695,7 +706,7 @@ class _PlanPage extends ConsumerWidget {
           style: context.texts.headlineSmall,
         ),
         AppSpacing.vGapSm,
-        Text(l.onbPlanReadySubtitle,
+        Text(l.expPlanSubtitle,
             style: context.texts.bodyMedium?.copyWith(color: muted)),
         AppSpacing.vGapLg,
         GlassCard(
@@ -858,7 +869,7 @@ class _ProgressDots extends StatelessWidget {
           final active = i <= current;
           return Expanded(
             child: AnimatedContainer(
-              duration: AppDuration.normal,
+              duration: motionDuration(context, AppDuration.normal),
               height: 4,
               margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
               decoration: BoxDecoration(

@@ -109,6 +109,7 @@ class AssistantData {
   final Map<int, Food> foods;
   final List<BodyMeasurement> measurements;
   final Set<int> scheduledWeekdays;
+  final int weeklyGoal;
   final UserProfileData? profile;
   const AssistantData({
     required this.now,
@@ -122,6 +123,7 @@ class AssistantData {
     this.foods = const {},
     this.measurements = const [],
     this.scheduledWeekdays = const {},
+    this.weeklyGoal = 3,
     this.profile,
   });
 
@@ -138,6 +140,7 @@ class AssistantData {
     foods: foods,
     measurements: measurements,
     scheduledWeekdays: scheduledWeekdays,
+    weeklyGoal: weeklyGoal,
     profile: profile,
   );
 }
@@ -441,7 +444,7 @@ AssistantAnswer calculateAssistant(AssistantSelection s, AssistantData d) {
     case AssistantQuery.streak:
       final streak = computeWeeklyStreak(
         sessionDates: d.sessions.map((v) => v.date),
-        weeklyGoal: d.scheduledWeekdays.length,
+        weeklyGoal: d.weeklyGoal,
         now: d.now,
         weekStart: d.weekStart,
       );

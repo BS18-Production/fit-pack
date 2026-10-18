@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/motion.dart';
 import '../../l10n/app_l10n.dart';
 import 'rpe_scale.dart';
 import '../../shared/widgets/fitpack_icon.dart';
@@ -168,7 +169,8 @@ class _RpeStrip extends StatelessWidget {
                   onTap: () => onSelect(x),
                   child: Center(
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
+                      duration: motionDuration(
+                          context, const Duration(milliseconds: 150)),
                       width: 42,
                       height: 42,
                       alignment: Alignment.center,

@@ -4513,4 +4513,309 @@ class AppL10nEn extends AppL10n {
   @override
   String get healthWriteWorkoutsNote =>
       'Live sessions appear in Apple Health / Health Connect (time and name; no calories).';
+
+  @override
+  String get expDraftError =>
+      'Could not load your workout in progress. Try again.';
+
+  @override
+  String expFirstMeal(String goal) {
+    return 'Today 0 / $goal kcal';
+  }
+
+  @override
+  String get expPlanSubtitle =>
+      'Suggested from your goal — adjust freely. You can change these anytime in Profile.';
+
+  @override
+  String get expMeasurementError =>
+      'Could not change the measurement. Try again.';
+
+  @override
+  String get expAuthConnection =>
+      'Could not connect. Check your internet and try again.';
+
+  @override
+  String get expAuthCredentials => 'Incorrect email or password.';
+
+  @override
+  String get expAuthUnconfirmed => 'Confirm your email before signing in.';
+
+  @override
+  String get expAuthExists =>
+      'An account already uses this email. Try signing in.';
+
+  @override
+  String get expAuthRateLimit =>
+      'Too many attempts. Wait a moment and try again.';
+
+  @override
+  String get expAuthPassword =>
+      'Choose a different password with at least 6 characters.';
+
+  @override
+  String get expAuthGeneric => 'Could not complete the request. Try again.';
+
+  @override
+  String get expConfirmTitle => 'Confirm your email';
+
+  @override
+  String get expConfirmHelp =>
+      'Check your inbox and spam folder. If you opened the link on another device, return here and sign in. You can also continue with Google.';
+
+  @override
+  String get expResend => 'Resend confirmation email';
+
+  @override
+  String get expChangeEmail => 'Change email address';
+
+  @override
+  String get expEmailSent => 'Confirmation email sent.';
+
+  @override
+  String get expAmountDecrease => 'Decrease amount';
+
+  @override
+  String get expAmountIncrease => 'Increase amount';
+
+  @override
+  String get expAmount => 'Amount';
+
+  @override
+  String get expUpdate => 'Update';
+
+  @override
+  String get expBarcode => 'Barcode';
+
+  @override
+  String get expCreateFood => 'Create your own food';
+
+  @override
+  String get expYesterdayMeal => 'Add yesterday’s meal';
+
+  @override
+  String expProteinRemaining(String grams) {
+    return '$grams g protein left';
+  }
+
+  @override
+  String expTodayLeftBoth(String protein, String kcal) {
+    return 'Today: $protein g protein and $kcal kcal left.';
+  }
+
+  @override
+  String expTodayLeftProtein(String protein) {
+    return 'Today: $protein g protein left.';
+  }
+
+  @override
+  String expTodayLeftKcal(String kcal) {
+    return 'Today: $kcal kcal left.';
+  }
+
+  @override
+  String get asExitMsg2 =>
+      'If you save, pick up where you left off from the Continue card on Home. The rest timer and lock screen card stop.';
+
+  @override
+  String get asSaveAndExit => 'Save and exit';
+
+  @override
+  String get asDiscardAndExit => 'Discard and exit';
+
+  @override
+  String get asDraftSaveError =>
+      'Couldn\'t save the workout — try again before leaving';
+
+  @override
+  String get asFinishIncompleteTitle => 'Finish workout?';
+
+  @override
+  String asFinishIncompleteMsg(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets aren\'t done.',
+      one: '1 set isn\'t done.',
+    );
+    return '$_temp0 Entered values are saved, empty sets are skipped.';
+  }
+
+  @override
+  String get asFinishAnyway => 'Finish with completed';
+
+  @override
+  String get asEnterValueFirst => 'Enter this set\'s value first';
+
+  @override
+  String asSuggestWithPrev(String value, String prev) {
+    return '✓ logs $value · last time $prev';
+  }
+
+  @override
+  String asPrevOnly(String prev) {
+    return 'Last time $prev';
+  }
+
+  @override
+  String get asRestMinus => '−15 s';
+
+  @override
+  String get asRestPlus => '+15 s';
+
+  @override
+  String get asRestMinusHint => 'Shorten rest by 15 seconds';
+
+  @override
+  String get asRestPlusHint => 'Extend rest by 15 seconds';
+
+  @override
+  String asRestStarted(String time) {
+    return 'Rest started, $time';
+  }
+
+  @override
+  String asSemCompleteSet(int n, String value) {
+    return 'Complete set $n: $value';
+  }
+
+  @override
+  String asSemCompleteSetEmpty(int n) {
+    return 'Complete set $n';
+  }
+
+  @override
+  String asSemUndoSet(int n) {
+    return 'Set $n done. Tap to undo';
+  }
+
+  @override
+  String asSemField(int n, String field) {
+    return 'Set $n $field';
+  }
+
+  @override
+  String asSemSuggestion(String value) {
+    return 'suggested $value';
+  }
+
+  @override
+  String asSemSetOptions(int n, String type) {
+    return 'Set $n, $type. Set type and RPE';
+  }
+
+  @override
+  String asSetOptionsTitle(int n) {
+    return 'Set $n';
+  }
+
+  @override
+  String get asTypeNormal => 'Normal';
+
+  @override
+  String get asTypeWarmup => 'Warm-up';
+
+  @override
+  String get asTypeDrop => 'Drop set';
+
+  @override
+  String get asTypeFailure => 'To failure';
+
+  @override
+  String get asSetType => 'Set type';
+
+  @override
+  String get asKbNext => 'Next';
+
+  @override
+  String get asKbDone => 'Done';
+
+  @override
+  String get today3aFinishedKicker => 'DONE TODAY';
+
+  @override
+  String today3aFinishedSub(int mins) {
+    return 'Saved · $mins min';
+  }
+
+  @override
+  String get today3aFinishedSubNoTime => 'Saved';
+
+  @override
+  String get today3aViewSummary => 'View summary';
+
+  @override
+  String get today3aTrainAnyway => 'Train anyway';
+
+  @override
+  String today3aAddMealHint(String meal) {
+    return 'Add meal: $meal';
+  }
+
+  @override
+  String get prog3cSegTraining => 'Training';
+
+  @override
+  String get prog3cSegBody => 'Body';
+
+  @override
+  String get prog3cSegWeek => 'Week';
+
+  @override
+  String get prog3cSegmentLabel => 'Progress section';
+
+  @override
+  String get prog3cTopTitle => 'Main lifts';
+
+  @override
+  String get prog3cTopNote => 'Daily best estimated 1RM · last 8 weeks';
+
+  @override
+  String get prog3cE1rm => 'est. 1RM';
+
+  @override
+  String prog3cLatest(String value) {
+    return 'latest $value';
+  }
+
+  @override
+  String prog3cDelta(String delta) {
+    return '$delta · 4 weeks';
+  }
+
+  @override
+  String get prog3cNoCurve => 'One more training day for a trend';
+
+  @override
+  String get prog3cRecordsTitle => 'Records in the last 30 days';
+
+  @override
+  String get prog3cNoRecords => 'No new records in the last 30 days';
+
+  @override
+  String get prog3cVolumeTitle => 'Weekly volume';
+
+  @override
+  String get prog3cVolumeNote => 'Last 8 weeks · weeks without logs stay empty';
+
+  @override
+  String get prog3cNoData => 'no data';
+
+  @override
+  String prog3cEmptyTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more workouts to compare',
+      one: '1 more workout to compare',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get prog3cEmptyMsg =>
+      'Log workouts on two different days and your progress shows up here.';
+
+  @override
+  String get prog3cStartWorkout => 'Go to training';
 }

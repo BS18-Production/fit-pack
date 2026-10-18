@@ -188,6 +188,17 @@ void main() {
         router.go(route);
         await settle();
         await capture(route.replaceAll('/', '-'));
+        if (route == AppRoutes.progress) {
+          await tester.drag(find.byType(Scrollable).first, const Offset(0, -560));
+          await settle();
+          await capture('progress-details');
+        }
+        if (route == AppRoutes.exerciseDetail(1)) {
+          final l = lookupAppL10n(Locale(scenario.locale));
+          await tester.tap(find.text(l.edTabChart));
+          await settle();
+          await capture('exercise-chart');
+        }
       }
     });
   }

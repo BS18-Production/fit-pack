@@ -38,6 +38,11 @@ class NotificationService {
   static const idRecallBase = 40;
   static const recallSlots = 6;
 
+  /// Geri çağırma — "planlı gün kaçtı" (docs/51 durum 1): bugün + 2 gün =
+  /// 46…48. Sınırları [idRecallBase] ile ortak.
+  static const idMissedDayBase = 46;
+  static const missedDaySlots = 3;
+
   /// Dokununca açılacak ekranı söyleyen yük (payload). Uygulama kökü bunu
   /// dinleyip ilgili rotaya gider.
   static const payloadWeeklyReview = 'weekly_review';
@@ -371,6 +376,9 @@ class NotificationService {
     }
     for (var i = 0; i < recallSlots; i++) {
       await cancel(idRecallBase + i);
+    }
+    for (var i = 0; i < missedDaySlots; i++) {
+      await cancel(idMissedDayBase + i);
     }
   }
 }

@@ -3475,6 +3475,18 @@ abstract class AppL10n {
   /// **'Pick a routine or start an empty workout — a few sets do the job.'**
   String get notifRecallBody;
 
+  /// No description provided for @notifMissedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today was {routine} day'**
+  String notifMissedTitle(String routine);
+
+  /// No description provided for @notifMissedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow works too. If you have time, a short session now still counts.'**
+  String get notifMissedBody;
+
   /// No description provided for @recallOfferTitle.
   ///
   /// In en, this message translates to:

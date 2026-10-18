@@ -1006,6 +1006,15 @@
     }
   },
   "notifRecallBody": "Pick a routine or start an empty workout — a few sets do the job.",
+  "notifMissedTitle": "Today was {routine} day",
+  "@notifMissedTitle": {
+    "placeholders": {
+      "routine": {
+        "type": "String"
+      }
+    }
+  },
+  "notifMissedBody": "Tomorrow works too. If you have time, a short session now still counts.",
   "recallOfferTitle": "Want a reminder for your next workout?",
   "recallOfferBody": "If you take a 2-day break, you get one notification at your usual time. Turn it off in Settings → Notifications.",
   "recallOfferYes": "Yes, remind me",

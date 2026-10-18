@@ -41,7 +41,11 @@ hatırlatıcısı ise doğru deseni zaten kurmuş: veri varsa bildirim yok.
 - **Tek tür, iki durum:**
   1. **Planlı gün kaçtı:** rutinler güne bağlıysa (`todayRoutineProvider`),
      planlı günün akşamı antrenman yoksa: "Bugün Bacak günüydü — yarın da
-     olur." Kayıt girilince iptal olur.
+     olur." Kayıt girilince iptal olur. **Uygulandı (2026-10-18):** akşam
+     20:00; olağan saat 18:30'dan geçse olağan + 90 dk, en geç 21:30. Hiç
+     antrenmanı olmayan hesapta çalışmaz (ilk hafta hatırlatmasına kalır).
+     Yuvalar 46–48; günde 2 / haftada 6 sınırını ve susturmayı "ara uzadı"
+     ile ortak paylaşır, aynı günde önce bu kurulur.
   2. **Ara uzadı:** güne bağlı rutin yoksa son antrenmandan **2 gün** sonra,
      kullanıcının olağan antrenman saatinde: "Sıradaki: Tüm vücut B · ~45 dk".
      Saat son 10 seansın başlangıç saatinden çıkarılır; veri yoksa 18:00.
@@ -176,8 +180,8 @@ Karar gerçek kullanıma göre verilir (eşik, ton, sınır).
 2. Mevcut antrenman hatırlatıcısının bu fonksiyona bağlanması (karar 3).
 3. İlk antrenmandan sonra tek satırlık izin önerisi (karar 4).
 
-"Planlı gün kaçtı", ilk hafta hatırlatması ve 14 günlük susturma ikinci
-turda eklenir. İlk adım bir akşamlık iş. Şema yok, yeni paket yok.
+"Planlı gün kaçtı" (✅ 2026-10-18), ilk hafta hatırlatması ve 14 günlük
+susturma ikinci turda eklenir. İlk adım bir akşamlık iş. Şema yok, yeni paket yok.
 
 ## 4. Kapsam dışı
 

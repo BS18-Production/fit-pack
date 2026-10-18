@@ -5,6 +5,7 @@ import '../../core/utils/current_day.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/daos/workout_dao.dart';
 import '../../l10n/app_l10n.dart';
+import 'recall_missed_day.dart';
 import 'routine_providers.dart' show estimateRoutineMinutes, rotationNext;
 
 /// **Geri çağırma — "ara uzadı" hatırlatıcısı** (docs/51 ilk adım).
@@ -246,6 +247,9 @@ Future<void> syncRecallReminders({
   for (var i = 0; i < NotificationService.recallSlots; i++) {
     await service.cancel(NotificationService.idRecallBase + i);
   }
+  for (var i = 0; i < NotificationService.missedDaySlots; i++) {
+    await service.cancel(NotificationService.idMissedDayBase + i);
+  }
   final t = now ?? DateTime.now();
   final recent = await dao.getRecentSessions(10);
   final lastWorkout = recent.isEmpty ? null : recent.first.date;
@@ -258,15 +262,31 @@ Future<void> syncRecallReminders({
 
   final minute = usualWorkoutMinute([for (final s in recent) ?s.startedAt]) ??
       fallbackHour * 60 + fallbackMinute;
-  final plan = planRecall(
+  final routines = await dao.getActiveRoutines();
+  // docs/51 durum 1 — "planlı gün kaçtı" önce; iki tür sınırı paylaşır.
+  final missed = planMissedDay(
     now: t,
-    lastWorkout: lastWorkout,
-    minuteOfDay: minute,
-    sent: ledger.sent,
+    routines: routines,
+    sessionDays: {for (final s in recent) dayStart(s.date)},
+    hasWorkouts: lastWorkout != null,
+    usualMinute: minute,
     mutedUntil: ledger.mutedUntil,
   );
+  final merged = mergeRecallPlans(
+    missed: [for (final (at, _) in missed) at],
+    gap: planRecall(
+      now: t,
+      lastWorkout: lastWorkout,
+      minuteOfDay: minute,
+      sent: ledger.sent,
+      mutedUntil: ledger.mutedUntil,
+    ),
+    sent: ledger.sent,
+  );
+  await scheduleMissedDay(
+      service: service, l: l, plan: missed, keep: merged.missed);
+  final plan = merged.gap;
 
-  final routines = await dao.getActiveRoutines();
   final rotation = rotationNext(routines, await dao.getLastSessionRoutineId());
   for (final (i, at) in plan.indexed) {
     final r = _routineFor(routines, rotation, at);
@@ -285,7 +305,7 @@ Future<void> syncRecallReminders({
       payload: NotificationService.payloadRecall,
     );
   }
-  ledger = ledger.withPlanned(plan);
+  ledger = ledger.withPlanned([...merged.missed, ...plan]..sort());
   await ledger.save();
 }
 

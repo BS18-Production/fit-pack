@@ -1929,6 +1929,15 @@ class AppL10nTr extends AppL10n {
       'Rutinini seç ya da boş antrenman başlat — birkaç set de iş görür.';
 
   @override
+  String notifMissedTitle(String routine) {
+    return 'Bugün $routine günüydü';
+  }
+
+  @override
+  String get notifMissedBody =>
+      'Yarın da olur. Vaktin varsa kısa bir seans şimdi de sayılır.';
+
+  @override
   String get recallOfferTitle => 'Sıradaki antrenmanını hatırlatayım mı?';
 
   @override

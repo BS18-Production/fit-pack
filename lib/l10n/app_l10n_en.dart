@@ -1940,6 +1940,15 @@ class AppL10nEn extends AppL10n {
       'Pick a routine or start an empty workout — a few sets do the job.';
 
   @override
+  String notifMissedTitle(String routine) {
+    return 'Today was $routine day';
+  }
+
+  @override
+  String get notifMissedBody =>
+      'Tomorrow works too. If you have time, a short session now still counts.';
+
+  @override
   String get recallOfferTitle => 'Want a reminder for your next workout?';
 
   @override

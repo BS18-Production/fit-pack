@@ -257,6 +257,8 @@ void main() {
         NotificationService.idWorkout,
         for (var i = 0; i < NotificationService.recallSlots; i++)
           NotificationService.idRecallBase + i,
+        for (var i = 0; i < NotificationService.missedDaySlots; i++)
+          NotificationService.idMissedDayBase + i,
       ]);
       // Olağan saat geçmişten (19:30, ayardaki 18:00 değil); bugünkü geçti.
       // İkincisi 22:30 sessiz saate düşer → 3 saat önce, 16:30.
@@ -280,7 +282,11 @@ void main() {
           fallbackMinute: 0,
           now: at(10, 9));
       expect(svc.scheduled, isEmpty);
-      expect(svc.cancelled, hasLength(1 + NotificationService.recallSlots));
+      expect(
+          svc.cancelled,
+          hasLength(1 +
+              NotificationService.recallSlots +
+              NotificationService.missedDaySlots));
 
       await seans(at(10, 10));
       final svc2 = _FakeNotifications();

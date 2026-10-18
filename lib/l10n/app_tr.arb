@@ -575,6 +575,8 @@
   "notifRecallBodyRoutine": "Sıradaki: {routine} · ~{minutes} dk",
   "notifRecallBodyRoutineOnly": "Sıradaki: {routine}",
   "notifRecallBody": "Rutinini seç ya da boş antrenman başlat — birkaç set de iş görür.",
+  "notifMissedTitle": "Bugün {routine} günüydü",
+  "notifMissedBody": "Yarın da olur. Vaktin varsa kısa bir seans şimdi de sayılır.",
   "recallOfferTitle": "Sıradaki antrenmanını hatırlatayım mı?",
   "recallOfferBody": "2 gün ara verirsen olağan saatinde tek bir bildirim gelir. Ayarlar → Bildirimler'den kapatabilirsin.",
   "recallOfferYes": "Evet, hatırlat",

@@ -228,6 +228,29 @@ WorkoutSessionsCompanion finishedSessionRow({
   );
 }
 
+/// Seans süresi kuralı (docs/53): son tamamlanan setten sonra
+/// [sessionIdleCutoff]'tan uzun boşluk varsa bitiş = son set +
+/// [sessionIdleGrace]; yoksa şimdi. Boşta bırakılan ya da "kaydet ve çık"
+/// ile duraklatılan seansın saatleri süreye (ve kaloriye) eklenmez.
+const sessionIdleCutoff = Duration(minutes: 10);
+const sessionIdleGrace = Duration(minutes: 1);
+
+Duration sessionElapsed({
+  required DateTime startedAt,
+  required DateTime now,
+  DateTime? lastDoneAt,
+}) {
+  final end = lastDoneAt != null && now.difference(lastDoneAt) > sessionIdleCutoff
+      ? lastDoneAt.add(sessionIdleGrace)
+      : now;
+  final d = end.difference(startedAt);
+  return d.isNegative ? Duration.zero : d;
+}
+
+/// Bitirişte tamamlanmamış set sayısı (onay penceresi için).
+int incompleteSetCount(List<SessionExerciseEntry> exercises) => exercises.fold(
+    0, (n, e) => n + e.sets.where((s) => !s.done).length);
+
 /// Bitirişte yazılacak setler (`insertSessionWithSets`): veri girilmemiş ve
 /// tamamlanmamış setler atlanır, set numarası hareket içinde 1'den sayar.
 List<WorkoutSetsCompanion> sessionSetRows(

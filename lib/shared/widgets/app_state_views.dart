@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/motion.dart';
 import '../../core/theme/app_dimens.dart';
 import '../../l10n/app_l10n.dart';
 import 'fitpack_icon.dart';
@@ -150,6 +151,17 @@ class _SkeletonState extends State<Skeleton>
     _c = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 1200))
       ..repeat();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Hareketi azalt (A6 §1.5): tek sonsuz animasyon durur, iskelet sabit.
+    if (reduceMotion(context)) {
+      _c.stop();
+    } else if (!_c.isAnimating) {
+      _c.repeat();
+    }
   }
 
   @override

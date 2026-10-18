@@ -1762,5 +1762,34 @@
         "type": "String"
       }
     }
-  }
+  },
+  "asExitMsg2": "Kaydedersen ana sayfadaki Devam et kartından kaldığın yerden sürersin. Mola ve kilit ekranı kartı durur.",
+  "asSaveAndExit": "Kaydet ve çık",
+  "asDiscardAndExit": "Sil ve çık",
+  "asDraftSaveError": "Antrenman kaydedilemedi — çıkmadan önce tekrar dene",
+  "asFinishIncompleteTitle": "Antrenmanı bitir?",
+  "asFinishIncompleteMsg": "{count, plural, =1{1 set tamamlanmadı.} other{{count} set tamamlanmadı.}} Girdiğin değerler kaydedilir, boş setler atlanır.",
+  "asFinishAnyway": "Tamamlananlarla bitir",
+  "asEnterValueFirst": "Önce bu setin değerini gir",
+  "asSuggestWithPrev": "✓ ile {value} kaydedilir · geçen sefer {prev}",
+  "asPrevOnly": "Geçen sefer {prev}",
+  "asRestMinus": "−15 sn",
+  "asRestPlus": "+15 sn",
+  "asRestMinusHint": "Molayı 15 saniye kısalt",
+  "asRestPlusHint": "Molayı 15 saniye uzat",
+  "asRestStarted": "Dinlenme başladı, {time}",
+  "asSemCompleteSet": "Set {n} tamamla: {value}",
+  "asSemCompleteSetEmpty": "Set {n} tamamla",
+  "asSemUndoSet": "Set {n} tamamlandı. Geri almak için dokun",
+  "asSemField": "Set {n} {field}",
+  "asSemSuggestion": "öneri {value}",
+  "asSemSetOptions": "Set {n}, {type}. Set türü ve RPE",
+  "asSetOptionsTitle": "Set {n}",
+  "asTypeNormal": "Normal",
+  "asTypeWarmup": "Isınma",
+  "asTypeDrop": "Drop set",
+  "asTypeFailure": "Tükenişe kadar",
+  "asSetType": "Set türü",
+  "asKbNext": "Sonraki",
+  "asKbDone": "Bitti"
 }

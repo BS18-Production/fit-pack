@@ -4561,4 +4561,121 @@ class AppL10nTr extends AppL10n {
   String expTodayLeftKcal(String kcal) {
     return 'Bugün $kcal kcal kaldı.';
   }
+
+  @override
+  String get asExitMsg2 =>
+      'Kaydedersen ana sayfadaki Devam et kartından kaldığın yerden sürersin. Mola ve kilit ekranı kartı durur.';
+
+  @override
+  String get asSaveAndExit => 'Kaydet ve çık';
+
+  @override
+  String get asDiscardAndExit => 'Sil ve çık';
+
+  @override
+  String get asDraftSaveError =>
+      'Antrenman kaydedilemedi — çıkmadan önce tekrar dene';
+
+  @override
+  String get asFinishIncompleteTitle => 'Antrenmanı bitir?';
+
+  @override
+  String asFinishIncompleteMsg(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count set tamamlanmadı.',
+      one: '1 set tamamlanmadı.',
+    );
+    return '$_temp0 Girdiğin değerler kaydedilir, boş setler atlanır.';
+  }
+
+  @override
+  String get asFinishAnyway => 'Tamamlananlarla bitir';
+
+  @override
+  String get asEnterValueFirst => 'Önce bu setin değerini gir';
+
+  @override
+  String asSuggestWithPrev(String value, String prev) {
+    return '✓ ile $value kaydedilir · geçen sefer $prev';
+  }
+
+  @override
+  String asPrevOnly(String prev) {
+    return 'Geçen sefer $prev';
+  }
+
+  @override
+  String get asRestMinus => '−15 sn';
+
+  @override
+  String get asRestPlus => '+15 sn';
+
+  @override
+  String get asRestMinusHint => 'Molayı 15 saniye kısalt';
+
+  @override
+  String get asRestPlusHint => 'Molayı 15 saniye uzat';
+
+  @override
+  String asRestStarted(String time) {
+    return 'Dinlenme başladı, $time';
+  }
+
+  @override
+  String asSemCompleteSet(int n, String value) {
+    return 'Set $n tamamla: $value';
+  }
+
+  @override
+  String asSemCompleteSetEmpty(int n) {
+    return 'Set $n tamamla';
+  }
+
+  @override
+  String asSemUndoSet(int n) {
+    return 'Set $n tamamlandı. Geri almak için dokun';
+  }
+
+  @override
+  String asSemField(int n, String field) {
+    return 'Set $n $field';
+  }
+
+  @override
+  String asSemSuggestion(String value) {
+    return 'öneri $value';
+  }
+
+  @override
+  String asSemSetOptions(int n, String type) {
+    return 'Set $n, $type. Set türü ve RPE';
+  }
+
+  @override
+  String asSetOptionsTitle(int n) {
+    return 'Set $n';
+  }
+
+  @override
+  String get asTypeNormal => 'Normal';
+
+  @override
+  String get asTypeWarmup => 'Isınma';
+
+  @override
+  String get asTypeDrop => 'Drop set';
+
+  @override
+  String get asTypeFailure => 'Tükenişe kadar';
+
+  @override
+  String get asSetType => 'Set türü';
+
+  @override
+  String get asKbNext => 'Sonraki';
+
+  @override
+  String get asKbDone => 'Bitti';
 }

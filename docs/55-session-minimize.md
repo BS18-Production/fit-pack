@@ -1,10 +1,11 @@
 # 55 — Antrenman sürerken küçült (Faz 3B, P07b)
 
 18 Ekim 2026 · Kaynak: review/A6 §2.2 (mimari taslak ve 14 senaryo), docs/53
-(kaydet-çık sözleşmesi), Codex ikinci inceleme R2. Durum: **öneri, Samet onayı
-bekliyor.**
+(kaydet-çık sözleşmesi), Codex ikinci inceleme R2. Durum: **onaylandı.**
 
 ## Karar özeti
+
+**Samet kararı (18 Ekim 2026):** K-1 dört ana sekme; K-2 sonra — önce "kaydet ve çık" iki hafta denenir.
 
 - **Ne:** Antrenmandan çıkmadan başka sekmeye geçilebilir. Seans arka planda
   sürer:

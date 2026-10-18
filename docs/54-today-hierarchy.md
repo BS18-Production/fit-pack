@@ -6,6 +6,8 @@ Samet onayı bekliyor.**
 
 ## Karar özeti
 
+**Samet kararı (18 Ekim 2026):** D1 evet, D2 evet — önerildiği gibi; kodlama başladı.
+
 - Ana sayfada sabit **beş katman** olur:
   1. Başlık.
   2. Tek birincil görev.

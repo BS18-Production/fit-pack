@@ -5,6 +5,8 @@ review/A2 hata #6. Durum: **öneri, Samet onayı bekliyor.**
 
 ## Karar özeti
 
+**Samet kararı (18 Ekim 2026):** İ-1 evet, İ-2 Antrenman — önerildiği gibi; kodlama başladı.
+
 - **Sorun (U05):** "İlerleme" sekmesi bugün yalnız şunları gösteriyor:
   - Aktivite takvimi.
   - Fotoğraflar.

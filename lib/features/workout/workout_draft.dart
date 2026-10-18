@@ -98,6 +98,8 @@ class WorkoutDraft {
   // sayaç kaldığı yerden sürer. Eski taslakta yok → null.
   final int? restStartedAtMs;
   final int? restEndsAtMs;
+  // Son tamamlanan setin anı (docs/53 süre kuralı). Eski taslakta yok → null.
+  final int? lastDoneAtMs;
   final List<DraftExercise> exercises;
   WorkoutDraft({
     required this.title,
@@ -106,6 +108,7 @@ class WorkoutDraft {
     required this.sessionDateMs,
     this.restStartedAtMs,
     this.restEndsAtMs,
+    this.lastDoneAtMs,
     required this.exercises,
   });
 
@@ -117,6 +120,9 @@ class WorkoutDraft {
   DateTime? get restEndsAt => restEndsAtMs == null
       ? null
       : DateTime.fromMillisecondsSinceEpoch(restEndsAtMs!);
+  DateTime? get lastDoneAt => lastDoneAtMs == null
+      ? null
+      : DateTime.fromMillisecondsSinceEpoch(lastDoneAtMs!);
 
   /// Banner için: en az bir sette anlamlı veri ya da ✓ var mı.
   bool get hasData =>
@@ -134,6 +140,7 @@ class WorkoutDraft {
         'sessionDateMs': sessionDateMs,
         if (restStartedAtMs != null) 'restStartedAtMs': restStartedAtMs,
         if (restEndsAtMs != null) 'restEndsAtMs': restEndsAtMs,
+        if (lastDoneAtMs != null) 'lastDoneAtMs': lastDoneAtMs,
         'exercises': exercises.map((e) => e.toJson()).toList(),
       };
 
@@ -144,6 +151,7 @@ class WorkoutDraft {
         sessionDateMs: (j['sessionDateMs'] as num).toInt(),
         restStartedAtMs: (j['restStartedAtMs'] as num?)?.toInt(),
         restEndsAtMs: (j['restEndsAtMs'] as num?)?.toInt(),
+        lastDoneAtMs: (j['lastDoneAtMs'] as num?)?.toInt(),
         exercises: ((j['exercises'] as List?) ?? [])
             .map((e) => DraftExercise.fromJson(e as Map<String, dynamic>))
             .toList(),

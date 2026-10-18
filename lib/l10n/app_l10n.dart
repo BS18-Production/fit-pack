@@ -7573,6 +7573,180 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Live sessions appear in Apple Health / Health Connect (time and name; no calories).'**
   String get healthWriteWorkoutsNote;
+
+  /// No description provided for @asExitMsg2.
+  ///
+  /// In en, this message translates to:
+  /// **'If you save, pick up where you left off from the Continue card on Home. The rest timer and lock screen card stop.'**
+  String get asExitMsg2;
+
+  /// No description provided for @asSaveAndExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and exit'**
+  String get asSaveAndExit;
+
+  /// No description provided for @asDiscardAndExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard and exit'**
+  String get asDiscardAndExit;
+
+  /// No description provided for @asDraftSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the workout — try again before leaving'**
+  String get asDraftSaveError;
+
+  /// No description provided for @asFinishIncompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish workout?'**
+  String get asFinishIncompleteTitle;
+
+  /// No description provided for @asFinishIncompleteMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 set isn\'t done.} other{{count} sets aren\'t done.}} Entered values are saved, empty sets are skipped.'**
+  String asFinishIncompleteMsg(int count);
+
+  /// No description provided for @asFinishAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish with completed'**
+  String get asFinishAnyway;
+
+  /// No description provided for @asEnterValueFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter this set\'s value first'**
+  String get asEnterValueFirst;
+
+  /// No description provided for @asSuggestWithPrev.
+  ///
+  /// In en, this message translates to:
+  /// **'✓ logs {value} · last time {prev}'**
+  String asSuggestWithPrev(String value, String prev);
+
+  /// No description provided for @asPrevOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time {prev}'**
+  String asPrevOnly(String prev);
+
+  /// No description provided for @asRestMinus.
+  ///
+  /// In en, this message translates to:
+  /// **'−15 s'**
+  String get asRestMinus;
+
+  /// No description provided for @asRestPlus.
+  ///
+  /// In en, this message translates to:
+  /// **'+15 s'**
+  String get asRestPlus;
+
+  /// No description provided for @asRestMinusHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shorten rest by 15 seconds'**
+  String get asRestMinusHint;
+
+  /// No description provided for @asRestPlusHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Extend rest by 15 seconds'**
+  String get asRestPlusHint;
+
+  /// No description provided for @asRestStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest started, {time}'**
+  String asRestStarted(String time);
+
+  /// No description provided for @asSemCompleteSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete set {n}: {value}'**
+  String asSemCompleteSet(int n, String value);
+
+  /// No description provided for @asSemCompleteSetEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete set {n}'**
+  String asSemCompleteSetEmpty(int n);
+
+  /// No description provided for @asSemUndoSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {n} done. Tap to undo'**
+  String asSemUndoSet(int n);
+
+  /// No description provided for @asSemField.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {n} {field}'**
+  String asSemField(int n, String field);
+
+  /// No description provided for @asSemSuggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'suggested {value}'**
+  String asSemSuggestion(String value);
+
+  /// No description provided for @asSemSetOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {n}, {type}. Set type and RPE'**
+  String asSemSetOptions(int n, String type);
+
+  /// No description provided for @asSetOptionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {n}'**
+  String asSetOptionsTitle(int n);
+
+  /// No description provided for @asTypeNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get asTypeNormal;
+
+  /// No description provided for @asTypeWarmup.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm-up'**
+  String get asTypeWarmup;
+
+  /// No description provided for @asTypeDrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop set'**
+  String get asTypeDrop;
+
+  /// No description provided for @asTypeFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'To failure'**
+  String get asTypeFailure;
+
+  /// No description provided for @asSetType.
+  ///
+  /// In en, this message translates to:
+  /// **'Set type'**
+  String get asSetType;
+
+  /// No description provided for @asKbNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get asKbNext;
+
+  /// No description provided for @asKbDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get asKbDone;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -39,6 +40,9 @@ import '../health/body_providers.dart';
 /// Set alanına yazım durduktan sonra taslağın kaydedilme gecikmesi.
 const _draftSaveDelay = Duration(milliseconds: 500);
 
+/// Çıkış penceresinin seçenekleri (docs/53).
+enum _ExitChoice { keep, save, discard }
+
 class ActiveSessionScreen extends ConsumerStatefulWidget {
   final int? routineId;
   // Geçmiş antrenman ekleme modu: dolu ise kronometre çalışmaz, seans bu güne
@@ -72,6 +76,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   late DateTime _startedAt;
   late DateTime _sessionDate; // seansın yazılacağı mantıksal gün
   bool _loading = true;
+  // Yükleme hatası (A1 E10): sonsuz dönen gösterge yerine tekrar dene.
+  Object? _loadError;
   bool _saving = false;
   bool _draftCleared = false; // bitir/çıkış sonrası taslak yazımını durdur
   late final WorkoutDraftService _drafts;
@@ -86,6 +92,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   bool get _draftable => !_isManual;
 
   Timer? _ticker; // canlı süre
+  // Son tamamlanan setin anı — süre kuralı (docs/53): boşta geçen zaman sayılmaz.
+  DateTime? _lastDoneAt;
   Duration _elapsed = Duration.zero;
 
   Timer? _restTimer;
@@ -128,7 +136,29 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         if (mounted) setState(() => _elapsed = DateTime.now().difference(_startedAt));
       });
     }
-    _load();
+    _loadSafely();
+  }
+
+  /// [_load]'u hata yakalayarak çalıştırır; hata olursa ekranda "Tekrar dene".
+  Future<void> _loadSafely() async {
+    try {
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
+      _exercises.clear();
+      setState(() {
+        _loadError = e;
+        _loading = false;
+      });
+    }
+  }
+
+  void _retryLoad() {
+    setState(() {
+      _loadError = null;
+      _loading = true;
+    });
+    _loadSafely();
   }
 
   bool _titleInitialized = false;
@@ -280,6 +310,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         sessionDateMs: _sessionDate.millisecondsSinceEpoch,
         restStartedAtMs: _restStartedAt?.millisecondsSinceEpoch,
         restEndsAtMs: _restDeadline?.millisecondsSinceEpoch,
+        lastDoneAtMs: _lastDoneAt?.millisecondsSinceEpoch,
         exercises: _exercises.map((e) => e.toDraft()).toList(),
       );
 
@@ -287,7 +318,12 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   /// anki hareket + set, sıradaki setin hedefi, dinlenme bitişi. Aynı durum
   /// tekrar gönderilmez (servis karşılaştırır).
   void _syncLive() {
-    if (_isManual || _loading || _draftCleared || _disposing || !mounted) {
+    if (_isManual ||
+        _loading ||
+        _loadError != null ||
+        _draftCleared ||
+        _disposing ||
+        !mounted) {
       return;
     }
     final l = AppL10n.of(context);
@@ -363,7 +399,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _draftDebounce?.cancel();
     _draftDebounce = null;
     _syncLive();
-    if (!_draftable || _draftCleared || _loading) return;
+    // Yükleme hatasında bellek boş — diskteki taslağın üstüne yazılmaz.
+    if (!_draftable || _draftCleared || _loading || _loadError != null) return;
     if (_drafts.clearCount != _draftClearCount) return;
     await _drafts.save(_buildDraft());
   }
@@ -395,6 +432,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _routineId = d.routineId;
     _startedAt = d.startedAt;
     _sessionDate = d.sessionDate;
+    _lastDoneAt = d.lastDoneAt;
     // Süren dinlenme (uygulama arka planda öldürüldü): kaldığı yerden sürer.
     final restEnds = d.restEndsAt;
     if (restEnds != null && restEnds.isAfter(DateTime.now())) {
@@ -545,6 +583,13 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (mounted) setState(() => _loading = false);
     _syncLive();
     _saveDraft(); // başlangıç taslağını yaz (boş bile olsa resume hedefi olur)
+    // Bildirim izni seans başında, ilk set ✓'sinde değil (deneyim
+    // araştırması A2 #12): sette soru penceresi antrenmanı kesiyordu.
+    if (!_isManual && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _inForeground) _offerRestNotificationOnce();
+      });
+    }
     // Geçmiş kayıt (C-18): akışın ilk sorusu "hangi gün?" — tarih seçici
     // kendiliğinden açılır; vazgeçilirse bugün kalır.
     if (_isManual && widget.pickDateOnOpen && mounted) {
@@ -596,6 +641,18 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   }
 
   void _toggleDone(SessionExerciseEntry ex, SessionSetEntry set) {
+    // ✓ klavyeyi her zaman kapatır (A5): yazılan alan açık kalıp sıradaki
+    // dokunuşu kaydırmasın.
+    _dismissKeyboard();
+    // Boş set tamamlanmaz (A2 #5): değer yok, öneri de yok → kayıtsız set +
+    // gereksiz mola. Geçerlilik ölçüm türüne göre (hasInput).
+    if (!set.done &&
+        !set.hasInput(ex.measure) &&
+        ex.suggestionAt(ex.sets.indexOf(set)) == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppL10n.of(context).asEnterValueFirst)));
+      return;
+    }
     setState(() {
       // G-2: tamamlanırken boş alanlar öneriyle dolar (tek dokunuş = onay).
       // Geri alırken değerler kalır — kullanıcı düzeltip yeniden işaretler.
@@ -610,6 +667,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       }
     });
     if (set.done) {
+      _lastDoneAt = DateTime.now();
       _feedback.setDone();
       // Hareketin kullanıcı tarafından belirlenen dinlenme süresi (0 = yok).
       // Geçmiş kayıt modunda dinlenme sayacı anlamsız — canlı değil.
@@ -627,9 +685,11 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     set.fillGen++;
   }
 
-  void _cycleType(SessionSetEntry set) {
-    final i = sessionSetTypes.indexOf(set.type);
-    setState(() => set.type = sessionSetTypes[(i + 1) % sessionSetTypes.length]);
+  /// Set türü artık döngüyle değil seçenek panelinden (A5 #10): rozete
+  /// kazara dokunuş türü sessizce değiştirmesin.
+  void _setType(SessionSetEntry set, String type) {
+    if (set.type == type) return;
+    setState(() => set.type = type);
     _saveDraft();
   }
 
@@ -793,9 +853,16 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _tickRest();
     _scheduleRestTick();
     _restSetup = _armRestAlarm();
-    // İzin penceresi arka planda açılamaz (kilit ekranından tamamlanan set).
-    if (_inForeground) _offerRestNotificationOnce();
+    _announce(AppL10n.of(context).asRestStarted(fmtDuration(seconds)));
     _syncLive();
+  }
+
+  /// Ekran okuyucuya kısa duyuru (A6): mola başlangıcı ve bitişi. Sayaç her
+  /// saniye okunmaz; yalnız bu iki an.
+  void _announce(String message) {
+    if (!mounted || !_inForeground) return;
+    unawaited(SemanticsService.sendAnnouncement(
+        View.of(context), message, Directionality.of(context)));
   }
 
   /// İlk molada bildirim iznini bir kez ister — izin yoksa uygulama alttayken
@@ -868,7 +935,10 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         prevLeft: _restRemaining, left: left, overdueMs: -leftMs);
     setState(() => _restRemaining = left > 0 ? left : 0);
     // Bitiş titreşimi: Android'de servis veriyor (çift titreşim olmasın).
-    if (cue == RestCue.done) _restSound.restDoneIfInApp();
+    if (cue == RestCue.done) {
+      _restSound.restDoneIfInApp();
+      _announce(AppL10n.of(context).liveRestOver);
+    }
     if (left <= 0) {
       _restTimer?.cancel();
       _restDeadline = null;
@@ -906,6 +976,13 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
           SnackBar(content: Text(AppL10n.of(context).asNeedOneSet)));
       return;
     }
+    // Eksik set varken bitirmek onay ister (A2 #2: 20 setin 5'iyle tek
+    // dokunuşta kapanıyordu). Tam seans tek dokunuş kalır; geçmiş kayıtta ✓
+    // zorunlu değil, sorulmaz.
+    _dismissKeyboard();
+    final open = incompleteSetCount(_exercises);
+    if (!_isManual && open > 0 && !await _confirmFinishIncomplete(open)) return;
+    if (!mounted || _saving) return;
     setState(() => _saving = true);
     final dao = ref.read(workoutDaoProvider);
 
@@ -919,7 +996,10 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
           routineId: _routineId,
           sessionDate: _sessionDate,
           startedAt: _startedAt,
-          elapsed: _elapsed,
+          elapsed: sessionElapsed(
+              startedAt: _startedAt,
+              now: DateTime.now(),
+              lastDoneAt: _lastDoneAt),
           manual: _isManual,
         ),
         (id) => sessionSetRows(id, _exercises),
@@ -944,24 +1024,82 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (mounted) context.pushReplacement(AppRoutes.summary(sessionId));
   }
 
-  Future<bool> _confirmExit() async {
-    if (!_hasData) return true;
+  Future<bool> _confirmFinishIncomplete(int open) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(AppL10n.of(ctx).asExitTitle),
-        content: Text(AppL10n.of(ctx).asExitMsg),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(AppL10n.of(ctx).asKeepGoing)),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(AppL10n.of(ctx).asLeave)),
-        ],
-      ),
+      builder: (ctx) {
+        final l = AppL10n.of(ctx);
+        return AlertDialog(
+          title: Text(l.asFinishIncompleteTitle),
+          content: Text(l.asFinishIncompleteMsg(open)),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l.asKeepGoing)),
+            FilledButton(
+                key: const ValueKey('session.finishAnyway'),
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l.asFinishAnyway)),
+          ],
+        );
+      },
     );
     return ok ?? false;
+  }
+
+  /// Çıkış penceresi (docs/53): ana düğme "Devam et"; veriyi silen yol
+  /// ikincil ve kırmızı. Geçmiş kayıtta taslak yok → kaydet seçeneği yok.
+  Future<_ExitChoice> _confirmExit() async {
+    if (!_hasData) return _ExitChoice.discard;
+    final choice = await showDialog<_ExitChoice>(
+      context: context,
+      builder: (ctx) {
+        final l = AppL10n.of(ctx);
+        return AlertDialog(
+          title: Text(l.asExitTitle),
+          content: Text(_draftable ? l.asExitMsg2 : l.asExitMsg),
+          actionsOverflowDirection: VerticalDirection.up,
+          actions: [
+            TextButton(
+                key: const ValueKey('session.exit.discard'),
+                style: TextButton.styleFrom(foregroundColor: ctx.colors.error),
+                onPressed: () => Navigator.pop(ctx, _ExitChoice.discard),
+                child: Text(l.asDiscardAndExit)),
+            if (_draftable)
+              TextButton(
+                  key: const ValueKey('session.exit.save'),
+                  onPressed: () => Navigator.pop(ctx, _ExitChoice.save),
+                  child: Text(l.asSaveAndExit)),
+            FilledButton(
+                key: const ValueKey('session.exit.keep'),
+                onPressed: () => Navigator.pop(ctx, _ExitChoice.keep),
+                child: Text(l.asKeepGoing)),
+          ],
+        );
+      },
+    );
+    return choice ?? _ExitChoice.keep;
+  }
+
+  /// Kaydet ve çık (docs/53): taslak yazılır, mola durur; yazım başarısızsa
+  /// ekran açık kalır. Sayaç, ses ve kilit ekranı kartını dispose kapatır.
+  Future<bool> _saveAndLeave() async {
+    _restTimer?.cancel();
+    _restDeadline = null;
+    _restStartedAt = null;
+    _restSound.stop();
+    unawaited(ref.read(notificationServiceProvider).cancelRestDone());
+    try {
+      await _saveDraft();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppL10n.of(context).asDraftSaveError)));
+      }
+      return false;
+    }
+    if (mounted) ref.invalidate(activeDraftProvider);
+    return true;
   }
 
   @override
@@ -982,9 +1120,16 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         final go = GoRouter.of(context);
-        if (await _confirmExit() && mounted) {
-          _clearDraft(); // kullanıcı setleri atmayı onayladı — taslağı sil
-          go.pop();
+        _dismissKeyboard();
+        switch (await _confirmExit()) {
+          case _ExitChoice.keep:
+            return;
+          case _ExitChoice.save:
+            if (await _saveAndLeave() && mounted) go.pop();
+          case _ExitChoice.discard:
+            if (!mounted) return;
+            _clearDraft(); // kullanıcı setleri atmayı onayladı — taslağı sil
+            go.pop();
         }
       },
       child: Scaffold(
@@ -1040,7 +1185,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                   backgroundColor: context.colors.secondary,
                   foregroundColor: context.colors.onSecondary,
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                  visualDensity: VisualDensity.compact,
+                  minimumSize: const Size(48, 48),
                 ),
                 child: _saving
                     ? const SizedBox(
@@ -1055,17 +1200,26 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
             ),
           ],
         ),
+        // Mola altta, sabit yükseklikte (A5): üstte açılan şerit listeyi her
+        // sette 68 pt aşağı itiyor, sıradaki ✓ parmağın altından kayıyordu.
+        // Altta görünmesi yalnız görünümü kısaltır; satırlar yerinde kalır.
+        // Klavye açıkken çubuk klavyenin arkasında kalır; sayaç kilit ekranında
+        // ve klavye kapanınca burada sürer.
+        bottomNavigationBar: !_loading && _restRemaining > 0
+            ? RestBar(
+                remaining: _restRemaining,
+                clock: fmtDuration(_restRemaining),
+                onMinus: () => _bumpRest(-15),
+                onPlus: () => _bumpRest(15),
+                onSkip: _skipRest,
+              )
+            : null,
         body: _loading
             ? const Center(child: CircularProgressIndicator())
+            : _loadError != null
+            ? ErrorState(onRetry: _retryLoad)
             : Column(
                 children: [
-                  if (_restRemaining > 0) RestBanner(
-                    remaining: _restRemaining,
-                    clock: fmtDuration(_restRemaining),
-                    onMinus: () => _bumpRest(-15),
-                    onPlus: () => _bumpRest(15),
-                    onSkip: _skipRest,
-                  ),
                   SessionDateBar(
                     date: _sessionDate,
                     highlight: _isManual,
@@ -1075,6 +1229,8 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                     child: _exercises.isEmpty
                         ? EmptyActiveSession(onAdd: _addExercise)
                         : ListView(
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
                             padding: const EdgeInsets.fromLTRB(
                                 AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 96),
                             children: [
@@ -1102,7 +1258,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                                     onStep: (s, d) => _stepWeight(e, s, d),
                                     onPickStep: () => _pickStep(e),
                                     onToggle: (s) => _toggleDone(e, s),
-                                    onCycleType: _cycleType,
+                                    onSetType: _setType,
                                     onAddSet: () => _addSet(e),
                                     onRemoveSet: () => _removeSet(e),
                                     onRemoveExercise: () => _removeExercise(e),
@@ -1123,6 +1279,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                             ],
                           ),
                   ),
+                  // iOS sayı klavyesinde "Bitti" tuşu yok (A5): klavyenin
+                  // hemen üstünde Sonraki / Bitti çubuğu.
+                  const SessionKeyboardBar(),
                 ],
               ),
       ),

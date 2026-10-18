@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/i18n/formatting.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_dimens.dart';
+import '../../core/theme/motion.dart';
 import '../../core/prefs/training_prefs.dart';
 import '../../core/units/units.dart';
 import '../../core/utils/format.dart';
@@ -39,7 +41,7 @@ class SessionProgressBar extends StatelessWidget {
         : context.colors.primary;
     return TweenAnimationBuilder<double>(
       tween: Tween(end: progress.fraction),
-      duration: AppDuration.normal,
+      duration: motionDuration(context, AppDuration.normal),
       builder: (context, value, _) => LinearProgressIndicator(
         value: value,
         minHeight: sessionProgressBarHeight,
@@ -135,11 +137,14 @@ class EmptyActiveSession extends StatelessWidget {
   }
 }
 
-class RestBanner extends StatelessWidget {
+/// Mola çubuğu — ekranın altında (A5): listeyi itmez, satırlar yerinde kalır.
+/// Düğmeler en az 48×48 (A1/A2: eski şeritte 49×31). Dar ekranda ya da
+/// büyük yazıda iki satır: süre üstte, düğmeler altta eşit genişlikte.
+class RestBar extends StatelessWidget {
   final int remaining;
   final String clock;
   final VoidCallback onMinus, onPlus, onSkip;
-  const RestBanner(
+  const RestBar(
       {super.key,
       required this.remaining,
       required this.clock,
@@ -150,76 +155,167 @@ class RestBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md + 2, vertical: AppSpacing.sm + 3),
-        decoration: BoxDecoration(
-          color: c.primary,
-          borderRadius: AppRadius.brLg,
-          boxShadow: [
-            BoxShadow(
-              color: c.primary.withValues(alpha: 0.3),
-              blurRadius: 18,
-              offset: const Offset(0, 6),
+    final l = AppL10n.of(context);
+    final narrow = MediaQuery.sizeOf(context).width < 360 ||
+        MediaQuery.textScalerOf(context).scale(10) > 11.5;
+    final info = Semantics(
+      label: '${l.labelRest} $clock',
+      excludeSemantics: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FitPackIcon.material(Icons.timer_rounded,
+              color: c.primary, size: AppIconSize.md),
+          AppSpacing.hGapSm,
+          Flexible(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.labelRest,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.texts.labelSmall?.copyWith(
+                        color: c.onSurfaceVariant,
+                        fontWeight: FontWeight.w600)),
+                Text(clock,
+                    maxLines: 1,
+                    style: context.texts.titleLarge?.copyWith(
+                        color: c.onSurface,
+                        fontWeight: FontWeight.w800,
+                        height: 1.1,
+                        fontFeatures: const [FontFeature.tabularFigures()])),
+              ],
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            FitPackIcon.material(Icons.timer_rounded, color: c.onPrimary, size: AppIconSize.md),
-            AppSpacing.hGapMd,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(AppL10n.of(context).labelRest,
-                      style: context.texts.labelSmall?.copyWith(
-                          color: c.onPrimary.withValues(alpha: 0.8),
-                          fontWeight: FontWeight.w600)),
-                  Text(clock,
-                      style: context.texts.titleLarge?.copyWith(
-                          color: c.onPrimary,
-                          fontWeight: FontWeight.w800,
-                          height: 1.1,
-                          fontFeatures: const [FontFeature.tabularFigures()])),
-                ],
-              ),
-            ),
-            _MiniBtn('−15s', onMinus),
-            AppSpacing.hGapXs,
-            _MiniBtn('+15s', onPlus),
-            AppSpacing.hGapXs,
-            _MiniBtn(AppL10n.of(context).asSkip, onSkip, strong: true),
-          ],
+          ),
+        ],
+      ),
+    );
+    final buttons = [
+      _RestBtn(
+          key: const ValueKey('rest.minus'),
+          label: l.asRestMinus,
+          tooltip: l.asRestMinusHint,
+          onTap: onMinus),
+      _RestBtn(
+          key: const ValueKey('rest.plus'),
+          label: l.asRestPlus,
+          tooltip: l.asRestPlusHint,
+          onTap: onPlus),
+      _RestBtn(
+          key: const ValueKey('rest.skip'),
+          label: l.asSkip,
+          onTap: onSkip,
+          strong: true),
+    ];
+    return Material(
+      color: c.surfaceContainerHigh,
+      elevation: 3,
+      child: SafeArea(
+        top: false,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: c.primary, width: 2)),
+          ),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+          child: narrow
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    info,
+                    AppSpacing.vGapSm,
+                    Row(children: [
+                      for (final (i, b) in buttons.indexed) ...[
+                        if (i > 0) AppSpacing.hGapSm,
+                        Expanded(child: b),
+                      ],
+                    ]),
+                  ],
+                )
+              : Row(
+                  children: [
+                    Expanded(
+                        child: Align(
+                            alignment: Alignment.centerLeft,
+                            heightFactor: 1,
+                            child: info)),
+                    for (final b in buttons) ...[AppSpacing.hGapSm, b],
+                  ],
+                ),
         ),
       ),
     );
   }
 }
 
-class _MiniBtn extends StatelessWidget {
+class _RestBtn extends StatelessWidget {
   final String label;
+  final String? tooltip;
   final VoidCallback onTap;
   final bool strong;
-  const _MiniBtn(this.label, this.onTap, {this.strong = false});
+  const _RestBtn(
+      {super.key,
+      required this.label,
+      required this.onTap,
+      this.tooltip,
+      this.strong = false});
+
   @override
   Widget build(BuildContext context) {
-    final c = context.colors;
+    final style = ButtonStyle(
+      minimumSize: const WidgetStatePropertyAll(Size(56, 48)),
+      padding: const WidgetStatePropertyAll(
+          EdgeInsets.symmetric(horizontal: AppSpacing.md)),
+      tapTargetSize: MaterialTapTargetSize.padded,
+      visualDensity: VisualDensity.standard,
+    );
+    final text = Text(label,
+        maxLines: 1,
+        softWrap: false,
+        overflow: TextOverflow.fade,
+        style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontFeatures: [FontFeature.tabularFigures()]));
+    final btn = strong
+        ? FilledButton(onPressed: onTap, style: style, child: text)
+        : OutlinedButton(onPressed: onTap, style: style, child: text);
+    return tooltip == null ? btn : Tooltip(message: tooltip!, child: btn);
+  }
+}
+
+/// iOS sayı klavyesinde "Bitti" tuşu yok (A5): set alanı odaktayken
+/// klavyenin hemen üstünde Sonraki / Bitti. Diğer platformlarda klavyenin
+/// kendi eylem tuşu var — çubuk çizilmez.
+class SessionKeyboardBar extends StatelessWidget {
+  const SessionKeyboardBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    if (defaultTargetPlatform != TargetPlatform.iOS ||
+        MediaQuery.viewInsetsOf(context).bottom == 0) {
+      return const SizedBox.shrink();
+    }
+    final l = AppL10n.of(context);
     return Material(
-      color: c.onPrimary.withValues(alpha: strong ? 0.28 : 0.18),
-      borderRadius: AppRadius.brSm,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.brSm,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-          child: Text(label,
-              style: context.texts.labelMedium?.copyWith(
-                  color: c.onPrimary, fontWeight: FontWeight.w700)),
+      color: context.colors.surfaceContainerHigh,
+      child: SizedBox(
+        height: 48,
+        child: Row(
+          children: [
+            const Spacer(),
+            TextButton(
+                key: const ValueKey('kb.next'),
+                onPressed: () =>
+                    FocusManager.instance.primaryFocus?.nextFocus(),
+                child: Text(l.asKbNext)),
+            TextButton(
+                key: const ValueKey('kb.done'),
+                onPressed: () => FocusManager.instance.primaryFocus?.unfocus(),
+                child: Text(l.asKbDone,
+                    style: const TextStyle(fontWeight: FontWeight.w800))),
+            AppSpacing.hGapSm,
+          ],
         ),
       ),
     );
@@ -229,7 +325,7 @@ class _MiniBtn extends StatelessWidget {
 class ExerciseBlock extends ConsumerWidget {
   final SessionExerciseEntry ex;
   final void Function(SessionSetEntry) onToggle;
-  final void Function(SessionSetEntry) onCycleType;
+  final void Function(SessionSetEntry set, String type) onSetType;
   final VoidCallback onAddSet, onRemoveSet, onRemoveExercise, onChanged;
   final VoidCallback onToggleAdvance;
   // null = o yöne taşınamaz (ilk/son hareket).
@@ -249,7 +345,7 @@ class ExerciseBlock extends ConsumerWidget {
       required this.onStep,
       required this.onPickStep,
       required this.onToggle,
-      required this.onCycleType,
+      required this.onSetType,
       required this.onAddSet,
       required this.onRemoveSet,
       required this.onRemoveExercise,
@@ -257,13 +353,15 @@ class ExerciseBlock extends ConsumerWidget {
       required this.onToggleAdvance});
 
   /// Ölçüm tipine göre orta sütun başlıkları (SET ve ✓ arasındakiler).
-  /// Ağırlık sütunu birim tercihine göre KG/LB yazar (docs/16 §3).
-  static List<Widget> _headerCols(AppL10n l, String measure, Units units) {
+  /// Ağırlık sütunu birim tercihine göre KG/LB yazar (docs/16 §3). Dar
+  /// düzende RPE sütunu yok (set seçenekleri ve yardım satırında).
+  static List<Widget> _headerCols(
+      AppL10n l, String measure, Units units, bool compact) {
     switch (measure) {
       case 'reps':
         return [
           Expanded(child: _H(l.hdrReps, center: true)),
-          const SizedBox(width: 44, child: _RpeHeader()),
+          if (!compact) const SizedBox(width: setTargetSize, child: _RpeHeader()),
         ];
       case 'time':
         return [
@@ -281,10 +379,38 @@ class ExerciseBlock extends ConsumerWidget {
           Expanded(
               child: _H(units.weightUnit.toUpperCase(), center: true)),
           Expanded(child: _H(l.hdrReps, center: true)),
-          const SizedBox(width: 44, child: _RpeHeader()),
+          if (!compact) const SizedBox(width: setTargetSize, child: _RpeHeader()),
         ];
     }
   }
+
+  /// Dar düzen (K4 Seçenek 1b): 300'den dar satır ya da büyük yazıda
+  /// "ÖNCEKİ" ve RPE sütunları satırdan çıkar — 48'lik hedeflerle kg/tekrar
+  /// alanlarına yer kalsın (review/A6 §3, A7, Codex R4).
+  static bool compactFor(BuildContext context, double rowWidth) =>
+      rowWidth < 300 || MediaQuery.textScalerOf(context).scale(10) > 11.5;
+
+  /// Setin ✓'te kaydedeceği değerlerin metni ("60 kg × 10"); boşsa null.
+  static String? _valuesText(SetValues v, String measure, Units units) {
+    final t = switch (measure) {
+      'reps' => v.reps == null ? '' : '× ${v.reps}',
+      'time' => v.durationSec == null ? '' : fmtDuration(v.durationSec!),
+      'distance' => [
+          if (v.distanceM != null)
+            '${units.distanceValue(v.distanceM!)} ${units.distanceUnit}',
+          if (v.durationSec != null) fmtDuration(v.durationSec!),
+        ].join(' · '),
+      _ => [
+          if (v.weightKg != null) units.lift(v.weightKg!),
+          if (v.reps != null) '× ${v.reps}',
+        ].join(' '),
+    };
+    return t.isEmpty ? null : t;
+  }
+
+  /// RPE girilen ölçüm tipi mi (süre/mesafede yok).
+  static bool _hasRpe(String measure) =>
+      measure != 'time' && measure != 'distance';
 
   /// Ağırlık girilen ölçüm tipi mi (± düğmesi yalnız bunlarda).
   static bool _weighted(String measure) =>
@@ -298,19 +424,21 @@ class ExerciseBlock extends ConsumerWidget {
     if (sug == null) return null;
     final v = fillMissing(set.values, sug, ex.measure);
     if (v == set.values) return null;
-    return switch (ex.measure) {
-      'reps' => v.reps == null ? null : '× ${v.reps}',
-      'time' => v.durationSec == null ? null : fmtDuration(v.durationSec!),
-      'distance' => [
-          if (v.distanceM != null)
-            '${units.distanceValue(v.distanceM!)} ${units.distanceUnit}',
-          if (v.durationSec != null) fmtDuration(v.durationSec!),
-        ].join(' · '),
-      _ => [
-          if (v.weightKg != null) units.lift(v.weightKg!),
-          if (v.reps != null) '× ${v.reps}',
-        ].join(' '),
-    };
+    return _valuesText(v, ex.measure, units);
+  }
+
+  /// K6: öneri bu seansın üstteki setinden geliyor ve geçen seansın aynı
+  /// setinden farklıysa yardım satırı "geçen sefer"i de yazar — piramitte
+  /// farkında olmadan düşük kayıt olmasın (A2 #4).
+  static bool _suggestionDiffersFromLast(SessionExerciseEntry ex, int index) {
+    final sug = ex.suggestionAt(index);
+    final last = ex.lastValues;
+    if (sug == null ||
+        index >= last.length ||
+        !last[index].hasAny(ex.measure)) {
+      return false;
+    }
+    return sug != last[index];
   }
 
   @override
@@ -349,20 +477,19 @@ class ExerciseBlock extends ConsumerWidget {
                               ?.copyWith(color: c.primary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
-                      Row(
+                      // Dar ekranda ekipman adı kesilmesin: çip alt satıra
+                      // iner (A4 R4).
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: AppSpacing.sm,
                         children: [
-                          Flexible(
-                            child: Text(
-                                WorkoutUi.equipmentLabel(ex.exercise.equipment),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: context.texts.bodySmall
-                                    ?.copyWith(color: c.onSurfaceVariant)),
-                          ),
-                          if (onPickRest != null) ...[
-                            AppSpacing.hGapSm,
+                          Text(WorkoutUi.equipmentLabel(ex.exercise.equipment),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: context.texts.bodySmall
+                                  ?.copyWith(color: c.onSurfaceVariant)),
+                          if (onPickRest != null)
                             _RestChip(restSec: ex.restSec, onTap: onPickRest!),
-                          ],
                         ],
                       ),
                     ],
@@ -374,7 +501,6 @@ class ExerciseBlock extends ConsumerWidget {
                   icon: FitPackIcon.material(Icons.help_outline_rounded,
                       color: c.onSurfaceVariant, size: AppIconSize.md),
                   tooltip: AppL10n.of(context).asHowTo,
-                  visualDensity: VisualDensity.compact,
                   onPressed: () =>
                       showExerciseHowToSheet(context, ex.exercise),
                 ),
@@ -426,51 +552,90 @@ class ExerciseBlock extends ConsumerWidget {
               _ProgressionLine(ex: ex, onToggle: onToggleAdvance),
             ],
             AppSpacing.vGapMd,
-            // başlık satırı — ölçüm tipine göre sütunlar
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm, left: 2),
-              child: Row(
+            LayoutBuilder(builder: (context, box) {
+              final compact = compactFor(context, box.maxWidth);
+              final l = AppL10n.of(context);
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(width: 30, child: _H(AppL10n.of(context).hdrSet)),
-                  SizedBox(
-                      width: 56,
-                      child:
-                          _H(AppL10n.of(context).hdrPrev, center: true)),
-                  ..._headerCols(AppL10n.of(context), ex.measure, units),
-                  const SizedBox(width: 42),
+                  // başlık satırı — ölçüm tipine göre sütunlar
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                            width: setTargetSize,
+                            child: _H(l.hdrSet, center: true)),
+                        if (!compact)
+                          SizedBox(
+                              width: _prevColWidth,
+                              child: _H(l.hdrPrev, center: true)),
+                        ..._headerCols(l, ex.measure, units, compact),
+                        const SizedBox(width: setTargetSize),
+                      ],
+                    ),
+                  ),
+                  // Set satırları da kimlikli — set silme/ekleme kaydırmasında
+                  // TextFormField durumu doğru sette kalsın (H-02).
+                  for (final (i, set) in ex.sets.indexed) ...[
+                    // Sıradaki set — etkin set kartı (K4): ✓'in ne
+                    // kaydedeceği + kilo ± 48×48; dar düzende ÖNCEKİ ve RPE de
+                    // burada. Setin ÜSTÜNDE: set tamamlanınca satır bir
+                    // sonrakine geçer ama sıradaki ✓ yerinden oynamaz (A5).
+                    if (i == activeIndex)
+                      _ActiveSetAssist(
+                        key: ObjectKey((set, 'assist')),
+                        compact: compact,
+                        hint: _assistHint(ex, set, i, units),
+                        previous: i < ex.lastSets.length
+                            ? prevLabel(ex.lastSets[i], ex.measure, units)
+                            : null,
+                        showPrevious:
+                            compact || _suggestionDiffersFromLast(ex, i),
+                        showStepper: _weighted(ex.measure),
+                        stepLabel: units.lift(stepKg),
+                        onMinus: () => onStep(set, -1),
+                        onPlus: () => onStep(set, 1),
+                        onPickStep: onPickStep,
+                        rpeCell: compact && _hasRpe(ex.measure)
+                            ? SizedBox(
+                                width: setTargetSize,
+                                child: _RpeCell(
+                                    key: ValueKey('rpe-assist-${set.fillGen}'),
+                                    value: set.rpe,
+                                    label: l.asSemField(i + 1, 'RPE'),
+                                    onTap: () => pickSetRpe(
+                                        context, set, i, units, onChanged)),
+                              )
+                            : null,
+                      ),
+                    _SetRow(
+                      key: ObjectKey(set),
+                      index: i,
+                      set: set,
+                      measure: ex.measure,
+                      compact: compact,
+                      // "ÖNCEKİ": geçen seansın AYNI numaralı seti (G-2).
+                      previous: i < ex.lastSets.length
+                          ? prevLabel(ex.lastSets[i], ex.measure, units)
+                          : null,
+                      suggestion: set.done ? null : ex.suggestionAt(i),
+                      valuesText: _valuesText(
+                          set.done || ex.suggestionAt(i) == null
+                              ? set.values
+                              : fillMissing(
+                                  set.values, ex.suggestionAt(i)!, ex.measure),
+                          ex.measure,
+                          units),
+                      units: units,
+                      onToggle: () => onToggle(set),
+                      onSetType: (t) => onSetType(set, t),
+                      onChanged: onChanged,
+                    ),
+                  ],
                 ],
-              ),
-            ),
-            // Set satırları da kimlikli — set silme/ekleme kaydırmasında
-            // TextFormField durumu doğru sette kalsın (H-02).
-            for (final (i, set) in ex.sets.indexed) ...[
-              _SetRow(
-                key: ObjectKey(set),
-                index: i,
-                set: set,
-                measure: ex.measure,
-                // "ÖNCEKİ": geçen seansın AYNI numaralı seti (G-2).
-                previous: i < ex.lastSets.length
-                    ? prevLabel(ex.lastSets[i], ex.measure, units)
-                    : null,
-                suggestion: set.done ? null : ex.suggestionAt(i),
-                units: units,
-                onToggle: () => onToggle(set),
-                onCycleType: () => onCycleType(set),
-                onChanged: onChanged,
-              ),
-              // Sıradaki set: ✓'in ne kaydedeceği + kilo ± (A4).
-              if (i == activeIndex)
-                _ActiveSetAssist(
-                  key: ObjectKey((set, 'assist')),
-                  hint: _assistHint(ex, set, i, units),
-                  showStepper: _weighted(ex.measure),
-                  stepLabel: units.lift(stepKg),
-                  onMinus: () => onStep(set, -1),
-                  onPlus: () => onStep(set, 1),
-                  onPickStep: onPickStep,
-                ),
-            ],
+              );
+            }),
             AppSpacing.vGapXs,
             Row(
               children: [
@@ -522,12 +687,17 @@ class _RestChip extends StatelessWidget {
     final c = context.colors;
     final label =
         WorkoutUi.restLabel(restSec, none: AppL10n.of(context).commonNone);
+    // Görünür çip küçük kalır; dokunma alanı 48 yüksek (U04, A7).
     return Tooltip(
       message: AppL10n.of(context).asRestChange,
       child: InkWell(
         onTap: onTap,
         borderRadius: AppRadius.brPill,
-        child: Container(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: setTargetSize),
+          child: Center(
+          widthFactor: 1,
+          child: Container(
           padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.sm, vertical: 2),
           decoration: BoxDecoration(
@@ -547,72 +717,71 @@ class _RestChip extends StatelessWidget {
             ],
           ),
         ),
+        ),
+        ),
       ),
     );
   }
 }
 
-/// Sıradaki (işaretlenmemiş ilk) setin altındaki yardım satırı (A4):
-/// solda ✓'in tam olarak ne kaydedeceği, sağda kilo − adım + düğmeleri.
-/// Önerinin soluk ipucu olarak kalıp anlaşılmaması sorununa cevap —
-/// kural artık ekranda yazıyor.
+/// Sıradaki (işaretlenmemiş ilk) setin altındaki yardım satırı — etkin set
+/// kartı (A4, K4): solda ✓'in tam olarak ne kaydedeceği, sağda kilo − adım +
+/// (48×48). Dar düzende metin üstte, düğmeler altta; ÖNCEKİ ve RPE de bu
+/// satıra iner (satırdan çıkan sütunlar).
 class _ActiveSetAssist extends StatelessWidget {
+  final bool compact;
   final String? hint;
+  final String? previous;
+  final bool showPrevious;
   final bool showStepper;
   final String stepLabel;
   final VoidCallback onMinus, onPlus, onPickStep;
+  final Widget? rpeCell;
   const _ActiveSetAssist(
       {super.key,
+      required this.compact,
       required this.hint,
+      required this.previous,
+      required this.showPrevious,
       required this.showStepper,
       required this.stepLabel,
       required this.onMinus,
       required this.onPlus,
-      required this.onPickStep});
+      required this.onPickStep,
+      this.rpeCell});
 
   @override
   Widget build(BuildContext context) {
-    final h = hint;
-    if (h == null && !showStepper) return const SizedBox.shrink();
     final c = context.colors;
     final l = AppL10n.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(32, 0, 0, AppSpacing.sm),
-      child: Row(
-        children: [
-          Expanded(
-            child: h == null
-                ? const SizedBox.shrink()
-                : Row(
-                    children: [
-                      FitPackIcon.material(Icons.subdirectory_arrow_right_rounded,
-                          size: 14, color: c.primary),
-                      const SizedBox(width: 3),
-                      Flexible(
-                        child: Text(l.asSuggestHint(h),
-                            maxLines: 2,
-                            style: context.texts.labelMedium?.copyWith(
-                                color: c.primary,
-                                fontWeight: FontWeight.w600)),
-                      ),
-                    ],
-                  ),
-          ),
-          if (showStepper) ...[
-            AppSpacing.hGapXs,
-            _StepButton(
-                icon: Icons.remove_rounded,
-                tooltip: l.asStepDecrease(stepLabel),
-                onTap: onMinus),
-            Tooltip(
-              message: l.asStepChange,
-              child: InkWell(
-                onTap: onPickStep,
-                borderRadius: AppRadius.brSm,
+    final h = hint;
+    final prev = showPrevious ? previous : null;
+    final text = h != null
+        ? (prev != null ? l.asSuggestWithPrev(h, prev) : l.asSuggestHint(h))
+        : prev != null
+            ? l.asPrevOnly(prev)
+            : null;
+    final controls = [
+      ?rpeCell,
+      if (showStepper) ...[
+        _StepButton(
+            key: const ValueKey('step.minus'),
+            icon: Icons.remove_rounded,
+            tooltip: l.asStepDecrease(stepLabel),
+            onTap: onMinus),
+        Tooltip(
+          message: l.asStepChange,
+          child: InkWell(
+            onTap: onPickStep,
+            borderRadius: AppRadius.brSm,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                  minWidth: setTargetSize, minHeight: setTargetSize),
+              child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.xs, vertical: AppSpacing.xs),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                   child: Text(stepLabel,
+                      maxLines: 1,
                       style: context.texts.labelMedium?.copyWith(
                           color: c.onSurfaceVariant,
                           fontWeight: FontWeight.w700,
@@ -622,13 +791,63 @@ class _ActiveSetAssist extends StatelessWidget {
                 ),
               ),
             ),
-            _StepButton(
-                icon: Icons.add_rounded,
-                tooltip: l.asStepIncrease(stepLabel),
-                onTap: onPlus),
-          ],
-        ],
-      ),
+          ),
+        ),
+        _StepButton(
+            key: const ValueKey('step.plus'),
+            icon: Icons.add_rounded,
+            tooltip: l.asStepIncrease(stepLabel),
+            onTap: onPlus),
+      ],
+    ];
+    if (text == null && controls.isEmpty) return const SizedBox.shrink();
+    final style = context.texts.labelMedium
+        ?.copyWith(color: c.primary, fontWeight: FontWeight.w600, height: 1.3);
+    // Sabit satır yüksekliği (geniş 2, dar 3 satır): metin setten sete
+    // kısalıp uzasa da satır boyu değişmez — ✓ sonrası sıradaki set yerinde
+    // kalır (A5).
+    final lines = compact ? 3 : 2;
+    final label = SizedBox(
+      height: MediaQuery.textScalerOf(context).scale(style?.fontSize ?? 12) *
+          1.3 *
+          lines,
+      child: text == null
+          ? null
+          : Row(
+              children: [
+                FitPackIcon.material(Icons.subdirectory_arrow_right_rounded,
+                    size: 14, color: c.primary),
+                const SizedBox(width: 3),
+                Flexible(
+                  child: Text(text,
+                      maxLines: lines,
+                      overflow: TextOverflow.ellipsis,
+                      style: style),
+                ),
+              ],
+            ),
+    );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(setTargetSize, AppSpacing.xs, 0, 2),
+      child: compact
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                label,
+                if (controls.isNotEmpty)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: controls,
+                  ),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(child: label),
+                if (controls.isNotEmpty) AppSpacing.hGapXs,
+                ...controls,
+              ],
+            ),
     );
   }
 }
@@ -638,7 +857,10 @@ class _StepButton extends StatelessWidget {
   final String tooltip;
   final VoidCallback onTap;
   const _StepButton(
-      {required this.icon, required this.tooltip, required this.onTap});
+      {super.key,
+      required this.icon,
+      required this.tooltip,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -652,9 +874,9 @@ class _StepButton extends StatelessWidget {
           onTap: onTap,
           borderRadius: AppRadius.brSm,
           child: SizedBox(
-            width: 36,
-            height: 30,
-            child: FitPackIcon.material(icon, size: AppIconSize.sm, color: c.primary),
+            width: setTargetSize,
+            height: setTargetSize,
+            child: FitPackIcon.material(icon, size: AppIconSize.md, color: c.primary),
           ),
         ),
       ),
@@ -824,7 +1046,9 @@ class _ProgressionLine extends ConsumerWidget {
             child: InkWell(
               onTap: () => _showProgressionInfo(context, advice, units, inc),
               borderRadius: AppRadius.brSm,
-              child: Padding(
+              child: Container(
+                constraints: const BoxConstraints(minHeight: setTargetSize),
+                alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
                 child: Text(text,
                     style: context.texts.bodySmall
@@ -837,7 +1061,7 @@ class _ProgressionLine extends ConsumerWidget {
             TextButton(
               onPressed: onToggle,
               style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
+                minimumSize: const Size(setTargetSize, setTargetSize),
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
               ),
               child: Text(applied != null
@@ -898,39 +1122,59 @@ class _H extends StatelessWidget {
   const _H(this.t, {this.center = false});
   @override
   // C-15: salonda kol boyu mesafeden okunmalı — daha koyu + bir tık büyük.
-  Widget build(BuildContext context) => Text(t,
-      textAlign: center ? TextAlign.center : TextAlign.start,
-      style: context.texts.labelSmall?.copyWith(
-          color: context.colors.onSurfaceVariant,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0.3));
+  // Tek satır, sığmazsa küçülür: büyük yazıda "ÖNCE/Kİ" diye bölünmesin (A2).
+  Widget build(BuildContext context) => FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: center ? Alignment.center : Alignment.centerLeft,
+        child: Text(t,
+            maxLines: 1,
+            softWrap: false,
+            textAlign: center ? TextAlign.center : TextAlign.start,
+            style: context.texts.labelSmall?.copyWith(
+                color: context.colors.onSurfaceVariant,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.3)),
+      );
 }
 
-/// Süreli setlerde sayaç sütunu genişliği (başlık ve satır aynı).
-const double _timerColWidth = 48;
+/// Set satırındaki dokunma hedefleri (rozet, RPE, ✓, ±): Android/Material
+/// önerisi 48×48 (deneyim araştırması U04).
+const double setTargetSize = 48;
 
-/// "RPE" başlığı + dokunulabilir bilgi ipucu (ne olduğunu açıklar).
+/// Geniş düzende "ÖNCEKİ" sütunu.
+const double _prevColWidth = 56;
+
+/// Süreli setlerde sayaç sütunu genişliği (başlık ve satır aynı).
+const double _timerColWidth = setTargetSize;
+
+/// "RPE" başlığı + dokunulabilir bilgi ipucu (ne olduğunu açıklar). Büyük
+/// yazıda sütuna sığacak kadar küçülür (A6: 1,6×'te 5,9 pt taşıyordu).
 class _RpeHeader extends StatelessWidget {
   const _RpeHeader();
 
   @override
   Widget build(BuildContext context) {
     final color = context.colors.onSurfaceVariant;
-    return InkWell(
-      onTap: () => _showRpeInfo(context),
-      borderRadius: AppRadius.brSm,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('RPE',
-              style: context.texts.labelSmall?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.3)),
-          const SizedBox(width: 2),
-          FitPackIcon.material(Icons.help_outline_rounded, size: 12, color: color),
-        ],
+    // Başlık dokunulmaz (48'lik hedef başlığı büyütürdü); "RPE nedir?" set
+    // seçenekleri panelinde.
+    return Semantics(
+      label: AppL10n.of(context).rpeTitle,
+      excludeSemantics: true,
+      child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('RPE',
+                  maxLines: 1,
+                  style: context.texts.labelSmall?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.3)),
+              const SizedBox(width: 2),
+            ],
+          ),
       ),
     );
   }
@@ -1000,39 +1244,135 @@ void _showRpeInfo(BuildContext context) {
   );
 }
 
+/// Set seçenekleri paneli (A5 #10): set türü + RPE. Rozete dokunuş türü
+/// döngüyle sessizce değiştiriyordu; artık seçim açık ve geri alınabilir.
+/// Dönüş: seçilen tür, `'rpe'` (RPE seçici açılsın) ya da `'rpeInfo'`
+/// (RPE açıklaması); `null` = vazgeçildi.
+Future<String?> _showSetOptions(BuildContext context,
+    {required int setNumber, required String type, required double? rpe}) {
+  final l = AppL10n.of(context);
+  String typeName(String t) => switch (t) {
+        'warmup' => l.asTypeWarmup,
+        'drop' => l.asTypeDrop,
+        'failure' => l.asTypeFailure,
+        _ => l.asTypeNormal,
+      };
+  return showModalBottomSheet<String>(
+    context: context,
+    showDragHandle: true,
+    builder: (ctx) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l.asSetOptionsTitle(setNumber), style: ctx.texts.titleMedium),
+            AppSpacing.vGapMd,
+            Text(l.asSetType,
+                style: ctx.texts.labelLarge
+                    ?.copyWith(color: ctx.colors.onSurfaceVariant)),
+            AppSpacing.vGapSm,
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                for (final t in sessionSetTypes)
+                  ChoiceChip(
+                    key: ValueKey('settype.$t'),
+                    label: Text(typeName(t)),
+                    selected: t == type,
+                    onSelected: (_) => Navigator.pop(ctx, t),
+                  ),
+              ],
+            ),
+            AppSpacing.vGapMd,
+            ListTile(
+              key: const ValueKey('setoptions.rpe'),
+              contentPadding: EdgeInsets.zero,
+              title: Text(l.rpeTitle),
+              trailing: Text(
+                  rpe == null
+                      ? '–'
+                      : formatRpe(rpe,
+                          decimalSep: ctx.numFmt.symbols.DECIMAL_SEP),
+                  style: ctx.texts.titleMedium),
+              onTap: () => Navigator.pop(ctx, 'rpe'),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                key: const ValueKey('setoptions.rpeInfo'),
+                onPressed: () => Navigator.pop(ctx, 'rpeInfo'),
+                icon: const FitPackIcon.material(Icons.help_outline_rounded,
+                    size: AppIconSize.sm),
+                label: Text(l.rpeTitle),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// RPE seçici → sete yaz (satır, yardım satırı ve set seçenekleri ortak).
+Future<void> pickSetRpe(BuildContext context, SessionSetEntry set, int index,
+    Units units, VoidCallback onChanged) async {
+  final parts = [
+    if (set.weight != null) units.lift(set.weight!),
+    if (set.reps != null) '${set.reps}',
+  ];
+  final picked = await showRpePicker(context,
+      setNumber: index + 1,
+      initial: set.rpe,
+      setSummary: parts.isEmpty ? null : parts.join(' × '));
+  if (picked == null) return;
+  set.rpe = picked.rpe;
+  set.fillGen++; // RPE hücresi yeni değerle kurulsun
+  onChanged();
+}
+
 class _SetRow extends StatelessWidget {
   final int index;
   final SessionSetEntry set;
   final String measure;
+  final bool compact;
   final String? previous;
   // ✓'e basılınca boş alanlara yazılacak değerler — alanlarda soluk ipucu.
   final SetValues? suggestion;
+  // ✓'in kaydedeceği değer metni — ekran okuyucu adı için.
+  final String? valuesText;
   final Units units;
-  final VoidCallback onToggle, onCycleType, onChanged;
+  final VoidCallback onToggle, onChanged;
+  final ValueChanged<String> onSetType;
   const _SetRow(
       {super.key,
       required this.index,
       required this.set,
       required this.measure,
+      required this.compact,
       required this.previous,
       required this.suggestion,
+      required this.valuesText,
       required this.units,
       required this.onToggle,
-      required this.onCycleType,
+      required this.onSetType,
       required this.onChanged});
+
+  String _typeName(AppL10n l) => switch (set.type) {
+        'warmup' => l.asTypeWarmup,
+        'drop' => l.asTypeDrop,
+        'failure' => l.asTypeFailure,
+        _ => l.asTypeNormal,
+      };
 
   /// Ölçüm tipine göre orta giriş hücreleri (header ile aynı genişlik düzeni).
   /// Boş alanın ipucu = ✓ önerisi (G-2); öneri yoksa eski sabit ipucu.
-  /// Panel başlığının altı: "80 kg × 8" (yalnız girilmiş alanlar).
-  String? _setSummary() {
-    final parts = [
-      if (set.weight != null) units.lift(set.weight!),
-      if (set.reps != null) '${set.reps}',
-    ];
-    return parts.isEmpty ? null : parts.join(' × ');
-  }
-
   List<Widget> _inputCols(BuildContext context) {
+    final l = AppL10n.of(context);
+    final n = index + 1;
     final sug = suggestion;
     // Koddan doldurulunca alan yeni değerle yeniden kurulsun (fillGen).
     Key k(String field) => ValueKey('$field-${set.fillGen}');
@@ -1057,52 +1397,44 @@ class _SetRow extends StatelessWidget {
                   onChanged();
                 }));
     Widget rpeCell() => SizedBox(
-        width: 44,
+        width: setTargetSize,
         child: _RpeCell(
             key: k('rpe'),
             value: set.rpe,
-            onTap: () async {
-              final picked = await showRpePicker(context,
-                  setNumber: index + 1,
-                  initial: set.rpe,
-                  setSummary: _setSummary());
-              if (picked == null) return;
-              set.rpe = picked.rpe;
+            label: l.asSemField(n, 'RPE'),
+            onTap: () => pickSetRpe(context, set, index, units, onChanged)));
+    Widget reps() => Expanded(
+        child: _NumCell(
+            key: k('reps'),
+            label: l.asSemField(n, l.unitReps),
+            value: set.reps?.toDouble(),
+            decimal: false,
+            hint: repsHint,
+            onChanged: (v) {
+              set.reps = v?.round();
+              onChanged();
+            }));
+    Widget time() => Expanded(
+        child: _TimeCell(
+            key: k('time'),
+            label: l.asSemField(n, l.hdrTime.toLowerCase()),
+            value: set.durationSec,
+            hint: timeHint,
+            onChanged: (v) {
+              set.durationSec = v;
               onChanged();
             }));
     switch (measure) {
       case 'reps':
-        return [
-          Expanded(
-              child: _NumCell(
-                  key: k('reps'),
-                  value: set.reps?.toDouble(),
-                  decimal: false,
-                  hint: repsHint,
-                  onChanged: (v) {
-                    set.reps = v?.round();
-                    onChanged();
-                  })),
-          rpeCell(),
-        ];
+        return [reps(), if (!compact) rpeCell()];
       case 'time':
-        return [
-          Expanded(
-              child: _TimeCell(
-                  key: k('time'),
-                  value: set.durationSec,
-                  hint: timeHint,
-                  onChanged: (v) {
-                    set.durationSec = v;
-                    onChanged();
-                  })),
-          timerCell(),
-        ];
+        return [time(), timerCell()];
       case 'distance':
         return [
           Expanded(
               child: _NumCell(
                   key: k('dist'),
+                  label: l.asSemField(n, units.distanceUnit),
                   value: set.distanceM == null
                       ? null
                       : units.distanceFromM(set.distanceM!),
@@ -1115,15 +1447,7 @@ class _SetRow extends StatelessWidget {
                         v == null ? null : units.distanceToM(v);
                     onChanged();
                   })),
-          Expanded(
-              child: _TimeCell(
-                  key: k('time'),
-                  value: set.durationSec,
-                  hint: timeHint,
-                  onChanged: (v) {
-                    set.durationSec = v;
-                    onChanged();
-                  })),
+          time(),
           timerCell(),
         ];
       default:
@@ -1132,10 +1456,12 @@ class _SetRow extends StatelessWidget {
           Expanded(
               child: _NumCell(
                   key: k('kg'),
+                  label: l.asSemField(n, units.weightUnit),
                   value: set.weight == null
                       ? null
                       // 1,25 kg'lık artış kaybolmasın: metrikte iki ondalık.
-                      : double.parse(units.liftValue(set.weight!)),
+                      : double.parse(
+                          units.liftValue(set.weight!).replaceAll(',', '.')),
                   decimal: true,
                   hint: sug?.weightKg == null
                       ? null
@@ -1144,17 +1470,8 @@ class _SetRow extends StatelessWidget {
                     set.weight = v == null ? null : units.weightToKg(v);
                     onChanged();
                   })),
-          Expanded(
-              child: _NumCell(
-                  key: k('reps'),
-                  value: set.reps?.toDouble(),
-                  decimal: false,
-                  hint: repsHint,
-                  onChanged: (v) {
-                    set.reps = v?.round();
-                    onChanged();
-                  })),
-          rpeCell(),
+          reps(),
+          if (!compact) rpeCell(),
         ];
     }
   }
@@ -1162,6 +1479,8 @@ class _SetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l = AppL10n.of(context);
+    final n = index + 1;
     final badge = sessionSetTypeLabel[set.type]!;
     final badgeColor = switch (set.type) {
       'warmup' => context.semantic.warning,
@@ -1172,9 +1491,13 @@ class _SetRow extends StatelessWidget {
     // Rekor seti: sol rozet numara/tip yerine kupa — "kişisel rekor" bilgisi
     // set tipinden öncelikli.
     final showTrophy = set.done && set.isRecord;
+    // Dar düzende RPE sütunu yok: girilmiş RPE rozetin altında küçük yazılır.
+    final rpe = set.rpe;
+    final rpeTag = compact && rpe != null
+        ? '@${formatRpe(rpe, decimalSep: context.numFmt.symbols.DECIMAL_SEP)}'
+        : null;
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+      margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
         color: set.done
             ? context.semantic.success.withValues(alpha: 0.10)
@@ -1183,49 +1506,99 @@ class _SetRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          SizedBox(
-            width: 30,
+          Semantics(
+            button: true,
+            label: l.asSemSetOptions(n, _typeName(l)),
+            excludeSemantics: true,
             child: InkWell(
-              onTap: onCycleType,
+              key: ValueKey('set.badge.$index'),
+              onTap: () async {
+                final r = await _showSetOptions(context,
+                    setNumber: n, type: set.type, rpe: set.rpe);
+                if (r == null || !context.mounted) return;
+                if (r == 'rpe') {
+                  await pickSetRpe(context, set, index, units, onChanged);
+                } else if (r == 'rpeInfo') {
+                  _showRpeInfo(context);
+                } else {
+                  onSetType(r);
+                }
+              },
               borderRadius: AppRadius.brSm,
-              child: Container(
-                height: 32,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: showTrophy
-                      ? context.semantic.warning.withValues(alpha: 0.14)
-                      : badge.isEmpty
-                          ? c.onSurface.withValues(alpha: 0.06)
-                          : badgeColor.withValues(alpha: 0.14),
-                  borderRadius: AppRadius.brSm,
+              child: SizedBox(
+                width: setTargetSize,
+                height: setTargetSize,
+                child: Center(
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: showTrophy
+                          ? context.semantic.warning.withValues(alpha: 0.14)
+                          : badge.isEmpty
+                              ? c.onSurface.withValues(alpha: 0.06)
+                              : badgeColor.withValues(alpha: 0.14),
+                      borderRadius: AppRadius.brSm,
+                    ),
+                    child: showTrophy
+                        ? FitPackIcon.material(Icons.emoji_events_rounded,
+                            size: 16,
+                            color: context.semantic.warning,
+                            semanticLabel: l.asNewRecord)
+                        : FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(badge.isEmpty ? '$n' : badge,
+                                    style: context.texts.labelLarge?.copyWith(
+                                        color: badge.isEmpty
+                                            ? c.onSurface
+                                            : badgeColor,
+                                        fontWeight: FontWeight.w800,
+                                        height: 1.1)),
+                                if (rpeTag != null)
+                                  Text(rpeTag,
+                                      style: context.texts.labelSmall?.copyWith(
+                                          color: c.onSurfaceVariant,
+                                          height: 1.0)),
+                              ],
+                            ),
+                          ),
+                  ),
                 ),
-                child: showTrophy
-                    ? FitPackIcon.material(Icons.emoji_events_rounded,
-                        size: 16,
-                        color: context.semantic.warning,
-                        semanticLabel: AppL10n.of(context).asNewRecord)
-                    : Text(badge.isEmpty ? '${index + 1}' : badge,
-                        style: context.texts.labelLarge?.copyWith(
-                            color: badge.isEmpty ? c.onSurface : badgeColor,
-                            fontWeight: FontWeight.w800)),
               ),
             ),
           ),
-          SizedBox(
-            width: 56,
-            // C-15: referans bilgi — girilen değerden (tam koyu) ve öneriden
-            // (%40) ayrışacak kadar okunur.
-            child: Text(previous ?? '—',
-                textAlign: TextAlign.center,
-                style: context.texts.bodySmall?.copyWith(
-                    color: c.onSurfaceVariant.withValues(alpha: 0.85),
-                    fontWeight: FontWeight.w600,
-                    fontFeatures: const [FontFeature.tabularFigures()])),
-          ),
+          if (!compact)
+            SizedBox(
+              width: _prevColWidth,
+              // C-15: referans bilgi — girilen değerden ve öneriden
+              // ayrışacak kadar okunur; kontrast ≥4,5:1 (A1: açıkta 4,28 idi).
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(previous ?? '—',
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    style: context.texts.bodySmall?.copyWith(
+                        color: c.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                        fontFeatures: const [FontFeature.tabularFigures()])),
+              ),
+            ),
           ..._inputCols(context),
-          SizedBox(
-            width: 42,
-            child: Center(
+          Semantics(
+            button: true,
+            label: set.done
+                ? l.asSemUndoSet(n)
+                : valuesText == null
+                    ? l.asSemCompleteSetEmpty(n)
+                    : l.asSemCompleteSet(n, valuesText!),
+            excludeSemantics: true,
+            child: SizedBox(
+              width: setTargetSize,
+              height: setTargetSize,
               child: Material(
                 color: set.done
                     ? context.semantic.success
@@ -1235,15 +1608,11 @@ class _SetRow extends StatelessWidget {
                   key: ValueKey('set.complete.$index'),
                   onTap: onToggle,
                   borderRadius: AppRadius.brSm,
-                  child: SizedBox(
-                    width: 38,
-                    height: 34,
-                    child: FitPackIcon.material(Icons.check_rounded,
-                        size: 18,
-                        color: set.done
-                            ? context.semantic.onSuccess
-                            : c.onSurfaceVariant),
-                  ),
+                  child: FitPackIcon.material(Icons.check_rounded,
+                      size: AppIconSize.md,
+                      color: set.done
+                          ? context.semantic.onSuccess
+                          : c.onSurfaceVariant),
                 ),
               ),
             ),
@@ -1254,45 +1623,67 @@ class _SetRow extends StatelessWidget {
   }
 }
 
+/// Giriş alanı iç boşluğu: alan en az 48 yüksek olsun (U04).
+const _fieldPadding = EdgeInsets.symmetric(vertical: 13, horizontal: 4);
+
+/// Sayıyı yerel ondalık ayırıcıyla yazar ("62,5" — A1: "62.5" görünüyordu).
+String _localNum(BuildContext context, String raw) =>
+    raw.replaceAll('.', context.numFmt.symbols.DECIMAL_SEP);
+
 class _NumCell extends StatelessWidget {
   final double? value;
   final bool decimal;
   final String? hint;
+  final String label; // ekran okuyucu: "Set 2 kg"
   final ValueChanged<double?> onChanged;
   const _NumCell(
       {super.key,
       required this.value,
       required this.decimal,
+      required this.label,
       required this.onChanged,
       this.hint});
 
   @override
   Widget build(BuildContext context) {
+    final h = hint == null ? null : _localNum(context, hint!);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 3),
-      child: TextFormField(
-        initialValue: value == null
-            ? null
-            : (decimal
-                ? (value == value!.roundToDouble()
-                    ? value!.round().toString()
-                    : value.toString())
-                : value!.round().toString()),
-        textAlign: TextAlign.center,
-        keyboardType: TextInputType.numberWithOptions(decimal: decimal),
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(
-              RegExp(decimal ? r'[0-9.,]' : r'[0-9]')),
-        ],
-        decoration: InputDecoration(
-          hintText: hint ?? '0',
-          // Öneri (G-2) girilmiş değerle karışmasın — belirgin soluk.
-          hintStyle: _hintStyle(context),
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      // Ad + öneri tek düğümde (A6): okuyucu "Set 2 kg, öneri 60" der;
+      // öneri girilmiş değerle karışmaz.
+      child: MergeSemantics(
+        child: Semantics(
+          label: label,
+          hint: h == null ? null : AppL10n.of(context).asSemSuggestion(h),
+          child: TextFormField(
+            initialValue: value == null
+                ? null
+                : _localNum(
+                    context,
+                    decimal
+                        ? (value == value!.roundToDouble()
+                            ? value!.round().toString()
+                            : value.toString())
+                        : value!.round().toString()),
+            textAlign: TextAlign.center,
+            style: _enteredStyle(context),
+            keyboardType: TextInputType.numberWithOptions(decimal: decimal),
+            textInputAction: TextInputAction.next,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(
+                  RegExp(decimal ? r'[0-9.,]' : r'[0-9]')),
+            ],
+            decoration: InputDecoration(
+              hintText: h ?? '0',
+              // Öneri (G-2) girilmiş değerle karışmasın — soluk ama okunur.
+              hintStyle: _hintStyle(context),
+              isDense: true,
+              contentPadding: _fieldPadding,
+            ),
+            onChanged: (v) =>
+                onChanged(double.tryParse(v.replaceAll(',', '.'))),
+          ),
         ),
-        onChanged: (v) =>
-            onChanged(double.tryParse(v.replaceAll(',', '.'))),
       ),
     );
   }
@@ -1302,31 +1693,38 @@ class _NumCell extends StatelessWidget {
 /// Görünüm diğer giriş hücreleriyle aynı (tema giriş dekorasyonu).
 class _RpeCell extends StatelessWidget {
   final double? value;
+  final String label;
   final VoidCallback onTap;
-  const _RpeCell({super.key, required this.value, required this.onTap});
+  const _RpeCell(
+      {super.key, required this.value, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final v = value;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 3),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.brSm,
-        child: InputDecorator(
-          decoration: const InputDecoration(
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          ),
-          textAlign: TextAlign.center,
-          child: Text(
-            v == null
-                ? '–'
-                : formatRpe(v, decimalSep: context.numFmt.symbols.DECIMAL_SEP),
+    final text = v == null
+        ? '–'
+        : formatRpe(v, decimalSep: context.numFmt.symbols.DECIMAL_SEP);
+    return Semantics(
+      button: true,
+      label: v == null ? label : '$label $text',
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppRadius.brSm,
+          child: InputDecorator(
+            decoration: const InputDecoration(
+              isDense: true,
+              contentPadding: _fieldPadding,
+            ),
             textAlign: TextAlign.center,
-            style: v == null
-                ? _hintStyle(context)
-                : context.texts.bodyLarge,
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              style: v == null ? _hintStyle(context) : _enteredStyle(context),
+            ),
           ),
         ),
       ),
@@ -1334,26 +1732,41 @@ class _RpeCell extends StatelessWidget {
   }
 }
 
-/// Boş giriş alanı ipucu: girilmiş değerden (onSurface) açıkça soluk.
+/// Boş giriş alanı ipucu: girilmiş değerden (onSurface, kalın) ayrışır ama
+/// okunur — eski %40 alfa koyuda 2,1:1, açıkta 1,7:1 idi (A1); şimdi tam
+/// onSurfaceVariant (≥4,5:1) + ince yazı.
 TextStyle _hintStyle(BuildContext context) => TextStyle(
-    color: context.colors.onSurfaceVariant.withValues(alpha: 0.4));
+    color: context.colors.onSurfaceVariant, fontWeight: FontWeight.w400);
+
+/// Girilmiş değer: tam renk + kalın — öneriden (ince, soluk) ilk bakışta ayrışır.
+TextStyle? _enteredStyle(BuildContext context) => context.texts.bodyLarge
+    ?.copyWith(color: context.colors.onSurface, fontWeight: FontWeight.w800);
 
 /// Süre giriş hücresi — dk:sn formatı ("12:30"). Kullanıcı ":" ile saniye
 /// girer; sadece sayı yazarsa dakika kabul edilir (bkz. [parseDuration]).
 class _TimeCell extends StatelessWidget {
   final int? value;
   final String? hint; // ✓ önerisi (G-2); yoksa "0:00"
+  final String label; // ekran okuyucu: "Set 1 süre"
   final ValueChanged<int?> onChanged;
   const _TimeCell(
-      {super.key, required this.value, required this.onChanged, this.hint});
+      {super.key,
+      required this.value,
+      required this.label,
+      required this.onChanged,
+      this.hint});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3),
-      child: TextFormField(
+      child: MergeSemantics(
+        child: Semantics(
+        label: label,
+        child: TextFormField(
         initialValue: value == null ? null : fmtDuration(value!),
         textAlign: TextAlign.center,
+        style: _enteredStyle(context),
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         inputFormatters: [
           FilteringTextInputFormatter.allow(RegExp(r'[0-9:.,]')),
@@ -1362,9 +1775,12 @@ class _TimeCell extends StatelessWidget {
           hintText: hint ?? '0:00',
           hintStyle: _hintStyle(context),
           isDense: true,
-          contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          contentPadding: _fieldPadding,
         ),
+        textInputAction: TextInputAction.next,
         onChanged: (v) => onChanged(parseDuration(v)),
+      ),
+      ),
       ),
     );
   }

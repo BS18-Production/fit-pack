@@ -1697,5 +1697,70 @@
   "adaptiveTdeeInconsistent": "Tahmin için kayıtlar eksik görünüyor — tamamlandı işaretli günlerin tam girildiğini kontrol et.",
   "adaptiveTdeeNote": "Tahmindir (1 kg ≈ 7.700 kcal). Hedefin kendiliğinden değişmez.",
   "healthWriteWorkouts": "Antrenmanları Sağlık'a yaz",
-  "healthWriteWorkoutsNote": "Canlı seanslar Apple Sağlık / Health Connect'te görünür (saat ve ad; kalori yazılmaz)."
+  "healthWriteWorkoutsNote": "Canlı seanslar Apple Sağlık / Health Connect'te görünür (saat ve ad; kalori yazılmaz).",
+  "expDraftError": "Devam eden antrenman okunamadı. Yeniden dene.",
+  "expFirstMeal": "Bugün 0 / {goal} kcal · İlk öğününü ekle",
+  "expPlanSubtitle": "Hedefine göre önerildi — istediğin gibi değiştir. Sonradan Profil’den de güncelleyebilirsin.",
+  "@expFirstMeal": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "expMeasurementError": "Ölçüm değiştirilemedi. Yeniden dene.",
+  "expAuthConnection": "Bağlantı kurulamadı. İnternetini kontrol edip yeniden dene.",
+  "expAuthCredentials": "E-posta veya şifre yanlış.",
+  "expAuthUnconfirmed": "Giriş yapmadan önce e-postanı doğrula.",
+  "expAuthExists": "Bu e-posta ile bir hesap var. Giriş yapmayı dene.",
+  "expAuthRateLimit": "Çok sık denedin. Biraz bekleyip yeniden dene.",
+  "expAuthPassword": "Farklı, en az 6 karakterli bir şifre seç.",
+  "expAuthGeneric": "İşlem tamamlanamadı. Yeniden dene.",
+  "expConfirmTitle": "E-postanı doğrula",
+  "expConfirmHelp": "Gelen kutunu ve spam klasörünü kontrol et. Bağlantıyı başka cihazda açtıysan buraya dönüp giriş yap. Google ile de devam edebilirsin.",
+  "expResend": "Doğrulama e-postasını yeniden gönder",
+  "expChangeEmail": "E-posta adresini değiştir",
+  "expEmailSent": "Doğrulama e-postası gönderildi.",
+  "expAmountDecrease": "Miktarı azalt",
+  "expAmountIncrease": "Miktarı artır",
+  "expAmount": "Miktar",
+  "expUpdate": "Güncelle",
+  "expBarcode": "Barkod",
+  "expCreateFood": "Kendi besinini oluştur",
+  "expYesterdayMeal": "Dünkü gibi ekle",
+  "expProteinRemaining": "{grams} g protein kaldı",
+  "@expProteinRemaining": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "expTodayLeftBoth": "Bugün {protein} g protein, {kcal} kcal kaldı.",
+  "expTodayLeftProtein": "Bugün {protein} g protein kaldı.",
+  "expTodayLeftKcal": "Bugün {kcal} kcal kaldı.",
+  "@expTodayLeftBoth": {
+    "placeholders": {
+      "protein": {
+        "type": "String"
+      },
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "@expTodayLeftProtein": {
+    "placeholders": {
+      "protein": {
+        "type": "String"
+      }
+    }
+  },
+  "@expTodayLeftKcal": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  }
 }

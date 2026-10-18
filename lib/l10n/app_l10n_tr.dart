@@ -4465,4 +4465,100 @@ class AppL10nTr extends AppL10n {
   @override
   String get healthWriteWorkoutsNote =>
       'Canlı seanslar Apple Sağlık / Health Connect\'te görünür (saat ve ad; kalori yazılmaz).';
+
+  @override
+  String get expDraftError => 'Devam eden antrenman okunamadı. Yeniden dene.';
+
+  @override
+  String expFirstMeal(String goal) {
+    return 'Bugün 0 / $goal kcal · İlk öğününü ekle';
+  }
+
+  @override
+  String get expPlanSubtitle =>
+      'Hedefine göre önerildi — istediğin gibi değiştir. Sonradan Profil’den de güncelleyebilirsin.';
+
+  @override
+  String get expMeasurementError => 'Ölçüm değiştirilemedi. Yeniden dene.';
+
+  @override
+  String get expAuthConnection =>
+      'Bağlantı kurulamadı. İnternetini kontrol edip yeniden dene.';
+
+  @override
+  String get expAuthCredentials => 'E-posta veya şifre yanlış.';
+
+  @override
+  String get expAuthUnconfirmed => 'Giriş yapmadan önce e-postanı doğrula.';
+
+  @override
+  String get expAuthExists =>
+      'Bu e-posta ile bir hesap var. Giriş yapmayı dene.';
+
+  @override
+  String get expAuthRateLimit =>
+      'Çok sık denedin. Biraz bekleyip yeniden dene.';
+
+  @override
+  String get expAuthPassword => 'Farklı, en az 6 karakterli bir şifre seç.';
+
+  @override
+  String get expAuthGeneric => 'İşlem tamamlanamadı. Yeniden dene.';
+
+  @override
+  String get expConfirmTitle => 'E-postanı doğrula';
+
+  @override
+  String get expConfirmHelp =>
+      'Gelen kutunu ve spam klasörünü kontrol et. Bağlantıyı başka cihazda açtıysan buraya dönüp giriş yap. Google ile de devam edebilirsin.';
+
+  @override
+  String get expResend => 'Doğrulama e-postasını yeniden gönder';
+
+  @override
+  String get expChangeEmail => 'E-posta adresini değiştir';
+
+  @override
+  String get expEmailSent => 'Doğrulama e-postası gönderildi.';
+
+  @override
+  String get expAmountDecrease => 'Miktarı azalt';
+
+  @override
+  String get expAmountIncrease => 'Miktarı artır';
+
+  @override
+  String get expAmount => 'Miktar';
+
+  @override
+  String get expUpdate => 'Güncelle';
+
+  @override
+  String get expBarcode => 'Barkod';
+
+  @override
+  String get expCreateFood => 'Kendi besinini oluştur';
+
+  @override
+  String get expYesterdayMeal => 'Dünkü gibi ekle';
+
+  @override
+  String expProteinRemaining(String grams) {
+    return '$grams g protein kaldı';
+  }
+
+  @override
+  String expTodayLeftBoth(String protein, String kcal) {
+    return 'Bugün $protein g protein, $kcal kcal kaldı.';
+  }
+
+  @override
+  String expTodayLeftProtein(String protein) {
+    return 'Bugün $protein g protein kaldı.';
+  }
+
+  @override
+  String expTodayLeftKcal(String kcal) {
+    return 'Bugün $kcal kcal kaldı.';
+  }
 }

@@ -28,6 +28,12 @@ class AuthService {
     );
   }
 
+  Future<void> resendConfirmation(String email) async {
+    await _client.auth.resend(
+      type: OtpType.signup, email: email, emailRedirectTo: _deepLink,
+    );
+  }
+
   Future<void> signInWithEmail(String email, String password) async {
     await _client.auth.signInWithPassword(email: email, password: password);
   }

@@ -4513,4 +4513,103 @@ class AppL10nEn extends AppL10n {
   @override
   String get healthWriteWorkoutsNote =>
       'Live sessions appear in Apple Health / Health Connect (time and name; no calories).';
+
+  @override
+  String get expDraftError =>
+      'Could not load your workout in progress. Try again.';
+
+  @override
+  String expFirstMeal(String goal) {
+    return 'Today 0 / $goal kcal · Add your first meal';
+  }
+
+  @override
+  String get expPlanSubtitle =>
+      'Suggested from your goal — adjust freely. You can change these anytime in Profile.';
+
+  @override
+  String get expMeasurementError =>
+      'Could not change the measurement. Try again.';
+
+  @override
+  String get expAuthConnection =>
+      'Could not connect. Check your internet and try again.';
+
+  @override
+  String get expAuthCredentials => 'Incorrect email or password.';
+
+  @override
+  String get expAuthUnconfirmed => 'Confirm your email before signing in.';
+
+  @override
+  String get expAuthExists =>
+      'An account already uses this email. Try signing in.';
+
+  @override
+  String get expAuthRateLimit =>
+      'Too many attempts. Wait a moment and try again.';
+
+  @override
+  String get expAuthPassword =>
+      'Choose a different password with at least 6 characters.';
+
+  @override
+  String get expAuthGeneric => 'Could not complete the request. Try again.';
+
+  @override
+  String get expConfirmTitle => 'Confirm your email';
+
+  @override
+  String get expConfirmHelp =>
+      'Check your inbox and spam folder. If you opened the link on another device, return here and sign in. You can also continue with Google.';
+
+  @override
+  String get expResend => 'Resend confirmation email';
+
+  @override
+  String get expChangeEmail => 'Change email address';
+
+  @override
+  String get expEmailSent => 'Confirmation email sent.';
+
+  @override
+  String get expAmountDecrease => 'Decrease amount';
+
+  @override
+  String get expAmountIncrease => 'Increase amount';
+
+  @override
+  String get expAmount => 'Amount';
+
+  @override
+  String get expUpdate => 'Update';
+
+  @override
+  String get expBarcode => 'Barcode';
+
+  @override
+  String get expCreateFood => 'Create your own food';
+
+  @override
+  String get expYesterdayMeal => 'Add yesterday’s meal';
+
+  @override
+  String expProteinRemaining(String grams) {
+    return '$grams g protein left';
+  }
+
+  @override
+  String expTodayLeftBoth(String protein, String kcal) {
+    return 'Today: $protein g protein and $kcal kcal left.';
+  }
+
+  @override
+  String expTodayLeftProtein(String protein) {
+    return 'Today: $protein g protein left.';
+  }
+
+  @override
+  String expTodayLeftKcal(String kcal) {
+    return 'Today: $kcal kcal left.';
+  }
 }

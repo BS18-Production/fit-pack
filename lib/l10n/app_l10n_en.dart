@@ -1970,7 +1970,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get recallOfferBody =>
-      'If you take a 2-day break, you get one notification at your usual time. Turn it off in Settings → Notifications.';
+      'If you take a 2-day break or miss a planned day, I\'ll remind you around your usual time (at most 2 a day). Turn it off in Settings → Notifications.';
 
   @override
   String get recallOfferYes => 'Yes, remind me';

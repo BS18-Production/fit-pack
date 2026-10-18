@@ -3520,7 +3520,7 @@ abstract class AppL10n {
   /// No description provided for @recallOfferBody.
   ///
   /// In en, this message translates to:
-  /// **'If you take a 2-day break, you get one notification at your usual time. Turn it off in Settings → Notifications.'**
+  /// **'If you take a 2-day break or miss a planned day, I\'ll remind you around your usual time (at most 2 a day). Turn it off in Settings → Notifications.'**
   String get recallOfferBody;
 
   /// No description provided for @recallOfferYes.

@@ -582,7 +582,7 @@
   "notifFirstWeekBodyRoutineOnly": "İlk antrenmanın hazır: {routine}",
   "notifFirstWeekBody": "Hazır programlardan birini seç ya da boş antrenman başlat.",
   "recallOfferTitle": "Sıradaki antrenmanını hatırlatayım mı?",
-  "recallOfferBody": "2 gün ara verirsen olağan saatinde tek bir bildirim gelir. Ayarlar → Bildirimler'den kapatabilirsin.",
+  "recallOfferBody": "2 gün ara verirsen ya da planlı günü kaçırırsan, olağan saatine göre hatırlatırım (günde en fazla 2). Ayarlar → Bildirimler'den kapatabilirsin.",
   "recallOfferYes": "Evet, hatırlat",
   "recallOfferNo": "Şimdi değil",
   "recallOfferEnabled": "Tamam — 2 gün ara verirsen hatırlatacağım.",

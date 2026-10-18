@@ -38,6 +38,10 @@ class NotificationService {
   static const idRecallBase = 40;
   static const recallSlots = 6;
 
+  /// İlk hafta hatırlatması (docs/51 ikinci tur): hesabın 2. günü akşamı,
+  /// ilk antrenman yoksa tek seferlik.
+  static const idFirstWeek = 49;
+
   /// Dokununca açılacak ekranı söyleyen yük (payload). Uygulama kökü bunu
   /// dinleyip ilgili rotaya gider.
   static const payloadWeeklyReview = 'weekly_review';
@@ -372,6 +376,7 @@ class NotificationService {
     for (var i = 0; i < recallSlots; i++) {
       await cancel(idRecallBase + i);
     }
+    await cancel(idFirstWeek);
   }
 }
 

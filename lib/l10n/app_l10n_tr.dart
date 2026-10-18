@@ -1929,6 +1929,23 @@ class AppL10nTr extends AppL10n {
       'Rutinini seç ya da boş antrenman başlat — birkaç set de iş görür.';
 
   @override
+  String get notifFirstWeekTitle => 'İlk antrenmanına hazır mısın?';
+
+  @override
+  String notifFirstWeekBodyRoutine(String routine, int minutes) {
+    return 'İlk antrenmanın hazır: $routine · ~$minutes dk';
+  }
+
+  @override
+  String notifFirstWeekBodyRoutineOnly(String routine) {
+    return 'İlk antrenmanın hazır: $routine';
+  }
+
+  @override
+  String get notifFirstWeekBody =>
+      'Hazır programlardan birini seç ya da boş antrenman başlat.';
+
+  @override
   String get recallOfferTitle => 'Sıradaki antrenmanını hatırlatayım mı?';
 
   @override

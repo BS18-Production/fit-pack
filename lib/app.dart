@@ -16,6 +16,8 @@ import 'core/notifications/notification_service.dart';
 import 'data/providers.dart';
 import 'features/nutrition/meal_reminders.dart';
 import 'features/workout/recall_reminders.dart';
+import 'features/workout/recall_first_week.dart';
+import 'features/home/first_week.dart' show accountCreatedProvider;
 import 'features/insights/weekly_review_reminder.dart';
 import 'core/router/app_router.dart';
 import 'core/router/app_routes.dart';
@@ -206,14 +208,23 @@ class _DayRolloverGuardState extends ConsumerState<_DayRolloverGuard>
   Future<void> _syncRecall() async {
     if (!mounted) return;
     final prefs = ref.read(notificationPrefsProvider);
+    final l = AppL10n.of(context);
     try {
       await syncRecallReminders(
         service: ref.read(notificationServiceProvider),
         dao: ref.read(workoutDaoProvider),
-        l: AppL10n.of(context),
+        l: l,
         enabled: prefs.workoutEnabled,
         fallbackHour: prefs.workoutHour,
         fallbackMinute: prefs.workoutMinute,
+      );
+      // İlk hafta (docs/51 ikinci tur): ilk antrenman yoksa tek hatırlatma.
+      await syncFirstWeekReminder(
+        service: ref.read(notificationServiceProvider),
+        dao: ref.read(workoutDaoProvider),
+        l: l,
+        enabled: prefs.workoutEnabled,
+        accountCreated: ref.read(accountCreatedProvider),
       );
     } catch (_) {
       // Bildirim eklentisi yok (test) ya da zamanlama reddedildi: hatırlatma

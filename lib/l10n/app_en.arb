@@ -1015,6 +1015,27 @@
     }
   },
   "notifMissedBody": "Tomorrow works too. If you have time, a short session now still counts.",
+  "notifFirstWeekTitle": "Ready for your first workout?",
+  "notifFirstWeekBodyRoutine": "Your first workout is ready: {routine} · ~{minutes} min",
+  "@notifFirstWeekBodyRoutine": {
+    "placeholders": {
+      "routine": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "notifFirstWeekBodyRoutineOnly": "Your first workout is ready: {routine}",
+  "@notifFirstWeekBodyRoutineOnly": {
+    "placeholders": {
+      "routine": {
+        "type": "String"
+      }
+    }
+  },
+  "notifFirstWeekBody": "Pick one of the ready-made programs or start an empty workout.",
   "recallOfferTitle": "Want a reminder for your next workout?",
   "recallOfferBody": "If you take a 2-day break, you get one notification at your usual time. Turn it off in Settings → Notifications.",
   "recallOfferYes": "Yes, remind me",

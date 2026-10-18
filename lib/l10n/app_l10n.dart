@@ -3487,6 +3487,30 @@ abstract class AppL10n {
   /// **'Tomorrow works too. If you have time, a short session now still counts.'**
   String get notifMissedBody;
 
+  /// No description provided for @notifFirstWeekTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready for your first workout?'**
+  String get notifFirstWeekTitle;
+
+  /// No description provided for @notifFirstWeekBodyRoutine.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first workout is ready: {routine} · ~{minutes} min'**
+  String notifFirstWeekBodyRoutine(String routine, int minutes);
+
+  /// No description provided for @notifFirstWeekBodyRoutineOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first workout is ready: {routine}'**
+  String notifFirstWeekBodyRoutineOnly(String routine);
+
+  /// No description provided for @notifFirstWeekBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick one of the ready-made programs or start an empty workout.'**
+  String get notifFirstWeekBody;
+
   /// No description provided for @recallOfferTitle.
   ///
   /// In en, this message translates to:

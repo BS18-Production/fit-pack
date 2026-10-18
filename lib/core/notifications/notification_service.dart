@@ -42,6 +42,9 @@ class NotificationService {
   /// 46…48. Sınırları [idRecallBase] ile ortak.
   static const idMissedDayBase = 46;
   static const missedDaySlots = 3;
+  /// İlk hafta hatırlatması (docs/51 ikinci tur): hesabın 2. günü akşamı,
+  /// ilk antrenman yoksa tek seferlik.
+  static const idFirstWeek = 49;
 
   /// Dokununca açılacak ekranı söyleyen yük (payload). Uygulama kökü bunu
   /// dinleyip ilgili rotaya gider.
@@ -380,6 +383,7 @@ class NotificationService {
     for (var i = 0; i < missedDaySlots; i++) {
       await cancel(idMissedDayBase + i);
     }
+    await cancel(idFirstWeek);
   }
 }
 

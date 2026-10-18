@@ -52,6 +52,10 @@ hatırlatıcısı ise doğru deseni zaten kurmuş: veri varsa bildirim yok.
 - **İlk hafta (docs/49 ile bağ):** hesabın ilk 14 gününde rehberin ilk adımı
   (ilk antrenman) bitmemişse **tek** hatırlatma, 2. gün akşamı.
   Diğer adımlar (öğün, kilo) zaten var olan hatırlatıcılara bırakılır.
+  **Uygulandı (2026-10-18):** `recall_first_week.dart`, kimlik 49. Hesabın
+  2. günü 19:00, ömür boyu bir kez, geç gönderilmez, sessiz saate düşmez,
+  geri çağırma sınırlarına sayılmaz. İzin istemez: yalnız antrenman
+  hatırlatıcısı açıksa (izin daha önce alınmışsa) kurulur.
 - **İzin zamanı:** iOS izni bir kez sorar; "hayır" denirse uygulama tekrar
   soramaz. İzin kurulumda ya da ilk açılışta **istenmez**. İlk antrenman
   bittikten sonra özet ekranında tek satırlık öneri gösterilir: "Sıradaki

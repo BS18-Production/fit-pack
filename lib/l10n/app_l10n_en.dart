@@ -1949,6 +1949,23 @@ class AppL10nEn extends AppL10n {
       'Tomorrow works too. If you have time, a short session now still counts.';
 
   @override
+  String get notifFirstWeekTitle => 'Ready for your first workout?';
+
+  @override
+  String notifFirstWeekBodyRoutine(String routine, int minutes) {
+    return 'Your first workout is ready: $routine · ~$minutes min';
+  }
+
+  @override
+  String notifFirstWeekBodyRoutineOnly(String routine) {
+    return 'Your first workout is ready: $routine';
+  }
+
+  @override
+  String get notifFirstWeekBody =>
+      'Pick one of the ready-made programs or start an empty workout.';
+
+  @override
   String get recallOfferTitle => 'Want a reminder for your next workout?';
 
   @override

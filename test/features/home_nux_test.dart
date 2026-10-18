@@ -169,6 +169,10 @@ void main() {
 
     testWidgets('ilk gün: eylem görünür, boş halka ve grafik yok', (tester) async {
       await ac(tester);
+      // Liste tembel kurulur — kart ilk ekranın altında olabilir.
+      await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('home.firstMeal')), 200,
+          scrollable: find.byType(Scrollable).first);
       expect(find.byKey(const ValueKey('home.firstMeal')), findsOneWidget);
       expect(find.byType(CalorieRing), findsNothing);
       final button = tester.getRect(find.byKey(const ValueKey('home.pickProgram')));

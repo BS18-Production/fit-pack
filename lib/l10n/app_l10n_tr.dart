@@ -4678,4 +4678,26 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get asKbDone => 'Bitti';
+
+  @override
+  String get today3aFinishedKicker => 'BUGÜN TAMAM';
+
+  @override
+  String today3aFinishedSub(int mins) {
+    return 'Kaydedildi · $mins dk';
+  }
+
+  @override
+  String get today3aFinishedSubNoTime => 'Kaydedildi';
+
+  @override
+  String get today3aViewSummary => 'Özeti gör';
+
+  @override
+  String get today3aTrainAnyway => 'Yine de antrenman yap';
+
+  @override
+  String today3aAddMealHint(String meal) {
+    return 'Öğün ekle: $meal';
+  }
 }

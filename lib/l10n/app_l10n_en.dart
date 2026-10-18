@@ -4729,4 +4729,26 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get asKbDone => 'Done';
+
+  @override
+  String get today3aFinishedKicker => 'DONE TODAY';
+
+  @override
+  String today3aFinishedSub(int mins) {
+    return 'Saved · $mins min';
+  }
+
+  @override
+  String get today3aFinishedSubNoTime => 'Saved';
+
+  @override
+  String get today3aViewSummary => 'View summary';
+
+  @override
+  String get today3aTrainAnyway => 'Train anyway';
+
+  @override
+  String today3aAddMealHint(String meal) {
+    return 'Add meal: $meal';
+  }
 }

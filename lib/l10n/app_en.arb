@@ -2887,5 +2887,13 @@
   "asTypeFailure": "To failure",
   "asSetType": "Set type",
   "asKbNext": "Next",
-  "asKbDone": "Done"
+  "asKbDone": "Done",
+  "today3aFinishedKicker": "DONE TODAY",
+  "today3aFinishedSub": "Saved · {mins} min",
+  "@today3aFinishedSub": {"placeholders": {"mins": {"type": "int"}}},
+  "today3aFinishedSubNoTime": "Saved",
+  "today3aViewSummary": "View summary",
+  "today3aTrainAnyway": "Train anyway",
+  "today3aAddMealHint": "Add meal: {meal}",
+  "@today3aAddMealHint": {"placeholders": {"meal": {"type": "String"}}}
 }

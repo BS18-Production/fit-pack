@@ -49,10 +49,15 @@ class _WeeklyReviewScreenState extends ConsumerState<WeeklyReviewScreen> {
   void initState() {
     super.initState();
     // Değerlendirme hangi yoldan açılırsa açılsın "Haftan hazır" kartı
-    // kalkar (docs/50 Faz 2) — kapanış aralığı dışında etkisiz.
-    ref
-        .read(weekReadyOpenedProvider.notifier)
-        .markOpened(DateTime.now(), ref.read(weekStartProvider));
+    // kalkar (docs/50 Faz 2) — kapanış aralığı dışında etkisiz. Çizim
+    // bitince: initState'te sağlayıcı değiştirmek Riverpod hatası (kapanış
+    // aralığında — Pazar 20:00 sonrası — neon testi yakaladı).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref
+          .read(weekReadyOpenedProvider.notifier)
+          .markOpened(DateTime.now(), ref.read(weekStartProvider));
+    });
   }
 
   @override

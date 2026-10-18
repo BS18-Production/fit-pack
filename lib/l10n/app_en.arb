@@ -2784,7 +2784,7 @@
   "healthWriteWorkouts": "Save workouts to Health",
   "healthWriteWorkoutsNote": "Live sessions appear in Apple Health / Health Connect (time and name; no calories).",
   "expDraftError": "Could not load your workout in progress. Try again.",
-  "expFirstMeal": "Today 0 / {goal} kcal · Add your first meal",
+  "expFirstMeal": "Today 0 / {goal} kcal",
   "expPlanSubtitle": "Suggested from your goal — adjust freely. You can change these anytime in Profile.",
   "@expFirstMeal": {
     "placeholders": {

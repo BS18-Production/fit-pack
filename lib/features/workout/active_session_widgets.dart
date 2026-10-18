@@ -756,11 +756,13 @@ class _ActiveSetAssist extends StatelessWidget {
     final l = AppL10n.of(context);
     final h = hint;
     final prev = showPrevious ? previous : null;
-    final text = h != null
+    final raw = h != null
         ? (prev != null ? l.asSuggestWithPrev(h, prev) : l.asSuggestHint(h))
         : prev != null
             ? l.asPrevOnly(prev)
             : null;
+    // Yerel ondalık: alanlar "42,5" yazarken satır "42.5" demesin.
+    final text = raw == null ? null : _localNum(context, raw);
     final controls = [
       ?rpeCell,
       if (showStepper) ...[

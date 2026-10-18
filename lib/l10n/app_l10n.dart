@@ -7583,7 +7583,7 @@ abstract class AppL10n {
   /// No description provided for @expFirstMeal.
   ///
   /// In en, this message translates to:
-  /// **'Today 0 / {goal} kcal · Add your first meal'**
+  /// **'Today 0 / {goal} kcal'**
   String expFirstMeal(String goal);
 
   /// No description provided for @expPlanSubtitle.

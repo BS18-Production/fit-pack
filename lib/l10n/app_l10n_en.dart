@@ -4520,7 +4520,7 @@ class AppL10nEn extends AppL10n {
 
   @override
   String expFirstMeal(String goal) {
-    return 'Today 0 / $goal kcal · Add your first meal';
+    return 'Today 0 / $goal kcal';
   }
 
   @override

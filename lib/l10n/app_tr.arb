@@ -1699,7 +1699,7 @@
   "healthWriteWorkouts": "Antrenmanları Sağlık'a yaz",
   "healthWriteWorkoutsNote": "Canlı seanslar Apple Sağlık / Health Connect'te görünür (saat ve ad; kalori yazılmaz).",
   "expDraftError": "Devam eden antrenman okunamadı. Yeniden dene.",
-  "expFirstMeal": "Bugün 0 / {goal} kcal · İlk öğününü ekle",
+  "expFirstMeal": "Bugün 0 / {goal} kcal",
   "expPlanSubtitle": "Hedefine göre önerildi — istediğin gibi değiştir. Sonradan Profil’den de güncelleyebilirsin.",
   "@expFirstMeal": {
     "placeholders": {

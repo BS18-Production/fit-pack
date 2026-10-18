@@ -55,9 +55,11 @@ hatırlatıcısı ise doğru deseni zaten kurmuş: veri varsa bildirim yok.
   bildirimi izni daha önce alındıysa soru sorulmaz, ayar açılır, kullanıcıya
   bilgi verilir.
 - **Sınırlar:**
-  - Bu türden **günde en fazla 1**, **haftada en fazla 3** bildirim.
+  - Bu türden **günde en fazla 2**, **haftada en fazla 6** bildirim
+    (Samet, 2026-10-18; ilk öneri 1/3'tü). İkincisi olağan saatten 3 saat
+    sonra; 22:00'yi geçerse 3 saat önce.
   - **Sessiz saatler** 22:00–08:00: bu aralığa düşen bildirim 08:30'a kayar.
-  - Art arda **3 bildirime tepki yoksa** (uygulama açılmadıysa) tür kendini
+  - Art arda **3 gün bildirime tepki yoksa** (uygulama açılmadıysa) tür kendini
     **14 gün** susturur.
 - **Ton:** suçlamayan ve seçenek bırakan bir dil. "Seriyi bozdun", "tembellik
   yapma" gibi ifadeler yok. Metin bir sonraki adımı söyler. 2–3 başlık

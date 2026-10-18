@@ -73,30 +73,37 @@ void main() {
           isEmpty);
     });
 
-    test('2 gün dolmadan yok; 2. günden itibaren olağan saatte, günde 1', () {
+    test('2 gün dolmadan yok; 2. günden itibaren olağan saatte + 3 saat sonra',
+        () {
       final plan = planRecall(
           now: at(10, 9), lastWorkout: at(10, 8), minuteOfDay: 18 * 60);
-      // Bugün (10) ve yarın (11) erken; yalnız 12'si.
-      expect(plan, [at(12, 18)]);
+      // Bugün (10) ve yarın (11) erken; yalnız 12'si, günde 2.
+      expect(plan, [at(12, 18), at(12, 21)]);
     });
 
     test('ara çoktan uzadıysa bugün + 2 gün; saati geçmiş bugün atlanır', () {
       expect(
           planRecall(now: at(10, 9), lastWorkout: at(5, 18), minuteOfDay: 18 * 60),
-          [at(10, 18), at(11, 18), at(12, 18)]);
+          [at(10, 18), at(10, 21), at(11, 18), at(11, 21), at(12, 18), at(12, 21)]);
       expect(
           planRecall(now: at(10, 19), lastWorkout: at(5, 18), minuteOfDay: 18 * 60),
-          [at(11, 18), at(12, 18)]);
+          [at(10, 21), at(11, 18), at(11, 21), at(12, 18), at(12, 21)]);
     });
 
-    test('haftada en fazla 3: geçmişte gönderilenler sayılır', () {
+    test('ikincisi 22:00\'yi geçerse 3 saat önceye alınır', () {
+      expect(
+          planRecall(now: at(10, 9), lastWorkout: at(10, 8), minuteOfDay: 20 * 60),
+          [at(12, 17), at(12, 20)]);
+    });
+
+    test('haftada en fazla 6: geçmişte gönderilenler sayılır', () {
       final plan = planRecall(
         now: at(10, 9),
         lastWorkout: at(1, 18),
         minuteOfDay: 18 * 60,
-        sent: [at(8, 18), at(9, 18)],
+        sent: [at(6, 18), at(7, 18), at(8, 18), at(8, 21), at(9, 18)],
       );
-      // Son 7 günde 2 gönderildi → yalnız 1 yer kaldı.
+      // Son 7 günde 5 gönderildi → yalnız 1 yer kaldı.
       expect(plan, [at(10, 18)]);
     });
 
@@ -107,15 +114,18 @@ void main() {
         minuteOfDay: 18 * 60,
         mutedUntil: at(12, 0),
       );
-      expect(plan, [at(12, 18)]);
+      expect(plan, [at(12, 18), at(12, 21)]);
     });
 
-    test('sessiz saate düşen ertesi sabaha kayar, aynı güne ikinci düşmez', () {
+    test('sessiz saate düşen ertesi sabaha kayar, bir güne en fazla 2', () {
       final plan = planRecall(
           now: at(10, 9), lastWorkout: at(1, 18), minuteOfDay: 23 * 60);
-      // 10 23:00 → 11 08:30; 11 23:00 → 12 08:30; 12 23:00 → 13 08:30.
-      expect(plan, [at(11, 8, 30), at(12, 8, 30), at(13, 8, 30)]);
-      expect(plan.map((d) => d.day).toSet().length, plan.length);
+      // 10 23:00 → 11 08:30 (+ 11:30); 11 23:00 → 12 08:30; 12 23:00 → 13.
+      expect(plan, [
+        at(11, 8, 30), at(11, 11, 30),
+        at(12, 8, 30), at(12, 11, 30),
+        at(13, 8, 30), at(13, 11, 30),
+      ]);
     });
 
     test('takvim günü: ay ve yaz saati sınırında saat kaymaz', () {
@@ -126,21 +136,27 @@ void main() {
         lastWorkout: DateTime(2026, 3, 20, 18),
         minuteOfDay: 18 * 60,
       );
-      expect(spring.map((d) => (d.day, d.hour, d.minute)),
+      expect(spring.where((d) => d.hour == 18).map((d) => (d.day, d.hour, d.minute)),
           [(28, 18, 0), (29, 18, 0), (30, 18, 0)]);
       final autumn = planRecall(
         now: DateTime(2026, 10, 24, 9),
         lastWorkout: DateTime(2026, 10, 20, 18),
         minuteOfDay: 18 * 60,
       );
-      expect(autumn.map((d) => (d.day, d.hour, d.minute)),
+      expect(autumn.where((d) => d.hour == 18).map((d) => (d.day, d.hour, d.minute)),
           [(24, 18, 0), (25, 18, 0), (26, 18, 0)]);
       final monthEnd = planRecall(
         now: DateTime(2026, 10, 31, 19),
         lastWorkout: DateTime(2026, 10, 29, 18),
         minuteOfDay: 18 * 60,
       );
-      expect(monthEnd, [DateTime(2026, 11, 1, 18), DateTime(2026, 11, 2, 18)]);
+      expect(monthEnd, [
+        DateTime(2026, 10, 31, 21),
+        DateTime(2026, 11, 1, 18),
+        DateTime(2026, 11, 1, 21),
+        DateTime(2026, 11, 2, 18),
+        DateTime(2026, 11, 2, 21),
+      ]);
     });
   });
 
@@ -155,7 +171,13 @@ void main() {
       expect(l.planned, isEmpty);
     });
 
-    test('art arda 3 tepkisiz → 14 gün susar', () {
+    test('3 tepkisiz bildirim 2 güne düşerse susmaz (gün sayılır)', () {
+      final l = RecallLedger(sent: [at(8, 18), at(8, 21)], planned: [at(9, 18)])
+          .reconcile(now: at(10, 9), lastWorkout: at(5, 18));
+      expect(l.mutedUntil, isNull);
+    });
+
+    test('art arda 3 tepkisiz gün → 14 gün susar', () {
       final l = RecallLedger(sent: [at(7, 18), at(8, 18)], planned: [at(9, 18)])
           .reconcile(now: at(10, 9), lastWorkout: at(5, 18));
       // 14 takvim günü sonra, günün başında.
@@ -237,7 +259,9 @@ void main() {
           NotificationService.idRecallBase + i,
       ]);
       // Olağan saat geçmişten (19:30, ayardaki 18:00 değil); bugünkü geçti.
-      expect(svc.scheduled.values, [at(11, 19, 30), at(12, 19, 30)]);
+      // İkincisi 22:30 sessiz saate düşer → 3 saat önce, 16:30.
+      expect(svc.scheduled.values,
+          [at(11, 16, 30), at(11, 19, 30), at(12, 16, 30), at(12, 19, 30)]);
       expect(svc.texts.values.first.$2, contains('Tüm vücut B'));
       expect(svc.payloads.values.toSet(), {NotificationService.payloadRecall});
       // Planlananlar deftere yazıldı → bir sonraki kurulumda "gönderildi".
@@ -269,7 +293,7 @@ void main() {
           fallbackMinute: 0,
           now: at(10, 11));
       // Bugün antrenman yapıldı → en erken 12'si.
-      expect(svc2.scheduled.values, [at(12, 18)]);
+      expect(svc2.scheduled.values, [at(12, 18), at(12, 21)]);
     });
   });
 

@@ -32,11 +32,11 @@ class NotificationService {
   static const mealReminderSlots = 9;
 
   /// Geri çağırma — "ara uzadı" antrenman hatırlatıcısı (docs/51):
-  /// `idRecallBase + gün` (bugün + 2 gün = 40…42). Eski günlük sabit saatli
+  /// `idRecallBase + sıra` (bugün + 2 gün, günde 2 = 40…45). Eski günlük sabit saatli
   /// antrenman hatırlatıcısı ([idWorkout]) bu türe dönüştü; her yeniden
   /// kurulumda o da iptal edilir.
   static const idRecallBase = 40;
-  static const recallSlots = 3;
+  static const recallSlots = 6;
 
   /// Dokununca açılacak ekranı söyleyen yük (payload). Uygulama kökü bunu
   /// dinleyip ilgili rotaya gider.

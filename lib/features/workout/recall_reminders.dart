@@ -16,12 +16,17 @@ import 'routine_providers.dart' show estimateRoutineMinutes, rotationNext;
 /// bugün + 2 gün için tek seferlik bildirim kurulur, tablo değişince, öne
 /// gelince ve ayar değişince hepsi silinip yeniden kurulur.
 const recallGapDays = 2;
-const recallDaysAhead = 3; // = NotificationService.recallSlots
-const recallMaxPerWeek = 3;
+const recallDaysAhead = 3;
+const recallMaxPerDay = 2; // günde 2 × 3 gün = NotificationService.recallSlots
+const recallMaxPerWeek = 6;
+
+/// Günün ikinci bildirimi birinciden bu kadar dakika SONRA; 22:00'yi
+/// geçerse bu kadar ÖNCE.
+const recallSecondGapMinutes = 3 * 60;
 const recallQuietStartHour = 22; // 22:00–08:00 sessiz
 const recallQuietEndHour = 8;
 const recallQuietShiftMinute = 8 * 60 + 30; // sessiz saate düşen → 08:30
-const recallMuteAfter = 3; // art arda tepkisiz bildirim
+const recallMuteAfter = 3; // art arda tepkisiz GÜN (bildirim değil)
 const recallMuteDays = 14;
 
 /// Başlık çeşidi sayısı — hep aynı cümle görülmesin (docs/51 "Ton").
@@ -50,8 +55,9 @@ DateTime shiftOutOfQuietHours(DateTime t) {
 ///
 /// - Son antrenmandan [recallGapDays] takvim günü geçmeden bildirim yok;
 ///   hiç antrenman yoksa da yok (ilk hafta hatırlatması ikinci tur).
-/// - Bugün + 2 gün, her gün [minuteOfDay]'de; sessiz saat kaydırması sonrası
-///   aynı güne ikinci bildirim düşmez (günde en fazla 1).
+/// - Bugün + 2 gün, her gün [minuteOfDay]'de; ikincisi
+///   [recallSecondGapMinutes] sonra (22:00'yi geçerse o kadar önce). Sessiz
+///   saat kaydırması sonrası bir güne [recallMaxPerDay]'den fazla düşmez.
 /// - Geçmişte gönderilenlerle ([sent]) birlikte herhangi 7 günde en fazla
 ///   [recallMaxPerWeek].
 /// - [mutedUntil]'den önceki anlar atlanır.
@@ -71,19 +77,38 @@ List<DateTime> planRecall({
   for (var i = 0; i < recallDaysAhead; i++) {
     final day = addDays(today, i);
     if (day.isBefore(earliest)) continue;
-    final t = shiftOutOfQuietHours(DateTime(day.year, day.month, day.day,
+    final first = shiftOutOfQuietHours(DateTime(day.year, day.month, day.day,
         minuteOfDay ~/ 60, minuteOfDay % 60));
-    if (!t.isAfter(now)) continue;
-    if (mutedUntil != null && t.isBefore(mutedUntil)) continue;
-    if (out.any((o) => dayStart(o) == dayStart(t))) continue;
-    final windowStart = addDays(t, -7);
-    final inWindow = [...sent, ...out]
-        .where((s) => s.isAfter(windowStart) && !s.isAfter(t))
-        .length;
-    if (inWindow >= recallMaxPerWeek) continue;
-    out.add(t);
+    for (final t in [first, _secondOf(first)]) {
+      if (t == null || !t.isAfter(now)) continue;
+      if (mutedUntil != null && t.isBefore(mutedUntil)) continue;
+      if (out.contains(t)) continue;
+      final sameDay = out.where((o) => dayStart(o) == dayStart(t)).length;
+      if (sameDay >= recallMaxPerDay) continue;
+      final windowStart = addDays(t, -7);
+      final inWindow = [...sent, ...out]
+          .where((s) => s.isAfter(windowStart) && !s.isAfter(t))
+          .length;
+      if (inWindow >= recallMaxPerWeek) continue;
+      out.add(t);
+    }
   }
+  out.sort();
   return out;
+}
+
+/// Günün ikinci anı: birinciden [recallSecondGapMinutes] sonra; sessiz saate
+/// ya da ertesi güne taşarsa o kadar önce; o da sessiz saatteyse yok.
+DateTime? _secondOf(DateTime first) {
+  const gap = Duration(minutes: recallSecondGapMinutes);
+  bool loud(DateTime t) =>
+      dayStart(t) == dayStart(first) &&
+      t.hour >= recallQuietEndHour &&
+      t.hour < recallQuietStartHour;
+  final later = first.add(gap);
+  if (loud(later)) return later;
+  final earlier = first.subtract(gap);
+  return loud(earlier) ? earlier : null;
 }
 
 /// Gönderilen geri çağırmaların cihazdaki defteri (docs/51 §2) — analitik
@@ -122,9 +147,12 @@ class RecallLedger {
     final reactedAt = [lastTap, lastWorkout]
         .whereType<DateTime>()
         .fold<DateTime?>(null, (a, b) => a == null || b.isAfter(a) ? b : a);
-    final unanswered = kept
-        .where((s) => reactedAt == null || s.isAfter(reactedAt))
-        .length;
+    // Günde 2 bildirim olabildiği için tepkisiz GÜN sayılır: "3 kez" = 3
+    // ayrı gün görmezden gelindi.
+    final unanswered = {
+      for (final s in kept)
+        if (reactedAt == null || s.isAfter(reactedAt)) dayStart(s),
+    }.length;
     var muted = mutedUntil;
     if (muted != null && !muted.isAfter(now)) muted = null;
     if (muted == null && unanswered >= recallMuteAfter) {
@@ -249,7 +277,7 @@ Future<void> syncRecallReminders({
               e.routineExercise,
           ]);
     await service.scheduleOnce(
-      // Plan en fazla [recallDaysAhead] an → yuvalar 40…42.
+      // Plan en fazla [recallDaysAhead] × [recallMaxPerDay] an → 40…45.
       id: NotificationService.idRecallBase + i,
       when: at,
       title: recallTitle(l, (ledger.sent.length + i) % recallTitleVariants),

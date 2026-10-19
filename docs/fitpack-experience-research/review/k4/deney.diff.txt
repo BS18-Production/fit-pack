@@ -1,0 +1,959 @@
+diff --git a/lib/features/workout/active_session_widgets.dart b/lib/features/workout/active_session_widgets.dart
+index a93e41e..d5df771 100644
+--- a/lib/features/workout/active_session_widgets.dart
++++ b/lib/features/workout/active_session_widgets.dart
+@@ -27,6 +27,15 @@ import '../../shared/widgets/fitpack_icon.dart';
+ 
+ const double sessionProgressBarHeight = 3;
+ 
++/// K4 deneyi (scratch): 0 = bugünkü, 1 = ± satırda büyük (sarılır),
++/// 2 = ± satırdan çıkar, sayıya dokununca adım paneli.
++int k4Variant = 0;
++bool _k4NoPrev(BuildContext c) => k4Variant == 3 && MediaQuery.sizeOf(c).width < 360;
++double get _k4Check => k4Variant == 0 ? 38 : 48;
++double get _k4CheckH => k4Variant == 0 ? 34 : 48;
++double get _k4CheckCol => k4Variant == 0 ? 42 : 52;
++
++
+ /// Uygulama çubuğunun altında ince set ilerlemesi (C-16). Tümü bitince yeşil.
+ class SessionProgressBar extends StatelessWidget {
+   final SessionProgress progress;
+@@ -213,6 +222,7 @@ class _MiniBtn extends StatelessWidget {
+       color: c.onPrimary.withValues(alpha: strong ? 0.28 : 0.18),
+       borderRadius: AppRadius.brSm,
+       child: InkWell(
++        key: ValueKey('k4.rest.$label'),
+         onTap: onTap,
+         borderRadius: AppRadius.brSm,
+         child: Padding(
+@@ -432,12 +442,13 @@ class ExerciseBlock extends ConsumerWidget {
+               child: Row(
+                 children: [
+                   SizedBox(width: 30, child: _H(AppL10n.of(context).hdrSet)),
++                  if (!_k4NoPrev(context))
+                   SizedBox(
+                       width: 56,
+                       child:
+                           _H(AppL10n.of(context).hdrPrev, center: true)),
+                   ..._headerCols(AppL10n.of(context), ex.measure, units),
+-                  const SizedBox(width: 42),
++                  SizedBox(width: _k4CheckCol),
+                 ],
+               ),
+             ),
+@@ -455,6 +466,7 @@ class ExerciseBlock extends ConsumerWidget {
+                     : null,
+                 suggestion: set.done ? null : ex.suggestionAt(i),
+                 units: units,
++                stepKg: stepKg,
+                 onToggle: () => onToggle(set),
+                 onCycleType: () => onCycleType(set),
+                 onChanged: onChanged,
+@@ -464,7 +476,10 @@ class ExerciseBlock extends ConsumerWidget {
+                 _ActiveSetAssist(
+                   key: ObjectKey((set, 'assist')),
+                   hint: _assistHint(ex, set, i, units),
+-                  showStepper: _weighted(ex.measure),
++                  previous: i < ex.lastSets.length
++                      ? prevLabel(ex.lastSets[i], ex.measure, units)
++                      : null,
++                  showStepper: _weighted(ex.measure) && k4Variant != 2,
+                   stepLabel: units.lift(stepKg),
+                   onMinus: () => onStep(set, -1),
+                   onPlus: () => onStep(set, 1),
+@@ -558,11 +573,13 @@ class _RestChip extends StatelessWidget {
+ /// kural artık ekranda yazıyor.
+ class _ActiveSetAssist extends StatelessWidget {
+   final String? hint;
++  final String? previous;
+   final bool showStepper;
+   final String stepLabel;
+   final VoidCallback onMinus, onPlus, onPickStep;
+   const _ActiveSetAssist(
+       {super.key,
++      this.previous,
+       required this.hint,
+       required this.showStepper,
+       required this.stepLabel,
+@@ -576,7 +593,9 @@ class _ActiveSetAssist extends StatelessWidget {
+     if (h == null && !showStepper) return const SizedBox.shrink();
+     final c = context.colors;
+     final l = AppL10n.of(context);
++    if (k4Variant == 1 || k4Variant == 3) return _k4AssistV1(context, h, c, l);
+     return Padding(
++      key: const ValueKey('k4.assist'),
+       padding: const EdgeInsets.fromLTRB(32, 0, 0, AppSpacing.sm),
+       child: Row(
+         children: [
+@@ -601,12 +620,14 @@ class _ActiveSetAssist extends StatelessWidget {
+           if (showStepper) ...[
+             AppSpacing.hGapXs,
+             _StepButton(
++                key: const ValueKey('k4.minus'),
+                 icon: Icons.remove_rounded,
+                 tooltip: l.asStepDecrease(stepLabel),
+                 onTap: onMinus),
+             Tooltip(
+               message: l.asStepChange,
+               child: InkWell(
++                key: const ValueKey('k4.step'),
+                 onTap: onPickStep,
+                 borderRadius: AppRadius.brSm,
+                 child: Padding(
+@@ -623,6 +644,7 @@ class _ActiveSetAssist extends StatelessWidget {
+               ),
+             ),
+             _StepButton(
++                key: const ValueKey('k4.plus'),
+                 icon: Icons.add_rounded,
+                 tooltip: l.asStepIncrease(stepLabel),
+                 onTap: onPlus),
+@@ -631,6 +653,94 @@ class _ActiveSetAssist extends StatelessWidget {
+       ),
+     );
+   }
++
++  /// Seçenek 1: ± ve adım 48×48; yer yetmezse ipucu üstte, ± altta.
++  Widget _k4AssistV1(BuildContext context, String? h, ColorScheme c, AppL10n l) {
++    Widget hintW = h == null
++        ? const SizedBox.shrink()
++        : Row(
++            children: [
++              FitPackIcon.material(Icons.subdirectory_arrow_right_rounded,
++                  size: 14, color: c.primary),
++              const SizedBox(width: 3),
++              Flexible(
++                child: Text(
++                    _k4NoPrev(context) && previous != null
++                        ? '${l.hdrPrev} $previous · ${l.asSuggestHint(h)}'
++                        : l.asSuggestHint(h),
++                    maxLines: 3,
++                    style: context.texts.labelMedium?.copyWith(
++                        color: c.primary, fontWeight: FontWeight.w600)),
++              ),
++            ],
++          );
++    final stepper = !showStepper
++        ? const SizedBox.shrink()
++        : Row(
++            mainAxisSize: MainAxisSize.min,
++            children: [
++              _StepButton(
++                  key: const ValueKey('k4.minus'),
++                  icon: Icons.remove_rounded,
++                  tooltip: l.asStepDecrease(stepLabel),
++                  onTap: onMinus),
++              Tooltip(
++                message: l.asStepChange,
++                child: InkWell(
++                  key: const ValueKey('k4.step'),
++                  onTap: onPickStep,
++                  borderRadius: AppRadius.brSm,
++                  child: ConstrainedBox(
++                    constraints:
++                        const BoxConstraints(minWidth: 48, minHeight: 48),
++                    child: Center(
++                      widthFactor: 1,
++                      child: Padding(
++                        padding: const EdgeInsets.symmetric(
++                            horizontal: AppSpacing.xs),
++                        child: Text(stepLabel,
++                            style: context.texts.labelMedium?.copyWith(
++                                color: c.onSurfaceVariant,
++                                fontWeight: FontWeight.w700,
++                                decoration: TextDecoration.underline,
++                                decorationStyle: TextDecorationStyle.dotted,
++                                fontFeatures: const [
++                                  FontFeature.tabularFigures()
++                                ])),
++                      ),
++                    ),
++                  ),
++                ),
++              ),
++              _StepButton(
++                  key: const ValueKey('k4.plus'),
++                  icon: Icons.add_rounded,
++                  tooltip: l.asStepIncrease(stepLabel),
++                  onTap: onPlus),
++            ],
++          );
++    return Padding(
++      key: const ValueKey('k4.assist'),
++      padding: const EdgeInsets.fromLTRB(32, 0, 0, AppSpacing.sm),
++      child: LayoutBuilder(builder: (context, cons) {
++        // ± grubunun doğal genişliği + ipucuna en az 140 pt.
++        final scale = MediaQuery.textScalerOf(context).scale(1);
++        final stepperW = 48 + 48 + 8 + 40 * scale;
++        final stacked = h != null && cons.maxWidth - stepperW < 140 * scale;
++        if (stacked) {
++          return Column(
++            crossAxisAlignment: CrossAxisAlignment.stretch,
++            children: [
++              hintW,
++              const SizedBox(height: 4),
++              Align(alignment: Alignment.centerRight, child: stepper),
++            ],
++          );
++        }
++        return Row(children: [Expanded(child: hintW), stepper]);
++      }),
++    );
++  }
+ }
+ 
+ class _StepButton extends StatelessWidget {
+@@ -638,7 +748,8 @@ class _StepButton extends StatelessWidget {
+   final String tooltip;
+   final VoidCallback onTap;
+   const _StepButton(
+-      {required this.icon, required this.tooltip, required this.onTap});
++      {super.key,
++      required this.icon, required this.tooltip, required this.onTap});
+ 
+   @override
+   Widget build(BuildContext context) {
+@@ -652,8 +763,8 @@ class _StepButton extends StatelessWidget {
+           onTap: onTap,
+           borderRadius: AppRadius.brSm,
+           child: SizedBox(
+-            width: 36,
+-            height: 30,
++            width: k4Variant == 1 || k4Variant == 3 ? 48 : 36,
++            height: k4Variant == 1 || k4Variant == 3 ? 48 : 30,
+             child: FitPackIcon.material(icon, size: AppIconSize.sm, color: c.primary),
+           ),
+         ),
+@@ -1008,9 +1119,11 @@ class _SetRow extends StatelessWidget {
+   // ✓'e basılınca boş alanlara yazılacak değerler — alanlarda soluk ipucu.
+   final SetValues? suggestion;
+   final Units units;
++  final double stepKg;
+   final VoidCallback onToggle, onCycleType, onChanged;
+   const _SetRow(
+       {super.key,
++      this.stepKg = 2.5,
+       required this.index,
+       required this.set,
+       required this.measure,
+@@ -1035,7 +1148,7 @@ class _SetRow extends StatelessWidget {
+   List<Widget> _inputCols(BuildContext context) {
+     final sug = suggestion;
+     // Koddan doldurulunca alan yeni değerle yeniden kurulsun (fillGen).
+-    Key k(String field) => ValueKey('$field-${set.fillGen}');
++    Key k(String field) => ValueKey('k4.$field.$index.g${set.fillGen}');
+     final repsHint = sug?.reps?.toString();
+     final timeHint =
+         sug?.durationSec == null ? null : fmtDuration(sug!.durationSec!);
+@@ -1127,6 +1240,40 @@ class _SetRow extends StatelessWidget {
+           timerCell(),
+         ];
+       default:
++        if (k4Variant == 2) {
++          String fmtKg(double v) => units.liftValue(v);
++          return [
++            Expanded(
++                child: _K4TapCell(
++                    key: k('kg'),
++                    text: set.weight == null ? null : fmtKg(set.weight!),
++                    hint: sug?.weightKg == null ? null : fmtKg(sug!.weightKg!),
++                    onTap: () => showK4StepperSheet(context,
++                        set: set,
++                        index: index,
++                        field: 0,
++                        suggestion: sug,
++                        previous: previous,
++                        stepKg: stepKg,
++                        units: units,
++                        onChanged: onChanged))),
++            Expanded(
++                child: _K4TapCell(
++                    key: k('reps'),
++                    text: set.reps?.toString(),
++                    hint: repsHint,
++                    onTap: () => showK4StepperSheet(context,
++                        set: set,
++                        index: index,
++                        field: 1,
++                        suggestion: sug,
++                        previous: previous,
++                        stepKg: stepKg,
++                        units: units,
++                        onChanged: onChanged))),
++            rpeCell(),
++          ];
++        }
+         return [
+           // Görüntü/giriş birim tercihinde; state ve DB kg (docs/16 §3).
+           Expanded(
+@@ -1173,6 +1320,7 @@ class _SetRow extends StatelessWidget {
+     // set tipinden öncelikli.
+     final showTrophy = set.done && set.isRecord;
+     return Container(
++      key: ValueKey('k4.row.$index'),
+       margin: const EdgeInsets.only(bottom: 6),
+       padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+       decoration: BoxDecoration(
+@@ -1186,6 +1334,7 @@ class _SetRow extends StatelessWidget {
+           SizedBox(
+             width: 30,
+             child: InkWell(
++              key: ValueKey('k4.badge.$index'),
+               onTap: onCycleType,
+               borderRadius: AppRadius.brSm,
+               child: Container(
+@@ -1211,6 +1360,7 @@ class _SetRow extends StatelessWidget {
+               ),
+             ),
+           ),
++          if (!_k4NoPrev(context))
+           SizedBox(
+             width: 56,
+             // C-15: referans bilgi — girilen değerden (tam koyu) ve öneriden
+@@ -1224,7 +1374,7 @@ class _SetRow extends StatelessWidget {
+           ),
+           ..._inputCols(context),
+           SizedBox(
+-            width: 42,
++            width: _k4CheckCol,
+             child: Center(
+               child: Material(
+                 color: set.done
+@@ -1236,8 +1386,8 @@ class _SetRow extends StatelessWidget {
+                   onTap: onToggle,
+                   borderRadius: AppRadius.brSm,
+                   child: SizedBox(
+-                    width: 38,
+-                    height: 34,
++                    width: _k4Check,
++                    height: _k4CheckH,
+                     child: FitPackIcon.material(Icons.check_rounded,
+                         size: 18,
+                         color: set.done
+@@ -1369,3 +1519,235 @@ class _TimeCell extends StatelessWidget {
+     );
+   }
+ }
++
++
++/// Seçenek 2: klavyesiz sayı hücresi — dokununca adım paneli.
++class _K4TapCell extends StatelessWidget {
++  final String? text;
++  final String? hint;
++  final VoidCallback onTap;
++  const _K4TapCell(
++      {super.key, required this.text, required this.hint, required this.onTap});
++
++  @override
++  Widget build(BuildContext context) {
++    return Padding(
++      padding: const EdgeInsets.symmetric(horizontal: 3),
++      child: InkWell(
++        onTap: onTap,
++        borderRadius: AppRadius.brMd,
++        child: ConstrainedBox(
++          constraints: const BoxConstraints(minHeight: 48),
++          child: InputDecorator(
++            decoration: const InputDecoration(
++              isDense: true,
++              contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
++            ),
++            textAlign: TextAlign.center,
++            child: Text(text ?? hint ?? '0',
++                textAlign: TextAlign.center,
++                style: text == null
++                    ? _hintStyle(context).copyWith(fontSize: 16)
++                    : context.texts.bodyLarge),
++          ),
++        ),
++      ),
++    );
++  }
++}
++
++/// Seçenek 2: adım paneli (kilo / tekrar). Panel set nesnesini doğrudan
++/// günceller ve [onChanged] çağırır (deney — kalıcılık yok).
++Future<void> showK4StepperSheet(BuildContext context,
++    {required SessionSetEntry set,
++    required int index,
++    required int field,
++    required SetValues? suggestion,
++    required String? previous,
++    required double stepKg,
++    required Units units,
++    required VoidCallback onChanged}) {
++  return showModalBottomSheet(
++    context: context,
++    showDragHandle: true,
++    isScrollControlled: true,
++    builder: (ctx) => K4StepperPanel(
++        set: set,
++        index: index,
++        initialField: field,
++        suggestion: suggestion,
++        previous: previous,
++        stepKg: stepKg,
++        units: units,
++        onChanged: onChanged),
++  );
++}
++
++class K4StepperPanel extends StatefulWidget {
++  final SessionSetEntry set;
++  final int index, initialField;
++  final SetValues? suggestion;
++  final String? previous;
++  final double stepKg;
++  final Units units;
++  final VoidCallback onChanged;
++  const K4StepperPanel(
++      {super.key,
++      required this.set,
++      required this.index,
++      required this.initialField,
++      required this.suggestion,
++      required this.previous,
++      required this.stepKg,
++      required this.units,
++      required this.onChanged});
++  @override
++  State<K4StepperPanel> createState() => _K4StepperPanelState();
++}
++
++class _K4StepperPanelState extends State<K4StepperPanel> {
++  late int field = widget.initialField;
++  late double step = widget.stepKg;
++
++  bool get _tr => Localizations.localeOf(context).languageCode == 'tr';
++
++  double get _kg => widget.set.weight ?? widget.suggestion?.weightKg ?? 0;
++  int get _reps => widget.set.reps ?? widget.suggestion?.reps ?? 0;
++
++  void _bump(int dir) {
++    setState(() {
++      if (field == 0) {
++        widget.set.weight = applyStepKg(
++            current: widget.set.weight,
++            base: widget.suggestion?.weightKg,
++            stepKg: step,
++            direction: dir);
++      } else {
++        final n = _reps + dir;
++        widget.set.reps = n < 0 ? 0 : n;
++      }
++      widget.set.fillGen++;
++    });
++    widget.onChanged();
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final c = context.colors;
++    final value = field == 0 ? widget.units.liftValue(_kg) : '$_reps';
++    final unit = field == 0 ? widget.units.weightUnit : (_tr ? 'tekrar' : 'reps');
++    Widget big(IconData icon, int dir, String key) => Material(
++          color: c.primary.withValues(alpha: 0.14),
++          borderRadius: AppRadius.brLg,
++          child: InkWell(
++            key: ValueKey(key),
++            onTap: () => _bump(dir),
++            borderRadius: AppRadius.brLg,
++            child: SizedBox(
++                width: 72,
++                height: 64,
++                child: FitPackIcon.material(icon, size: 28, color: c.primary)),
++          ),
++        );
++    return SafeArea(
++      child: Padding(
++        padding: const EdgeInsets.fromLTRB(
++            AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
++        child: Column(
++          mainAxisSize: MainAxisSize.min,
++          crossAxisAlignment: CrossAxisAlignment.stretch,
++          children: [
++            Row(
++              children: [
++                Expanded(
++                  child: Text(
++                      '${_tr ? 'Set' : 'Set'} ${widget.index + 1}'
++                      '${widget.previous == null ? '' : _tr ? '  ·  önceki ${widget.previous}' : '  ·  last ${widget.previous}'}',
++                      style: context.texts.titleSmall),
++                ),
++              ],
++            ),
++            AppSpacing.vGapSm,
++            SegmentedButton<int>(
++              key: const ValueKey('k4.panel.field'),
++              segments: [
++                ButtonSegment(
++                    value: 0, label: Text(widget.units.weightUnit.toUpperCase())),
++                ButtonSegment(value: 1, label: Text(_tr ? 'TEKRAR' : 'REPS')),
++              ],
++              selected: {field},
++              showSelectedIcon: false,
++              onSelectionChanged: (v) => setState(() => field = v.first),
++            ),
++            AppSpacing.vGapLg,
++            Row(
++              children: [
++                big(Icons.remove_rounded, -1, 'k4.panel.minus'),
++                Expanded(
++                  child: InkWell(
++                    key: const ValueKey('k4.panel.value'),
++                    onTap: () {},
++                    borderRadius: AppRadius.brMd,
++                    child: Padding(
++                      padding: const EdgeInsets.symmetric(vertical: 4),
++                      child: Column(
++                        children: [
++                          FittedBox(
++                            fit: BoxFit.scaleDown,
++                            child: Text(value,
++                                style: context.texts.displaySmall?.copyWith(
++                                    fontWeight: FontWeight.w800,
++                                    fontFeatures: const [
++                                      FontFeature.tabularFigures()
++                                    ])),
++                          ),
++                          Text(
++                              _tr
++                                  ? '$unit · yazmak için dokun'
++                                  : '$unit · tap to type',
++                              textAlign: TextAlign.center,
++                              style: context.texts.labelSmall
++                                  ?.copyWith(color: c.onSurfaceVariant)),
++                        ],
++                      ),
++                    ),
++                  ),
++                ),
++                big(Icons.add_rounded, 1, 'k4.panel.plus'),
++              ],
++            ),
++            AppSpacing.vGapLg,
++            if (field == 0)
++              Wrap(
++                alignment: WrapAlignment.center,
++                spacing: AppSpacing.sm,
++                runSpacing: AppSpacing.sm,
++                children: [
++                  for (final st in const [1.25, 2.5, 5.0])
++                    ChoiceChip(
++                      key: ValueKey('k4.panel.chip.$st'),
++                      label: Text(widget.units.lift(st)),
++                      selected: step == st,
++                      materialTapTargetSize: MaterialTapTargetSize.padded,
++                      onSelected: (_) => setState(() => step = st),
++                    ),
++                ],
++              )
++            else
++              Text(_tr ? 'Adım: 1 tekrar' : 'Step: 1 rep',
++                  textAlign: TextAlign.center,
++                  style: context.texts.labelMedium
++                      ?.copyWith(color: c.onSurfaceVariant)),
++            AppSpacing.vGapLg,
++            FilledButton(
++              key: const ValueKey('k4.panel.done'),
++              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
++              onPressed: () => Navigator.of(context).pop(),
++              child: Text(_tr ? 'Tamam' : 'Done'),
++            ),
++          ],
++        ),
++      ),
++    );
++  }
++}
+diff --git a/test/k4_render_test.dart b/test/k4_render_test.dart
+new file mode 100644
+index 0000000..4d3abc8
+--- /dev/null
++++ b/test/k4_render_test.dart
+@@ -0,0 +1,385 @@
++// K4 scratch render — commit edilmez, worktree silinir.
++import 'dart:convert';
++import 'dart:io';
++import 'dart:ui' as ui;
++
++import 'package:fit_pack/core/theme/app_theme.dart';
++import 'package:fit_pack/core/units/units.dart';
++import 'package:fit_pack/core/theme/app_colors.dart';
++import 'package:fit_pack/data/database/app_database.dart';
++import 'package:fit_pack/features/workout/active_session_model.dart';
++import 'package:fit_pack/features/workout/active_session_widgets.dart';
++import 'package:fit_pack/features/workout/weight_step.dart';
++import 'package:fit_pack/l10n/app_l10n.dart';
++import 'package:fit_pack/shared/widgets/glass.dart';
++import 'package:flutter/material.dart';
++import 'package:flutter/rendering.dart';
++import 'package:flutter/services.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:google_fonts/google_fonts.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++
++Exercise _ex(int id, String name, String equipment) => Exercise(
++      id: id,
++      name: name,
++      category: 'chest',
++      muscleGroups: 'chest',
++      isPosture: false,
++      isArm: false,
++      equipment: equipment,
++      measurementType: 'weight_reps',
++      isCustom: false,
++      isArchived: false,
++    );
++
++WorkoutSet _ws(int n, double kg, int reps) => WorkoutSet(
++      id: n,
++      sessionId: 1,
++      exerciseId: 1,
++      setNumber: n,
++      weightKg: kg,
++      reps: reps,
++      isWarmup: false,
++      setType: 'normal',
++      isComplete: true,
++    );
++
++SessionSetEntry _done(double kg, int reps) => SessionSetEntry()
++  ..weight = kg
++  ..reps = reps
++  ..rpe = 8
++  ..done = true;
++
++List<SessionExerciseEntry> _fixture() {
++  const units = Units(UnitSystem.metric);
++  return [
++    SessionExerciseEntry(
++      _ex(1, 'Barbell Bench Press', 'barbell'),
++      [_done(60, 8), _done(60, 8), SessionSetEntry(), SessionSetEntry()],
++      lastSets: [_ws(1, 60, 8), _ws(2, 60, 8), _ws(3, 60, 8), _ws(4, 57.5, 8)],
++      restSec: 120,
++      units: units,
++    ),
++    SessionExerciseEntry(
++      _ex(2, 'Incline Dumbbell Press', 'dumbbell'),
++      [SessionSetEntry(), SessionSetEntry(), SessionSetEntry()],
++      lastSets: [_ws(1, 22, 10), _ws(2, 22, 10), _ws(3, 22, 9)],
++      restSec: 90,
++      units: units,
++    ),
++  ];
++}
++
++class _Harness extends StatefulWidget {
++  final List<SessionExerciseEntry> exercises;
++  const _Harness(this.exercises);
++  @override
++  State<_Harness> createState() => _HarnessState();
++}
++
++class _HarnessState extends State<_Harness> {
++  @override
++  Widget build(BuildContext context) {
++    final l = AppL10n.of(context);
++    final exs = widget.exercises;
++    return Scaffold(
++      appBar: AppBar(
++        titleSpacing: 0,
++        title: Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          children: [
++            Text(Localizations.localeOf(context).languageCode == 'tr'
++                    ? 'İtme Günü A'
++                    : 'Push Day A',
++                style: context.texts.titleMedium
++                    ?.copyWith(fontWeight: FontWeight.w800)),
++            Text('32:15  ·  ${l.asSetProgress(2, 7)}',
++                style: context.texts.labelMedium?.copyWith(
++                    color: context.colors.primary,
++                    fontWeight: FontWeight.w700)),
++          ],
++        ),
++        bottom: const PreferredSize(
++          preferredSize: Size.fromHeight(sessionProgressBarHeight),
++          child: SizedBox(height: sessionProgressBarHeight),
++        ),
++        actions: [
++          Padding(
++            padding: const EdgeInsets.only(right: 12),
++            child: FilledButton(
++              onPressed: () {},
++              style: FilledButton.styleFrom(
++                backgroundColor: context.colors.secondary,
++                foregroundColor: context.colors.onSecondary,
++                padding: const EdgeInsets.symmetric(horizontal: 16),
++                visualDensity: VisualDensity.compact,
++              ),
++              child: Text(l.asFinish),
++            ),
++          ),
++        ],
++      ),
++      body: Column(
++        children: [
++          RestBanner(
++              remaining: 75,
++              clock: '1:15',
++              onMinus: () {},
++              onPlus: () {},
++              onSkip: () {}),
++          SessionDateBar(date: DateTime.now(), highlight: false, onTap: () {}),
++          Expanded(
++            child: ListView(
++              key: const ValueKey('k4.list'),
++              padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
++              children: [
++                for (final e in exs)
++                  ExerciseBlock(
++                    key: ObjectKey(e),
++                    ex: e,
++                    onMoveUp: null,
++                    onMoveDown: null,
++                    onPickRest: () {},
++                    stepKg: 2.5,
++                    onStep: (s, d) => setState(() {
++                      s.weight = applyStepKg(
++                          current: s.weight,
++                          base: e.suggestionAt(e.sets.indexOf(s))?.weightKg,
++                          stepKg: 2.5,
++                          direction: d);
++                      s.fillGen++;
++                    }),
++                    onPickStep: () {},
++                    onToggle: (s) => setState(() => s.done = !s.done),
++                    onCycleType: (_) {},
++                    onAddSet: () {},
++                    onRemoveSet: () {},
++                    onRemoveExercise: () {},
++                    onToggleAdvance: () {},
++                    onChanged: () => setState(() {}),
++                  ),
++              ],
++            ),
++          ),
++        ],
++      ),
++    );
++  }
++}
++
++void main() {
++  final outDir = Platform.environment['K4_OUT'] ?? '/tmp/k4';
++  final results = <Map<String, Object?>>[];
++
++  tearDownAll(() async {
++    await File('$outDir/measurements.json')
++        .writeAsString(const JsonEncoder.withIndent(' ').convert(results));
++  });
++
++  for (final sc in [
++    (name: 'a-393-dark-tr', locale: 'tr', w: 393.0, h: 852.0, scale: 1.0, top: 59.0, bottom: 34.0),
++    (name: 'b-320-tr-x1.3', locale: 'tr', w: 320.0, h: 568.0, scale: 1.3, top: 20.0, bottom: 0.0),
++    (name: 'c-393-en-x1.6', locale: 'en', w: 393.0, h: 852.0, scale: 1.6, top: 59.0, bottom: 34.0),
++  ]) {
++    for (final variant in [0, 1, 2, if (sc.w < 360) 3]) {
++      testWidgets('k4 ${sc.name} v$variant', timeout: const Timeout(Duration(minutes: 2)), (tester) async {
++        k4Variant = variant;
++        SharedPreferences.setMockInitialValues({});
++        GoogleFonts.config.allowRuntimeFetching = false;
++        const dpr = 3.0;
++        tester.view.physicalSize = Size(sc.w * dpr, sc.h * dpr);
++        tester.view.devicePixelRatio = dpr;
++        tester.view.padding =
++            FakeViewPadding(top: sc.top * dpr, bottom: sc.bottom * dpr);
++        addTearDown(tester.view.reset);
++        final boundary = GlobalKey();
++        final exs = _fixture();
++        final tag = '${sc.name}-v$variant';
++        final errors = <String>[];
++        void drain() {
++          Object? e;
++          while ((e = tester.takeException()) != null) {
++            final t = e.toString().replaceAll('\n', ' ');
++            errors.add(t.length > 300 ? t.substring(0, 300) : t);
++          }
++        }
++
++        await tester.pumpWidget(ProviderScope(
++          child: RepaintBoundary(
++            key: boundary,
++            child: MaterialApp(
++              debugShowCheckedModeBanner: false,
++              theme: AppTheme.dark,
++              locale: Locale(sc.locale),
++              localizationsDelegates: AppL10n.localizationsDelegates,
++              supportedLocales: AppL10n.supportedLocales,
++              builder: (context, child) => MediaQuery(
++                data: MediaQuery.of(context)
++                    .copyWith(textScaler: TextScaler.linear(sc.scale)),
++                child: GlassBackground(child: child!),
++              ),
++              home: _Harness(exs),
++            ),
++          ),
++        ));
++        await tester.runAsync(() async {
++          await GoogleFonts.pendingFonts();
++          for (final font in [
++            ('MaterialIcons', 'fonts/MaterialIcons-Regular.otf'),
++            ('packages/phosphor_flutter/PhosphorRegular',
++                'packages/phosphor_flutter/lib/fonts/Phosphor.ttf'),
++            ('packages/phosphor_flutter/PhosphorFill',
++                'packages/phosphor_flutter/lib/fonts/Phosphor-Fill.ttf'),
++          ]) {
++            await (FontLoader(font.$1)..addFont(rootBundle.load(font.$2)))
++                .load();
++          }
++        });
++        Future<void> settle() async {
++          for (var i = 0; i < 6; i++) {
++            await tester.runAsync(() => Future<void>.delayed(Duration.zero));
++            await tester.pump(const Duration(milliseconds: 100));
++            drain();
++          }
++        }
++        Future<void> tapV(Finder f) async {
++          await tester.runAsync(() async {});
++          Scrollable.ensureVisible(tester.element(f.first), alignment: 0.6);
++          await settle();
++          await tester.tap(f.first, warnIfMissed: true);
++        }
++
++        Future<void> capture(String suffix) async {
++          await tester.runAsync(() async {
++            final r = boundary.currentContext!.findRenderObject()!
++                as RenderRepaintBoundary;
++            final img = await r.toImage(pixelRatio: dpr);
++            final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
++            await Directory(outDir).create(recursive: true);
++            await File('$outDir/$tag$suffix.png')
++                .writeAsBytes(bytes!.buffer.asUint8List());
++            img.dispose();
++          });
++        }
++
++        await settle();
++        await capture('');
++
++        // ---- ölçümler (yalnız ilk kart) ----
++        final card1 = find.byKey(ObjectKey(exs[0]));
++        Finder inCard(Finder f) => find.descendant(of: card1, matching: f);
++        Finder keyStarts(String p) => find.byWidgetPredicate((w) =>
++            w.key is ValueKey<String> &&
++            (w.key as ValueKey<String>).value.startsWith(p));
++        Map<String, Object?> sz(Finder f) {
++          final s = tester.getSize(f.first);
++          return {'w': s.width, 'h': s.height};
++        }
++
++        final m = <String, Object?>{'tag': tag, 'errors': errors};
++        final rows = <Map<String, Object?>>[];
++        for (var i = 0; i < 4; i++) {
++          final row = inCard(find.byKey(ValueKey('k4.row.$i')));
++          rows.add({'i': i, ...sz(row)});
++        }
++        m['rows'] = rows;
++        final assist = inCard(find.byKey(const ValueKey('k4.assist')));
++        m['assist'] = assist.evaluate().isEmpty ? null : sz(assist);
++        final controls = <String, Object?>{};
++        // aktif set = 2
++        controls['check (✓)'] = sz(inCard(find.byKey(const ValueKey('set.complete.2'))));
++        controls['set no/tip rozeti'] = sz(inCard(find.byKey(const ValueKey('k4.badge.2'))));
++        final kg = inCard(keyStarts('k4.kg.2.'));
++        final kgHit = variant == 2
++            ? find.descendant(of: kg, matching: find.byType(InkWell))
++            : find.descendant(of: kg, matching: find.byType(TextField));
++        controls['kg alanı'] = sz(kgHit);
++        final reps = inCard(keyStarts('k4.reps.2.'));
++        controls['tekrar alanı'] = sz(variant == 2
++            ? find.descendant(of: reps, matching: find.byType(InkWell))
++            : find.descendant(of: reps, matching: find.byType(TextField)));
++        controls['RPE alanı'] = sz(find.descendant(
++            of: inCard(keyStarts('k4.rpe.2.')), matching: find.byType(InkWell)));
++        for (final k in ['k4.minus', 'k4.step', 'k4.plus']) {
++          final f = inCard(find.byKey(ValueKey(k)));
++          if (f.evaluate().isNotEmpty) {
++            controls[k] = sz(k == 'k4.step'
++                ? f
++                : find.descendant(of: f, matching: find.byType(InkWell)));
++          }
++        }
++        controls['nasıl yapılır (?)'] = sz(inCard(find.byType(IconButton)));
++        controls['dinlenme çipi'] = sz(find.descendant(
++            of: inCard(find.byType(Tooltip)), matching: find.byType(InkWell)));
++        controls['set ekle'] = sz(inCard(find.byType(TextButton)));
++        for (final k in ['−15s', '+15s']) {
++          controls['mola $k'] = sz(find.byKey(ValueKey('k4.rest.$k')));
++        }
++        m['controls'] = controls;
++
++        // ekranda (kıvrım üstü) tamamen görünen set satırı sayısı
++        final foldY = sc.h - sc.bottom;
++        final listRect = tester.getRect(find.byKey(const ValueKey('k4.list')));
++        var visible = 0;
++        var total = 0;
++        for (final el in keyStarts('k4.row.').evaluate()) {
++          total++;
++          final r = tester.getRect(find.byWidget(el.widget));
++          if (r.top >= listRect.top && r.bottom <= foldY) visible++;
++        }
++        m['setsVisible'] = visible;
++        m['setsTotal'] = total;
++        m['listTop'] = listRect.top;
++        final card1Rect = tester.getRect(card1);
++        m['card1Height'] = card1Rect.height;
++
++        // ---- sık düzenleme: +2,5 kg aktif sette ----
++        var taps = 0;
++        if (variant == 2) {
++          await tapV(kgHit);
++          taps++;
++          await settle();
++          await capture('-panel');
++          final panel = <String, Object?>{};
++          for (final k in ['k4.panel.minus', 'k4.panel.plus', 'k4.panel.value', 'k4.panel.done']) {
++            panel[k] = sz(find.byKey(ValueKey(k)));
++          }
++          for (final st in [1.25, 2.5, 5.0]) {
++            panel['chip $st'] = sz(find.byKey(ValueKey('k4.panel.chip.$st')));
++          }
++          panel['segment'] = sz(find.byKey(const ValueKey('k4.panel.field')));
++          panel['sheetHeight'] =
++              tester.getSize(find.byType(K4StepperPanel)).height;
++          m['panel'] = panel;
++          await tapV(find.byKey(const ValueKey('k4.panel.plus')));
++          taps++;
++          await settle();
++          await tapV(find.byKey(const ValueKey('k4.panel.done')));
++          taps++;
++          await settle();
++        } else {
++          await tapV(inCard(find.byKey(const ValueKey('k4.plus'))));
++          taps++;
++          await settle();
++          await capture('-aktif-set');
++        }
++        m['plus2.5'] = {'taps': taps, 'weightAfter': exs[0].sets[2].weight};
++        if (variant == 2) {
++          // −1 tekrar: hücre → − → Tamam
++          await tapV(find.descendant(
++              of: inCard(keyStarts('k4.reps.2.')), matching: find.byType(InkWell)));
++          await settle();
++          await tapV(find.byKey(const ValueKey('k4.panel.minus')));
++          await settle();
++          await tapV(find.byKey(const ValueKey('k4.panel.done')));
++          await settle();
++          m['minus1rep'] = {'taps': 3, 'repsAfter': exs[0].sets[2].reps};
++        }
++        drain();
++        m['errorsAfter'] = errors.length;
++        results.add(m);
++      });
++    }
++  }
++}

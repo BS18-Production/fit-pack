@@ -1,0 +1,17 @@
+[w393]
+check0 38.0x34.0 @(323,281)
+kgField0 74.5x40.0 @(119,278)
+repsField0 74.5x40.0 @(200,278)
+stepMinus 36.0x30.0 @(245,326) count=4
+plusIcons count=0
+finishBtn 59.1x46.0 @(322,5)
+focusBeforeCheck=Focus
+focusAfterCheck=_FocusScopeWithExternalFocusNode hasTextFocus=false
+testTextInput.isVisible after ✓ = false
+after tap outside isVisible=false
+restBanner Atla inkwell 45.6x31.0 @(317,82)
+rest +15 inkwell 49.0x31.0 @(264,82)
+B before ✓ visible=true focus=FocusNode#391d1([PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)
+B after ✓ visible=true focus=FocusNode#391d1([PRIMARY FOCUS])(context: Focus, PRIMARY FOCUS)
+B after tap outside visible=false
+B after drag visible=false

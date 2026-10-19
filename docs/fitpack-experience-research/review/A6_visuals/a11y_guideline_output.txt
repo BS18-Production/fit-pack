@@ -1,0 +1,1197 @@
+=== dark-tr (393 genişlik, yazı x1.0) ===
+  [/home] ekrandaki etkileşimli düğüm=10, adsız=0, <48 hedef=1, metin alanı=0 (label boş=0)
+    TAP   321x23 @(36,829) "Antrenmanı başlat"
+  [/home] androidTapTarget(48): GEÇTİ
+  [/home] iOSTapTarget(44): GEÇTİ
+  [/home] labeledTapTarget: GEÇTİ
+  [/home] textContrast: GEÇTİ
+  [/nutrition] ekrandaki etkileşimli düğüm=17, adsız=0, <48 hedef=1, metin alanı=0 (label boş=0)
+    TAP   40x35 @(337,652) "Sil" (label boş; yalnız tooltip)
+  [/nutrition] androidTapTarget(48): GEÇTİ
+  [/nutrition] iOSTapTarget(44): GEÇTİ
+  [/nutrition] labeledTapTarget: GEÇTİ
+  [/nutrition] textContrast: GEÇTİ
+  [/progress] ekrandaki etkileşimli düğüm=25, adsız=1, <48 hedef=19, metin alanı=0 (label boş=0)
+    TAP   40x40 @(210,88) <<ADSIZ>>
+    TAP   45x45 @(174,157) "1"
+    TAP   45x45 @(221,157) "2"
+    TAP   45x45 @(268,157) "3"
+    TAP   45x45 @(316,157) "4"
+    TAP   45x45 @(32,206) "5"
+    TAP   45x45 @(79,206) "6"
+    TAP   45x45 @(127,206) "7"
+    TAP   45x45 @(174,206) "8"
+    TAP   45x45 @(221,206) "9"
+    TAP   45x45 @(268,206) "10"
+    TAP   45x45 @(316,206) "11"
+    TAP   45x45 @(32,256) "12"
+    TAP   45x45 @(79,256) "13"
+    TAP   45x45 @(127,256) "14"
+    TAP   45x45 @(174,256) "15"
+    TAP   45x45 @(221,256) "16"
+    TAP   45x45 @(268,256) "17"
+    TAP   45x45 @(316,256) "18"
+  [/progress] androidTapTarget(48): KALDI (38 satır)
+      SemanticsNode#89(Rect.fromLTRB(194.0, 16.0, 234.0, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(40.0, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#95(Rect.fromLTRB(141.9, 0.0, 187.1, 45.3), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr, indexInParent: 3): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#96(Rect.fromLTRB(189.1, 0.0, 234.4, 45.3), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr, indexInParent: 4): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#97(Rect.fromLTRB(236.4, 0.0, 281.7, 45.3), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "3", textDirection: ltr, indexInParent: 5): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#98(Rect.fromLTRB(283.7, 0.0, 329.0, 45.3), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "4", textDirection: ltr, indexInParent: 6): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#99(Rect.fromLTRB(0.0, 49.3, 45.3, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "5", textDirection: ltr, indexInParent: 7): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#100(Rect.fromLTRB(47.3, 49.3, 92.6, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "6", textDirection: ltr, indexInParent: 8): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#101(Rect.fromLTRB(94.6, 49.3, 139.9, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "7", textDirection: ltr, indexInParent: 9): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#102(Rect.fromLTRB(141.9, 49.3, 187.1, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "8", textDirection: ltr, indexInParent: 10): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#103(Rect.fromLTRB(189.1, 49.3, 234.4, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "9", textDirection: ltr, indexInParent: 11): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#104(Rect.fromLTRB(236.4, 49.3, 281.7, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "10", textDirection: ltr, indexInParent: 12): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#105(Rect.fromLTRB(283.7, 49.3, 329.0, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "11", textDirection: ltr, indexInParent: 13): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#106(Rect.fromLTRB(0.0, 98.6, 45.3, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "12", textDirection: ltr, indexInParent: 14): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#107(Rect.fromLTRB(47.3, 98.6, 92.6, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "13", textDirection: ltr, indexInParent: 15): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#108(Rect.fromLTRB(94.6, 98.6, 139.9, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "14", textDirection: ltr, indexInParent: 16): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#109(Rect.fromLTRB(141.9, 98.6, 187.1, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "15", textDirection: ltr, indexInParent: 17): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#110(Rect.fromLTRB(189.1, 98.6, 234.4, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "16", textDirection: ltr, indexInParent: 18): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#111(Rect.fromLTRB(236.4, 98.6, 281.7, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "17", textDirection: ltr, indexInParent: 19): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#112(Rect.fromLTRB(283.7, 98.6, 329.0, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "18", textDirection: ltr, indexInParent: 20): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+  [/progress] iOSTapTarget(44): KALDI (2 satır)
+      SemanticsNode#89(Rect.fromLTRB(194.0, 16.0, 234.0, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(40.0, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+  [/progress] labeledTapTarget: KALDI (1 satır)
+      SemanticsNode#89(Rect.fromLTRB(194.0, 16.0, 234.0, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable]): expected tappable node to have semantic label, but none was found.
+  [/progress] textContrast: KALDI (70 satır)
+      SemanticsNode#95(Rect.fromLTRB(141.9, 0.0, 187.1, 45.3), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr, indexInParent: 3):
+      Expected contrast ratio of at least 4.5 but found 1.26 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.1961, green: 0.1961, blue: 0.1961, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#113(Rect.fromLTRB(0.0, 147.9, 45.3, 193.1), tags: [RenderViewport.twoPane], label: "19", textDirection: ltr, indexInParent: 21):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#114(Rect.fromLTRB(47.3, 147.9, 92.6, 193.1), tags: [RenderViewport.twoPane], label: "20", textDirection: ltr, indexInParent: 22):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#115(Rect.fromLTRB(94.6, 147.9, 139.9, 193.1), tags: [RenderViewport.twoPane], label: "21", textDirection: ltr, indexInParent: 23):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#116(Rect.fromLTRB(141.9, 147.9, 187.1, 193.1), tags: [RenderViewport.twoPane], label: "22", textDirection: ltr, indexInParent: 24):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#117(Rect.fromLTRB(189.1, 147.9, 234.4, 193.1), tags: [RenderViewport.twoPane], label: "23", textDirection: ltr, indexInParent: 25):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#118(Rect.fromLTRB(236.4, 147.9, 281.7, 193.1), tags: [RenderViewport.twoPane], label: "24", textDirection: ltr, indexInParent: 26):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#119(Rect.fromLTRB(283.7, 147.9, 329.0, 193.1), tags: [RenderViewport.twoPane], label: "25", textDirection: ltr, indexInParent: 27):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+  [food-sheet] ekrandaki etkileşimli düğüm=12, adsız=0, <48 hedef=1, metin alanı=1 (label boş=0)
+    TAP   92x32 @(16,97) "Öğle | Öğünü değiştir"
+    FIELD 361x48 @(16,137) "Yemek ara…"
+  [food-sheet] androidTapTarget(48): KALDI (2 satır)
+      SemanticsNode#175(Rect.fromLTRB(16.0, 97.1, 107.9, 129.1), actions: [focus, tap], flags: [isFocusable, hasExpandedState], traversalParentIdentifier: _OverlayPortalState#16fbb, label: "Öğle", tooltip: "Öğünü değiştir", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(91.9, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+  [food-sheet] iOSTapTarget(44): KALDI (2 satır)
+      SemanticsNode#175(Rect.fromLTRB(16.0, 97.1, 107.9, 129.1), actions: [focus, tap], flags: [isFocusable, hasExpandedState], traversalParentIdentifier: _OverlayPortalState#16fbb, label: "Öğle", tooltip: "Öğünü değiştir", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(91.9, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+  [food-sheet] labeledTapTarget: GEÇTİ
+  [food-sheet] textContrast: GEÇTİ
+  [session] ekrandaki etkileşimli düğüm=30, adsız=3, <48 hedef=24, metin alanı=6 (label boş=0)
+    TAP   393x36 @(0,59) "Tarih Bugün"
+    TAP   59x21 @(129,143) "1:30 | Dinlenme süresini değiştir"
+    TAP   40x40 @(277,123) "Nasıl yapılır" (label boş; yalnız tooltip)
+    TAP   74x40 @(287,187) "+1 tekrar"
+    TAP   44x17 @(279,251) "RPE"
+    TAP   30x32 @(30,282) "1"
+    FIELD 75x40 @(119,278) "70"
+    FIELD 75x40 @(200,278) "10"
+    TAP   38x36 @(280,280) "–"
+    TAP   38x34 @(323,281) <<ADSIZ>>
+    TAP   36x30 @(245,326) "Kiloyu 2.5 kg azalt" (label boş; yalnız tooltip)
+    TAP   48x25 @(281,329) "2.5 kg | Kilo adımını değiştir"
+    TAP   36x30 @(329,326) "Kiloyu 2.5 kg artır" (label boş; yalnız tooltip)
+    TAP   30x32 @(30,370) "2"
+    FIELD 75x40 @(119,366) "0"
+    FIELD 75x40 @(200,366) "0"
+    TAP   38x36 @(280,368) "–"
+    TAP   38x34 @(323,369) <<ADSIZ>>
+    TAP   30x32 @(30,420) "3"
+    FIELD 75x40 @(119,416) "0"
+    FIELD 75x40 @(200,416) "0"
+    TAP   38x36 @(280,418) "–"
+    TAP   38x34 @(323,419) <<ADSIZ>>
+    TAP   59x46 @(322,5) "Bitir"
+  [session] androidTapTarget(48): KALDI (46 satır)
+      SemanticsNode#206(Rect.fromLTRB(112.6, 35.5, 171.3, 56.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#2bd4b, label: "1:30", tooltip: "Dinlenme süresini değiştir", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(58.7, 21.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#207(Rect.fromLTRB(261.0, 16.0, 301.0, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], traversalParentIdentifier: _OverlayPortalState#c1863, tooltip: "Nasıl yapılır", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(40.0, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#210(Rect.fromLTRB(270.7, 80.0, 345.0, 120.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], label: "+1 tekrar", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(74.3, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#211(Rect.fromLTRB(263.0, 144.0, 307.0, 161.0), actions: [focus, tap], flags: [isFocusable], label: "RPE", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(44.0, 17.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#212(Rect.fromLTRB(14.0, 175.0, 44.0, 207.0), actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#213(Rect.fromLTRB(103.0, 171.0, 177.5, 211.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "70", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#214(Rect.fromLTRB(183.5, 171.0, 258.0, 211.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "10", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#215(Rect.fromLTRB(264.0, 173.0, 302.0, 209.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 36.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#216(Rect.fromLTRB(307.0, 174.0, 345.0, 208.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 34.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#217(Rect.fromLTRB(229.3, 219.0, 265.3, 249.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#e7ac7, tooltip: "Kiloyu 2.5 kg azalt", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(36.0, 30.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#218(Rect.fromLTRB(265.3, 221.5, 313.0, 246.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#7bfa5, label: "2.5 kg", tooltip: "Kilo adımını değiştir", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(47.7, 25.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#219(Rect.fromLTRB(313.0, 219.0, 349.0, 249.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#b9099, tooltip: "Kiloyu 2.5 kg artır", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(36.0, 30.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#220(Rect.fromLTRB(14.0, 263.0, 44.0, 295.0), actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#221(Rect.fromLTRB(103.0, 259.0, 177.5, 299.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#222(Rect.fromLTRB(183.5, 259.0, 258.0, 299.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#223(Rect.fromLTRB(264.0, 261.0, 302.0, 297.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 36.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#224(Rect.fromLTRB(307.0, 262.0, 345.0, 296.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 34.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#225(Rect.fromLTRB(14.0, 313.0, 44.0, 345.0), actions: [focus, tap], flags: [isFocusable], label: "3", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#226(Rect.fromLTRB(103.0, 309.0, 177.5, 349.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#227(Rect.fromLTRB(183.5, 309.0, 258.0, 349.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+  [session] iOSTapTarget(44): KALDI (44 satır)
+      SemanticsNode#206(Rect.fromLTRB(112.6, 35.5, 171.3, 56.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#2bd4b, label: "1:30", tooltip: "Dinlenme süresini değiştir", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(58.7, 21.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#207(Rect.fromLTRB(261.0, 16.0, 301.0, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], traversalParentIdentifier: _OverlayPortalState#c1863, tooltip: "Nasıl yapılır", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(40.0, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#210(Rect.fromLTRB(270.7, 80.0, 345.0, 120.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], label: "+1 tekrar", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(74.3, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#211(Rect.fromLTRB(263.0, 144.0, 307.0, 161.0), actions: [focus, tap], flags: [isFocusable], label: "RPE", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(44.0, 17.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#212(Rect.fromLTRB(14.0, 175.0, 44.0, 207.0), actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#213(Rect.fromLTRB(103.0, 171.0, 177.5, 211.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "70", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#214(Rect.fromLTRB(183.5, 171.0, 258.0, 211.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "10", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#215(Rect.fromLTRB(264.0, 173.0, 302.0, 209.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 36.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#216(Rect.fromLTRB(307.0, 174.0, 345.0, 208.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 34.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#217(Rect.fromLTRB(229.3, 219.0, 265.3, 249.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#e7ac7, tooltip: "Kiloyu 2.5 kg azalt", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(36.0, 30.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#218(Rect.fromLTRB(265.3, 221.5, 313.0, 246.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#7bfa5, label: "2.5 kg", tooltip: "Kilo adımını değiştir", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(47.7, 25.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#219(Rect.fromLTRB(313.0, 219.0, 349.0, 249.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#b9099, tooltip: "Kiloyu 2.5 kg artır", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(36.0, 30.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#220(Rect.fromLTRB(14.0, 263.0, 44.0, 295.0), actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#221(Rect.fromLTRB(103.0, 259.0, 177.5, 299.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#222(Rect.fromLTRB(183.5, 259.0, 258.0, 299.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#223(Rect.fromLTRB(264.0, 261.0, 302.0, 297.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 36.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#224(Rect.fromLTRB(307.0, 262.0, 345.0, 296.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 34.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#225(Rect.fromLTRB(14.0, 313.0, 44.0, 345.0), actions: [focus, tap], flags: [isFocusable], label: "3", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#226(Rect.fromLTRB(103.0, 309.0, 177.5, 349.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#227(Rect.fromLTRB(183.5, 309.0, 258.0, 349.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+  [session] labeledTapTarget: KALDI (3 satır)
+      SemanticsNode#216(Rect.fromLTRB(307.0, 174.0, 345.0, 208.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+      SemanticsNode#224(Rect.fromLTRB(307.0, 262.0, 345.0, 296.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+      SemanticsNode#229(Rect.fromLTRB(307.0, 312.0, 345.0, 346.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+  [session] textContrast: KALDI (15 satır)
+      SemanticsNode#215(Rect.fromLTRB(264.0, 173.0, 302.0, 209.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.88 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.3216, green: 0.3216, blue: 0.3098, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1569, green: 0.1569, blue: 0.1529, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#223(Rect.fromLTRB(264.0, 261.0, 302.0, 297.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.88 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.3216, green: 0.3216, blue: 0.3098, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1569, green: 0.1569, blue: 0.1529, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#228(Rect.fromLTRB(264.0, 311.0, 302.0, 347.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.88 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.3216, green: 0.3216, blue: 0.3098, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1569, green: 0.1569, blue: 0.1529, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+  [session+rest] ekrandaki etkileşimli düğüm=33, adsız=3, <48 hedef=27, metin alanı=6 (label boş=2)
+    TAP   49x31 @(211,82) "−15s"
+    TAP   49x31 @(264,82) "+15s"
+    TAP   46x31 @(317,82) "Atla"
+    TAP   393x36 @(0,127) "Tarih Bugün"
+    TAP   59x21 @(129,211) "1:30 | Dinlenme süresini değiştir"
+    TAP   40x40 @(277,191) "Nasıl yapılır" (label boş; yalnız tooltip)
+    TAP   74x40 @(287,255) "+1 tekrar"
+    TAP   44x17 @(279,319) "RPE"
+    TAP   30x32 @(30,350) "1"
+    FIELD 75x40 @(119,346) "70" (label boş; yalnız value)
+    FIELD 75x40 @(200,346) "10" (label boş; yalnız value)
+    TAP   38x36 @(280,348) "–"
+    TAP   38x34 @(323,349) <<ADSIZ>>
+    TAP   30x32 @(30,400) "2"
+    FIELD 75x40 @(119,396) "70"
+    FIELD 75x40 @(200,396) "10"
+    TAP   38x36 @(280,398) "–"
+    TAP   38x34 @(323,399) <<ADSIZ>>
+    TAP   36x30 @(245,444) "Kiloyu 2.5 kg azalt" (label boş; yalnız tooltip)
+    TAP   48x25 @(281,447) "2.5 kg | Kilo adımını değiştir"
+    TAP   36x30 @(329,444) "Kiloyu 2.5 kg artır" (label boş; yalnız tooltip)
+    TAP   30x32 @(30,488) "3"
+    FIELD 75x40 @(119,484) "70"
+    FIELD 75x40 @(200,484) "10"
+    TAP   38x36 @(280,486) "–"
+    TAP   38x34 @(323,487) <<ADSIZ>>
+    TAP   59x46 @(322,5) "Bitir"
+  [session+rest] androidTapTarget(48): KALDI (52 satır)
+      SemanticsNode#249(Rect.fromLTRB(211.4, 81.5, 260.4, 112.5), actions: [focus, tap], flags: [isFocusable], label: "−15s", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(49.0, 31.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#250(Rect.fromLTRB(264.4, 81.5, 313.4, 112.5), actions: [focus, tap], flags: [isFocusable], label: "+15s", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(49.0, 31.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#251(Rect.fromLTRB(317.4, 81.5, 363.0, 112.5), actions: [focus, tap], flags: [isFocusable], label: "Atla", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(45.6, 31.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#206(Rect.fromLTRB(112.6, 35.5, 171.3, 56.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#2bd4b, label: "1:30", tooltip: "Dinlenme süresini değiştir", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(58.7, 21.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#207(Rect.fromLTRB(261.0, 16.0, 301.0, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], traversalParentIdentifier: _OverlayPortalState#c1863, tooltip: "Nasıl yapılır", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(40.0, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#210(Rect.fromLTRB(270.7, 80.0, 345.0, 120.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], label: "+1 tekrar", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(74.3, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#211(Rect.fromLTRB(263.0, 144.0, 307.0, 161.0), actions: [focus, tap], flags: [isFocusable], label: "RPE", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(44.0, 17.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#212(Rect.fromLTRB(14.0, 175.0, 44.0, 207.0), actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#241(Rect.fromLTRB(103.0, 171.0, 177.5, 211.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], value: "70", textDirection: ltr, currentValueLength: 2, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#242(Rect.fromLTRB(183.5, 171.0, 258.0, 211.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], value: "10", textDirection: ltr, currentValueLength: 2, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#243(Rect.fromLTRB(264.0, 173.0, 302.0, 209.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 36.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#216(Rect.fromLTRB(307.0, 174.0, 345.0, 208.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 34.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#220(Rect.fromLTRB(14.0, 225.0, 44.0, 257.0), actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#221(Rect.fromLTRB(103.0, 221.0, 177.5, 261.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "70", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#222(Rect.fromLTRB(183.5, 221.0, 258.0, 261.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "10", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#223(Rect.fromLTRB(264.0, 223.0, 302.0, 259.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 36.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#224(Rect.fromLTRB(307.0, 224.0, 345.0, 258.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 34.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#252(Rect.fromLTRB(229.3, 269.0, 265.3, 299.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#bd672, tooltip: "Kiloyu 2.5 kg azalt", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(36.0, 30.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#253(Rect.fromLTRB(265.3, 271.5, 313.0, 296.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#d349f, label: "2.5 kg", tooltip: "Kilo adımını değiştir", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(47.7, 25.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#254(Rect.fromLTRB(313.0, 269.0, 349.0, 299.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#d1ebc, tooltip: "Kiloyu 2.5 kg artır", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(36.0, 30.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+  [session+rest] iOSTapTarget(44): KALDI (50 satır)
+      SemanticsNode#249(Rect.fromLTRB(211.4, 81.5, 260.4, 112.5), actions: [focus, tap], flags: [isFocusable], label: "−15s", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(49.0, 31.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#250(Rect.fromLTRB(264.4, 81.5, 313.4, 112.5), actions: [focus, tap], flags: [isFocusable], label: "+15s", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(49.0, 31.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#251(Rect.fromLTRB(317.4, 81.5, 363.0, 112.5), actions: [focus, tap], flags: [isFocusable], label: "Atla", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(45.6, 31.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#206(Rect.fromLTRB(112.6, 35.5, 171.3, 56.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#2bd4b, label: "1:30", tooltip: "Dinlenme süresini değiştir", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(58.7, 21.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#207(Rect.fromLTRB(261.0, 16.0, 301.0, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], traversalParentIdentifier: _OverlayPortalState#c1863, tooltip: "Nasıl yapılır", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(40.0, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#210(Rect.fromLTRB(270.7, 80.0, 345.0, 120.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], label: "+1 tekrar", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(74.3, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#211(Rect.fromLTRB(263.0, 144.0, 307.0, 161.0), actions: [focus, tap], flags: [isFocusable], label: "RPE", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(44.0, 17.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#212(Rect.fromLTRB(14.0, 175.0, 44.0, 207.0), actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#241(Rect.fromLTRB(103.0, 171.0, 177.5, 211.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], value: "70", textDirection: ltr, currentValueLength: 2, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#242(Rect.fromLTRB(183.5, 171.0, 258.0, 211.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], value: "10", textDirection: ltr, currentValueLength: 2, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#243(Rect.fromLTRB(264.0, 173.0, 302.0, 209.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 36.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#216(Rect.fromLTRB(307.0, 174.0, 345.0, 208.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 34.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#220(Rect.fromLTRB(14.0, 225.0, 44.0, 257.0), actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#221(Rect.fromLTRB(103.0, 221.0, 177.5, 261.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "70", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#222(Rect.fromLTRB(183.5, 221.0, 258.0, 261.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "10", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#223(Rect.fromLTRB(264.0, 223.0, 302.0, 259.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 36.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#224(Rect.fromLTRB(307.0, 224.0, 345.0, 258.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 34.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#252(Rect.fromLTRB(229.3, 269.0, 265.3, 299.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#bd672, tooltip: "Kiloyu 2.5 kg azalt", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(36.0, 30.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#253(Rect.fromLTRB(265.3, 271.5, 313.0, 296.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#d349f, label: "2.5 kg", tooltip: "Kilo adımını değiştir", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(47.7, 25.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#254(Rect.fromLTRB(313.0, 269.0, 349.0, 299.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#d1ebc, tooltip: "Kiloyu 2.5 kg artır", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(36.0, 30.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+  [session+rest] labeledTapTarget: KALDI (3 satır)
+      SemanticsNode#216(Rect.fromLTRB(307.0, 174.0, 345.0, 208.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+      SemanticsNode#224(Rect.fromLTRB(307.0, 224.0, 345.0, 258.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+      SemanticsNode#229(Rect.fromLTRB(307.0, 312.0, 345.0, 346.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+  [session+rest] textContrast: KALDI (15 satır)
+      SemanticsNode#243(Rect.fromLTRB(264.0, 173.0, 302.0, 209.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.88 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.3216, green: 0.3216, blue: 0.3098, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1569, green: 0.1569, blue: 0.1529, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#223(Rect.fromLTRB(264.0, 223.0, 302.0, 259.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.88 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.3216, green: 0.3216, blue: 0.3098, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1569, green: 0.1569, blue: 0.1529, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#228(Rect.fromLTRB(264.0, 311.0, 302.0, 347.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.88 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.3216, green: 0.3216, blue: 0.3098, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1569, green: 0.1569, blue: 0.1529, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+=== light-en (393 genişlik, yazı x1.0) ===
+  [/home] ekrandaki etkileşimli düğüm=10, adsız=0, <48 hedef=1, metin alanı=0 (label boş=0)
+    TAP   321x23 @(36,829) "Start workout"
+  [/home] androidTapTarget(48): GEÇTİ
+  [/home] iOSTapTarget(44): GEÇTİ
+  [/home] labeledTapTarget: GEÇTİ
+  [/home] textContrast: GEÇTİ
+  [/nutrition] ekrandaki etkileşimli düğüm=17, adsız=0, <48 hedef=1, metin alanı=0 (label boş=0)
+    TAP   40x35 @(337,652) "Delete" (label boş; yalnız tooltip)
+  [/nutrition] androidTapTarget(48): GEÇTİ
+  [/nutrition] iOSTapTarget(44): GEÇTİ
+  [/nutrition] labeledTapTarget: GEÇTİ
+  [/nutrition] textContrast: GEÇTİ
+  [/progress] ekrandaki etkileşimli düğüm=25, adsız=1, <48 hedef=19, metin alanı=0 (label boş=0)
+    TAP   40x40 @(183,88) <<ADSIZ>>
+    TAP   45x45 @(174,157) "1"
+    TAP   45x45 @(221,157) "2"
+    TAP   45x45 @(268,157) "3"
+    TAP   45x45 @(316,157) "4"
+    TAP   45x45 @(32,206) "5"
+    TAP   45x45 @(79,206) "6"
+    TAP   45x45 @(127,206) "7"
+    TAP   45x45 @(174,206) "8"
+    TAP   45x45 @(221,206) "9"
+    TAP   45x45 @(268,206) "10"
+    TAP   45x45 @(316,206) "11"
+    TAP   45x45 @(32,256) "12"
+    TAP   45x45 @(79,256) "13"
+    TAP   45x45 @(127,256) "14"
+    TAP   45x45 @(174,256) "15"
+    TAP   45x45 @(221,256) "16"
+    TAP   45x45 @(268,256) "17"
+    TAP   45x45 @(316,256) "18"
+  [/progress] androidTapTarget(48): KALDI (38 satır)
+      SemanticsNode#89(Rect.fromLTRB(167.4, 16.0, 207.4, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(40.0, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#95(Rect.fromLTRB(141.9, 0.0, 187.1, 45.3), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr, indexInParent: 3): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#96(Rect.fromLTRB(189.1, 0.0, 234.4, 45.3), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr, indexInParent: 4): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#97(Rect.fromLTRB(236.4, 0.0, 281.7, 45.3), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "3", textDirection: ltr, indexInParent: 5): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#98(Rect.fromLTRB(283.7, 0.0, 329.0, 45.3), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "4", textDirection: ltr, indexInParent: 6): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#99(Rect.fromLTRB(0.0, 49.3, 45.3, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "5", textDirection: ltr, indexInParent: 7): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#100(Rect.fromLTRB(47.3, 49.3, 92.6, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "6", textDirection: ltr, indexInParent: 8): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#101(Rect.fromLTRB(94.6, 49.3, 139.9, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "7", textDirection: ltr, indexInParent: 9): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#102(Rect.fromLTRB(141.9, 49.3, 187.1, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "8", textDirection: ltr, indexInParent: 10): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#103(Rect.fromLTRB(189.1, 49.3, 234.4, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "9", textDirection: ltr, indexInParent: 11): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#104(Rect.fromLTRB(236.4, 49.3, 281.7, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "10", textDirection: ltr, indexInParent: 12): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#105(Rect.fromLTRB(283.7, 49.3, 329.0, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "11", textDirection: ltr, indexInParent: 13): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#106(Rect.fromLTRB(0.0, 98.6, 45.3, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "12", textDirection: ltr, indexInParent: 14): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#107(Rect.fromLTRB(47.3, 98.6, 92.6, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "13", textDirection: ltr, indexInParent: 15): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#108(Rect.fromLTRB(94.6, 98.6, 139.9, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "14", textDirection: ltr, indexInParent: 16): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#109(Rect.fromLTRB(141.9, 98.6, 187.1, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "15", textDirection: ltr, indexInParent: 17): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#110(Rect.fromLTRB(189.1, 98.6, 234.4, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "16", textDirection: ltr, indexInParent: 18): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#111(Rect.fromLTRB(236.4, 98.6, 281.7, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "17", textDirection: ltr, indexInParent: 19): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#112(Rect.fromLTRB(283.7, 98.6, 329.0, 143.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "18", textDirection: ltr, indexInParent: 20): expected tap target size of at least Size(48.0, 48.0), but found Size(45.3, 45.3)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+  [/progress] iOSTapTarget(44): KALDI (2 satır)
+      SemanticsNode#89(Rect.fromLTRB(167.4, 16.0, 207.4, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(40.0, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+  [/progress] labeledTapTarget: KALDI (1 satır)
+      SemanticsNode#89(Rect.fromLTRB(167.4, 16.0, 207.4, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable]): expected tappable node to have semantic label, but none was found.
+  [/progress] textContrast: KALDI (75 satır)
+      SemanticsNode#95(Rect.fromLTRB(141.9, 0.0, 187.1, 45.3), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr, indexInParent: 3):
+      Expected contrast ratio of at least 4.5 but found 1.16 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.9294, green: 0.9333, blue: 0.9294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#101(Rect.fromLTRB(94.6, 49.3, 139.9, 94.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "7", textDirection: ltr, indexInParent: 9):
+      Expected contrast ratio of at least 4.5 but found 1.16 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.9294, green: 0.9333, blue: 0.9294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#113(Rect.fromLTRB(0.0, 147.9, 45.3, 193.1), tags: [RenderViewport.twoPane], label: "19", textDirection: ltr, indexInParent: 21):
+      Expected contrast ratio of at least 4.5 but found 2.13 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.6941, green: 0.6980, blue: 0.6902, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#114(Rect.fromLTRB(47.3, 147.9, 92.6, 193.1), tags: [RenderViewport.twoPane], label: "20", textDirection: ltr, indexInParent: 22):
+      Expected contrast ratio of at least 4.5 but found 2.13 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.6941, green: 0.6980, blue: 0.6902, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#115(Rect.fromLTRB(94.6, 147.9, 139.9, 193.1), tags: [RenderViewport.twoPane], label: "21", textDirection: ltr, indexInParent: 23):
+      Expected contrast ratio of at least 4.5 but found 2.13 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.6941, green: 0.6980, blue: 0.6902, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#116(Rect.fromLTRB(141.9, 147.9, 187.1, 193.1), tags: [RenderViewport.twoPane], label: "22", textDirection: ltr, indexInParent: 24):
+      Expected contrast ratio of at least 4.5 but found 2.13 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.6941, green: 0.6980, blue: 0.6902, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#117(Rect.fromLTRB(189.1, 147.9, 234.4, 193.1), tags: [RenderViewport.twoPane], label: "23", textDirection: ltr, indexInParent: 25):
+      Expected contrast ratio of at least 4.5 but found 2.13 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.6941, green: 0.6980, blue: 0.6902, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#118(Rect.fromLTRB(236.4, 147.9, 281.7, 193.1), tags: [RenderViewport.twoPane], label: "24", textDirection: ltr, indexInParent: 26):
+      Expected contrast ratio of at least 4.5 but found 2.13 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.6941, green: 0.6980, blue: 0.6902, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+  [food-sheet] ekrandaki etkileşimli düğüm=12, adsız=0, <48 hedef=1, metin alanı=1 (label boş=0)
+    TAP   100x32 @(16,97) "Lunch | Change meal"
+    FIELD 361x48 @(16,137) "Search foods…"
+  [food-sheet] androidTapTarget(48): KALDI (2 satır)
+      SemanticsNode#172(Rect.fromLTRB(16.0, 97.1, 115.5, 129.1), actions: [focus, tap], flags: [isFocusable, hasExpandedState], traversalParentIdentifier: _OverlayPortalState#38237, label: "Lunch", tooltip: "Change meal", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(99.5, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+  [food-sheet] iOSTapTarget(44): KALDI (2 satır)
+      SemanticsNode#172(Rect.fromLTRB(16.0, 97.1, 115.5, 129.1), actions: [focus, tap], flags: [isFocusable, hasExpandedState], traversalParentIdentifier: _OverlayPortalState#38237, label: "Lunch", tooltip: "Change meal", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(99.5, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+  [food-sheet] labeledTapTarget: GEÇTİ
+  [food-sheet] textContrast: GEÇTİ
+  [session] ekrandaki etkileşimli düğüm=30, adsız=3, <48 hedef=25, metin alanı=6 (label boş=0)
+    TAP   393x36 @(0,59) "Date Today"
+    TAP   59x21 @(129,143) "1:30 | Change rest time"
+    TAP   40x40 @(277,123) "How to do it" (label boş; yalnız tooltip)
+    TAP   234x40 @(66,179) "Last time: 70 kg × 10 (range 8–12). Try one more rep per set."
+    TAP   57x40 @(304,179) "+1 rep"
+    TAP   44x17 @(279,235) "RPE"
+    TAP   30x32 @(30,266) "1"
+    FIELD 75x40 @(119,262) "70"
+    FIELD 75x40 @(200,262) "10"
+    TAP   38x36 @(280,264) "–"
+    TAP   38x34 @(323,265) <<ADSIZ>>
+    TAP   36x30 @(245,310) "Decrease weight by 2.5 kg" (label boş; yalnız tooltip)
+    TAP   48x25 @(281,313) "2.5 kg | Change weight step"
+    TAP   36x30 @(329,310) "Increase weight by 2.5 kg" (label boş; yalnız tooltip)
+    TAP   30x32 @(30,354) "2"
+    FIELD 75x40 @(119,350) "0"
+    FIELD 75x40 @(200,350) "0"
+    TAP   38x36 @(280,352) "–"
+    TAP   38x34 @(323,353) <<ADSIZ>>
+    TAP   30x32 @(30,404) "3"
+    FIELD 75x40 @(119,400) "0"
+    FIELD 75x40 @(200,400) "0"
+    TAP   38x36 @(280,402) "–"
+    TAP   38x34 @(323,403) <<ADSIZ>>
+    TAP   71x46 @(310,5) "Finish"
+  [session] androidTapTarget(48): KALDI (48 satır)
+      SemanticsNode#203(Rect.fromLTRB(112.6, 35.5, 171.3, 56.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#9d6a7, label: "1:30", tooltip: "Change rest time", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(58.7, 21.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#204(Rect.fromLTRB(261.0, 16.0, 301.0, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], traversalParentIdentifier: _OverlayPortalState#15fbb, tooltip: "How to do it", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(40.0, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#206(Rect.fromLTRB(50.0, 72.0, 284.4, 112.0), actions: [focus, tap], flags: [isFocusable], label: "Last time: 70 kg × 10 (range 8–12). Try one more rep per set.", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(234.4, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#207(Rect.fromLTRB(288.4, 72.0, 345.0, 112.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], label: "+1 rep", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(56.6, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#208(Rect.fromLTRB(263.0, 128.0, 307.0, 145.0), actions: [focus, tap], flags: [isFocusable], label: "RPE", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(44.0, 17.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#209(Rect.fromLTRB(14.0, 159.0, 44.0, 191.0), actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#210(Rect.fromLTRB(103.0, 155.0, 177.5, 195.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "70", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#211(Rect.fromLTRB(183.5, 155.0, 258.0, 195.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "10", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#212(Rect.fromLTRB(264.0, 157.0, 302.0, 193.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 36.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#213(Rect.fromLTRB(307.0, 158.0, 345.0, 192.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 34.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#214(Rect.fromLTRB(229.3, 203.0, 265.3, 233.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#9a8fa, tooltip: "Decrease weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(36.0, 30.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#215(Rect.fromLTRB(265.3, 205.5, 313.0, 230.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#75e54, label: "2.5 kg", tooltip: "Change weight step", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(47.7, 25.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#216(Rect.fromLTRB(313.0, 203.0, 349.0, 233.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#3edc0, tooltip: "Increase weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(36.0, 30.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#217(Rect.fromLTRB(14.0, 247.0, 44.0, 279.0), actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#218(Rect.fromLTRB(103.0, 243.0, 177.5, 283.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#219(Rect.fromLTRB(183.5, 243.0, 258.0, 283.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#220(Rect.fromLTRB(264.0, 245.0, 302.0, 281.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 36.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#221(Rect.fromLTRB(307.0, 246.0, 345.0, 280.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 34.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#222(Rect.fromLTRB(14.0, 297.0, 44.0, 329.0), actions: [focus, tap], flags: [isFocusable], label: "3", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#223(Rect.fromLTRB(103.0, 293.0, 177.5, 333.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+  [session] iOSTapTarget(44): KALDI (46 satır)
+      SemanticsNode#203(Rect.fromLTRB(112.6, 35.5, 171.3, 56.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#9d6a7, label: "1:30", tooltip: "Change rest time", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(58.7, 21.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#204(Rect.fromLTRB(261.0, 16.0, 301.0, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], traversalParentIdentifier: _OverlayPortalState#15fbb, tooltip: "How to do it", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(40.0, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#206(Rect.fromLTRB(50.0, 72.0, 284.4, 112.0), actions: [focus, tap], flags: [isFocusable], label: "Last time: 70 kg × 10 (range 8–12). Try one more rep per set.", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(234.4, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#207(Rect.fromLTRB(288.4, 72.0, 345.0, 112.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], label: "+1 rep", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(56.6, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#208(Rect.fromLTRB(263.0, 128.0, 307.0, 145.0), actions: [focus, tap], flags: [isFocusable], label: "RPE", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(44.0, 17.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#209(Rect.fromLTRB(14.0, 159.0, 44.0, 191.0), actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#210(Rect.fromLTRB(103.0, 155.0, 177.5, 195.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "70", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#211(Rect.fromLTRB(183.5, 155.0, 258.0, 195.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "10", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#212(Rect.fromLTRB(264.0, 157.0, 302.0, 193.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 36.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#213(Rect.fromLTRB(307.0, 158.0, 345.0, 192.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 34.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#214(Rect.fromLTRB(229.3, 203.0, 265.3, 233.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#9a8fa, tooltip: "Decrease weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(36.0, 30.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#215(Rect.fromLTRB(265.3, 205.5, 313.0, 230.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#75e54, label: "2.5 kg", tooltip: "Change weight step", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(47.7, 25.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#216(Rect.fromLTRB(313.0, 203.0, 349.0, 233.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#3edc0, tooltip: "Increase weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(36.0, 30.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#217(Rect.fromLTRB(14.0, 247.0, 44.0, 279.0), actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#218(Rect.fromLTRB(103.0, 243.0, 177.5, 283.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#219(Rect.fromLTRB(183.5, 243.0, 258.0, 283.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#220(Rect.fromLTRB(264.0, 245.0, 302.0, 281.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 36.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#221(Rect.fromLTRB(307.0, 246.0, 345.0, 280.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 34.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#222(Rect.fromLTRB(14.0, 297.0, 44.0, 329.0), actions: [focus, tap], flags: [isFocusable], label: "3", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#223(Rect.fromLTRB(103.0, 293.0, 177.5, 333.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+  [session] labeledTapTarget: KALDI (3 satır)
+      SemanticsNode#213(Rect.fromLTRB(307.0, 158.0, 345.0, 192.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+      SemanticsNode#221(Rect.fromLTRB(307.0, 246.0, 345.0, 280.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+      SemanticsNode#226(Rect.fromLTRB(307.0, 296.0, 345.0, 330.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+  [session] textContrast: KALDI (15 satır)
+      SemanticsNode#212(Rect.fromLTRB(264.0, 157.0, 302.0, 193.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.48 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.9098, green: 0.9137, blue: 0.8745, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.7529, green: 0.7569, blue: 0.7176, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#220(Rect.fromLTRB(264.0, 245.0, 302.0, 281.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.48 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.9098, green: 0.9137, blue: 0.8745, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.7529, green: 0.7569, blue: 0.7176, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#225(Rect.fromLTRB(264.0, 295.0, 302.0, 331.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.48 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.9098, green: 0.9137, blue: 0.8745, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.7529, green: 0.7569, blue: 0.7176, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+  [session+rest] ekrandaki etkileşimli düğüm=33, adsız=3, <48 hedef=28, metin alanı=6 (label boş=2)
+    TAP   49x31 @(208,82) "−15s"
+    TAP   49x31 @(261,82) "+15s"
+    TAP   49x31 @(314,82) "Skip"
+    TAP   393x36 @(0,127) "Date Today"
+    TAP   59x21 @(129,211) "1:30 | Change rest time"
+    TAP   40x40 @(277,191) "How to do it" (label boş; yalnız tooltip)
+    TAP   234x40 @(66,247) "Last time: 70 kg × 10 (range 8–12). Try one more rep per set."
+    TAP   57x40 @(304,247) "+1 rep"
+    TAP   44x17 @(279,303) "RPE"
+    TAP   30x32 @(30,334) "1"
+    FIELD 75x40 @(119,330) "70" (label boş; yalnız value)
+    FIELD 75x40 @(200,330) "10" (label boş; yalnız value)
+    TAP   38x36 @(280,332) "–"
+    TAP   38x34 @(323,333) <<ADSIZ>>
+    TAP   30x32 @(30,384) "2"
+    FIELD 75x40 @(119,380) "70"
+    FIELD 75x40 @(200,380) "10"
+    TAP   38x36 @(280,382) "–"
+    TAP   38x34 @(323,383) <<ADSIZ>>
+    TAP   36x30 @(245,428) "Decrease weight by 2.5 kg" (label boş; yalnız tooltip)
+    TAP   48x25 @(281,431) "2.5 kg | Change weight step"
+    TAP   36x30 @(329,428) "Increase weight by 2.5 kg" (label boş; yalnız tooltip)
+    TAP   30x32 @(30,472) "3"
+    FIELD 75x40 @(119,468) "70"
+    FIELD 75x40 @(200,468) "10"
+    TAP   38x36 @(280,470) "–"
+    TAP   38x34 @(323,471) <<ADSIZ>>
+    TAP   71x46 @(310,5) "Finish"
+  [session+rest] androidTapTarget(48): KALDI (54 satır)
+      SemanticsNode#246(Rect.fromLTRB(208.4, 81.5, 257.4, 112.5), actions: [focus, tap], flags: [isFocusable], label: "−15s", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(49.0, 31.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#247(Rect.fromLTRB(261.4, 81.5, 310.4, 112.5), actions: [focus, tap], flags: [isFocusable], label: "+15s", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(49.0, 31.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#248(Rect.fromLTRB(314.4, 81.5, 363.0, 112.5), actions: [focus, tap], flags: [isFocusable], label: "Skip", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(48.6, 31.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#203(Rect.fromLTRB(112.6, 35.5, 171.3, 56.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#9d6a7, label: "1:30", tooltip: "Change rest time", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(58.7, 21.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#204(Rect.fromLTRB(261.0, 16.0, 301.0, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], traversalParentIdentifier: _OverlayPortalState#15fbb, tooltip: "How to do it", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(40.0, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#206(Rect.fromLTRB(50.0, 72.0, 284.4, 112.0), actions: [focus, tap], flags: [isFocusable], label: "Last time: 70 kg × 10 (range 8–12). Try one more rep per set.", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(234.4, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#207(Rect.fromLTRB(288.4, 72.0, 345.0, 112.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], label: "+1 rep", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(56.6, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#208(Rect.fromLTRB(263.0, 128.0, 307.0, 145.0), actions: [focus, tap], flags: [isFocusable], label: "RPE", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(44.0, 17.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#209(Rect.fromLTRB(14.0, 159.0, 44.0, 191.0), actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#238(Rect.fromLTRB(103.0, 155.0, 177.5, 195.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], value: "70", textDirection: ltr, currentValueLength: 2, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#239(Rect.fromLTRB(183.5, 155.0, 258.0, 195.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], value: "10", textDirection: ltr, currentValueLength: 2, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#240(Rect.fromLTRB(264.0, 157.0, 302.0, 193.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 36.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#213(Rect.fromLTRB(307.0, 158.0, 345.0, 192.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 34.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#217(Rect.fromLTRB(14.0, 209.0, 44.0, 241.0), actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#218(Rect.fromLTRB(103.0, 205.0, 177.5, 245.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "70", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#219(Rect.fromLTRB(183.5, 205.0, 258.0, 245.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "10", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(74.5, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#220(Rect.fromLTRB(264.0, 207.0, 302.0, 243.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 36.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#221(Rect.fromLTRB(307.0, 208.0, 345.0, 242.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 34.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#249(Rect.fromLTRB(229.3, 253.0, 265.3, 283.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#02ee3, tooltip: "Decrease weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(36.0, 30.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#250(Rect.fromLTRB(265.3, 255.5, 313.0, 280.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#c7e13, label: "2.5 kg", tooltip: "Change weight step", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(47.7, 25.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+  [session+rest] iOSTapTarget(44): KALDI (52 satır)
+      SemanticsNode#246(Rect.fromLTRB(208.4, 81.5, 257.4, 112.5), actions: [focus, tap], flags: [isFocusable], label: "−15s", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(49.0, 31.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#247(Rect.fromLTRB(261.4, 81.5, 310.4, 112.5), actions: [focus, tap], flags: [isFocusable], label: "+15s", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(49.0, 31.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#248(Rect.fromLTRB(314.4, 81.5, 363.0, 112.5), actions: [focus, tap], flags: [isFocusable], label: "Skip", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(48.6, 31.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#203(Rect.fromLTRB(112.6, 35.5, 171.3, 56.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#9d6a7, label: "1:30", tooltip: "Change rest time", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(58.7, 21.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#204(Rect.fromLTRB(261.0, 16.0, 301.0, 56.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], traversalParentIdentifier: _OverlayPortalState#15fbb, tooltip: "How to do it", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(40.0, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#206(Rect.fromLTRB(50.0, 72.0, 284.4, 112.0), actions: [focus, tap], flags: [isFocusable], label: "Last time: 70 kg × 10 (range 8–12). Try one more rep per set.", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(234.4, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#207(Rect.fromLTRB(288.4, 72.0, 345.0, 112.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], label: "+1 rep", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(56.6, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#208(Rect.fromLTRB(263.0, 128.0, 307.0, 145.0), actions: [focus, tap], flags: [isFocusable], label: "RPE", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(44.0, 17.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#209(Rect.fromLTRB(14.0, 159.0, 44.0, 191.0), actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#238(Rect.fromLTRB(103.0, 155.0, 177.5, 195.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], value: "70", textDirection: ltr, currentValueLength: 2, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#239(Rect.fromLTRB(183.5, 155.0, 258.0, 195.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], value: "10", textDirection: ltr, currentValueLength: 2, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#240(Rect.fromLTRB(264.0, 157.0, 302.0, 193.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 36.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#213(Rect.fromLTRB(307.0, 158.0, 345.0, 192.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 34.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#217(Rect.fromLTRB(14.0, 209.0, 44.0, 241.0), actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#218(Rect.fromLTRB(103.0, 205.0, 177.5, 245.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "70", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#219(Rect.fromLTRB(183.5, 205.0, 258.0, 245.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "10", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(74.5, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#220(Rect.fromLTRB(264.0, 207.0, 302.0, 243.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 36.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#221(Rect.fromLTRB(307.0, 208.0, 345.0, 242.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 34.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#249(Rect.fromLTRB(229.3, 253.0, 265.3, 283.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#02ee3, tooltip: "Decrease weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(36.0, 30.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#250(Rect.fromLTRB(265.3, 255.5, 313.0, 280.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#c7e13, label: "2.5 kg", tooltip: "Change weight step", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(47.7, 25.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+  [session+rest] labeledTapTarget: KALDI (3 satır)
+      SemanticsNode#213(Rect.fromLTRB(307.0, 158.0, 345.0, 192.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+      SemanticsNode#221(Rect.fromLTRB(307.0, 208.0, 345.0, 242.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+      SemanticsNode#226(Rect.fromLTRB(307.0, 296.0, 345.0, 330.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+  [session+rest] textContrast: KALDI (30 satır)
+      SemanticsNode#246(Rect.fromLTRB(208.4, 81.5, 257.4, 112.5), actions: [focus, tap], flags: [isFocusable], label: "−15s", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 4.16 for a font size of 12.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.4431, green: 0.5176, blue: 0.1804, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#247(Rect.fromLTRB(261.4, 81.5, 310.4, 112.5), actions: [focus, tap], flags: [isFocusable], label: "+15s", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 4.16 for a font size of 12.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.4431, green: 0.5176, blue: 0.1804, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#248(Rect.fromLTRB(314.4, 81.5, 363.0, 112.5), actions: [focus, tap], flags: [isFocusable], label: "Skip", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 3.38 for a font size of 12.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.5098, green: 0.5765, blue: 0.2784, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#240(Rect.fromLTRB(264.0, 157.0, 302.0, 193.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.48 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.9098, green: 0.9137, blue: 0.8745, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.7529, green: 0.7569, blue: 0.7176, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#220(Rect.fromLTRB(264.0, 207.0, 302.0, 243.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.48 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.9098, green: 0.9137, blue: 0.8745, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.7529, green: 0.7569, blue: 0.7176, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#225(Rect.fromLTRB(264.0, 295.0, 302.0, 331.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.48 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.9098, green: 0.9137, blue: 0.8745, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.7529, green: 0.7569, blue: 0.7176, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+=== large-en (320 genişlik, yazı x1.6) ===
+  [/home] ekrandaki etkileşimli düğüm=8, adsız=0, <48 hedef=0, metin alanı=0 (label boş=0)
+  [/home] androidTapTarget(48): GEÇTİ
+  [/home] iOSTapTarget(44): GEÇTİ
+  [/home] labeledTapTarget: GEÇTİ
+  [/home] textContrast: GEÇTİ
+  [/nutrition] ekrandaki etkileşimli düğüm=9, adsız=0, <48 hedef=0, metin alanı=0 (label boş=0)
+  [/nutrition] androidTapTarget(48): GEÇTİ
+  [/nutrition] iOSTapTarget(44): GEÇTİ
+  [/nutrition] labeledTapTarget: GEÇTİ
+  [/nutrition] textContrast: GEÇTİ
+  [/progress] ekrandaki etkileşimli düğüm=25, adsız=1, <48 hedef=19, metin alanı=0 (label boş=0)
+    TAP   40x40 @(32,130) <<ADSIZ>>
+    TAP   35x35 @(143,236) "1"
+    TAP   35x35 @(179,236) "2"
+    TAP   35x35 @(216,236) "3"
+    TAP   35x35 @(253,236) "4"
+    TAP   35x35 @(32,275) "5"
+    TAP   35x35 @(69,275) "6"
+    TAP   35x35 @(106,275) "7"
+    TAP   35x35 @(143,275) "8"
+    TAP   35x35 @(179,275) "9"
+    TAP   35x35 @(216,275) "10"
+    TAP   35x35 @(253,275) "11"
+    TAP   35x35 @(32,314) "12"
+    TAP   35x35 @(69,314) "13"
+    TAP   35x35 @(106,314) "14"
+    TAP   35x35 @(143,314) "15"
+    TAP   35x35 @(179,314) "16"
+    TAP   35x35 @(216,314) "17"
+    TAP   35x35 @(253,314) "18"
+  [/progress] androidTapTarget(48): KALDI (38 satır)
+      SemanticsNode#84(Rect.fromLTRB(16.0, 58.0, 56.0, 98.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(40.0, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#90(Rect.fromLTRB(110.6, 0.0, 145.4, 34.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr, indexInParent: 3): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#91(Rect.fromLTRB(147.4, 0.0, 182.3, 34.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr, indexInParent: 4): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#92(Rect.fromLTRB(184.3, 0.0, 219.1, 34.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "3", textDirection: ltr, indexInParent: 5): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#93(Rect.fromLTRB(221.1, 0.0, 256.0, 34.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "4", textDirection: ltr, indexInParent: 6): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#94(Rect.fromLTRB(0.0, 38.9, 34.9, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "5", textDirection: ltr, indexInParent: 7): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#95(Rect.fromLTRB(36.9, 38.9, 71.7, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "6", textDirection: ltr, indexInParent: 8): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#96(Rect.fromLTRB(73.7, 38.9, 108.6, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "7", textDirection: ltr, indexInParent: 9): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#97(Rect.fromLTRB(110.6, 38.9, 145.4, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "8", textDirection: ltr, indexInParent: 10): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#98(Rect.fromLTRB(147.4, 38.9, 182.3, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "9", textDirection: ltr, indexInParent: 11): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#99(Rect.fromLTRB(184.3, 38.9, 219.1, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "10", textDirection: ltr, indexInParent: 12): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#100(Rect.fromLTRB(221.1, 38.9, 256.0, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "11", textDirection: ltr, indexInParent: 13): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#101(Rect.fromLTRB(0.0, 77.7, 34.9, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "12", textDirection: ltr, indexInParent: 14): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#102(Rect.fromLTRB(36.9, 77.7, 71.7, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "13", textDirection: ltr, indexInParent: 15): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#103(Rect.fromLTRB(73.7, 77.7, 108.6, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "14", textDirection: ltr, indexInParent: 16): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#104(Rect.fromLTRB(110.6, 77.7, 145.4, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "15", textDirection: ltr, indexInParent: 17): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#105(Rect.fromLTRB(147.4, 77.7, 182.3, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "16", textDirection: ltr, indexInParent: 18): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#106(Rect.fromLTRB(184.3, 77.7, 219.1, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "17", textDirection: ltr, indexInParent: 19): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#107(Rect.fromLTRB(221.1, 77.7, 256.0, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "18", textDirection: ltr, indexInParent: 20): expected tap target size of at least Size(48.0, 48.0), but found Size(34.9, 34.9)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+  [/progress] iOSTapTarget(44): KALDI (38 satır)
+      SemanticsNode#84(Rect.fromLTRB(16.0, 58.0, 56.0, 98.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(40.0, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#90(Rect.fromLTRB(110.6, 0.0, 145.4, 34.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr, indexInParent: 3): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#91(Rect.fromLTRB(147.4, 0.0, 182.3, 34.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr, indexInParent: 4): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#92(Rect.fromLTRB(184.3, 0.0, 219.1, 34.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "3", textDirection: ltr, indexInParent: 5): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#93(Rect.fromLTRB(221.1, 0.0, 256.0, 34.9), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "4", textDirection: ltr, indexInParent: 6): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#94(Rect.fromLTRB(0.0, 38.9, 34.9, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "5", textDirection: ltr, indexInParent: 7): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#95(Rect.fromLTRB(36.9, 38.9, 71.7, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "6", textDirection: ltr, indexInParent: 8): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#96(Rect.fromLTRB(73.7, 38.9, 108.6, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "7", textDirection: ltr, indexInParent: 9): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#97(Rect.fromLTRB(110.6, 38.9, 145.4, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "8", textDirection: ltr, indexInParent: 10): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#98(Rect.fromLTRB(147.4, 38.9, 182.3, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "9", textDirection: ltr, indexInParent: 11): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#99(Rect.fromLTRB(184.3, 38.9, 219.1, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "10", textDirection: ltr, indexInParent: 12): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#100(Rect.fromLTRB(221.1, 38.9, 256.0, 73.7), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "11", textDirection: ltr, indexInParent: 13): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#101(Rect.fromLTRB(0.0, 77.7, 34.9, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "12", textDirection: ltr, indexInParent: 14): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#102(Rect.fromLTRB(36.9, 77.7, 71.7, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "13", textDirection: ltr, indexInParent: 15): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#103(Rect.fromLTRB(73.7, 77.7, 108.6, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "14", textDirection: ltr, indexInParent: 16): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#104(Rect.fromLTRB(110.6, 77.7, 145.4, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "15", textDirection: ltr, indexInParent: 17): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#105(Rect.fromLTRB(147.4, 77.7, 182.3, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "16", textDirection: ltr, indexInParent: 18): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#106(Rect.fromLTRB(184.3, 77.7, 219.1, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "17", textDirection: ltr, indexInParent: 19): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#107(Rect.fromLTRB(221.1, 77.7, 256.0, 112.6), tags: [RenderViewport.twoPane], actions: [focus, tap], flags: [isFocusable], label: "18", textDirection: ltr, indexInParent: 20): expected tap target size of at least Size(44.0, 44.0), but found Size(34.9, 34.9)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+  [/progress] labeledTapTarget: KALDI (1 satır)
+      SemanticsNode#84(Rect.fromLTRB(16.0, 58.0, 56.0, 98.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable]): expected tappable node to have semantic label, but none was found.
+  [/progress] textContrast: KALDI (65 satır)
+      SemanticsNode#108(Rect.fromLTRB(0.0, 116.6, 34.9, 151.4), tags: [RenderViewport.twoPane], label: "19", textDirection: ltr, indexInParent: 21):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#109(Rect.fromLTRB(36.9, 116.6, 71.7, 151.4), tags: [RenderViewport.twoPane], label: "20", textDirection: ltr, indexInParent: 22):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#110(Rect.fromLTRB(73.7, 116.6, 108.6, 151.4), tags: [RenderViewport.twoPane], label: "21", textDirection: ltr, indexInParent: 23):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#111(Rect.fromLTRB(110.6, 116.6, 145.4, 151.4), tags: [RenderViewport.twoPane], label: "22", textDirection: ltr, indexInParent: 24):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#112(Rect.fromLTRB(147.4, 116.6, 182.3, 151.4), tags: [RenderViewport.twoPane], label: "23", textDirection: ltr, indexInParent: 25):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#113(Rect.fromLTRB(184.3, 116.6, 219.1, 151.4), tags: [RenderViewport.twoPane], label: "24", textDirection: ltr, indexInParent: 26):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#114(Rect.fromLTRB(221.1, 116.6, 256.0, 151.4), tags: [RenderViewport.twoPane], label: "25", textDirection: ltr, indexInParent: 27):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#115(Rect.fromLTRB(0.0, 155.4, 34.9, 190.3), tags: [RenderViewport.twoPane], label: "26", textDirection: ltr, indexInParent: 28):
+      Expected contrast ratio of at least 4.5 but found 3.02 for a font size of 11.5.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.4196, green: 0.4196, blue: 0.4157, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1294, green: 0.1294, blue: 0.1294, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+  [food-sheet] ekrandaki etkileşimli düğüm=12, adsız=0, <48 hedef=1, metin alanı=1 (label boş=0)
+    TAP   124x40 @(16,112) "Lunch | Change meal"
+    FIELD 288x62 @(16,160) "Search foods…"
+  [food-sheet] androidTapTarget(48): KALDI (2 satır)
+      SemanticsNode#164(Rect.fromLTRB(16.0, 112.1, 140.1, 152.1), actions: [focus, tap], flags: [isFocusable, hasExpandedState], traversalParentIdentifier: _OverlayPortalState#160f1, label: "Lunch", tooltip: "Change meal", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(124.1, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+  [food-sheet] iOSTapTarget(44): KALDI (2 satır)
+      SemanticsNode#164(Rect.fromLTRB(16.0, 112.1, 140.1, 152.1), actions: [focus, tap], flags: [isFocusable, hasExpandedState], traversalParentIdentifier: _OverlayPortalState#160f1, label: "Lunch", tooltip: "Change meal", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(124.1, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+  [food-sheet] labeledTapTarget: GEÇTİ
+  [food-sheet] textContrast: GEÇTİ
+  !! HATA: A RenderFlex overflowed by 5.9 pixels on the right. | relevant error-causing widget was:   Row   Row:file:///private/tmp/claude-501/-Users-sametorhan/904bd870-cf84-4698-938c-5a467cf919e7/scratchpad/a11y/lib/features/workout/active_session_widgets.dart:922:14  The overflowing RenderFlex has an orientation of Axis.horizontal. The edge of the RenderFlex t
+  [session] ekrandaki etkileşimli düğüm=30, adsız=3, <48 hedef=23, metin alanı=6 (label boş=0)
+    TAP   74x31 @(130,163) "1:30 | Change rest time"
+    TAP   40x40 @(204,143) "How to do it" (label boş; yalnız tooltip)
+    TAP   81x40 @(207,255) "+1 rep"
+    TAP   44x27 @(206,374) "RPE"
+    TAP   30x32 @(30,435) "1"
+    FIELD 38x54 @(119,424) "70"
+    FIELD 38x54 @(163,424) "10"
+    TAP   38x48 @(207,427) "–"
+    TAP   38x34 @(250,434) <<ADSIZ>>
+    TAP   36x30 @(150,498) "Decrease weight by 2.5 kg" (label boş; yalnız tooltip)
+    TAP   70x35 @(186,496) "2.5 kg | Change weight step"
+    TAP   36x30 @(256,498) "Increase weight by 2.5 kg" (label boş; yalnız tooltip)
+    TAP   30x32 @(30,561) "2"
+    FIELD 38x54 @(119,550) "0"
+    FIELD 38x54 @(163,550) "0"
+    TAP   38x48 @(207,553) "–"
+    TAP   38x34 @(250,560) <<ADSIZ>>
+    TAP   30x32 @(30,625) "3"
+    FIELD 38x54 @(119,614) "0"
+    FIELD 38x54 @(163,614) "0"
+    TAP   38x48 @(207,617) "–"
+    TAP   38x34 @(250,624) <<ADSIZ>>
+    TAP   94x46 @(214,5) "Finish"
+  [session] androidTapTarget(48): KALDI (46 satır)
+      SemanticsNode#195(Rect.fromLTRB(114.5, 44.0, 188.0, 75.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#3fb0a, label: "1:30", tooltip: "Change rest time", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(73.5, 31.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#196(Rect.fromLTRB(188.0, 23.5, 228.0, 63.5), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], traversalParentIdentifier: _OverlayPortalState#01350, tooltip: "How to do it", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(40.0, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#199(Rect.fromLTRB(191.1, 136.0, 272.0, 176.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], label: "+1 rep", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(80.9, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#200(Rect.fromLTRB(190.0, 254.5, 234.0, 281.5), actions: [focus, tap], flags: [isFocusable], label: "RPE", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(44.0, 27.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#201(Rect.fromLTRB(14.0, 316.0, 44.0, 348.0), actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#202(Rect.fromLTRB(103.0, 305.0, 141.0, 359.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "70", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 54.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#203(Rect.fromLTRB(147.0, 305.0, 185.0, 359.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "10", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 54.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#204(Rect.fromLTRB(191.0, 308.0, 229.0, 356.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 48.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#205(Rect.fromLTRB(234.0, 315.0, 272.0, 349.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 34.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#206(Rect.fromLTRB(134.3, 379.0, 170.3, 409.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#52c0b, tooltip: "Decrease weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(36.0, 30.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#207(Rect.fromLTRB(170.3, 376.5, 240.0, 411.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#8b1a8, label: "2.5 kg", tooltip: "Change weight step", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(69.7, 35.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#208(Rect.fromLTRB(240.0, 379.0, 276.0, 409.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#184d7, tooltip: "Increase weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(36.0, 30.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#209(Rect.fromLTRB(14.0, 442.0, 44.0, 474.0), actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#210(Rect.fromLTRB(103.0, 431.0, 141.0, 485.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 54.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#211(Rect.fromLTRB(147.0, 431.0, 185.0, 485.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 54.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#212(Rect.fromLTRB(191.0, 434.0, 229.0, 482.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 48.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#213(Rect.fromLTRB(234.0, 441.0, 272.0, 475.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 34.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#214(Rect.fromLTRB(14.0, 506.0, 44.0, 538.0), actions: [focus, tap], flags: [isFocusable], label: "3", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#215(Rect.fromLTRB(103.0, 495.0, 141.0, 549.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 54.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#216(Rect.fromLTRB(147.0, 495.0, 185.0, 549.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 54.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+  [session] iOSTapTarget(44): KALDI (44 satır)
+      SemanticsNode#195(Rect.fromLTRB(114.5, 44.0, 188.0, 75.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#3fb0a, label: "1:30", tooltip: "Change rest time", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(73.5, 31.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#196(Rect.fromLTRB(188.0, 23.5, 228.0, 63.5), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], traversalParentIdentifier: _OverlayPortalState#01350, tooltip: "How to do it", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(40.0, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#199(Rect.fromLTRB(191.1, 136.0, 272.0, 176.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], label: "+1 rep", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(80.9, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#200(Rect.fromLTRB(190.0, 254.5, 234.0, 281.5), actions: [focus, tap], flags: [isFocusable], label: "RPE", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(44.0, 27.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#201(Rect.fromLTRB(14.0, 316.0, 44.0, 348.0), actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#202(Rect.fromLTRB(103.0, 305.0, 141.0, 359.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "70", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 54.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#203(Rect.fromLTRB(147.0, 305.0, 185.0, 359.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "10", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 54.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#204(Rect.fromLTRB(191.0, 308.0, 229.0, 356.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 48.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#205(Rect.fromLTRB(234.0, 315.0, 272.0, 349.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 34.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#206(Rect.fromLTRB(134.3, 379.0, 170.3, 409.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#52c0b, tooltip: "Decrease weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(36.0, 30.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#207(Rect.fromLTRB(170.3, 376.5, 240.0, 411.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#8b1a8, label: "2.5 kg", tooltip: "Change weight step", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(69.7, 35.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#208(Rect.fromLTRB(240.0, 379.0, 276.0, 409.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#184d7, tooltip: "Increase weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(36.0, 30.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#209(Rect.fromLTRB(14.0, 442.0, 44.0, 474.0), actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#210(Rect.fromLTRB(103.0, 431.0, 141.0, 485.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 54.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#211(Rect.fromLTRB(147.0, 431.0, 185.0, 485.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 54.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#212(Rect.fromLTRB(191.0, 434.0, 229.0, 482.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 48.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#213(Rect.fromLTRB(234.0, 441.0, 272.0, 475.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 34.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#214(Rect.fromLTRB(14.0, 506.0, 44.0, 538.0), actions: [focus, tap], flags: [isFocusable], label: "3", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#215(Rect.fromLTRB(103.0, 495.0, 141.0, 549.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 54.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#216(Rect.fromLTRB(147.0, 495.0, 185.0, 549.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "0", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 54.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+  [session] labeledTapTarget: KALDI (3 satır)
+      SemanticsNode#205(Rect.fromLTRB(234.0, 315.0, 272.0, 349.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+      SemanticsNode#213(Rect.fromLTRB(234.0, 441.0, 272.0, 475.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+      SemanticsNode#218(Rect.fromLTRB(234.0, 505.0, 272.0, 539.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+  [session] textContrast: KALDI (15 satır)
+      SemanticsNode#204(Rect.fromLTRB(191.0, 308.0, 229.0, 356.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.04 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.1686, green: 0.1686, blue: 0.1647, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1569, green: 0.1569, blue: 0.1529, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#212(Rect.fromLTRB(191.0, 434.0, 229.0, 482.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.04 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.1686, green: 0.1686, blue: 0.1647, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1569, green: 0.1569, blue: 0.1529, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#217(Rect.fromLTRB(191.0, 498.0, 229.0, 546.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.04 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.1686, green: 0.1686, blue: 0.1647, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1569, green: 0.1569, blue: 0.1529, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+  [session+rest] ekrandaki etkileşimli düğüm=25, adsız=2, <48 hedef=21, metin alanı=4 (label boş=2)
+    TAP   65x41 @(87,164) "−15s"
+    TAP   65x41 @(156,164) "+15s"
+    TAP   65x41 @(225,164) "Skip"
+    TAP   74x31 @(130,406) "1:30 | Change rest time"
+    TAP   40x40 @(204,386) "How to do it" (label boş; yalnız tooltip)
+    TAP   81x40 @(207,498) "+1 rep"
+    TAP   44x27 @(206,617) "RPE"
+    TAP   30x32 @(30,678) "1"
+    FIELD 38x54 @(119,667) "70" (label boş; yalnız value)
+    FIELD 38x54 @(163,667) "10" (label boş; yalnız value)
+    TAP   38x48 @(207,670) "–"
+    TAP   38x34 @(250,677) <<ADSIZ>>
+    TAP   30x32 @(30,742) "2"
+    FIELD 38x54 @(119,731) "70"
+    FIELD 38x54 @(163,731) "10"
+    TAP   38x48 @(207,734) "–"
+    TAP   38x34 @(250,741) <<ADSIZ>>
+    TAP   36x30 @(150,805) "Decrease weight by 2.5 kg" (label boş; yalnız tooltip)
+    TAP   70x35 @(186,803) "2.5 kg | Change weight step"
+    TAP   36x30 @(256,805) "Increase weight by 2.5 kg" (label boş; yalnız tooltip)
+    TAP   94x46 @(214,5) "Finish"
+  [session+rest] androidTapTarget(48): KALDI (42 satır)
+      SemanticsNode#238(Rect.fromLTRB(87.0, 164.0, 152.2, 205.0), actions: [focus, tap], flags: [isFocusable], label: "−15s", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(65.2, 41.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#239(Rect.fromLTRB(156.2, 164.0, 221.4, 205.0), actions: [focus, tap], flags: [isFocusable], label: "+15s", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(65.2, 41.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#240(Rect.fromLTRB(225.4, 164.0, 290.0, 205.0), actions: [focus, tap], flags: [isFocusable], label: "Skip", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(64.6, 41.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#195(Rect.fromLTRB(114.5, 44.0, 188.0, 75.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#3fb0a, label: "1:30", tooltip: "Change rest time", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(73.5, 31.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#196(Rect.fromLTRB(188.0, 23.5, 228.0, 63.5), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], traversalParentIdentifier: _OverlayPortalState#01350, tooltip: "How to do it", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(40.0, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#199(Rect.fromLTRB(191.1, 136.0, 272.0, 176.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], label: "+1 rep", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(80.9, 40.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#200(Rect.fromLTRB(190.0, 254.5, 234.0, 281.5), actions: [focus, tap], flags: [isFocusable], label: "RPE", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(44.0, 27.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#201(Rect.fromLTRB(14.0, 316.0, 44.0, 348.0), actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#230(Rect.fromLTRB(103.0, 305.0, 141.0, 359.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], value: "70", textDirection: ltr, currentValueLength: 2, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 54.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#231(Rect.fromLTRB(147.0, 305.0, 185.0, 359.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], value: "10", textDirection: ltr, currentValueLength: 2, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 54.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#232(Rect.fromLTRB(191.0, 308.0, 229.0, 356.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 48.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#205(Rect.fromLTRB(234.0, 315.0, 272.0, 349.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 34.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#209(Rect.fromLTRB(14.0, 380.0, 44.0, 412.0), actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(30.0, 32.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#210(Rect.fromLTRB(103.0, 369.0, 141.0, 423.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "70", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 54.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#211(Rect.fromLTRB(147.0, 369.0, 185.0, 423.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "10", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 54.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#212(Rect.fromLTRB(191.0, 372.0, 229.0, 420.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 48.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#213(Rect.fromLTRB(234.0, 379.0, 272.0, 413.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(48.0, 48.0), but found Size(38.0, 34.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#241(Rect.fromLTRB(134.3, 443.0, 170.3, 473.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#43a53, tooltip: "Decrease weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(36.0, 30.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#242(Rect.fromLTRB(170.3, 440.5, 240.0, 475.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#2b6a5, label: "2.5 kg", tooltip: "Change weight step", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(69.7, 35.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+      SemanticsNode#243(Rect.fromLTRB(240.0, 443.0, 276.0, 473.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#ee804, tooltip: "Increase weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(48.0, 48.0), but found Size(36.0, 30.0)
+      See also: https://support.google.com/accessibility/android/answer/7101858?hl=en
+  [session+rest] iOSTapTarget(44): KALDI (40 satır)
+      SemanticsNode#238(Rect.fromLTRB(87.0, 164.0, 152.2, 205.0), actions: [focus, tap], flags: [isFocusable], label: "−15s", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(65.2, 41.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#239(Rect.fromLTRB(156.2, 164.0, 221.4, 205.0), actions: [focus, tap], flags: [isFocusable], label: "+15s", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(65.2, 41.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#240(Rect.fromLTRB(225.4, 164.0, 290.0, 205.0), actions: [focus, tap], flags: [isFocusable], label: "Skip", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(64.6, 41.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#195(Rect.fromLTRB(114.5, 44.0, 188.0, 75.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#3fb0a, label: "1:30", tooltip: "Change rest time", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(73.5, 31.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#196(Rect.fromLTRB(188.0, 23.5, 228.0, 63.5), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], traversalParentIdentifier: _OverlayPortalState#01350, tooltip: "How to do it", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(40.0, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#199(Rect.fromLTRB(191.1, 136.0, 272.0, 176.0), actions: [focus, tap], flags: [isButton, hasEnabledState, isEnabled, isFocusable], label: "+1 rep", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(80.9, 40.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#200(Rect.fromLTRB(190.0, 254.5, 234.0, 281.5), actions: [focus, tap], flags: [isFocusable], label: "RPE", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(44.0, 27.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#201(Rect.fromLTRB(14.0, 316.0, 44.0, 348.0), actions: [focus, tap], flags: [isFocusable], label: "1", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#230(Rect.fromLTRB(103.0, 305.0, 141.0, 359.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], value: "70", textDirection: ltr, currentValueLength: 2, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 54.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#231(Rect.fromLTRB(147.0, 305.0, 185.0, 359.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], value: "10", textDirection: ltr, currentValueLength: 2, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 54.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#232(Rect.fromLTRB(191.0, 308.0, 229.0, 356.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 48.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#205(Rect.fromLTRB(234.0, 315.0, 272.0, 349.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 34.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#209(Rect.fromLTRB(14.0, 380.0, 44.0, 412.0), actions: [focus, tap], flags: [isFocusable], label: "2", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(30.0, 32.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#210(Rect.fromLTRB(103.0, 369.0, 141.0, 423.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "70", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 54.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#211(Rect.fromLTRB(147.0, 369.0, 185.0, 423.0), actions: [focus, tap], flags: [isTextField, hasEnabledState, isEnabled, isFocusable], label: "10", textDirection: ltr, currentValueLength: 0, inputType: text, validationResult: valid): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 54.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#212(Rect.fromLTRB(191.0, 372.0, 229.0, 420.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 48.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#213(Rect.fromLTRB(234.0, 379.0, 272.0, 413.0), actions: [focus, tap], flags: [isFocusable]): expected tap target size of at least Size(44.0, 44.0), but found Size(38.0, 34.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#241(Rect.fromLTRB(134.3, 443.0, 170.3, 473.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#43a53, tooltip: "Decrease weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(36.0, 30.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#242(Rect.fromLTRB(170.3, 440.5, 240.0, 475.5), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#2b6a5, label: "2.5 kg", tooltip: "Change weight step", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(69.7, 35.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+      SemanticsNode#243(Rect.fromLTRB(240.0, 443.0, 276.0, 473.0), actions: [focus, tap], flags: [isFocusable], traversalParentIdentifier: _OverlayPortalState#ee804, tooltip: "Increase weight by 2.5 kg", textDirection: ltr): expected tap target size of at least Size(44.0, 44.0), but found Size(36.0, 30.0)
+      See also: https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/adaptivity-and-layout/
+  [session+rest] labeledTapTarget: KALDI (2 satır)
+      SemanticsNode#205(Rect.fromLTRB(234.0, 315.0, 272.0, 349.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+      SemanticsNode#213(Rect.fromLTRB(234.0, 379.0, 272.0, 413.0), actions: [focus, tap], flags: [isFocusable]): expected tappable node to have semantic label, but none was found.
+  [session+rest] textContrast: KALDI (10 satır)
+      SemanticsNode#232(Rect.fromLTRB(191.0, 308.0, 229.0, 356.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.04 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.1686, green: 0.1686, blue: 0.1647, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1569, green: 0.1569, blue: 0.1529, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html
+      SemanticsNode#212(Rect.fromLTRB(191.0, 372.0, 229.0, 420.0), actions: [focus, tap], flags: [isFocusable], label: "–", textDirection: ltr):
+      Expected contrast ratio of at least 4.5 but found 1.04 for a font size of 14.0.
+      The computed colors was:
+      light - Color(alpha: 1.0000, red: 0.1686, green: 0.1686, blue: 0.1647, colorSpace: ColorSpace.sRGB), dark - Color(alpha: 1.0000, red: 0.1569, green: 0.1569, blue: 0.1529, colorSpace: ColorSpace.sRGB)
+      See also: https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html

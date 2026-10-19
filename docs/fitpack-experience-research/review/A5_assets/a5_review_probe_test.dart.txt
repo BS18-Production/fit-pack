@@ -1,0 +1,266 @@
+// A5 inceleme ölçüm sondası — commit edilmez, worktree'de çalışır.
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:drift/drift.dart' hide isNull, isNotNull;
+import 'package:fit_pack/core/feedback/feedback_service.dart';
+import 'package:fit_pack/core/feedback/rest_sound.dart';
+import 'package:fit_pack/core/notifications/notification_service.dart';
+import 'package:fit_pack/core/theme/app_theme.dart';
+import 'package:fit_pack/data/database/app_database.dart';
+import 'package:fit_pack/data/providers.dart';
+import 'package:fit_pack/features/workout/active_session_screen.dart';
+import 'package:fit_pack/l10n/app_l10n.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../helpers/test_database.dart';
+
+void main() {
+  for (final sc in [
+    (name: 'w393', width: 393.0, scale: 1.0),
+    (name: 'w320s13', width: 320.0, scale: 1.3),
+  ]) {
+    testWidgets('A5 probe ${sc.name}', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      _mockWakelock();
+      final db = newTestDatabase();
+      final out = StringBuffer();
+      int ex1 = 0, ex2 = 0;
+      await tester.runAsync(() async {
+        ex1 = await db.workoutDao.insertCustomExercise(
+          ExercisesCompanion.insert(
+            name: 'Bench Press',
+            category: 'compound',
+            muscleGroups: 'chest',
+            equipment: const Value('barbell'),
+          ),
+        );
+        ex2 = await db.workoutDao.insertCustomExercise(
+          ExercisesCompanion.insert(
+            name: 'Incline Dumbbell Press',
+            category: 'compound',
+            muscleGroups: 'chest',
+            equipment: const Value('dumbbell'),
+          ),
+        );
+        final rid = await db.workoutDao.createRoutine(
+          RoutinesCompanion.insert(
+              name: 'Üst Vücut A', createdAt: DateTime(2026, 9, 1)),
+        );
+        for (final (i, e) in [ex1, ex2].indexed) {
+          await db.workoutDao.addRoutineExercise(
+            RoutineExercisesCompanion.insert(
+              routineId: rid,
+              exerciseId: e,
+              orderIndex: Value(i),
+              targetSets: const Value(3),
+              targetRepsMin: const Value(8),
+              targetRepsMax: const Value(12),
+              targetRestSec: const Value(90),
+            ),
+          );
+        }
+        await db.workoutDao.insertSessionWithSets(
+          WorkoutSessionsCompanion(
+            date: Value(DateTime(2026, 10, 14)),
+            phase: const Value(0),
+            workoutType: const Value('Üst Vücut A'),
+          ),
+          (id) => [
+            for (final (e, kg) in [(ex1, 60.0), (ex2, 22.0)])
+              for (var i = 0; i < 3; i++)
+                WorkoutSetsCompanion(
+                  sessionId: Value(id),
+                  exerciseId: Value(e),
+                  setNumber: Value(i + 1),
+                  weightKg: Value(kg),
+                  reps: const Value(10),
+                  isComplete: const Value(true),
+                ),
+          ],
+        );
+        out.writeln('routine=$rid');
+      });
+      final routineId = int.parse(out.toString().split('=').last.trim());
+
+      tester.view.physicalSize = Size(sc.width * 2, 852 * 2);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(tester.view.reset);
+      final boundary = GlobalKey();
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          databaseProvider.overrideWithValue(db),
+          feedbackServiceProvider.overrideWithValue(_SilentFeedback()),
+          notificationServiceProvider.overrideWithValue(_NoNotifications()),
+        ],
+        child: RepaintBoundary(
+          key: boundary,
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.dark,
+            locale: const Locale('tr'),
+            localizationsDelegates: AppL10n.localizationsDelegates,
+            supportedLocales: AppL10n.supportedLocales,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.linear(sc.scale)),
+              child: child!,
+            ),
+            home: ActiveSessionScreen(routineId: routineId),
+          ),
+        ),
+      ));
+      await tester.runAsync(() async {
+        await GoogleFonts.pendingFonts();
+        for (final font in [
+          ('MaterialIcons', 'fonts/MaterialIcons-Regular.otf'),
+          ('packages/phosphor_flutter/PhosphorRegular',
+              'packages/phosphor_flutter/lib/fonts/Phosphor.ttf'),
+          ('packages/phosphor_flutter/PhosphorFill',
+              'packages/phosphor_flutter/lib/fonts/Phosphor-Fill.ttf'),
+        ]) {
+          await (FontLoader(font.$1)..addFont(rootBundle.load(font.$2)))
+              .load();
+        }
+      });
+      Future<void> settle() async {
+        for (var i = 0; i < 6; i++) {
+          await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+      }
+
+      Future<void> capture(String n) async {
+        final dir = Platform.environment['A5_DIR']!;
+        await tester.runAsync(() async {
+          final r = boundary.currentContext!.findRenderObject()!
+              as RenderRepaintBoundary;
+          final img = await r.toImage(pixelRatio: 2);
+          final b = await img.toByteData(format: ui.ImageByteFormat.png);
+          await File('$dir/a5-${sc.name}-$n.png')
+              .writeAsBytes(b!.buffer.asUint8List());
+        });
+      }
+
+      await settle();
+      await capture('1-initial');
+      String rect(Finder f) {
+        final r = tester.getRect(f);
+        return '${r.width.toStringAsFixed(1)}x${r.height.toStringAsFixed(1)}'
+            ' @(${r.left.toStringAsFixed(0)},${r.top.toStringAsFixed(0)})';
+      }
+
+      final res = StringBuffer('[${sc.name}]\n');
+      res.writeln('check0 ${rect(find.byKey(const ValueKey('set.complete.0')).first)}');
+      final fields = find.byType(TextField);
+      res.writeln('kgField0 ${rect(fields.at(0))}');
+      res.writeln('repsField0 ${rect(fields.at(1))}');
+      final minus = find.byIcon(Icons.remove_rounded);
+      res.writeln('stepMinus ${rect(minus.first)} count=${minus.evaluate().length}');
+      final plus = find.byIcon(Icons.add_rounded);
+      res.writeln('plusIcons count=${plus.evaluate().length}');
+      for (final e in plus.evaluate()) {
+        final b = e.findAncestorWidgetOfExactType<SizedBox>();
+        res.writeln('  plus sizedbox=${b?.width}x${b?.height}');
+      }
+      res.writeln('finishBtn ${rect(find.byType(FilledButton).first)}');
+
+      // Tekrar alanına dokun, 8 yaz, ✓'e bas: odak kalıyor mu?
+      await tester.tap(fields.at(1));
+      await tester.pump();
+      await tester.enterText(fields.at(1), '8');
+      await tester.pump();
+      res.writeln('focusBeforeCheck=${FocusManager.instance.primaryFocus?.context?.widget.runtimeType}');
+      await tester.tap(find.byKey(const ValueKey('set.complete.0')).first);
+      await settle();
+      res.writeln('focusAfterCheck=${FocusManager.instance.primaryFocus?.context?.widget.runtimeType}'
+          ' hasTextFocus=${FocusManager.instance.primaryFocus?.context?.findAncestorWidgetOfExactType<EditableText>() != null || FocusManager.instance.primaryFocus?.context?.widget is EditableText}');
+      final kb = tester.testTextInput.isVisible;
+      res.writeln('testTextInput.isVisible after ✓ = $kb');
+      // Boş alana dokun (kart başlığı) — odak kalkar mı?
+      await tester.tapAt(Offset(sc.width / 2, 400));
+      await tester.pump();
+      res.writeln('after tap outside isVisible=${tester.testTextInput.isVisible}');
+      await capture('2-after-check');
+      res.writeln('restBanner Atla inkwell ${rect(find.ancestor(of: find.text('Atla').first, matching: find.byType(InkWell)).first)}');
+      res.writeln('rest +15 inkwell ${rect(find.ancestor(of: find.text('+15s').first, matching: find.byType(InkWell)).first)}');
+      // Senaryo B: set 2'de kg ve tekrar ikisini de yaz, sonra ✓
+      final f2 = find.byType(TextField);
+      await tester.tap(f2.at(2));
+      await tester.pump();
+      await tester.enterText(f2.at(2), '62.5');
+      await tester.pump();
+      await tester.tap(f2.at(3));
+      await tester.pump();
+      await tester.enterText(f2.at(3), '9');
+      await tester.pump();
+      res.writeln('B before ✓ visible=${tester.testTextInput.isVisible} focus=${FocusManager.instance.primaryFocus}');
+      await tester.tap(find.byKey(const ValueKey('set.complete.1')).first);
+      await settle();
+      res.writeln('B after ✓ visible=${tester.testTextInput.isVisible} focus=${FocusManager.instance.primaryFocus}');
+      await tester.tapAt(Offset(sc.width / 2, 700));
+      await tester.pump();
+      res.writeln('B after tap outside visible=${tester.testTextInput.isVisible}');
+      await tester.drag(find.byType(ListView).first, const Offset(0, -200));
+      await tester.pump();
+      res.writeln('B after drag visible=${tester.testTextInput.isVisible}');
+      await capture('3-scenarioB');
+      File('${Platform.environment['A5_DIR']}/a5-${sc.name}.txt')
+          .writeAsStringSync(res.toString());
+
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump();
+      await db.close();
+    });
+  }
+}
+
+class _SilentFeedback extends FeedbackService {
+  @override
+  void warmUp([RestSound sound = RestSound.fallback]) {}
+  @override
+  void playCountdown({int offsetMs = 0, RestSound? sound}) {}
+  @override
+  void stopCountdown() {}
+  @override
+  void restDone() {}
+  @override
+  void setDone() {}
+  @override
+  void record() {}
+}
+
+class _NoNotifications extends NotificationService {
+  @override
+  Future<void> scheduleRestDone({
+    required DateTime at,
+    required String title,
+    required String body,
+    String? earlyTitle,
+    String? earlyBody,
+    RestSound? sound,
+  }) async {}
+  @override
+  Future<void> cancelRestDone() async {}
+  @override
+  Future<bool> requestPermission() async => false;
+}
+
+void _mockWakelock() {
+  final messenger =
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+  const codec = StandardMessageCodec();
+  for (final name in ['toggle', 'isEnabled']) {
+    messenger.setMockMessageHandler(
+      'dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.$name',
+      (_) async =>
+          codec.encodeMessage(<Object?>[name == 'isEnabled' ? false : null]),
+    );
+  }
+}

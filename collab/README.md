@@ -55,7 +55,9 @@ tools/collab.sh claude jev-deneyi "mesaj"   # Codex yazar, Claude cevaplar
    işlerinde derin inceleme; basit görsel düzeltmede kısa kontrol.
 3. **Araca bağlı işler doğal sahibinde:** iOS Simulator'da görsel doğrulama
    Codex'te; Supabase'e kurulum/SQL Claude'da. Sahip bunları karşı taraftan
-   yazışmayla ister.
+   yazışmayla ister. **2026-10-29'dan beri ana geliştirici Codex**
+   (collab/devir-2026-10-29.md): Supabase dahil bütün işler Codex'te;
+   Claude yalnız Samet'in aboneliği sürerken isteğe bağlı inceleyen.
 4. İşin sahibi yazışmanın ilk mesajında yazılır: sahip, inceleyen, dal,
    çalışma kopyası, başlangıç commit'i. Birleşen sonuç yeniden doğrulanır
    (`flutter analyze` + `flutter test`).
@@ -125,8 +127,9 @@ doküman. Ortak dokümanlar (`NEXT_TASKS.md`, `PROJECT_STATE.md`, `README.md`)
 - Supabase yazmaları yalnız `Fit Pack Dev` (`qecbnrkbordkqeogmevi`).
 - `build_runner`'ı yalnız kendi worktree'nde çalıştır; üretilen dosyaları
   başka dala taşıma.
-- Codex kotası **ortak ve sınırlı**: Codex'e yalnız riskli işte, tek turluk
-  derin inceleme için yaz.
+- (2026-10-29'a kadar geçerliydi: "Codex kotası sınırlı, yalnız riskli
+  incelemede yaz".) Artık ana geliştirici Codex; Claude'a yazışma yalnız
+  abonelik sürerken ve riskli işte, tek turluk inceleme için.
 - Birleştirmeden önce: `main`'i dala al (rebase/merge), `flutter analyze` +
   `flutter test` yeşil, defterde kilit çakışması yok.
 - `--dangerously-skip-permissions` izin sormadan çalıştırır: yukarıdaki

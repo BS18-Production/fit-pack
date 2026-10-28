@@ -48,7 +48,10 @@ fl_chart · Supabase (hesap + senkron).
   "Karar özeti" ile başlar, Samet onayıyla koda geçer. Diğer işlerde problem
   + beklenen davranış + doğrulama yöntemini yazmak yeter.
 - **Kod değişince cihazda/emülatörde çalıştır**, görsel doğrula.
-- **Oturum sonu:** PROJECT_STATE / NEXT_TASKS / README güncelle.
+- **Oturum sonu:** PROJECT_STATE / NEXT_TASKS / README güncelle — ama
+  dalda değil, **main'e birleştirme anında** (collab/README.md §2: ortak
+  dokümanlar dalda değiştirilmez). Dalda çalışırken yalnız işin kendi
+  `docs/NN-*.md` dokümanı güncellenir.
 - **Uygulama içi yapay zekâ:** Claude API'si önerme (Samet pahalı buluyor).
   Başka ücretli sağlayıcı gündeme gelirse önce fiyat + gizlilik özetle,
   Samet'e sor. Varsayılan: yapay zekâsız (kural tabanlı) çözüm.
@@ -132,7 +135,8 @@ flutter gen-l10n                                            # .arb değişince
 flutter analyze                                             # 0 uyarı hedefi
 flutter test
 python3 tools/check_docs.py                                 # doküman bağlantıları
-flutter run -d R96YB00XJPB                                  # Samsung test cihazı
+# Samsung test cihazı — Dev derlemesi (tanımsız bırakılırsa ÜRETİM'e bağlanır)
+flutter run -d R96YB00XJPB --release --dart-define=SUPABASE_URL=https://qecbnrkbordkqeogmevi.supabase.co --dart-define=SUPABASE_ANON_KEY=<Dev publishable key>
 # iPhone (ana) — TestFlight. Önce pubspec build numarasını (+N) artır.
 # ASC_KEY_ID / ASC_ISSUER_ID ~/.zshrc'de; anahtar ~/.appstoreconnect/private_keys/
 flutter build ipa --release && xcrun altool --upload-app --type ios -f build/ios/ipa/fit_pack.ipa --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"

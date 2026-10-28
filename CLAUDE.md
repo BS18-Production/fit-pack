@@ -24,6 +24,11 @@ Flutter · Drift (SQLite, lokal) · Riverpod · GoRouter · fl_chart · Supabase
   güncelleme gerekirse: `devicectl` komutu.
 - **Test cihazı:** SM A075F (Android, ID `R96YB00XJPB`)
 
+> **Devir (2026-10-29):** Ana geliştirme Codex'e geçti. Güncel ve tam kurallar
+> **[AGENTS.md](AGENTS.md)**'de (Claude hafızası oraya taşındı); açık işler
+> **[collab/devir-2026-10-29.md](collab/devir-2026-10-29.md)**. Bu dosya ile
+> çelişirse AGENTS.md geçerlidir.
+
 ## Oturum Başında Oku (bu sırayla)
 
 1. **[CONVENTIONS.md](CONVENTIONS.md)** — kod standartları (ZORUNLU).

@@ -140,6 +140,7 @@ class SettingsScreen extends ConsumerWidget {
 
   /// Geri bildirim: e-posta uygulamasını konu satırı doldurulmuş açar.
   Future<void> _sendFeedback(BuildContext context) async {
+    if (AppConstants.supportEmail.trim().isEmpty) return;
     final uri = Uri(
       scheme: 'mailto',
       path: AppConstants.supportEmail,
@@ -264,7 +265,7 @@ class SettingsScreen extends ConsumerWidget {
                 trailing: const FitPackIcon.material(Icons.chevron_right_rounded),
                 onTap: () => context.push(AppRoutes.attribution),
               ),
-              SettingTile(
+              if (AppConstants.supportEmail.trim().isNotEmpty) SettingTile(
                 icon: Icons.chat_bubble_outline_rounded,
                 title: l.settingsFeedback,
                 subtitle: l.settingsFeedbackSubtitle,

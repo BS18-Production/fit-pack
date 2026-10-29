@@ -135,11 +135,11 @@ private struct ActionRow: View {
       let l = context.attributes.labels
       if isResting(context) {
         HStack(spacing: 8) {
-          Button(intent: AddRestIntent()) {
+          Button(intent: AddRestIntent(restKey: context.state.restKey ?? "")) {
             Text(l.addRest).frame(maxWidth: .infinity)
           }
           .buttonStyle(PillStyle(prominent: false))
-          Button(intent: SkipRestIntent()) {
+          Button(intent: SkipRestIntent(restKey: context.state.restKey ?? "")) {
             Text(l.skipRest).frame(maxWidth: .infinity)
           }
           .buttonStyle(PillStyle(prominent: true))

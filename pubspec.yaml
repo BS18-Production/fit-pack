@@ -4,7 +4,7 @@ publish_to: 'none'
 # +2: şema v17 (docs/40). Sunucu `app_min_version.min_build = 2` yapılınca
 # v16 istemciler güncellemeye zorlanır (Codex P2 — eski istemci tartı/gizli
 # satırları normal ölçüm sayar). Ayar Samet onayıyla.
-version: 1.0.0+2
+version: 1.0.0+6
 
 environment:
   sdk: ^3.11.0

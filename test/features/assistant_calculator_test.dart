@@ -9,6 +9,64 @@ import '../helpers/design_fixture.dart';
 import '../helpers/test_database.dart';
 
 void main() {
+  test(
+    'bilinmeyen hedefte asistan varsayılan3 veya tarihsel seri söylemez',
+    () {
+      final result = calculateAssistant(
+        const AssistantSelection(
+          query: AssistantQuery.streak,
+          period: InsightPeriod.allTime,
+        ),
+        AssistantData(
+          now: DateTime(2026, 10, 28),
+          weeklyGoal: 3,
+          weeklyTargetKnown: false,
+          weeklyGoalForPeriod: (_) => null,
+        ),
+      );
+      expect(result.status, AssistantDataStatus.noPlan);
+      expect(result.metrics, isEmpty);
+    },
+  );
+
+  test('kısmi hedef döneminde asistan tam hafta başarı sayacı göstermez', () {
+    final result = calculateAssistant(
+      const AssistantSelection(
+        query: AssistantQuery.streak,
+        period: InsightPeriod.allTime,
+      ),
+      AssistantData(
+        now: DateTime(2026, 10, 28),
+        weeklyGoal: 2,
+        weeklyTargetKnown: true,
+        weeklyGoalForPeriod: (_) => null,
+      ),
+    );
+    expect(result.status, AssistantDataStatus.insufficientData);
+    expect(result.metrics, isEmpty);
+  });
+
+  test('tarihsel hedefler bilinmiyorsa asistan eski seriyi başarı saymaz', () {
+    final week = DateTime(2026, 10, 26);
+    final data = AssistantData(
+      now: DateTime(2026, 10, 28),
+      weeklyGoal: 3,
+      weeklyGoalForPeriod: (start) => start == week ? 3 : null,
+    );
+    final result = calculateAssistant(
+      const AssistantSelection(
+        query: AssistantQuery.streak,
+        period: InsightPeriod.allTime,
+      ),
+      data.at(DateTime(2026, 10, 28, 18)),
+    );
+    expect(
+      result.metrics.any((m) => m.key == AssistantMetricKey.weeks),
+      isFalse,
+    );
+    expect(result.metrics.single.value, 3);
+  });
+
   final now = DateTime(2026, 10, 11, 19);
   test(
     'beslenme ortalaması yalnız tamamlanan günler; boş gün sıfır, açık gün hariç',

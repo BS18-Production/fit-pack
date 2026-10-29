@@ -56,7 +56,8 @@ void main() {
 
     expect(find.text('Haftalık değerlendirme'), findsOneWidget);
     // Metrik kutuları: antrenman 0, beslenme ve kilo "Kayıt yok".
-    expect(find.text('Antrenman'), findsOneWidget);
+    expect(find.text('Antrenman günü'), findsOneWidget);
+    expect(find.textContaining('antrenman kaydı;'), findsOneWidget);
     expect(find.text('Kayıt yok'), findsNWidgets(2));
     await kaydir(tester, find.text('Bu hafta tamamlanmış set yok'));
     expect(find.text('Bu hafta tamamlanmış set yok'), findsOneWidget);

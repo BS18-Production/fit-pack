@@ -328,6 +328,7 @@ class ExerciseBlock extends ConsumerWidget {
   final void Function(SessionSetEntry set, String type) onSetType;
   final VoidCallback onAddSet, onRemoveSet, onRemoveExercise, onChanged;
   final VoidCallback onToggleAdvance;
+  final VoidCallback? onReplaceExercise;
   // null = o yöne taşınamaz (ilk/son hareket).
   final VoidCallback? onMoveUp, onMoveDown;
   // null = geçmiş kayıt modu (dinlenme sayacı yok).
@@ -350,7 +351,8 @@ class ExerciseBlock extends ConsumerWidget {
       required this.onRemoveSet,
       required this.onRemoveExercise,
       required this.onChanged,
-      required this.onToggleAdvance});
+      required this.onToggleAdvance,
+      this.onReplaceExercise});
 
   /// Ölçüm tipine göre orta sütun başlıkları (SET ve ✓ arasındakiler).
   /// Ağırlık sütunu birim tercihine göre KG/LB yazar (docs/16 §3). Dar
@@ -514,11 +516,19 @@ class ExerciseBlock extends ConsumerWidget {
                         onMoveUp?.call();
                       case 'down':
                         onMoveDown?.call();
+                      case 'replace':
+                        onReplaceExercise?.call();
                       case 'remove':
                         onRemoveExercise();
                     }
                   },
                   itemBuilder: (_) => [
+                    if (onReplaceExercise != null)
+                      PopupMenuItem(
+                        value: 'replace',
+                        child: _MenuRow(Icons.swap_horiz_rounded,
+                            AppL10n.of(context).asReplaceExercise),
+                      ),
                     if (onMoveUp != null)
                       PopupMenuItem(
                         value: 'up',

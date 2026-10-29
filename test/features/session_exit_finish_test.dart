@@ -125,7 +125,7 @@ void main() {
   }
 
   /// Ana sayfa yerine boş bir kök; seans üstüne itilir (geri tuşu çalışsın).
-  Future<void> open(WidgetTester tester) async {
+  Future<void> open(WidgetTester tester, {bool free = false}) async {
     final router = GoRouter(routes: [
       GoRoute(
         path: '/',
@@ -133,7 +133,7 @@ void main() {
         routes: [
           GoRoute(
             path: 's',
-            builder: (_, _) => ActiveSessionScreen(routineId: routineId),
+            builder: (_, _) => ActiveSessionScreen(routineId: free ? null : routineId),
           ),
           GoRoute(
             path: 'workout/summary/:id',
@@ -175,7 +175,12 @@ void main() {
       await tester.pump();
     }
     await tester.pump(const Duration(milliseconds: 600)); // geçiş animasyonu
-    expect(find.text('Bench Press'), findsOneWidget);
+    if (free) {
+      final l = AppL10n.of(tester.element(find.byType(ActiveSessionScreen)));
+      expect(find.text(l.workoutAddExercise), findsOneWidget);
+    } else {
+      expect(find.text('Bench Press'), findsOneWidget);
+    }
   }
 
   Future<void> settle(WidgetTester tester) async {
@@ -199,6 +204,13 @@ void main() {
   });
 
   tearDown(() => db.close());
+
+  testWidgets('serbest seans ilk açılışı yerelleştirmeyi güvenle okur',
+      (tester) async {
+    await open(tester, free: true);
+    expect(tester.takeException(), isNull);
+    await close(tester);
+  });
 
   group('çıkış penceresi (docs/53)', () {
     testWidgets('ana düğme Devam et; kaydet ve çık taslağı korur', (

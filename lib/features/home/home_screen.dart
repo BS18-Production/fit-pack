@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../goals/goal_journey_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/i18n/formatting.dart';
@@ -87,6 +88,7 @@ class HomeScreen extends ConsumerWidget {
             AppSpacing.vGapLg,
             const WeekStrip(),
             const _WeekReadyCard(),
+            const GoalJourneyEntryCard(),
             AppSpacing.vGapLg,
             const _CompactNutrition(),
             const _FirstWeekCard(),
@@ -168,7 +170,9 @@ class _Header extends StatelessWidget {
                     minimumSize: const Size.square(AppA11y.minTapTarget),
                   ),
                   tooltip: l.homeProfileTooltip,
-                  icon: const FitPackIcon.material(Icons.person_outline_rounded),
+                  icon: const FitPackIcon.material(
+                    Icons.person_outline_rounded,
+                  ),
                   onPressed: () => context.push(AppRoutes.profile),
                 ),
               ],
@@ -240,7 +244,8 @@ class _FinishedTodayCard extends StatelessWidget {
       secondary: TextButton(
         key: const ValueKey('home.trainAnyway'),
         style: TextButton.styleFrom(
-            minimumSize: const Size(0, AppA11y.minTapTarget)),
+          minimumSize: const Size(0, AppA11y.minTapTarget),
+        ),
         onPressed: () => context.go(AppRoutes.workout),
         child: Text(l.today3aTrainAnyway),
       ),
@@ -326,7 +331,10 @@ class _GradientActionCard extends StatelessWidget {
                   AppSpacing.hGapSm,
                   Expanded(child: Text(action)),
                   AppSpacing.hGapSm,
-                  const FitPackIcon.material(Icons.arrow_outward_rounded, size: AppIconSize.sm),
+                  const FitPackIcon.material(
+                    Icons.arrow_outward_rounded,
+                    size: AppIconSize.sm,
+                  ),
                 ],
               ),
             ),
@@ -448,7 +456,10 @@ class _NoRoutineCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l.homeNoRoutineTitle, style: context.texts.titleMedium),
+                    Text(
+                      l.homeNoRoutineTitle,
+                      style: context.texts.titleMedium,
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       l.homeNoRoutineSubtitle,
@@ -563,8 +574,9 @@ class _TodayLines extends ConsumerWidget {
     final units = ref.watch(unitsProvider);
     // Devam eden seans varken eylem kartı "Devam et" der; öneri yarışmaz.
     final draft = ref.watch(activeDraftProvider).valueOrNull;
-    final lift =
-        draft == null ? ref.watch(todayTrainingLineProvider).valueOrNull : null;
+    final lift = draft == null
+        ? ref.watch(todayTrainingLineProvider).valueOrNull
+        : null;
     final food = ref.watch(todayNutritionLineProvider).valueOrNull;
     if (lift == null && food == null) return const SizedBox.shrink();
     return Padding(
@@ -577,9 +589,13 @@ class _TodayLines extends ConsumerWidget {
               icon: Icons.trending_up_rounded,
               text: switch (lift.kind) {
                 ProgressionKind.addRep => l.homeTodayLiftAddRep(
-                    lift.exerciseName, units.lift(lift.weightKg)),
+                  lift.exerciseName,
+                  units.lift(lift.weightKg),
+                ),
                 _ => l.homeTodayLiftIncrease(
-                    lift.exerciseName, units.lift(lift.weightKg)),
+                  lift.exerciseName,
+                  units.lift(lift.weightKg),
+                ),
               },
               onTap: () =>
                   context.push(AppRoutes.routinePreview(lift.routineId)),
@@ -591,11 +607,15 @@ class _TodayLines extends ConsumerWidget {
               text: switch (food) {
                 NutritionLineFirstMeal() => l.homeTodayFirstMeal,
                 NutritionLineRemaining(:final proteinG?, :final kcal?) =>
-                  l.expTodayLeftBoth(context.numFmt.format(proteinG), context.numFmt.format(kcal)),
+                  l.expTodayLeftBoth(
+                    context.numFmt.format(proteinG),
+                    context.numFmt.format(kcal),
+                  ),
                 NutritionLineRemaining(:final proteinG?) =>
                   l.expTodayLeftProtein(context.numFmt.format(proteinG)),
-                NutritionLineRemaining(:final kcal) =>
-                  l.expTodayLeftKcal(context.numFmt.format(kcal ?? 0)),
+                NutritionLineRemaining(:final kcal) => l.expTodayLeftKcal(
+                  context.numFmt.format(kcal ?? 0),
+                ),
               },
               onTap: () => context.go(AppRoutes.nutrition),
               // Ana sayfadan doğrudan kayıt (docs/54 D2): öğün saate göre
@@ -621,7 +641,9 @@ class _AddMealButton extends ConsumerWidget {
       key: const ValueKey('home.todayLine.addMeal'),
       tooltip: l.today3aAddMealHint(mealName(l, meal)),
       constraints: const BoxConstraints(
-          minWidth: AppA11y.minTapTarget, minHeight: AppA11y.minTapTarget),
+        minWidth: AppA11y.minTapTarget,
+        minHeight: AppA11y.minTapTarget,
+      ),
       onPressed: () {
         ref.read(selectedDateProvider.notifier).state = DateTime.now();
         showAddFoodSheet(context, mealType: meal);
@@ -656,7 +678,11 @@ class _TodayLine extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           child: Row(
             children: [
-              FitPackIcon.material(icon, color: c.primary, size: AppIconSize.sm),
+              FitPackIcon.material(
+                icon,
+                color: c.primary,
+                size: AppIconSize.sm,
+              ),
               AppSpacing.hGapMd,
               Expanded(
                 child: Text(
@@ -697,8 +723,10 @@ class _WeekReadyCard extends ConsumerWidget {
     final subtitle = focus == null
         ? ''
         : switch (focus.kind) {
-            FocusKind.completePlan =>
-              l.wrFocusCompletePlan(focus.planned!, focus.done!),
+            FocusKind.completePlan => l.wrFocusCompletePlan(
+              focus.planned!,
+              focus.done!,
+            ),
             FocusKind.increaseWeight => l.wrFocusIncrease(focus.exerciseName!),
             FocusKind.loggingHabit => l.wrFocusLogging(focus.done!),
             FocusKind.reviewCalories => l.wrFocusCalories,
@@ -713,31 +741,44 @@ class _WeekReadyCard extends ConsumerWidget {
         child: InkWell(
           borderRadius: AppRadius.brMd,
           onTap: () {
-            ref.read(weekReadyOpenedProvider.notifier).markOpened(now, weekStart);
+            ref
+                .read(weekReadyOpenedProvider.notifier)
+                .markOpened(now, weekStart);
             context.push(AppRoutes.weeklyReviewWeeksBack(offset));
           },
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: AppA11y.minTapTarget),
             child: Row(
               children: [
-                FitPackIcon.material(Icons.insights_rounded,
-                    color: c.primary, size: AppIconSize.md),
+                FitPackIcon.material(
+                  Icons.insights_rounded,
+                  color: c.primary,
+                  size: AppIconSize.md,
+                ),
                 AppSpacing.hGapMd,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l.homeWeekReadyTitle,
-                          style: context.texts.titleSmall),
+                      Text(
+                        l.homeWeekReadyTitle,
+                        style: context.texts.titleSmall,
+                      ),
                       if (subtitle.isNotEmpty)
-                        Text(subtitle,
-                            style: context.texts.bodySmall
-                                ?.copyWith(color: c.onSurfaceVariant)),
+                        Text(
+                          subtitle,
+                          style: context.texts.bodySmall?.copyWith(
+                            color: c.onSurfaceVariant,
+                          ),
+                        ),
                     ],
                   ),
                 ),
-                FitPackIcon.material(Icons.chevron_right_rounded,
-                    color: c.outline, size: AppIconSize.sm),
+                FitPackIcon.material(
+                  Icons.chevron_right_rounded,
+                  color: c.outline,
+                  size: AppIconSize.sm,
+                ),
               ],
             ),
           ),
@@ -817,7 +858,10 @@ class _RestDayCard extends StatelessWidget {
                   color: muted.withValues(alpha: 0.10),
                   borderRadius: AppRadius.brMd,
                 ),
-                child: FitPackIcon.material(Icons.bedtime_outlined, color: muted),
+                child: FitPackIcon.material(
+                  Icons.bedtime_outlined,
+                  color: muted,
+                ),
               ),
               AppSpacing.hGapMd,
               Expanded(
@@ -852,7 +896,11 @@ class _RestDayCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  FitPackIcon.material(Icons.bolt_rounded, color: muted, size: AppIconSize.sm),
+                  FitPackIcon.material(
+                    Icons.bolt_rounded,
+                    color: muted,
+                    size: AppIconSize.sm,
+                  ),
                   AppSpacing.hGapMd,
                   Expanded(
                     child: Text(
@@ -922,14 +970,18 @@ class _RhythmCard extends ConsumerWidget {
     final streakAsync = ref.watch(weeklyStreakProvider);
     final monthAsync = ref.watch(last30WorkoutStatsProvider);
     if (streakAsync.hasError || monthAsync.hasError) {
-      return ErrorState(message: l.whLoadError, onRetry: () {
+      return ErrorState(
+        message: l.whLoadError,
+        onRetry: () {
         ref.invalidate(weeklyStreakProvider);
         ref.invalidate(last30WorkoutStatsProvider);
-      });
+        },
+      );
     }
     final streak = streakAsync.valueOrNull;
     final month = monthAsync.valueOrNull;
     if (streak == null || month == null) return Skeleton.card(height: 150);
+    if (!streak.targetKnown) return const SizedBox.shrink();
     final units = ref.watch(unitsProvider);
     final fmt = context.numFmt;
 
@@ -1032,9 +1084,7 @@ class _RhythmCard extends ConsumerWidget {
                 ),
                 VerticalDivider(color: c.outlineVariant, width: AppSpacing.xl),
                 _RhythmStat(
-                  value: fmt.format(
-                    units.weightFromKg(month.volumeKg).round(),
-                  ),
+                  value: fmt.format(units.weightFromKg(month.volumeKg).round()),
                   label: l.homeStatVolume(units.weightUnit),
                 ),
                 VerticalDivider(color: c.outlineVariant, width: AppSpacing.xl),
@@ -1049,7 +1099,10 @@ class _RhythmCard extends ConsumerWidget {
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               onPressed: () => context.push(AppRoutes.weeklyReview),
-              icon: const FitPackIcon.material(Icons.insights_rounded, size: AppIconSize.sm),
+              icon: const FitPackIcon.material(
+                Icons.insights_rounded,
+                size: AppIconSize.sm,
+              ),
               label: Text(l.wrOpen),
             ),
           ),
@@ -1118,7 +1171,10 @@ class _DayLogHeader extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(l.navNutrition),
-                  const FitPackIcon.material(Icons.arrow_outward_rounded, size: AppIconSize.sm),
+                  const FitPackIcon.material(
+                    Icons.arrow_outward_rounded,
+                    size: AppIconSize.sm,
+                  ),
                 ],
               ),
             ),
@@ -1157,8 +1213,11 @@ class _CompactNutrition extends ConsumerWidget {
         // Tam genişlik: halka yerine tek satır, diğer kartlarla hizalı.
         child: SizedBox(
           width: double.infinity,
-          child: Text(AppL10n.of(context).expFirstMeal(
-            context.numFmt.format(profile.kcalGoal))),
+          child: Text(
+            AppL10n.of(
+              context,
+            ).expFirstMeal(context.numFmt.format(profile.kcalGoal)),
+          ),
         ),
       );
     }
@@ -1197,8 +1256,10 @@ class _InsightCard extends ConsumerWidget {
     final l = AppL10n.of(context);
     final topAsync = ref.watch(topProgressProvider);
     if (topAsync.hasError) {
-      return ErrorState(message: l.whLoadError,
-        onRetry: () => ref.invalidate(topProgressProvider));
+      return ErrorState(
+        message: l.whLoadError,
+        onRetry: () => ref.invalidate(topProgressProvider),
+      );
     }
     final top = topAsync.valueOrNull;
     if (top == null) return const SizedBox.shrink();
@@ -1218,7 +1279,10 @@ class _InsightCard extends ConsumerWidget {
                 color: success.withValues(alpha: 0.16),
                 borderRadius: AppRadius.brMd,
               ),
-              child: FitPackIcon.material(Icons.trending_up_rounded, color: success),
+              child: FitPackIcon.material(
+                Icons.trending_up_rounded,
+                color: success,
+              ),
             ),
             AppSpacing.hGapMd,
             Expanded(
@@ -1327,12 +1391,16 @@ class _WaterMini extends ConsumerWidget {
   Future<void> _write(BuildContext context, WidgetRef ref, {int? ml}) async {
     try {
       final dao = ref.read(nutritionDaoProvider);
-      if (ml == null) { await dao.resetWater(DateTime.now()); }
-      else { await dao.addWater(DateTime.now(), ml); }
+      if (ml == null) {
+        await dao.resetWater(DateTime.now());
+      } else {
+        await dao.addWater(DateTime.now(), ml);
+      }
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppL10n.of(context).commonSaveFailed)));
+          SnackBar(content: Text(AppL10n.of(context).commonSaveFailed)),
+        );
       }
     }
   }
@@ -1343,16 +1411,20 @@ class _WaterMini extends ConsumerWidget {
     final accent = context.semantic.info;
     final profileAsync = ref.watch(userProfileProvider);
     if (profileAsync.hasError) {
-      return ErrorState(message: l.nutritionLoadError,
-        onRetry: () => ref.invalidate(userProfileProvider));
+      return ErrorState(
+        message: l.nutritionLoadError,
+        onRetry: () => ref.invalidate(userProfileProvider),
+      );
     }
     final profile = profileAsync.valueOrNull;
     if (profile == null) return Skeleton.card(height: 100);
     final goalMl = profile.waterGoalMl;
     final water = ref.watch(todayWaterProvider);
     if (water.hasError) {
-      return ErrorState(message: l.nutritionLoadError,
-          onRetry: () => ref.invalidate(todayWaterProvider));
+      return ErrorState(
+        message: l.nutritionLoadError,
+        onRetry: () => ref.invalidate(todayWaterProvider),
+      );
     }
     final ml = water.valueOrNull;
     if (ml == null) return Skeleton.card(height: 100);

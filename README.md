@@ -73,7 +73,11 @@ dart run drift_dev schema generate drift_schemas/ test/migrations/schema/
 # Android emülatörde çalıştır
 flutter run -d R96YB00XJPB
 
-# iPhone 17 (ana telefon) — release, yerinde güncelleme (debug bilgisayarsız açılmaz).
+# iPhone 17 (ana telefon) — TestFlight (önce pubspec build numarasını +N artır).
+# API anahtarı: ~/.appstoreconnect/private_keys/AuthKey_<KEY_ID>.p8; ASC_KEY_ID / ASC_ISSUER_ID ~/.zshrc içinde
+flutter build ipa --release && xcrun altool --upload-app --type ios -f build/ios/ipa/fit_pack.ipa --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+
+# iPhone 17 — kablolu yerinde güncelleme (debug bilgisayarsız açılmaz).
 # flutter install KULLANMA: önce kaldırır, yerel veri + senkron kuyruğu silinir.
 flutter build ios --release && xcrun devicectl device install app --device 00008150-000214C02E03C01C build/ios/iphoneos/Runner.app
 
@@ -122,7 +126,7 @@ lib/
 
 ## Cihazlar
 
-- **iPhone 17 (ana, gerçek cihaz):** iOS 26.6 (ID: `00008150-000214C02E03C01C`) — günlük kullanım, üretim verisi. Ücretsiz Apple hesabıyla imzalı → 7 günde bir yeniden kurulmalı (`devicectl` ile; `flutter install` veriyi siler).
+- **iPhone 17 (ana, gerçek cihaz):** iOS 26.6 (ID: `00008150-000214C02E03C01C`) — günlük kullanım, üretim verisi. Ücretli Apple Developer hesabı (2026-10-28) → imza 1 yıl; güncellemeler TestFlight'tan (`flutter install` veriyi siler).
 - **Android (test):** SM A075F (ID: `R96YB00XJPB`)
 - **iOS sim:** iPhone 17 · iOS 26.2 (`9A4796B8-F70E-4FBC-8DCE-CB0AD328BC9C`) — Codex incelemesi burada yapılır
 - **AVD:** FitPack (`emulator-5554`)

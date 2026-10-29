@@ -93,6 +93,8 @@ class WeeklyReviewInput {
   /// Aktif rutinlerin planladığı haftalık günler (`DateTime.weekday`).
   final Set<int> scheduledWeekdays;
   final int? weeklyGoal;
+  final bool weeklyTargetKnown;
+  final bool weeklyTargetCoversWholePeriod;
 
   /// Rutinlerdeki hedef tekrar üst sınırı, harekete göre (odak kuralı 2).
   final Map<int, int> targetRepsMaxByExercise;
@@ -130,6 +132,8 @@ class WeeklyReviewInput {
     this.exercises = const {},
     this.scheduledWeekdays = const {},
     this.weeklyGoal,
+    this.weeklyTargetKnown = true,
+    this.weeklyTargetCoversWholePeriod = true,
     this.targetRepsMaxByExercise = const {},
     this.progressPoints = const [],
     this.foodLogs = const [],
@@ -168,6 +172,11 @@ class ReviewPeriod {
 class WorkoutSection {
   final int sessions;
   final int prevSessions;
+  final int trainingDays;
+  final int prevTrainingDays;
+  final bool targetCoversWholePeriod;
+
+  bool get targetKnown => planned != null;
 
   /// Tamamlanmış, ısınma dışı set sayısı.
   final int completedSets;
@@ -186,13 +195,17 @@ class WorkoutSection {
   const WorkoutSection({
     required this.sessions,
     required this.prevSessions,
+    int? trainingDays,
+    int? prevTrainingDays,
+    this.targetCoversWholePeriod = true,
     required this.completedSets,
     required this.totalMinutes,
     required this.volumeKg,
     this.prevVolumeKg = 0,
     required this.kcalBurned,
     required this.planned,
-  });
+  }) : trainingDays = trainingDays ?? sessions,
+       prevTrainingDays = prevTrainingDays ?? prevSessions;
 }
 
 /// Bir hareketin bu haftaki ilerlemesi. Her hareket AYRI satırdır; toplanmaz.
@@ -366,6 +379,15 @@ WorkoutSection _workout(WeeklyReviewInput i) {
   return WorkoutSection(
     sessions: agg.sessions,
     prevSessions: i.prevSessions.length,
+    trainingDays: {
+      for (final s in i.sessions)
+        DateTime(s.date.year, s.date.month, s.date.day),
+    }.length,
+    prevTrainingDays: {
+      for (final s in i.prevSessions)
+        DateTime(s.date.year, s.date.month, s.date.day),
+    }.length,
+    targetCoversWholePeriod: i.weeklyTargetCoversWholePeriod,
     completedSets: completedSets,
     totalMinutes: minutes,
     volumeKg: agg.volumeKg,
@@ -375,7 +397,10 @@ WorkoutSection _workout(WeeklyReviewInput i) {
       bodyWeightKg: i.bodyWeightKg,
     ).volumeKg,
     kcalBurned: agg.kcalBurned,
-    planned: i.weeklyGoal ?? (i.scheduledWeekdays.isEmpty ? null : i.scheduledWeekdays.length),
+    planned: !i.weeklyTargetKnown
+        ? null
+        : i.weeklyGoal ??
+              (i.scheduledWeekdays.isEmpty ? null : i.scheduledWeekdays.length),
   );
 }
 
@@ -472,10 +497,7 @@ WeightSection _weight(WeeklyReviewInput i) {
         m,
   ];
   final avg = _weekAvg(i.measurements, i.weekStart);
-  final prev = _weekAvg(
-    i.measurements,
-    addDays(i.weekStart, -7),
-  );
+  final prev = _weekAvg(i.measurements, addDays(i.weekStart, -7));
   final delta = (avg != null && prev != null) ? avg - prev : null;
   final single = buHafta.length == 1;
 
@@ -572,10 +594,13 @@ ReviewFocus _focus(
   // 1) Plan tamamlanmadı. Bitmemiş haftada "kaçırdın" demek haksız olur:
   //    yalnız hafta bitince bakılır.
   final planned = workout.planned;
-  if (period.isComplete && planned != null && workout.sessions < planned) {
+  if (period.isComplete &&
+      workout.targetCoversWholePeriod &&
+      planned != null &&
+      workout.trainingDays < planned) {
     return ReviewFocus(
       FocusKind.completePlan,
-      done: workout.sessions,
+      done: workout.trainingDays,
       planned: planned,
     );
   }
@@ -642,14 +667,8 @@ bool _weightAgainstTwoWeeks(WeeklyReviewInput i) {
   final dir = _directionFor(i, i.weekStart);
   if (dir == null) return false;
   final w0 = _weekAvg(i.measurements, i.weekStart);
-  final w1 = _weekAvg(
-    i.measurements,
-    addDays(i.weekStart, -7),
-  );
-  final w2 = _weekAvg(
-    i.measurements,
-    addDays(i.weekStart, -14),
-  );
+  final w1 = _weekAvg(i.measurements, addDays(i.weekStart, -7));
+  final w2 = _weekAvg(i.measurements, addDays(i.weekStart, -14));
   if (w0 == null || w1 == null || w2 == null) return false;
   return _meaning(w0 - w1, dir) == WeightMeaning.against &&
       _meaning(w1 - w2, dir) == WeightMeaning.against;

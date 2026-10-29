@@ -8053,6 +8053,606 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Go to training'**
   String get prog3cStartWorkout;
+
+  /// No description provided for @analyticsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your usage preference'**
+  String get analyticsSectionTitle;
+
+  /// No description provided for @analyticsSwitchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help improve Fit Pack'**
+  String get analyticsSwitchTitle;
+
+  /// No description provided for @analyticsSwitchDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Share limited usage and technical information. Off by default.'**
+  String get analyticsSwitchDescription;
+
+  /// No description provided for @analyticsNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature is not available yet. Your usage information is not shared.'**
+  String get analyticsNotAvailable;
+
+  /// No description provided for @analyticsConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share usage information?'**
+  String get analyticsConsentTitle;
+
+  /// No description provided for @analyticsConsentDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'App visits, onboarding steps, workout starts and saves, app version and limited error/sync codes linked to your account are shared to improve Fit Pack. Weight, reps, foods, photos, steps and your written text are not sent. Raw usage information is kept for 30 days and preference history for 180 days. You can turn it off at any time; pending information is removed from this device. If you turn it off while offline, withdrawal reaches the server after reconnecting.'**
+  String get analyticsConsentDescription;
+
+  /// No description provided for @analyticsConsentAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Share usage information'**
+  String get analyticsConsentAccept;
+
+  /// No description provided for @analyticsEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage sharing is on.'**
+  String get analyticsEnabled;
+
+  /// No description provided for @analyticsDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage sharing is off; pending information was removed.'**
+  String get analyticsDisabled;
+
+  /// No description provided for @analyticsPreferenceError.
+  ///
+  /// In en, this message translates to:
+  /// **'Your preference could not be confirmed with the server. If you turned sharing off, it stopped on this device; withdrawal will be sent after reconnecting.'**
+  String get analyticsPreferenceError;
+
+  /// No description provided for @analyticsPurposeBoundary.
+  ///
+  /// In en, this message translates to:
+  /// **'This choice does not allow advertising, special offers or personalized notification delivery. You can use the app with sharing off.'**
+  String get analyticsPurposeBoundary;
+
+  /// No description provided for @analyticsWithdraw.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw my server analytics preference'**
+  String get analyticsWithdraw;
+
+  /// No description provided for @setupPlanSourceQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How would you like to plan your training?'**
+  String get setupPlanSourceQuestion;
+
+  /// No description provided for @setupSourceCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Help me choose a program'**
+  String get setupSourceCatalog;
+
+  /// No description provided for @setupSourceCatalogDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Match an existing gym program to your answers.'**
+  String get setupSourceCatalogDesc;
+
+  /// No description provided for @setupSourceOwn.
+  ///
+  /// In en, this message translates to:
+  /// **'I will use my own routine'**
+  String get setupSourceOwn;
+
+  /// No description provided for @setupSourceOwnDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your own plan. You can create or choose routines after setup.'**
+  String get setupSourceOwnDesc;
+
+  /// No description provided for @setupDaysQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How many training days fit a busy week?'**
+  String get setupDaysQuestion;
+
+  /// No description provided for @setupDaysCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days'**
+  String setupDaysCount(int count);
+
+  /// No description provided for @setupTimeQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional: time available per workout'**
+  String get setupTimeQuestion;
+
+  /// No description provided for @setupTimeNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No time limit'**
+  String get setupTimeNone;
+
+  /// No description provided for @setupMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min'**
+  String setupMinutes(int count);
+
+  /// No description provided for @setupOwnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan stays yours'**
+  String get setupOwnTitle;
+
+  /// No description provided for @setupOwnReason.
+  ///
+  /// In en, this message translates to:
+  /// **'You chose your own routine, so no catalog program will be added. Your weekly target is saved; choose or create your routine in Training.'**
+  String get setupOwnReason;
+
+  /// No description provided for @setupRecommendationReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Your experience and {days}-day budget were used to choose from the existing catalog. You can change either answer.'**
+  String setupRecommendationReason(int days);
+
+  /// No description provided for @setupFrequencyMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'You chose {selected} days. This catalog program recommends {program} days. Your target will not be changed and the program content will stay the same.'**
+  String setupFrequencyMismatch(int selected, int program);
+
+  /// No description provided for @setupTimeEstimate.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest routine: about {minutes} min, excluding warm-up, equipment changes and waiting.'**
+  String setupTimeEstimate(int minutes);
+
+  /// No description provided for @setupTimeMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'This may exceed your {minutes}-minute budget. Sets and rest times will not be shortened automatically.'**
+  String setupTimeMismatch(int minutes);
+
+  /// No description provided for @setupOwnTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Your time budget is saved. Check the duration of your own routine before starting.'**
+  String get setupOwnTime;
+
+  /// No description provided for @setupConfirmMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'I have reviewed these differences and choose to use this route.'**
+  String get setupConfirmMismatch;
+
+  /// No description provided for @setupChangeAnswers.
+  ///
+  /// In en, this message translates to:
+  /// **'Change my answers'**
+  String get setupChangeAnswers;
+
+  /// No description provided for @setupLocalPreference.
+  ///
+  /// In en, this message translates to:
+  /// **'These training preferences are saved for this account on this device. They do not sync to other devices.'**
+  String get setupLocalPreference;
+
+  /// No description provided for @setupNutritionChoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your nutrition direction to continue. It will not be selected for you.'**
+  String get setupNutritionChoice;
+
+  /// No description provided for @setupSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Your training choices could not be saved. Your setup is still open; try again.'**
+  String get setupSaveError;
+
+  /// No description provided for @goalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your goal journey'**
+  String get goalTitle;
+
+  /// No description provided for @goalWhyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What matters to you?'**
+  String get goalWhyTitle;
+
+  /// No description provided for @goalWhyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what you want to understand from your real records. You can change this and keep logging without choosing.'**
+  String get goalWhyDescription;
+
+  /// No description provided for @goalPurposeRoutine.
+  ///
+  /// In en, this message translates to:
+  /// **'Build a rhythm I can sustain'**
+  String get goalPurposeRoutine;
+
+  /// No description provided for @goalPurposeStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Understand progress in one exercise'**
+  String get goalPurposeStrength;
+
+  /// No description provided for @goalPurposeReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to my own routine'**
+  String get goalPurposeReturn;
+
+  /// No description provided for @goalLocalOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'These preferences stay on this device for this account. They do not change your program or nutrition targets.'**
+  String get goalLocalOnly;
+
+  /// No description provided for @goalLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read your goal. Retry without changing your plan.'**
+  String get goalLoadError;
+
+  /// No description provided for @goalBaselineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your starting point'**
+  String get goalBaselineTitle;
+
+  /// No description provided for @goalNoBaseline.
+  ///
+  /// In en, this message translates to:
+  /// **'No earlier records here. Your first real workout will give you a starting point.'**
+  String get goalNoBaseline;
+
+  /// No description provided for @goalBaselineCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Records on {count} days in the 28 days before this journey.'**
+  String goalBaselineCount(int count);
+
+  /// No description provided for @goalRecordsScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Records may be incomplete. An unlogged day does not mean you did nothing.'**
+  String get goalRecordsScope;
+
+  /// No description provided for @goalChooseExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an exercise from your real records'**
+  String get goalChooseExercise;
+
+  /// No description provided for @goalRouteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your weekly route'**
+  String get goalRouteTitle;
+
+  /// No description provided for @goalWeeklyDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly plan: {count} training days'**
+  String goalWeeklyDays(int count);
+
+  /// No description provided for @goalTargetUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'No confirmed target for this week yet.'**
+  String get goalTargetUnknown;
+
+  /// No description provided for @goalTimeBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Your time constraint: {count} minutes per workout'**
+  String goalTimeBudget(int count);
+
+  /// No description provided for @goalNoRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'No routine selected. You can use your own routine or choose a catalog program in Workouts.'**
+  String get goalNoRoute;
+
+  /// No description provided for @goalRouteExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your existing routine order stays the same. A weekly time plan is not a new exercise prescription.'**
+  String get goalRouteExplanation;
+
+  /// No description provided for @goalChooseNextWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose next week’s training days'**
+  String get goalChooseNextWeek;
+
+  /// No description provided for @goalNextWeekOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the number of separate days. This applies from next week; earlier weeks keep their own target.'**
+  String get goalNextWeekOnly;
+
+  /// No description provided for @goalConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm next week’s plan'**
+  String get goalConfirmTitle;
+
+  /// No description provided for @goalConfirmNextWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan {count} separate training days from next week? Your routine, weights and nutrition targets stay the same.'**
+  String goalConfirmNextWeek(int count);
+
+  /// No description provided for @goalTodayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your next real step'**
+  String get goalTodayTitle;
+
+  /// No description provided for @goalResumeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue your workout'**
+  String get goalResumeAction;
+
+  /// No description provided for @goalTodayRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Your workout is recorded today. You can review it.'**
+  String get goalTodayRecorded;
+
+  /// No description provided for @goalTodayDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'See your workout plan and choose when to begin. Rest days do not require opening the app.'**
+  String get goalTodayDescription;
+
+  /// No description provided for @goalOpenNextAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the next step'**
+  String get goalOpenNextAction;
+
+  /// No description provided for @goalMilestonesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress you can see'**
+  String get goalMilestonesTitle;
+
+  /// No description provided for @goalMilestoneStart.
+  ///
+  /// In en, this message translates to:
+  /// **'A real starting record'**
+  String get goalMilestoneStart;
+
+  /// No description provided for @goalMilestoneCompare.
+  ///
+  /// In en, this message translates to:
+  /// **'Two different days to compare'**
+  String get goalMilestoneCompare;
+
+  /// No description provided for @goalMilestoneReview.
+  ///
+  /// In en, this message translates to:
+  /// **'A weekly reflection you chose'**
+  String get goalMilestoneReview;
+
+  /// No description provided for @goalComparisonBoundary.
+  ///
+  /// In en, this message translates to:
+  /// **'These are recorded sets, not a strength score. Different equipment or technique can affect the comparison.'**
+  String get goalComparisonBoundary;
+
+  /// No description provided for @goalNeedComparison.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an exercise. Two different days of completed working sets are needed for comparison.'**
+  String get goalNeedComparison;
+
+  /// No description provided for @goalReturnEvidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Your next real record starts your return. Old peak weights are context, not today’s obligation.'**
+  String get goalReturnEvidence;
+
+  /// No description provided for @goalRhythmEvidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Look for a rhythm you can repeat. A week of records does not guarantee a body or strength outcome.'**
+  String get goalRhythmEvidence;
+
+  /// No description provided for @goalReflectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reflect on the last complete week'**
+  String get goalReflectionTitle;
+
+  /// No description provided for @goalRecordedDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Records on {count} separate training days'**
+  String goalRecordedDays(int count);
+
+  /// No description provided for @goalPastTargetUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'That week’s target is unknown; no success or failure is inferred.'**
+  String get goalPastTargetUnknown;
+
+  /// No description provided for @goalRecordsAccurate.
+  ///
+  /// In en, this message translates to:
+  /// **'These records represent my week'**
+  String get goalRecordsAccurate;
+
+  /// No description provided for @goalTimeObstacle.
+  ///
+  /// In en, this message translates to:
+  /// **'My available time was the obstacle'**
+  String get goalTimeObstacle;
+
+  /// No description provided for @goalTimeReason.
+  ///
+  /// In en, this message translates to:
+  /// **'You reported a time constraint; there are records on {count} days. You can choose a realistic budget for next week. Nothing changes automatically.'**
+  String goalTimeReason(int count);
+
+  /// No description provided for @goalMarkReviewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Save my reflection'**
+  String get goalMarkReviewed;
+
+  /// No description provided for @goalAddMissingRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'I trained but did not log it'**
+  String get goalAddMissingRecord;
+
+  /// No description provided for @goalOpenWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the weekly details'**
+  String get goalOpenWeek;
+
+  /// No description provided for @goalFlexTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan can change'**
+  String get goalFlexTitle;
+
+  /// No description provided for @goalFlexDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel or a break can change your available time. Choose a future plan when it suits you; missed sessions are not a debt.'**
+  String get goalFlexDescription;
+
+  /// No description provided for @goalHealthBoundary.
+  ///
+  /// In en, this message translates to:
+  /// **'If pain or an injury affects training, seek appropriate professional guidance. This app does not provide treatment or a rehabilitation plan.'**
+  String get goalHealthBoundary;
+
+  /// No description provided for @goalReminderSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage existing reminders'**
+  String get goalReminderSettings;
+
+  /// No description provided for @goalEntryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your records to a goal'**
+  String get goalEntryTitle;
+
+  /// No description provided for @goalEntryDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reason, your route and your weekly reflection'**
+  String get goalEntryDescription;
+
+  /// No description provided for @goalTrainingDaysLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Training days'**
+  String get goalTrainingDaysLabel;
+
+  /// No description provided for @goalSessionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} workout records; more than one on a day still counts as one training day.'**
+  String goalSessionCount(int count);
+
+  /// No description provided for @goalSuggestDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Consider {count} days next week'**
+  String goalSuggestDays(int count);
+
+  /// No description provided for @goalAccountChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account changed. Reopen this page from your current account.'**
+  String get goalAccountChanged;
+
+  /// No description provided for @goalEffectiveFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Target effective from {date}'**
+  String goalEffectiveFrom(String date);
+
+  /// No description provided for @goalRecordedStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Your first workout is recorded. It is now a real starting point.'**
+  String get goalRecordedStart;
+
+  /// No description provided for @goalStepDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get goalStepDone;
+
+  /// No description provided for @goalStepPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet recorded'**
+  String get goalStepPending;
+
+  /// No description provided for @goalAccountDeletedCleanupWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account was deleted. Some local training preferences could not be cleared on this device.'**
+  String get goalAccountDeletedCleanupWarning;
+
+  /// No description provided for @goalSetupRecovery.
+  ///
+  /// In en, this message translates to:
+  /// **'Your catalog choice is saved, but its routines are not here yet. Review the program to complete setup.'**
+  String get goalSetupRecovery;
+
+  /// No description provided for @goalCompleteRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Review and finish program setup'**
+  String get goalCompleteRoute;
+
+  /// No description provided for @asReplaceExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace exercise'**
+  String get asReplaceExercise;
+
+  /// No description provided for @asReplaceExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed sets and any entered values stay with the original exercise. Only empty sets move to the exercise you choose. If there are no empty sets, it starts with one new set. This change applies only to this session.'**
+  String get asReplaceExplanation;
+
+  /// No description provided for @asReplaceChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose exercise'**
+  String get asReplaceChoose;
+
+  /// No description provided for @asReplaceError.
+  ///
+  /// In en, this message translates to:
+  /// **'The exercise could not be replaced. Your current sets are unchanged. Try again.'**
+  String get asReplaceError;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

@@ -5,10 +5,15 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/config/supabase_config.dart';
+import '../../data/services/training_preferences_cleanup.dart';
 
 /// Supabase hesap/oturum sarmalayıcı (docs/13-cloud-backup.md).
 /// E-posta/şifre + Google ile giriş. Yerel-öncelikli mimaride bulut opsiyonel:
 /// oturum yoksa uygulama yereldeki veriyle normal çalışır.
+class AccountDeletedLocalCleanupException implements Exception {
+  const AccountDeletedLocalCleanupException();
+}
+
 class AuthService {
   SupabaseClient get _client => Supabase.instance.client;
 
@@ -30,7 +35,9 @@ class AuthService {
 
   Future<void> resendConfirmation(String email) async {
     await _client.auth.resend(
-      type: OtpType.signup, email: email, emailRedirectTo: _deepLink,
+      type: OtpType.signup,
+      email: email,
+      emailRedirectTo: _deepLink,
     );
   }
 
@@ -86,7 +93,9 @@ class AuthService {
     final auth = await account.authentication;
     final idToken = auth.idToken;
     if (idToken == null) {
-      throw const AuthException('Google kimlik doğrulaması eksik (idToken yok)');
+      throw const AuthException(
+        'Google kimlik doğrulaması eksik (idToken yok)',
+      );
     }
     await _client.auth.signInWithIdToken(
       provider: OAuthProvider.google,
@@ -105,8 +114,19 @@ class AuthService {
   /// kurulu olmalı (SQL: docs/16 §4). Fonksiyon yoksa PostgrestException
   /// fırlar → UI hata gösterir, oturum açık kalır.
   Future<void> deleteAccount() async {
+    final owner = currentUser?.id;
     await _client.rpc('delete_user');
-    await _client.auth.signOut();
+    try {
+      if (owner != null) {
+        await clearTrainingPreferencesForAccount(owner);
+      }
+    } catch (_) {
+      throw const AccountDeletedLocalCleanupException();
+    } finally {
+      // Temizlik hata verse de silinen hesapta oturum açık kalmasın.
+      // Beklerken başka hesaba geçildiyse onun oturumunu kapatma.
+      if (currentUser?.id == owner) await _client.auth.signOut();
+    }
   }
 
   /// Şifre sıfırlama bağlantısı gönderir (docs/18 §14).
@@ -120,10 +140,7 @@ class AuthService {
   /// `AuthChangeEvent.passwordRecovery` yayar → `AuthGate` kullanıcıyı yeni
   /// şifre ekranına kilitler.
   Future<void> sendPasswordReset(String email) async {
-    await _client.auth.resetPasswordForEmail(
-      email,
-      redirectTo: _deepLink,
-    );
+    await _client.auth.resetPasswordForEmail(email, redirectTo: _deepLink);
   }
 
   /// Kurtarma oturumundayken yeni şifreyi yazar. Oturum yoksa

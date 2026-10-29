@@ -16,13 +16,18 @@ import '../home/providers/weekly_goal_provider.dart';
 ///
 /// Motor saf; bu sağlayıcı yalnız girdiyi toplar. Sayılar ana sayfayla AYNI
 /// fonksiyondan geçer (W-9).
-final weeklyReviewProvider =
-    StreamProvider.autoDispose.family<WeeklyReview, int>((ref, offset) {
-  final goal = ref.watch(weeklyGoalProvider.future);
+final weeklyReviewProvider = StreamProvider.autoDispose.family<WeeklyReview, int>((
+  ref,
+  offset,
+) {
   final db = ref.watch(databaseProvider);
   final weekStart = ref.watch(weekStartProvider);
   final day = ref.watch(currentDayProvider); // hafta dönümü (CR-010)
-  return watchTables(db, [
+  final start = addDays(startOfWeek(day, weekStart), -7 * offset);
+  final goal = ref.watch(weeklyTargetForPeriodProvider(start).future);
+  return watchTables(
+    db,
+    [
     db.workoutSessions,
     db.workoutSets,
     db.routines,
@@ -31,22 +36,25 @@ final weeklyReviewProvider =
     db.nutritionDays, // gün tamamlandı (docs/37) — işaretlenince yeniden hesapla
     db.bodyMeasurements,
     db.userProfile,
-  ], () async {
+    ],
+    () async {
     final wo = ref.read(workoutDaoProvider);
     final nut = ref.read(nutritionDaoProvider);
     final body = ref.read(bodyDaoProvider);
     final profile = await ref.read(userProfileDaoProvider).getProfile();
 
     final now = DateTime.now();
-    final start = addDays(startOfWeek(day, weekStart), -7 * offset);
     final end = addDays(start, 7);
     final prevStart = addDays(start, -7);
 
     final sessions = await wo.getSessionsByDateRange(start, end);
-    final sets = await wo.getSetsForSessions(sessions.map((s) => s.id).toList());
+      final sets = await wo.getSetsForSessions(
+        sessions.map((s) => s.id).toList(),
+      );
     final prevSessions = await wo.getSessionsByDateRange(prevStart, start);
-    final prevSets =
-        await wo.getSetsForSessions(prevSessions.map((s) => s.id).toList());
+      final prevSets = await wo.getSetsForSessions(
+        prevSessions.map((s) => s.id).toList(),
+      );
 
     // Hareket ilerlemesi + "3 haftadır aynı kilo" kuralı: bu hafta + önceki 3.
     final points = await wo.getWeightedSetPointsInRange(
@@ -65,8 +73,10 @@ final weeklyReviewProvider =
 
     // Aktif rutinlerin planlı günleri + hareket başına hedef tekrar üst sınırı.
     final routines = await wo.getActiveRoutines();
-    final scheduled =
-        routines.map((r) => r.scheduledWeekday).whereType<int>().toSet();
+      final scheduled = routines
+          .map((r) => r.scheduledWeekday)
+          .whereType<int>()
+          .toSet();
     final targetMax = <int, int>{};
     for (final r in routines) {
       for (final re in await wo.getRoutineExercises(r.id)) {
@@ -80,8 +90,12 @@ final weeklyReviewProvider =
       }
     }
 
-    return buildWeeklyReview(WeeklyReviewInput(
-      weeklyGoal: await goal,
+      final target = await goal;
+      return buildWeeklyReview(
+        WeeklyReviewInput(
+          weeklyGoal: target.targetDays,
+          weeklyTargetKnown: target.targetKnown,
+          weeklyTargetCoversWholePeriod: target.coversWholePeriod,
       weekStart: start,
       now: now,
       sessions: sessions,
@@ -100,12 +114,16 @@ final weeklyReviewProvider =
       kcalGoal: profile?.kcalGoal ?? 0,
       proteinGoal: profile?.proteinGoal ?? 0,
       measurements: await body.getDailyMeasurementsInRange(
-          addDays(start, -14), end),
+            addDays(start, -14),
+            end,
+          ),
       bodyWeightKg: (await body.getDailyLatestWeight())?.weightKg,
       goalDirection: GoalDirection.tryParse(profile?.goalDirection),
       goalDirectionSince: profile?.goalDirectionSince,
-    ));
-  });
+        ),
+      );
+    },
+  );
 });
 
 /// Profildeki hedef çelişkisi (docs/22 §9 soru 2): seçilen yön ile hedef kilo
@@ -132,9 +150,11 @@ bool goalConflicts({
 final goalConflictProvider = StreamProvider.autoDispose<bool>((ref) {
   final db = ref.watch(databaseProvider);
   return watchTables(db, [db.userProfile, db.bodyMeasurements], () async {
-    final UserProfileData? p =
-        await ref.read(userProfileDaoProvider).getProfile();
-    final w = (await ref.read(bodyDaoProvider).getDailyLatestWeight())?.weightKg;
+    final UserProfileData? p = await ref
+        .read(userProfileDaoProvider)
+        .getProfile();
+    final w =
+        (await ref.read(bodyDaoProvider).getDailyLatestWeight())?.weightKg;
     return goalConflicts(
       direction: GoalDirection.tryParse(p?.goalDirection),
       goalWeightKg: p?.goalWeightKg,

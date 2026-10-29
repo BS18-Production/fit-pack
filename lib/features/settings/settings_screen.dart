@@ -16,6 +16,7 @@ import '../../core/theme/theme_mode_provider.dart';
 import '../../l10n/app_l10n.dart';
 import '../insights/weekly_review_reminder.dart';
 import '../health/health_settings_section.dart';
+import '../analytics/analytics_settings_section.dart';
 import '../legal/privacy_policy_sheet.dart';
 import '../../shared/widgets/setting_tiles.dart';
 import '../../core/router/app_routes.dart';
@@ -139,6 +140,7 @@ class SettingsScreen extends ConsumerWidget {
 
   /// Geri bildirim: e-posta uygulamasını konu satırı doldurulmuş açar.
   Future<void> _sendFeedback(BuildContext context) async {
+    if (AppConstants.supportEmail.trim().isEmpty) return;
     final uri = Uri(
       scheme: 'mailto',
       path: AppConstants.supportEmail,
@@ -210,6 +212,7 @@ class SettingsScreen extends ConsumerWidget {
             ],
           ),
           const HealthSettingsSection(),
+          const AnalyticsSettingsSection(),
           SettingsSection(
             title: l.settingsSectionNutrition,
             children: [
@@ -262,7 +265,7 @@ class SettingsScreen extends ConsumerWidget {
                 trailing: const FitPackIcon.material(Icons.chevron_right_rounded),
                 onTap: () => context.push(AppRoutes.attribution),
               ),
-              SettingTile(
+              if (AppConstants.supportEmail.trim().isNotEmpty) SettingTile(
                 icon: Icons.chat_bubble_outline_rounded,
                 title: l.settingsFeedback,
                 subtitle: l.settingsFeedbackSubtitle,

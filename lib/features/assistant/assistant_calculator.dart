@@ -110,6 +110,8 @@ class AssistantData {
   final List<BodyMeasurement> measurements;
   final Set<int> scheduledWeekdays;
   final int weeklyGoal;
+  final bool weeklyTargetKnown;
+  final int? Function(DateTime periodStart)? weeklyGoalForPeriod;
   final UserProfileData? profile;
   const AssistantData({
     required this.now,
@@ -124,6 +126,8 @@ class AssistantData {
     this.measurements = const [],
     this.scheduledWeekdays = const {},
     this.weeklyGoal = 3,
+    this.weeklyTargetKnown = true,
+    this.weeklyGoalForPeriod,
     this.profile,
   });
 
@@ -141,6 +145,8 @@ class AssistantData {
     measurements: measurements,
     scheduledWeekdays: scheduledWeekdays,
     weeklyGoal: weeklyGoal,
+    weeklyTargetKnown: weeklyTargetKnown,
+    weeklyGoalForPeriod: weeklyGoalForPeriod,
     profile: profile,
   );
 }
@@ -442,14 +448,33 @@ AssistantAnswer calculateAssistant(AssistantSelection s, AssistantData d) {
         ],
       );
     case AssistantQuery.streak:
+      if (!d.weeklyTargetKnown) {
+        return answer(
+          [],
+          d.sessions.length,
+          AssistantDestination.workout,
+          status: AssistantDataStatus.noPlan,
+        );
+      }
       final streak = computeWeeklyStreak(
         sessionDates: d.sessions.map((v) => v.date),
         weeklyGoal: d.weeklyGoal,
         now: d.now,
         weekStart: d.weekStart,
+        targetKnown: d.weeklyTargetKnown,
+        goalForWeek: d.weeklyGoalForPeriod,
       );
+      if (!streak.targetKnown) {
+        return answer(
+          [],
+          d.sessions.length,
+          AssistantDestination.workout,
+          status: AssistantDataStatus.insufficientData,
+        );
+      }
       return answer(
         [
+          if (!streak.historyLimited)
           AssistantMetric(AssistantMetricKey.weeks, streak.weeks),
           AssistantMetric(AssistantMetricKey.weeklyGoal, streak.weeklyGoal),
         ],

@@ -1,12 +1,12 @@
 # Privacy Policy
 
-Version 2 · Last updated: 11 October 2026
+Version 3 · Last updated: 29 October 2026
 
 This notice explains how Fit Pack processes your personal data under the EU General Data Protection Regulation (GDPR) and Turkey's Personal Data Protection Law No. 6698 (KVKK).
 
 ## Controller
 
-Fit Pack is a personal app developed by Samet Orhan, who is the data controller. A contact address will be added to this notice soon; until then you can exercise most of your rights directly in the app (see "Your rights").
+Fit Pack is a personal app developed by Samet Orhan, who is the data controller.
 
 ## What we process
 
@@ -41,7 +41,7 @@ Your data is kept while your account exists. When you delete your account, your 
 
 You can exercise several of your rights (GDPR Art. 15–22, KVKK Art. 11) directly in the app:
 
-- Access and portability: write to the contact address (above, "Controller") and we'll send your data as CSV / JSON within 30 days.
+- You have the right to access your data and obtain a portable copy.
 - Rectification: edit or delete measurements, meals and workouts in the app.
 - Erasure: Account → Delete account.
 - Withdraw health data consent: Settings → Health → Weight and body fat. Importing stops and imported measurements are deleted; if you consent again, only new measurements are imported. Withdrawal does not affect processing before it.

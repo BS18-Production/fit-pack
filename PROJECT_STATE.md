@@ -1,6 +1,6 @@
 # Fit Pack — Proje Durumu (PROJECT_STATE)
 
-> **Son güncelleme:** 2026-10-17
+> **Son güncelleme:** 2026-10-28
 > **Faz:** V2 — **Zorunlu hesap + senkron** (docs/18). Aşama A · B · C · D · E ·
 > F · G kodlandı ve akıyor; **epik BİTMEDİ** — dış inceleme (2026-09-15) senkron
 > protokolünde 7 P1 açığı buldu (silme yayılmıyor, sürüm damgası saniyelik,
@@ -13,6 +13,18 @@
 > (ayrıntı: NEXT_TASKS "Güncel sıra").
 > **Platform:** Android + **iOS** (2026-07-25'ten beri ikisi birden çalışıyor).
 > **Şema:** koddaki `schemaVersion` (`lib/data/database/app_database.dart`; 2026-10-17'de v16) · **Sahibi:** Samet Orhan (kişisel proje)
+
+
+## Ücretli Apple hesabı + TestFlight · 2026-10-28
+
+Ücretsiz imza 25 Ekim'de dolmuş, uygulama "ulaşılamıyor" diyordu. Samet Apple
+Developer Program'a katıldı; Apple ekibi yerinde yükseltti (Team ID
+`DQBCHYZUU7` aynı, proje ayarı değişmedi), imza 2027-10-28'e kadar. App Store
+Connect'te uygulama (6828114978) + API anahtarı açıldı, 1.0.0 (2) yüklendi,
+iç test grubu "Ben" üzerinden iPhone'a TestFlight'la kuruldu. Info.plist'e
+`ITSAppUsesNonExemptEncryption=false` eklendi. Öncesinde iPhone verisi Mac'e
+yedeklendi (`~/fitpack-yedek/`). Not: TestFlight sürümünde `devicectl` ile
+uygulama verisi kopyalanamaz.
 
 ## Codex incelemesi — senkron P1 düzeltmeleri · 2026-10-17
 

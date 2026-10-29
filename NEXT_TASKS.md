@@ -1,5 +1,15 @@
 # Fit Pack — Sıradaki İşler (NEXT_TASKS)
 
+
+## Ücretli Apple hesabıyla açılanlar (2026-10-28)
+
+- [ ] **Time Sensitive bildirimler** (Odak modunu deler) — ücretsiz hesapta
+      imzalanmıyordu; antrenman/dinlenme hatırlatmalarına uygula.
+- [ ] **Push bildirimi (APNs)** — sunucudan bildirim gerekecek mi değerlendir.
+- [ ] **Eşin telefonu** — iç test kullanıcısı olarak ekle (Samet söyleyince;
+      e-posta adresi + davet onayı gerekiyor).
+- [ ] Alper'i TestFlight'a taşı (dış test → Beta App Review + test bilgileri).
+
 ## Codex kod incelemesi (16 Eki 2026) — senkron P1'leri · [docs/46](docs/46-sync-capture-inflight-delete.md)
 
 Rapor: 24 bulgu (6 P1, 15 P2, 3 P3). Önce veri kaybı / silme açıkları.
@@ -262,9 +272,9 @@ bağlantıları ve platform maskeleri; cihaz kontrolü ayrıca kaydedilecek.
 ## 📱 iPhone ana cihaz (2026-10-04)
 
 - [x] Release derlemesi iPhone 17'ye kuruldu, açıldı; iOS hedefi 15.0.
-- [ ] **İmza süresi:** ücretsiz hesap → 2026-10-11'de dolar; o zamana kadar
-      yeniden kur. Kalıcı çözüm Apple Developer Program (yıllık 99 $, 1 yıllık
-      imza + TestFlight) — Samet'in kararı.
+- [x] **İmza süresi:** 2026-10-25'te doldu ("uygulama ulaşılamıyor"); Samet
+      2026-10-28'de Apple Developer Program'a katıldı (1.029 TL/yıl). Team ID
+      aynı kaldı, imza 2027-10-28'e kadar, dağıtım TestFlight.
 
 ## 🍽️ Yemek ekleme paneli — yeniden tasarım ✅ (2026-09-30)
 
@@ -1367,7 +1377,9 @@ deep link, senkron, veritabanı ve seed doğrulandı (docs/18 §15.6).
       ana ekrandan açılmaz**, release şart. Flutter `--release` derlemeyi yapıp
       "expected app not found" der — uygulama `Release-iphoneos/` altındadır,
       `iphoneos/` altında değil.
-- [ ] **Kablosuz dağıtım (TestFlight) ERTELENDİ** — Samet 2026-07-25: "şimdilik
+- [x] **Kablosuz dağıtım (TestFlight)** — 2026-10-28 kuruldu: ücretli hesap,
+      App Store Connect uygulaması (6828114978), API anahtarı, iç grup "Ben",
+      1.0.0 (2) iPhone'a TestFlight'tan kuruldu. Eski not (2026-07-25): "şimdilik
       kablolu test yeterli, sonra bakarız". Ücretsiz yolu yok, $99/yıl Apple
       Developer Program şart. İç test (100 kişi, Apple incelemesi yok) ile dış test
       (10.000 kişi, Beta App Review + gizlilik politikası URL'si) ayrımı var.

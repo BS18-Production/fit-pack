@@ -38,6 +38,9 @@ class SyncController {
   /// Yazma sonrası bekleme — art arda yazmalar tek tura toplanır.
   final Duration debounce;
 
+  /// İsteğe bağlı, yalnız sayısal aralık/kod üreten gözlem; kayıt yolunu kesemez.
+  final void Function(String, PushResult, Duration, int)? onCycle;
+
   /// Hata sonrası bekleme basamakları.
   static const _backoff = <Duration>[
     Duration(seconds: 1),
@@ -51,6 +54,7 @@ class SyncController {
     required this.push,
     required this.currentUserId,
     this.debounce = const Duration(seconds: 2),
+    this.onCycle,
   });
 
   Timer? _debounceTimer;
@@ -99,6 +103,8 @@ class SyncController {
     // çağrıların hepsi kontrolden geçer (hepsi `hasPending`i beklerken hiçbiri
     // bayrağı görmez) ve aynı satır birden fazla kez gönderilir.
     _running = true;
+    final elapsed = Stopwatch()..start();
+    var waiting = 0;
     try {
       // Hesap sahipliği (docs/47): çakışma ekranı açıkken ya da hesap
       // temizliği sürerken hiçbir şey gönderilmez. Karar verilince `sync_meta`
@@ -111,7 +117,7 @@ class SyncController {
       }
       // Boşa tur atma: bekleyen yoksa çık. Bu aynı zamanda döngü korumasıdır —
       // temiz işaretleme de bir yazmadır ve `tableUpdates` tetikler.
-      final waiting = await pendingCount();
+      waiting = await pendingCount();
       if (waiting == 0) {
         syncLog('atlandı: kuyruk boş');
         return;
@@ -119,6 +125,7 @@ class SyncController {
       syncLog('tur başlıyor — $waiting satır bekliyor, kullanıcı $userId');
       final result = await push.pushAll(userId: userId);
       last.value = result;
+      _observeCycle(userId, result, elapsed.elapsed, waiting);
       syncLog('tur bitti — gönderilen ${result.pushed}, '
           'kalan ${result.failed}', error: result.error);
 
@@ -130,10 +137,24 @@ class SyncController {
       }
     } catch (e, st) {
       last.value = PushResult(failed: 1, error: e);
+      _observeCycle(userId, last.value!, elapsed.elapsed, waiting);
       syncLog('TUR HATASI: $e\n$st', error: e);
       _scheduleRetry();
     } finally {
       _running = false;
+    }
+  }
+
+  void _observeCycle(
+    String owner,
+    PushResult result,
+    Duration elapsed,
+    int pending,
+  ) {
+    try {
+      onCycle?.call(owner, result, elapsed, pending);
+    } catch (_) {
+      // Gözlem hatası senkron sonucunu veya yeniden denemeyi değiştirmez.
     }
   }
 

@@ -4818,4 +4818,373 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get prog3cStartWorkout => 'Go to training';
+
+  @override
+  String get analyticsSectionTitle => 'Your usage preference';
+
+  @override
+  String get analyticsSwitchTitle => 'Help improve Fit Pack';
+
+  @override
+  String get analyticsSwitchDescription =>
+      'Share limited usage and technical information. Off by default.';
+
+  @override
+  String get analyticsNotAvailable =>
+      'This feature is not available yet. Your usage information is not shared.';
+
+  @override
+  String get analyticsConsentTitle => 'Share usage information?';
+
+  @override
+  String get analyticsConsentDescription =>
+      'App visits, onboarding steps, workout starts and saves, app version and limited error/sync codes linked to your account are shared to improve Fit Pack. Weight, reps, foods, photos, steps and your written text are not sent. Raw usage information is kept for 30 days and preference history for 180 days. You can turn it off at any time; pending information is removed from this device. If you turn it off while offline, withdrawal reaches the server after reconnecting.';
+
+  @override
+  String get analyticsConsentAccept => 'Share usage information';
+
+  @override
+  String get analyticsEnabled => 'Usage sharing is on.';
+
+  @override
+  String get analyticsDisabled =>
+      'Usage sharing is off; pending information was removed.';
+
+  @override
+  String get analyticsPreferenceError =>
+      'Your preference could not be confirmed with the server. If you turned sharing off, it stopped on this device; withdrawal will be sent after reconnecting.';
+
+  @override
+  String get analyticsPurposeBoundary =>
+      'This choice does not allow advertising, special offers or personalized notification delivery. You can use the app with sharing off.';
+
+  @override
+  String get analyticsWithdraw => 'Withdraw my server analytics preference';
+
+  @override
+  String get setupPlanSourceQuestion =>
+      'How would you like to plan your training?';
+
+  @override
+  String get setupSourceCatalog => 'Help me choose a program';
+
+  @override
+  String get setupSourceCatalogDesc =>
+      'Match an existing gym program to your answers.';
+
+  @override
+  String get setupSourceOwn => 'I will use my own routine';
+
+  @override
+  String get setupSourceOwnDesc =>
+      'Keep your own plan. You can create or choose routines after setup.';
+
+  @override
+  String get setupDaysQuestion => 'How many training days fit a busy week?';
+
+  @override
+  String setupDaysCount(int count) {
+    return '$count days';
+  }
+
+  @override
+  String get setupTimeQuestion => 'Optional: time available per workout';
+
+  @override
+  String get setupTimeNone => 'No time limit';
+
+  @override
+  String setupMinutes(int count) {
+    return '$count min';
+  }
+
+  @override
+  String get setupOwnTitle => 'Your plan stays yours';
+
+  @override
+  String get setupOwnReason =>
+      'You chose your own routine, so no catalog program will be added. Your weekly target is saved; choose or create your routine in Training.';
+
+  @override
+  String setupRecommendationReason(int days) {
+    return 'Your experience and $days-day budget were used to choose from the existing catalog. You can change either answer.';
+  }
+
+  @override
+  String setupFrequencyMismatch(int selected, int program) {
+    return 'You chose $selected days. This catalog program recommends $program days. Your target will not be changed and the program content will stay the same.';
+  }
+
+  @override
+  String setupTimeEstimate(int minutes) {
+    return 'Longest routine: about $minutes min, excluding warm-up, equipment changes and waiting.';
+  }
+
+  @override
+  String setupTimeMismatch(int minutes) {
+    return 'This may exceed your $minutes-minute budget. Sets and rest times will not be shortened automatically.';
+  }
+
+  @override
+  String get setupOwnTime =>
+      'Your time budget is saved. Check the duration of your own routine before starting.';
+
+  @override
+  String get setupConfirmMismatch =>
+      'I have reviewed these differences and choose to use this route.';
+
+  @override
+  String get setupChangeAnswers => 'Change my answers';
+
+  @override
+  String get setupLocalPreference =>
+      'These training preferences are saved for this account on this device. They do not sync to other devices.';
+
+  @override
+  String get setupNutritionChoice =>
+      'Choose your nutrition direction to continue. It will not be selected for you.';
+
+  @override
+  String get setupSaveError =>
+      'Your training choices could not be saved. Your setup is still open; try again.';
+
+  @override
+  String get goalTitle => 'Your goal journey';
+
+  @override
+  String get goalWhyTitle => 'What matters to you?';
+
+  @override
+  String get goalWhyDescription =>
+      'Choose what you want to understand from your real records. You can change this and keep logging without choosing.';
+
+  @override
+  String get goalPurposeRoutine => 'Build a rhythm I can sustain';
+
+  @override
+  String get goalPurposeStrength => 'Understand progress in one exercise';
+
+  @override
+  String get goalPurposeReturn => 'Return to my own routine';
+
+  @override
+  String get goalLocalOnly =>
+      'These preferences stay on this device for this account. They do not change your program or nutrition targets.';
+
+  @override
+  String get goalLoadError =>
+      'Could not read your goal. Retry without changing your plan.';
+
+  @override
+  String get goalBaselineTitle => 'Your starting point';
+
+  @override
+  String get goalNoBaseline =>
+      'No earlier records here. Your first real workout will give you a starting point.';
+
+  @override
+  String goalBaselineCount(int count) {
+    return 'Records on $count days in the 28 days before this journey.';
+  }
+
+  @override
+  String get goalRecordsScope =>
+      'Records may be incomplete. An unlogged day does not mean you did nothing.';
+
+  @override
+  String get goalChooseExercise => 'Choose an exercise from your real records';
+
+  @override
+  String get goalRouteTitle => 'Your weekly route';
+
+  @override
+  String goalWeeklyDays(int count) {
+    return 'Weekly plan: $count training days';
+  }
+
+  @override
+  String get goalTargetUnknown => 'No confirmed target for this week yet.';
+
+  @override
+  String goalTimeBudget(int count) {
+    return 'Your time constraint: $count minutes per workout';
+  }
+
+  @override
+  String get goalNoRoute =>
+      'No routine selected. You can use your own routine or choose a catalog program in Workouts.';
+
+  @override
+  String get goalRouteExplanation =>
+      'Your existing routine order stays the same. A weekly time plan is not a new exercise prescription.';
+
+  @override
+  String get goalChooseNextWeek => 'Choose next week’s training days';
+
+  @override
+  String get goalNextWeekOnly =>
+      'Choose the number of separate days. This applies from next week; earlier weeks keep their own target.';
+
+  @override
+  String get goalConfirmTitle => 'Confirm next week’s plan';
+
+  @override
+  String goalConfirmNextWeek(int count) {
+    return 'Plan $count separate training days from next week? Your routine, weights and nutrition targets stay the same.';
+  }
+
+  @override
+  String get goalTodayTitle => 'Your next real step';
+
+  @override
+  String get goalResumeAction => 'Continue your workout';
+
+  @override
+  String get goalTodayRecorded =>
+      'Your workout is recorded today. You can review it.';
+
+  @override
+  String get goalTodayDescription =>
+      'See your workout plan and choose when to begin. Rest days do not require opening the app.';
+
+  @override
+  String get goalOpenNextAction => 'Open the next step';
+
+  @override
+  String get goalMilestonesTitle => 'Progress you can see';
+
+  @override
+  String get goalMilestoneStart => 'A real starting record';
+
+  @override
+  String get goalMilestoneCompare => 'Two different days to compare';
+
+  @override
+  String get goalMilestoneReview => 'A weekly reflection you chose';
+
+  @override
+  String get goalComparisonBoundary =>
+      'These are recorded sets, not a strength score. Different equipment or technique can affect the comparison.';
+
+  @override
+  String get goalNeedComparison =>
+      'Choose an exercise. Two different days of completed working sets are needed for comparison.';
+
+  @override
+  String get goalReturnEvidence =>
+      'Your next real record starts your return. Old peak weights are context, not today’s obligation.';
+
+  @override
+  String get goalRhythmEvidence =>
+      'Look for a rhythm you can repeat. A week of records does not guarantee a body or strength outcome.';
+
+  @override
+  String get goalReflectionTitle => 'Reflect on the last complete week';
+
+  @override
+  String goalRecordedDays(int count) {
+    return 'Records on $count separate training days';
+  }
+
+  @override
+  String get goalPastTargetUnknown =>
+      'That week’s target is unknown; no success or failure is inferred.';
+
+  @override
+  String get goalRecordsAccurate => 'These records represent my week';
+
+  @override
+  String get goalTimeObstacle => 'My available time was the obstacle';
+
+  @override
+  String goalTimeReason(int count) {
+    return 'You reported a time constraint; there are records on $count days. You can choose a realistic budget for next week. Nothing changes automatically.';
+  }
+
+  @override
+  String get goalMarkReviewed => 'Save my reflection';
+
+  @override
+  String get goalAddMissingRecord => 'I trained but did not log it';
+
+  @override
+  String get goalOpenWeek => 'Open the weekly details';
+
+  @override
+  String get goalFlexTitle => 'Your plan can change';
+
+  @override
+  String get goalFlexDescription =>
+      'Travel or a break can change your available time. Choose a future plan when it suits you; missed sessions are not a debt.';
+
+  @override
+  String get goalHealthBoundary =>
+      'If pain or an injury affects training, seek appropriate professional guidance. This app does not provide treatment or a rehabilitation plan.';
+
+  @override
+  String get goalReminderSettings => 'Manage existing reminders';
+
+  @override
+  String get goalEntryTitle => 'Connect your records to a goal';
+
+  @override
+  String get goalEntryDescription =>
+      'Your reason, your route and your weekly reflection';
+
+  @override
+  String get goalTrainingDaysLabel => 'Training days';
+
+  @override
+  String goalSessionCount(int count) {
+    return '$count workout records; more than one on a day still counts as one training day.';
+  }
+
+  @override
+  String goalSuggestDays(int count) {
+    return 'Consider $count days next week';
+  }
+
+  @override
+  String get goalAccountChanged =>
+      'Your account changed. Reopen this page from your current account.';
+
+  @override
+  String goalEffectiveFrom(String date) {
+    return 'Target effective from $date';
+  }
+
+  @override
+  String get goalRecordedStart =>
+      'Your first workout is recorded. It is now a real starting point.';
+
+  @override
+  String get goalStepDone => 'Completed';
+
+  @override
+  String get goalStepPending => 'Not yet recorded';
+
+  @override
+  String get goalAccountDeletedCleanupWarning =>
+      'Your account was deleted. Some local training preferences could not be cleared on this device.';
+
+  @override
+  String get goalSetupRecovery =>
+      'Your catalog choice is saved, but its routines are not here yet. Review the program to complete setup.';
+
+  @override
+  String get goalCompleteRoute => 'Review and finish program setup';
+
+  @override
+  String get asReplaceExercise => 'Replace exercise';
+
+  @override
+  String get asReplaceExplanation =>
+      'Completed sets and any entered values stay with the original exercise. Only empty sets move to the exercise you choose. If there are no empty sets, it starts with one new set. This change applies only to this session.';
+
+  @override
+  String get asReplaceChoose => 'Choose exercise';
+
+  @override
+  String get asReplaceError =>
+      'The exercise could not be replaced. Your current sets are unchanged. Try again.';
 }

@@ -23,15 +23,20 @@ import 'record_calc.dart';
 import 'live_position.dart';
 import 'session_progress.dart';
 import 'set_prefill.dart';
+import 'live_action_target.dart';
 import 'weight_step.dart';
 import 'active_session_model.dart';
 import 'active_session_widgets.dart';
+import 'exercise_replacement.dart';
 import 'session_rest_sound.dart';
 import 'workout_draft.dart';
 import 'workout_ui.dart';
 import '../../core/router/app_routes.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 import '../health/body_providers.dart';
+import '../cloud/auth_service.dart';
+import '../analytics/analytics_events.dart';
+import '../analytics/analytics_providers.dart';
 
 /// Aktif Antrenman Seansı (Antrenman V2 Faz C — docs/09-workout-v2.md).
 /// Set tablosu (KG/tekrar/RPE/✓), set tipleri, dinlenme sayacı, canlı süre,
@@ -79,6 +84,13 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   // Yükleme hatası (A1 E10): sonsuz dönen gösterge yerine tekrar dene.
   Object? _loadError;
   bool _saving = false;
+  bool _replacing = false;
+  bool _committingReplacement = false;
+  bool _replacementDirty = false;
+  late final String? _sessionOwner;
+  bool _accountLost = false;
+  int _pendingDraftWrites = 0;
+  ProviderSubscription<String?>? _accountWatch;
   bool _draftCleared = false; // bitir/çıkış sonrası taslak yazımını durdur
   late final WorkoutDraftService _drafts;
   // Ekran açıldığında taslak kaç kez silinmişti — değişirse taslak başka
@@ -115,6 +127,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       SessionRestSound(ref.read(restAlarmProvider), _feedback);
   late final WorkoutLiveActivity _live = ref.read(workoutLiveActivityProvider);
   bool _disposing = false;
+  final _liveSetTarget = LiveActionTarget();
+  final _liveRestTarget = LiveActionTarget();
+  bool _handlingLiveAction = false;
 
   @override
   void initState() {
@@ -126,6 +141,15 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _title = ''; // ilk didChangeDependencies'te locale ile atanır
     _drafts = ref.read(workoutDraftServiceProvider);
     _draftClearCount = _drafts.clearCount;
+    _sessionOwner = ref.read(currentUserProvider)?.id;
+    _accountWatch = ProviderScope.containerOf(context, listen: false).listen<String?>(
+      currentUserProvider.select((user) => user?.id),
+      (before, after) {
+        if (before == after) return;
+        // Hesap temizliğini bekleme: A→B→A da eski seansı canlandırmaz.
+        _invalidateAccount();
+      },
+    );
     if (!_isManual) {
       WakelockPlus.enable(); // antrenman boyunca ekran uyanık kalsın (docs/12)
       // İlk bip gecikmesin (G-1) — seçili ses yüklensin (docs/45 §3).
@@ -133,16 +157,53 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       WidgetsBinding.instance.addObserver(this);
       _live.attach(_onLiveAction); // kilit ekranı düğmeleri (docs/45 §2)
       _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (mounted) setState(() => _elapsed = DateTime.now().difference(_startedAt));
+        if (mounted) {
+          setState(() => _elapsed = DateTime.now().difference(_startedAt));
+        }
       });
     }
-    _loadSafely();
+    // Serbest akış _syncLive'a await etmeden ulaşır; localization için
+    // initState tamamlanmalı. Ekran kapanmışsa ilk yükleme başlatılmaz.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_loadSafely());
+    });
   }
 
   /// [_load]'u hata yakalayarak çalıştırır; hata olursa ekranda "Tekrar dene".
+  void _invalidateAccount() {
+    if (_accountLost) return;
+    _accountLost = true;
+    if (!_isManual) unawaited(WorkoutLiveActivity.endAll());
+    _liveSetTarget.clear();
+    _liveRestTarget.clear();
+    _draftDebounce?.cancel();
+  }
+
+  bool _ownsCurrentAccount() {
+    // Türetilmiş provider bildirimi henüz yayılmadıysa güncel okumayla yakala.
+    if (mounted && !_disposing &&
+        ref.read(currentUserProvider)?.id != _sessionOwner) {
+      _invalidateAccount();
+    }
+    return !_accountLost;
+  }
+
+  bool _analyticsStartRecorded = false;
+
   Future<void> _loadSafely() async {
+    final analytics = ref.read(analyticsControllerProvider);
+    final owner = ref.read(currentUserProvider)?.id;
     try {
       await _load();
+      // Taslaktan devam yeni başlangıç değildir; kişisel seans adı aktarılmaz.
+      if (mounted && !_isManual && !widget.resume && !_analyticsStartRecorded) {
+        _analyticsStartRecorded = true;
+        unawaited(
+          analytics.trackOwned(owner, AnalyticsEventName.workoutStarted, {
+            'mode': _routineId == null ? 'free' : 'routine',
+          }),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       _exercises.clear();
@@ -218,33 +279,65 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   /// seans durumunun tek sahibi bu ekran. Kart güncellemesi gidene kadar
   /// beklenir (sistem ardından uygulamayı yeniden uyutur).
   Future<bool> _onLiveAction(LiveAction action, String? setKey) async {
-    if (!mounted || _loading || _draftCleared || _isManual) return false;
+    if (!mounted ||
+        _loading ||
+        _draftCleared ||
+        _isManual ||
+        _saving ||
+        _replacing ||
+        _accountLost ||
+        _disposing ||
+        !_ownsCurrentAccount() ||
+        _handlingLiveAction ||
+        _drafts.clearCount != _draftClearCount) {
+      return false;
+    }
     // Set eylemi yalnız kartın gösterdiği sete uygulanır: arada set
     // değiştiyse (gecikmiş ya da çift dokunuş) sıradaki set tamamlanmaz
     // (Codex incelemesi, 2026-10-12).
     final next = _nextLiveSet();
     final sameSet = next != null && setKey == next.key;
-    switch (action) {
-      case LiveAction.completeSet:
-        if (!sameSet || !next.canComplete) return false;
-        _toggleDone(next.exercise, next.set);
-      case LiveAction.stepDown:
-      case LiveAction.stepUp:
-        if (!sameSet || !_canStep(next.exercise)) return false;
-        _stepLive(next.exercise, next.set, next.index,
-            action == LiveAction.stepUp ? 1 : -1);
-      case LiveAction.addRest:
-        if (_restDeadline == null) return false;
-        _bumpRest(15);
-      case LiveAction.skipRest:
-        if (_restDeadline == null) return false;
-        _skipRest();
+    final deadline = _restDeadline;
+    final resting = deadline != null && deadline.isAfter(DateTime.now());
+    final sameRest = resting && setKey == _liveRestTarget.keyFor(deadline);
+    // Tamamlama toggle değildir: yalnız hâlâ geçerli, gösterilen hedefe
+    // uygulanır. Native beklerken ikinci komut durumu değiştiremez.
+    _handlingLiveAction = true;
+    try {
+      switch (action) {
+        case LiveAction.completeSet:
+          if (resting || !sameSet || !next.canComplete) return false;
+          _toggleDone(next.exercise, next.set);
+        case LiveAction.stepDown:
+        case LiveAction.stepUp:
+          if (resting || !sameSet || !_canStep(next.exercise)) return false;
+          _stepLive(
+            next.exercise,
+            next.set,
+            next.index,
+            action == LiveAction.stepUp ? 1 : -1,
+          );
+        case LiveAction.addRest:
+          if (!sameRest) return false;
+          _bumpRest(15);
+        case LiveAction.skipRest:
+          if (!sameRest) return false;
+          _skipRest();
+      }
+      // Taslak, mola sesi/bildirimi ve kart güncellemesi bitmeden dönme:
+      // perform() dönünce sistem uygulamayı uyutur, yarım iş kalırdı.
+      await Future.wait([_saveDraft(), _restSetup ?? Future<void>.value()]);
+      if (!_ownsCurrentAccount() || _draftCleared ||
+          _drafts.clearCount != _draftClearCount || _disposing) {
+        return false;
+      }
+      await _live.flush();
+      return _ownsCurrentAccount() && !_draftCleared &&
+          _drafts.clearCount == _draftClearCount && !_disposing;
+    } finally {
+      _handlingLiveAction = false;
+      _releaseAccountWatch();
     }
-    // Taslak, mola sesi/bildirimi ve kart güncellemesi bitmeden dönme:
-    // perform() dönünce sistem uygulamayı uyutur, yarım iş kalırdı.
-    await Future.wait([_saveDraft(), _restSetup ?? Future<void>.value()]);
-    await _live.flush();
-    return true;
   }
 
   /// Kilit ekranındaki "şu anki set": sırayla ilk tamamlanmamış set.
@@ -259,15 +352,25 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   })? _nextLiveSet() {
     final pos = livePosition(
         [for (final e in _exercises) [for (final s in e.sets) s.done]]);
-    if (pos == null) return null;
+    if (pos == null) {
+      // Son set uygulamadan geri alınırsa eski tamamla komutu canlanmasın.
+      _liveSetTarget.clear();
+      return null;
+    }
     final ex = _exercises[pos.exercise];
     final set = ex.sets[pos.set];
     return (
       exercise: ex,
       set: set,
       index: pos.set,
-      // Hareket kimliği + sıra: hareket eklenip sıra kaysa da eşleşmez.
-      key: '${ex.exercise.id}:${pos.set}',
+      // Nesne kimliği yinelenen hareketi/yeniden eklenen seti ayırır.
+      // Değer veya kilo adımı değişince eski kart komutu da bayatlar.
+      key: _liveSetTarget.keyFor((
+        set, _shownValues(ex, set, pos.set), set.type, ex.restSec,
+        _canStep(ex) && ex.measure != 'reps'
+            ? _stepKgFor(ex, ref.read(weightStepPrefsProvider)) : null,
+        ref.read(unitsProvider).imperial,
+      )),
       canComplete: set.hasInput(ex.measure) || ex.suggestionAt(pos.set) != null,
     );
   }
@@ -303,7 +406,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
 
   // ───────── taslak (draft) ─────────
 
-  WorkoutDraft _buildDraft() => WorkoutDraft(
+  WorkoutDraft _buildDraft([List<SessionExerciseEntry>? exercises]) => WorkoutDraft(
         title: _title,
         routineId: _routineId,
         startedAtMs: _startedAt.millisecondsSinceEpoch,
@@ -311,7 +414,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         restStartedAtMs: _restStartedAt?.millisecondsSinceEpoch,
         restEndsAtMs: _restDeadline?.millisecondsSinceEpoch,
         lastDoneAtMs: _lastDoneAt?.millisecondsSinceEpoch,
-        exercises: _exercises.map((e) => e.toDraft()).toList(),
+        exercises: (exercises ?? _exercises).map((e) => e.toDraft()).toList(),
       );
 
   /// Kilit ekranı / Dynamic Island (docs/32): yalnız canlı seansta. Şu
@@ -319,13 +422,17 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   /// tekrar gönderilmez (servis karşılaştırır).
   void _syncLive() {
     if (_isManual ||
+        _replacing ||
+        _accountLost ||
         _loading ||
         _loadError != null ||
         _draftCleared ||
+        _drafts.clearCount != _draftClearCount ||
         _disposing ||
         !mounted) {
       return;
     }
+    if (!_ownsCurrentAccount()) return;
     final l = AppL10n.of(context);
     final units = ref.read(unitsProvider);
     final next = _nextLiveSet();
@@ -356,6 +463,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
     final deadline = _restDeadline;
     final resting = deadline != null && deadline.isAfter(DateTime.now());
+    if (deadline == null) _liveRestTarget.clear();
     final step = next == null || !_canStep(next.exercise)
         ? (down: '', up: '')
         : next.exercise.measure == 'reps'
@@ -378,6 +486,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         totalSets: total,
         canComplete: next?.canComplete ?? false,
         setKey: next?.key ?? '',
+        restKey: resting ? _liveRestTarget.keyFor(deadline) : '',
         stepDownLabel: step.down,
         stepUpLabel: step.up,
       ),
@@ -398,11 +507,24 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   Future<void> _saveDraft() async {
     _draftDebounce?.cancel();
     _draftDebounce = null;
-    _syncLive();
     // Yükleme hatasında bellek boş — diskteki taslağın üstüne yazılmaz.
-    if (!_draftable || _draftCleared || _loading || _loadError != null) return;
+    if (!_draftable || _draftCleared || _loading || _loadError != null ||
+        _committingReplacement || !_ownsCurrentAccount()) {
+      return;
+    }
     if (_drafts.clearCount != _draftClearCount) return;
-    await _drafts.save(_buildDraft());
+    _syncLive();
+    _pendingDraftWrites++;
+    try {
+      if (await _drafts.saveIfCurrent(_buildDraft(),
+          expectedClearCount: _draftClearCount,
+          isCurrent: () => _ownsCurrentAccount() && !_draftCleared)) {
+        _replacementDirty = false;
+      }
+    } finally {
+      _pendingDraftWrites--;
+      _releaseAccountWatch();
+    }
   }
 
   /// Set alanına yazılan değer: her tuşta değil, yazım [_draftSaveDelay]
@@ -412,12 +534,20 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   /// bitmesi, sistemin uygulamayı arka plan olayı vermeden öldürmesi): son
   /// tuştan sonraki en fazla [_draftSaveDelay] + diske yazma süresi.
   void _scheduleDraftSave() {
-    if (!_draftable || _draftCleared) return;
+    if (_committingReplacement) {
+      _replacementDirty = true;
+      return;
+    }
+    if (!_draftable || _draftCleared || _accountLost) return;
     _draftDebounce?.cancel();
     _draftDebounce = Timer(_draftSaveDelay, _saveDraft);
   }
 
   void _clearDraft() {
+    if (!_ownsCurrentAccount() || _drafts.clearCount != _draftClearCount) {
+      _draftCleared = true;
+      return;
+    }
     _draftCleared = true;
     _live.end(); // seans bitti ya da atıldı — kilit ekranından kalksın
     _draftDebounce?.cancel();
@@ -458,9 +588,11 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
         // Geçen seans taslakta değil DB'de — devam ederken yeniden okunur.
         lastSets: lastSets,
         restSec: de.restSec,
-        inRoutine: targets.containsKey(ex.id),
+        inRoutine: !de.sessionOnly && targets.containsKey(ex.id),
+        sessionOnly: de.sessionOnly,
         units: ref.read(unitsProvider),
-        advice: _adviceFor(ex, lastSets, prevSets, targets[ex.id]),
+        advice: de.sessionOnly ? null :
+            _adviceFor(ex, lastSets, prevSets, targets[ex.id]),
         appliedIncrementKg: de.appliedIncrementKg,
       );
       await _loadBests(se);
@@ -517,6 +649,14 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     }
   }
 
+  void _releaseAccountWatch() {
+    if (_disposing && _pendingDraftWrites == 0 &&
+        !_handlingLiveAction && !_replacing) {
+      _accountWatch?.close();
+      _accountWatch = null;
+    }
+  }
+
   @override
   void dispose() {
     _disposing = true; // _saveDraft → _syncLive context'e dokunmasın
@@ -525,13 +665,14 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _restSoundOrNull?.dispose(restRunning: _restDeadline != null);
     // Yazıp hemen ekrandan çıkıldıysa bekleyen yazımı tamamla. _saveDraft
     // ref kullanmaz; temizlenmiş/başka yerden silinmiş taslağı yazmaz.
-    if (_draftDebounce?.isActive ?? false) _saveDraft();
+    if ((_draftDebounce?.isActive ?? false) || _replacementDirty) _saveDraft();
     if (!_isManual) {
       _live.detach(_onLiveAction);
-      _live.end();
+      if (!_accountLost) _live.end();
       WidgetsBinding.instance.removeObserver(this);
       WakelockPlus.disable();
     }
+    _releaseAccountWatch();
     super.dispose();
   }
 
@@ -822,6 +963,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _dismissKeyboard();
     if (picked == null) return;
     await ref.read(weightStepPrefsProvider.notifier).set(ex.exercise.id, picked);
+    if (mounted) _syncLive();
   }
 
   Future<void> _addExercise() async {
@@ -841,6 +983,104 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     if (!mounted) return;
     setState(() => _exercises.add(se));
     _saveDraft();
+  }
+
+  /// Yalnız seçilen blok değişir. Önce planı diske yaz, başarıdan sonra
+  /// ekrana uygula; hata/iptal sırasında eski blok ve yazılmış alanlar kalır.
+  Future<void> _replaceExercise(SessionExerciseEntry source) async {
+    if (_replacing ||
+        _saving ||
+        _handlingLiveAction ||
+        _isManual ||
+        _accountLost ||
+        (source.measure != 'weight_reps' && source.measure != 'reps') ||
+        _drafts.clearCount != _draftClearCount) {
+      return;
+    }
+    final owner = ref.read(currentUserProvider)?.id;
+    if (owner != _sessionOwner) return;
+    final dao = ref.read(workoutDaoProvider);
+    final units = ref.read(unitsProvider);
+    bool ownsDraft() =>
+        !_draftCleared &&
+        _drafts.clearCount == _draftClearCount &&
+        _ownsCurrentAccount();
+    bool ownsSession() => mounted && !_disposing && !_saving && ownsDraft();
+    bool valid() => ownsSession() && _exercises.contains(source);
+    var committed = false;
+    _dismissKeyboard();
+    setState(() => _replacing = true);
+    try {
+      // Seçici açıkken uygulama kapanırsa mevcut alanlar zaten taslakta.
+      await _saveDraft();
+      if (!mounted || !valid()) return;
+      final l = AppL10n.of(context);
+      final confirmed = await confirmAction(
+        context,
+        title: l.asReplaceExercise,
+        message: l.asReplaceExplanation,
+        confirmLabel: l.asReplaceChoose,
+      );
+      if (!mounted || !confirmed || !valid()) return;
+      final chosen = await context.push<Exercise>(AppRoutes.exercisesSelect);
+      if (!valid() || chosen == null || chosen.id == source.exercise.id) return;
+      final lastSets = await dao.getLastSessionSetsForExercise(chosen.id);
+      if (!mounted || !valid()) return;
+      final planned = replaceSessionExercise(
+        exercises: _exercises,
+        source: source,
+        replacement: chosen,
+        lastSets: lastSets,
+        units: units,
+      );
+      final replacement = planned.firstWhere(
+        (e) => e.exercise.id == chosen.id && !_exercises.contains(e),
+      );
+      await _loadBests(replacement);
+      if (!mounted || !valid()) return;
+      // Lifecycle yazımı eski görünümü bu adayın üstüne yazmamalı.
+      _committingReplacement = true;
+      _replacementDirty = false;
+      final saved = await _drafts.saveIfCurrent(
+        _buildDraft(planned),
+        expectedClearCount: _draftClearCount,
+        isCurrent: ownsDraft,
+      );
+      if (!saved || !ownsDraft()) return;
+      committed = true;
+      if (valid()) {
+        setState(() {
+          _exercises..clear()..addAll(planned);
+          _liveSetTarget.clear();
+        });
+        ref.invalidate(activeDraftProvider);
+      }
+      // Başka bir hareketin süre sayacı, seçim sırasında kendiliğinden
+      // bitebilir. Paylaşılan set nesnesindeki yeni süreyi aday taslağa yaz;
+      // ekran bu sırada kapansa bile aynı hesabın kaydı tamamlanır.
+      while (_replacementDirty && ownsDraft()) {
+        _replacementDirty = false;
+        if (!await _drafts.saveIfCurrent(_buildDraft(planned),
+            expectedClearCount: _draftClearCount, isCurrent: ownsDraft)) {
+          return;
+        }
+      }
+    } catch (_) {
+      if (committed) _replacementDirty = true;
+      if (mounted && ownsSession()) {
+        final l = AppL10n.of(context);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(committed ? l.asDraftSaveError : l.asReplaceError)));
+      }
+    } finally {
+      _committingReplacement = false;
+      _replacing = false;
+      _releaseAccountWatch();
+      if (mounted) {
+        setState(() {});
+        if (!_accountLost) _syncLive();
+      }
+    }
   }
 
   // ───────── dinlenme sayacı ─────────
@@ -970,7 +1210,10 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
   // ───────── bitir / kaydet ─────────
 
   Future<void> _finish() async {
-    if (_saving) return;
+    final analytics = ref.read(analyticsControllerProvider);
+    final analyticsOwner = ref.read(currentUserProvider)?.id;
+    final analyticsMode = _routineId == null ? 'free' : 'routine';
+    if (_saving || _replacing || _accountLost) return;
     if (!_hasData) {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppL10n.of(context).asNeedOneSet)));
@@ -982,7 +1225,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     _dismissKeyboard();
     final open = incompleteSetCount(_exercises);
     if (!_isManual && open > 0 && !await _confirmFinishIncomplete(open)) return;
-    if (!mounted || _saving) return;
+    if (!mounted || _saving || _replacing || _accountLost) return;
     setState(() => _saving = true);
     final dao = ref.read(workoutDaoProvider);
 
@@ -1015,6 +1258,13 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
       return;
     }
 
+    // Ölçüm kaydı, kullanıcının seansı kaydedildikten sonra ve beklenmeden.
+    unawaited(
+      analytics.trackOwned(analyticsOwner, AnalyticsEventName.workoutSaved, {
+        'mode': analyticsMode,
+        'source': _isManual ? 'historical' : 'live',
+      }),
+    );
     _clearDraft(); // seans DB'ye yazıldı — taslağı sil
     // docs/44: tercih açıksa canlı seans Sağlık'a yazılır; hata seansı bozmaz.
     unawaited(exportFinishedSession(ref, sessionId).catchError((_) {}));
@@ -1118,7 +1368,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
-        if (didPop) return;
+        if (didPop || _replacing) return;
         final go = GoRouter.of(context);
         _dismissKeyboard();
         switch (await _confirmExit()) {
@@ -1132,7 +1382,9 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
             go.pop();
         }
       },
-      child: Scaffold(
+      child: AbsorbPointer(
+        absorbing: _replacing,
+        child: Scaffold(
         appBar: AppBar(
           titleSpacing: 0,
           title: Column(
@@ -1220,6 +1472,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
             ? ErrorState(onRetry: _retryLoad)
             : Column(
                 children: [
+                  if (_replacing) const LinearProgressIndicator(),
                   SessionDateBar(
                     date: _sessionDate,
                     highlight: _isManual,
@@ -1262,6 +1515,10 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                                     onAddSet: () => _addSet(e),
                                     onRemoveSet: () => _removeSet(e),
                                     onRemoveExercise: () => _removeExercise(e),
+                                    onReplaceExercise: _isManual ||
+                                            (e.measure != 'weight_reps' &&
+                                                e.measure != 'reps')
+                                        ? null : () => _replaceExercise(e),
                                     onToggleAdvance: () => _toggleAdvance(e),
                                     onChanged: () {
                                       setState(() {});
@@ -1284,6 +1541,7 @@ class _ActiveSessionScreenState extends ConsumerState<ActiveSessionScreen>
                   const SessionKeyboardBar(),
                 ],
               ),
+      ),
       ),
     );
   }

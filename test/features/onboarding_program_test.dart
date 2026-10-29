@@ -1,3 +1,5 @@
+import 'dart:ui' show Tristate;
+
 import 'package:fit_pack/core/router/app_routes.dart';
 import 'package:fit_pack/core/theme/app_theme.dart';
 import 'package:fit_pack/data/database/app_database.dart';
@@ -5,6 +7,7 @@ import 'package:fit_pack/data/providers.dart';
 import 'package:fit_pack/features/auth/auth_gate.dart';
 import 'package:fit_pack/features/onboarding/onboarding_screen.dart';
 import 'package:fit_pack/features/home/providers/weekly_goal_provider.dart';
+import 'package:fit_pack/features/onboarding/training_setup_providers.dart';
 import 'package:fit_pack/l10n/app_l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,7 +43,10 @@ void main() {
     }
   }
 
-  Future<void> pumpOnboarding(WidgetTester tester) async {
+  Future<void> pumpOnboarding(
+    WidgetTester tester, {
+    bool failSetupWrite = false,
+  }) async {
     tester.view.physicalSize = const Size(1170, 2532);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
@@ -63,6 +69,10 @@ void main() {
           databaseProvider.overrideWithValue(db),
           weeklyGoalAccountProvider.overrideWithValue('onboarding-test'),
           authGateProvider.overrideWithValue(gate),
+          if (failSetupWrite)
+            trainingSetupPreferencesProvider.overrideWith(
+              (ref) async => _FailedSetupPreferences(),
+            ),
         ],
         child: MaterialApp.router(
           theme: AppTheme.dark,
@@ -81,35 +91,52 @@ void main() {
     await settle(tester);
   }
 
-  /// İki soru → program sayfası; [skip] ise "Kendim kuracağım" seçilir.
-  Future<void> runFlow(WidgetTester tester, {required bool skip}) async {
-    await pumpOnboarding(tester);
-    expect(find.text(l.onbTrainingTitle), findsOneWidget);
-    await tester.tap(find.text(l.onbExpSome));
-    await tester.tap(find.text(l.onbDays4));
+  Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+    await tester.ensureVisible(finder);
+    await tester.pumpAndSettle();
+    await tester.tap(finder);
     await tester.pump();
+  }
+
+  Future<void> runFlow(
+    WidgetTester tester, {
+    required bool skip,
+    bool failSetupWrite = false,
+  }) async {
+    await pumpOnboarding(tester, failSetupWrite: failSetupWrite);
+    expect(find.text(l.onbTrainingTitle), findsOneWidget);
+    await tapVisible(
+      tester,
+      find.text(skip ? l.setupSourceOwn : l.setupSourceCatalog),
+    );
+    if (!skip) {
+      await tapVisible(tester, find.text(l.onbExpSome));
+    } else {
+      expect(find.text(l.onbExperienceQ), findsNothing);
+    }
+    await tapVisible(tester, find.byKey(const ValueKey('setup.days.4')));
     await next(tester, l.commonNext);
 
     expect(find.text(l.onbProgramTitle), findsOneWidget);
-    expect(find.text(l.onbProgramUse), findsOneWidget);
-    if (skip) {
-      await tester.tap(find.text(l.onbProgramSkip));
-      await tester.pump();
-      expect(find.text(l.onbProgramUse), findsNothing);
-    }
+    expect(
+      find.text(skip ? l.setupOwnTitle : l.setupRecommendationReason(4)),
+      findsOneWidget,
+    );
     await next(tester, l.commonNext);
 
     expect(find.text(l.onbAboutYouTitle), findsOneWidget);
-    expect(
-      find.text(l.settingsHeight),
-      findsNothing,
-      reason: 'boy artık kurulumda sorulmuyor (karar 3)',
-    );
+    expect(find.text(l.settingsHeight), findsNothing);
     await tester.enterText(
       find.widgetWithText(TextField, l.onbCurrentWeight),
       '80',
     );
     await tester.pump();
+    // Kilo verme yönü artık kullanıcı yerine seçilmez.
+    final button = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, l.commonNext),
+    );
+    expect(button.onPressed, isNull);
+    await tapVisible(tester, find.text(l.phaseMaintain));
     await next(tester, l.commonNext);
 
     expect(find.widgetWithText(TextField, l.onbDailyKcal), findsOneWidget);
@@ -143,20 +170,106 @@ void main() {
     expect(await routines(tester), isEmpty);
   });
 
-  testWidgets('iki soru cevaplanmadan İleri kapalı', (tester) async {
+  testWidgets('katalogda deneyim zorunlu, kesin 2 gün ayrıca onaylanır', (
+    tester,
+  ) async {
     await pumpOnboarding(tester);
-    FilledButton btn() => tester.widget<FilledButton>(
+    FilledButton nextButton() => tester.widget<FilledButton>(
       find.widgetWithText(FilledButton, l.commonNext),
     );
-    expect(btn().onPressed, isNull);
-    await tester.tap(find.text(l.onbExpBeginner));
-    await tester.pump();
-    expect(btn().onPressed, isNull);
-    await tester.tap(find.text(l.onbDays56));
-    await tester.pump();
-    expect(btn().onPressed, isNotNull);
+    expect(nextButton().onPressed, isNull);
+    expect(find.text(l.onbExperienceQ), findsNothing);
+    await tapVisible(tester, find.text(l.setupSourceCatalog));
+    await tapVisible(tester, find.byKey(const ValueKey('setup.days.2')));
+    expect(nextButton().onPressed, isNull);
+    await tapVisible(tester, find.text(l.onbExpBeginner));
+    expect(nextButton().onPressed, isNotNull);
     await next(tester, l.commonNext);
-    // Yeni başlayan + 5–6 gün → 4 günlük öneri ve nedeni.
-    expect(find.text(l.onbProgramRestNote), findsOneWidget);
+    expect(find.text(l.setupFrequencyMismatch(2, 3)), findsOneWidget);
+    expect(nextButton().onPressed, isNull);
+    await tapVisible(
+      tester,
+      find.byKey(const ValueKey('setup.confirmMismatch')),
+    );
+    expect(nextButton().onPressed, isNotNull);
   });
+
+  testWidgets(
+    'tercih yazılamazsa kurulum başarısızlığı görünür, veri yazılmaz',
+    (tester) async {
+      await runFlow(tester, skip: true, failSetupWrite: true);
+      expect(find.text('HOME'), findsNothing);
+      expect(find.text(l.setupSaveError), findsOneWidget);
+      expect(gate.onboarded, isFalse);
+      final profile = await tester.runAsync(
+        () => db.userProfileDao.getProfile(),
+      );
+      expect(profile?.onboarded ?? false, isFalse);
+      expect(await routines(tester), isEmpty);
+      expect(
+        (await tester.runAsync(() => db.bodyDao.getAllMeasurements()))!,
+        isEmpty,
+      );
+    },
+  );
+
+  testWidgets('tam gün ve deneyim cihazdaki kurulum tercihine kaydedilir', (
+    tester,
+  ) async {
+    await runFlow(tester, skip: false);
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('training_setup_v1_onboarding-test');
+    expect(raw, contains('"exactDays":4'));
+    expect(raw, contains('"experience":"some"'));
+    expect((await routines(tester)).map((r) => r.programKey).toSet(), {
+      'upperlower_intermediate',
+    });
+  });
+  testWidgets('tek seçimler ekran okuyucuya seçili durumunu bildirir', (tester) async {
+    final semantics = tester.ensureSemantics();
+    try {
+    await pumpOnboarding(tester);
+
+    void choiceState(String label, bool selected) {
+      final wrapper = find.ancestor(
+        of: find.text(label),
+        matching: find.byWidgetPredicate((widget) => widget is Semantics &&
+          widget.properties.inMutuallyExclusiveGroup == true),
+      ).first;
+      final node = tester.getSemantics(wrapper);
+      expect(node.flagsCollection.isButton, isTrue, reason: label);
+      expect(node.flagsCollection.isInMutuallyExclusiveGroup, isTrue, reason: label);
+      expect(node.flagsCollection.isSelected == Tristate.isTrue, selected, reason: label);
+    }
+
+    choiceState(l.setupSourceCatalog, false);
+    choiceState(l.setupSourceOwn, false);
+    await tapVisible(tester, find.text(l.setupSourceOwn));
+    choiceState(l.setupSourceOwn, true);
+    choiceState(l.setupSourceCatalog, false);
+    await tapVisible(tester, find.text(l.setupSourceCatalog));
+    choiceState(l.setupSourceOwn, false);
+    choiceState(l.setupSourceCatalog, true);
+    await tapVisible(tester, find.text(l.onbExpSome));
+    choiceState(l.onbExpSome, true);
+    choiceState(l.onbExpBeginner, false);
+    await tapVisible(tester, find.byKey(const ValueKey('setup.days.4')));
+    await next(tester, l.commonNext);
+    await next(tester, l.commonNext);
+    await tapVisible(tester, find.text(l.phaseMaintain));
+    choiceState(l.phaseMaintain, true);
+    choiceState(l.phaseCut, false);
+    } finally {
+      semantics.dispose();
+    }
+  });
+
+}
+
+class _FailedSetupPreferences extends Fake implements SharedPreferences {
+  @override
+  String? getString(String key) => null;
+
+  @override
+  Future<bool> setString(String key, String value) async => false;
 }

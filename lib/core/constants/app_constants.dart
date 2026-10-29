@@ -11,5 +11,5 @@ class AppConstants {
   /// Geri bildirim e-postası (Ayarlar → Hakkında → Geri Bildirim Gönder).
   /// Yayın öncesi özel bir destek adresiyle değiştir — tek yerden yönetilir
   /// (docs/16 §6).
-  static const String supportEmail = 'samet.orhan@inveon.com';
+  static const String supportEmail = '';
 }

@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -65,6 +66,7 @@ object WorkoutNotification {
         val labels: Labels,
         /** Dinlenme Dart uyurken bitti (servis bildirdi) — "Dinlenme bitti". */
         val restOver: Boolean = false,
+        val restKey: String = "",
     )
 
     @Volatile
@@ -126,8 +128,8 @@ object WorkoutNotification {
                 .setSubText(s.title)
                 .setWhen(restEnds)
                 .setChronometerCountDown(true)
-                .addAction(0, l.addRest, actionIntent(context, "addRest"))
-                .addAction(0, l.skipRest, actionIntent(context, "skipRest"))
+                .addAction(0, l.addRest, actionIntent(context, "addRest", s.restKey))
+                .addAction(0, l.skipRest, actionIntent(context, "skipRest", s.restKey))
         } else {
             // Set: hareket + hedef; kronometre toplam antrenman süresi.
             b.setContentTitle(if (s.restOver) "${l.restOver} · ${s.exercise}" else s.exercise)
@@ -182,6 +184,10 @@ object WorkoutNotification {
     private fun actionIntent(context: Context, action: String, setKey: String = ""): PendingIntent {
         val i = Intent(context, LiveActionReceiver::class.java)
             .setAction(ACTION_PREFIX + action)
+            // Extras PendingIntent kimliğine katılmaz. Eski düğmenin
+            // hedefi FLAG_UPDATE_CURRENT ile yeni set/molaya dönüşmesin.
+            .setData(Uri.Builder().scheme("fitpack-live").authority(action)
+                .appendPath(setKey).build())
             .putExtra(EXTRA_SET_KEY, setKey)
         return PendingIntent.getBroadcast(
             context, action.hashCode(), i,
@@ -234,6 +240,7 @@ object WorkoutNotification {
             totalSets = (a["totalSets"] as? Number)?.toInt() ?: 0,
             canComplete = a["canComplete"] as? Boolean ?: false,
             setKey = str(a, "setKey"),
+            restKey = str(a, "restKey"),
             stepDownLabel = str(a, "stepDownLabel"),
             stepUpLabel = str(a, "stepUpLabel"),
             labels = Labels(

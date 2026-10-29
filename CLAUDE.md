@@ -16,12 +16,18 @@ Flutter · Drift (SQLite, lokal) · Riverpod · GoRouter · fl_chart · Supabase
 - **GitHub:** `BS18-Production/fit-pack` (public)
 - **Package:** `com.sametorhan.fit_pack` · minSdk 26 · şema: `app_database.dart` → `schemaVersion`
 - **Ana cihaz:** iPhone 17 (gerçek, iOS 26.6, ID `00008150-000214C02E03C01C`)
-  — Samet'in günlük telefonu, üretim verisi. Ücretsiz Apple hesabı → imza
-  7 günde bir yenilenir. **`flutter install` KULLANMA** — önce uygulamayı
-  kaldırır, yerel veri ve gönderilmemiş senkron kuyruğu silinir
-  (2026-10-04'te bir silme kaybedildi). Yerinde güncelleme: aşağıdaki
-  `devicectl` komutu.
+  — Samet'in günlük telefonu, üretim verisi. Ücretli Apple Developer hesabı
+  (2026-10-28, Team `DQBCHYZUU7`) → imza 1 yıl. **Dağıtım: TestFlight**
+  (iç grup "Ben"); aşağıdaki `ipa` + `altool` komutu. **`flutter install`
+  KULLANMA** — önce uygulamayı kaldırır, yerel veri ve gönderilmemiş senkron
+  kuyruğu silinir (2026-10-04'te bir silme kaybedildi). Kablolu yerinde
+  güncelleme gerekirse: `devicectl` komutu.
 - **Test cihazı:** SM A075F (Android, ID `R96YB00XJPB`)
+
+> **Devir (2026-10-29):** Ana geliştirme Codex'e geçti. Güncel ve tam kurallar
+> **[AGENTS.md](AGENTS.md)**'de (Claude hafızası oraya taşındı); açık işler
+> **[collab/devir-2026-10-29.md](collab/devir-2026-10-29.md)**. Bu dosya ile
+> çelişirse AGENTS.md geçerlidir.
 
 ## Oturum Başında Oku (bu sırayla)
 
@@ -62,7 +68,10 @@ dart run build_runner build --delete-conflicting-outputs   # tablo/DAO değişin
 flutter analyze                                             # 0 uyarı hedefi
 flutter test
 flutter run -d R96YB00XJPB                                  # Android test cihazı
-flutter build ios --release && xcrun devicectl device install app --device 00008150-000214C02E03C01C build/ios/iphoneos/Runner.app   # iPhone (ana) — yerinde günceller
+# iPhone (ana) — TestFlight: önce pubspec build numarasını (+N) artır; ASC_KEY_ID/ASC_ISSUER_ID ~/.zshrc
+flutter build ipa --release && xcrun altool --upload-app --type ios -f build/ios/ipa/fit_pack.ipa --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+# iPhone (ana) — kablolu, yerinde günceller (TestFlight dışı acil yol)
+flutter build ios --release && xcrun devicectl device install app --device 00008150-000214C02E03C01C build/ios/iphoneos/Runner.app
 ```
 
 ## Kritik Hatırlatmalar

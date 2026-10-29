@@ -1,12 +1,12 @@
 # Gizlilik Politikası ve Aydınlatma Metni
 
-Sürüm 2 · Son güncelleme: 11 Ekim 2026
+Sürüm 3 · Son güncelleme: 29 Ekim 2026
 
 Bu metin, Fit Pack uygulamasında kişisel verilerinin nasıl işlendiğini 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) ve Avrupa Birliği Genel Veri Koruma Tüzüğü (GDPR) kapsamında açıklar.
 
 ## Veri sorumlusu
 
-Fit Pack, Samet Orhan tarafından geliştirilen kişisel bir uygulamadır. Veri sorumlusu Samet Orhan'dır. İletişim adresi yakında bu metne eklenecek; o zamana kadar haklarının çoğunu uygulamanın içinden kendin kullanabilirsin (aşağıda "Hakların").
+Fit Pack, Samet Orhan tarafından geliştirilen kişisel bir uygulamadır. Veri sorumlusu Samet Orhan'dır.
 
 ## Hangi verileri işliyoruz
 
@@ -41,7 +41,7 @@ Verilerin hesabın açık olduğu sürece saklanır. Hesabını sildiğinde sunu
 
 KVKK md. 11 ve GDPR md. 15–22 kapsamındaki haklarının bir kısmını uygulamadan doğrudan kullanabilirsin:
 
-- Verilerine erişmek ve taşımak: iletişim adresine (yukarıda, "Veri sorumlusu") yazman yeterli; verilerini 30 gün içinde CSV / JSON olarak göndeririz.
+- Verilerine erişme ve taşınabilir bir kopyasını alma hakkın vardır.
 - Düzeltmek: ölçüm, öğün ve antrenmanları uygulamada düzenleyebilir ya da silebilirsin.
 - Silinmesini istemek: Hesap → Hesabı sil.
 - Sağlık verisi rızasını geri almak: Ayarlar → Sağlık → Kilo ve yağ oranı. Geri aldığında içe aktarma durur ve içe alınan ölçümler silinir; yeniden rıza verirsen yalnız yeni ölçümler gelir. Rızayı geri almak, o ana kadar yapılan işlemeyi geçersiz kılmaz.

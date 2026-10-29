@@ -39,6 +39,7 @@ enum WorkoutLiveActivityController {
       totalSets: a["totalSets"] as? Int ?? 0,
       canComplete: a["canComplete"] as? Bool ?? false,
       setKey: a["setKey"] as? String ?? "",
+      restKey: a["restKey"] as? String,
       stepDownLabel: a["stepDownLabel"] as? String ?? "",
       stepUpLabel: a["stepUpLabel"] as? String ?? "")
   }

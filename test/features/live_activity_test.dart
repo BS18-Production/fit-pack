@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fit_pack/core/live_activity/workout_live_activity.dart';
 import 'package:fit_pack/features/workout/live_position.dart';
 import 'package:flutter/foundation.dart';
@@ -107,6 +109,60 @@ void main() {
       fail = false;
       await live.show(title: 'İtme', startedAt: t, state: st(0));
       expect(calls, ['start', 'start']);
+    });
+
+    test('dış temizlik bekleyen eski yayını iptal eder; yeni seans başlayabilir',
+        () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      final started = Completer<void>();
+      final release = Completer<void>();
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(WorkoutLiveActivity.channel, (c) async {
+        calls.add(c.method);
+        if (c.method == 'start' && !started.isCompleted) {
+          started.complete();
+          await release.future;
+        }
+        return true;
+      });
+      final live = WorkoutLiveActivity();
+      final first = live.show(title: 'x', startedAt: DateTime(2026), state: st(0));
+      await started.future;
+      final queued = live.show(title: 'x', startedAt: DateTime(2026), state: st(1));
+      await WorkoutLiveActivity.endAll();
+      release.complete();
+      await Future.wait([first, queued]);
+      expect(calls, ['start', 'end'], reason: 'temizlik sonrası eski update yok');
+      await live.show(title: 'y', startedAt: DateTime(2026, 2), state: st(1));
+      expect(calls, ['start', 'end', 'start']);
+      await live.end();
+    });
+    test('eski kuyruğun kapanışı dış temizlikten sonraki yeni kartı kapatmaz',
+        () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      final started = Completer<void>();
+      final release = Completer<void>();
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(WorkoutLiveActivity.channel, (c) async {
+        calls.add(c.method);
+        if (c.method == 'start' && !started.isCompleted) {
+          started.complete();
+          await release.future;
+        }
+        return true;
+      });
+      final oldLive = WorkoutLiveActivity();
+      final oldStart = oldLive.show(
+          title: 'old', startedAt: DateTime(2026), state: st(0));
+      await started.future;
+      final oldEnd = oldLive.end();
+      await WorkoutLiveActivity.endAll();
+      final fresh = WorkoutLiveActivity();
+      await fresh.show(title: 'new', startedAt: DateTime(2026, 2), state: st(1));
+      release.complete();
+      await Future.wait([oldStart, oldEnd]);
+      expect(calls, ['start', 'end', 'start']);
+      await fresh.end();
     });
   });
 

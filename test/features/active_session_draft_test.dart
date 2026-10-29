@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:fit_pack/core/feedback/feedback_service.dart';
 import 'package:fit_pack/core/feedback/rest_sound.dart';
@@ -5,6 +7,7 @@ import 'package:fit_pack/core/live_activity/workout_live_activity.dart';
 import 'package:fit_pack/core/notifications/notification_service.dart';
 import 'package:fit_pack/core/theme/app_colors.dart';
 import 'package:fit_pack/data/database/app_database.dart';
+import 'package:fit_pack/data/database/daos/workout_dao.dart';
 import 'package:fit_pack/data/providers.dart';
 import 'package:fit_pack/features/workout/active_session_screen.dart';
 import 'package:fit_pack/features/workout/workout_draft.dart';
@@ -25,6 +28,8 @@ import '../helpers/test_database.dart';
 void main() {
   late AppDatabase db;
   late int routineId;
+  WorkoutDao? overrideDao;
+  WorkoutDraftService? overrideDrafts;
 
   Future<WorkoutDraft?> reloadDraft() async {
     final prefs = await SharedPreferences.getInstance();
@@ -78,6 +83,9 @@ void main() {
   Widget app({bool resume = false}) => ProviderScope(
     overrides: [
       databaseProvider.overrideWithValue(db),
+      if (overrideDao != null) workoutDaoProvider.overrideWithValue(overrideDao!),
+      if (overrideDrafts != null)
+        workoutDraftServiceProvider.overrideWithValue(overrideDrafts!),
       feedbackServiceProvider.overrideWithValue(_SilentFeedback()),
       notificationServiceProvider.overrideWithValue(_NoNotifications()),
     ],
@@ -103,14 +111,18 @@ void main() {
     ),
   );
 
-  Future<void> open(WidgetTester tester, {bool resume = false}) async {
+  Future<void> open(
+    WidgetTester tester, {
+    bool resume = false,
+    int exerciseCount = 1,
+  }) async {
     await tester.pumpWidget(app(resume: resume));
     // Yükleme DB'den okur; gerçek G/Ç için runAsync, sonra çizim.
     for (var i = 0; i < 5; i++) {
       await tester.runAsync(() => Future<void>.delayed(Duration.zero));
       await tester.pump();
     }
-    expect(find.text('Bench Press'), findsOneWidget);
+    expect(find.text('Bench Press'), findsNWidgets(exerciseCount));
   }
 
   /// Ekranı kapatır (dispose) — canlı süre sayacı da durur.
@@ -125,6 +137,8 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     db = newTestDatabase();
+    overrideDao = null;
+    overrideDrafts = null;
     _mockWakelock();
   });
 
@@ -199,28 +213,347 @@ void main() {
       shown.clear();
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (c) async {
-        if (c.arguments is Map) shown.add(c.arguments as Map);
-        return true;
-      });
+            if (c.arguments is Map) shown.add(c.arguments as Map);
+            return true;
+          });
     });
 
     Future<Object?> act(WidgetTester tester, String action, String key) async {
       const codec = StandardMethodCodec();
       Object? reply;
-      await tester.runAsync(() => TestDefaultBinaryMessengerBinding
-              .instance.defaultBinaryMessenger
-              .handlePlatformMessage(
-            channel.name,
-            codec.encodeMethodCall(
-                MethodCall('action', {'action': action, 'setKey': key})),
-            (d) => reply = d == null ? null : codec.decodeEnvelope(d),
-          ));
+      await tester.runAsync(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .handlePlatformMessage(
+              channel.name,
+              codec.encodeMethodCall(
+                MethodCall('action', {'action': action, 'setKey': key}),
+              ),
+              (d) => reply = d == null ? null : codec.decodeEnvelope(d),
+            ),
+      );
       await tester.pump();
       return reply;
     }
 
-    testWidgets('bayat set kimliği yok sayılır; ± ve ✓ görünen değerle',
+    testWidgets('aynı hareketin iki bloğu eski tamamla komutunu paylaşmaz', (
+      tester,
+    ) async {
+      await seed([(60, 10)]);
+      final first = (await db.workoutDao.getRoutineExercises(routineId)).single;
+      await (db.update(
+        db.routineExercises,
+      )).write(const RoutineExercisesCompanion(targetSets: Value(1)));
+      await db.workoutDao.addRoutineExercise(
+        RoutineExercisesCompanion.insert(
+          routineId: routineId,
+          exerciseId: first.exercise.id,
+          orderIndex: const Value(1),
+          targetSets: const Value(1),
+          targetRestSec: const Value(0),
+        ),
+      );
+      await open(tester, exerciseCount: 2);
+      final key = shown.last['setKey'] as String;
+      expect(await act(tester, 'completeSet', key), isTrue);
+      expect(await act(tester, 'completeSet', key), isFalse);
+      final draft = (await tester.runAsync(reloadDraft))!;
+      expect(draft.exercises[0].sets.single.done, isTrue);
+      expect(draft.exercises[1].sets.single.done, isFalse);
+      await close(tester);
+    });
+
+    testWidgets(
+      'değer değişince eski kartın ± ve tamamla komutları reddedilir',
+      (tester) async {
+        await seed([(60, 10)]);
+        await open(tester);
+        final key = shown.last['setKey'] as String;
+        expect(await act(tester, 'stepUp', key), isTrue);
+        final currentKey = shown.last['setKey'] as String;
+        final weight = (await tester.runAsync(
+          reloadDraft,
+        ))!.exercises.single.sets.first.weight;
+        expect(await act(tester, 'stepUp', key), isFalse);
+        expect(await act(tester, 'completeSet', key), isFalse);
+        expect(
+          (await tester.runAsync(
+            reloadDraft,
+          ))!.exercises.single.sets.first.weight,
+          weight,
+        );
+        expect(await act(tester, 'completeSet', currentKey), isTrue);
+        await close(tester);
+      },
+    );
+
+    testWidgets(
+      'mola komutu tek sürüme bağlıdır; eski komut yeni molaya işlemez',
+      (tester) async {
+        await seed([(60, 10)]);
+        await (db.update(
+          db.routineExercises,
+        )).write(const RoutineExercisesCompanion(targetRestSec: Value(60)));
+        await open(tester);
+        expect(
+          await act(tester, 'completeSet', shown.last['setKey'] as String),
+          isTrue,
+        );
+        final firstRestKey = shown.last['restKey'] as String;
+        expect(firstRestKey, isNotEmpty);
+        final nextSetKey = shown.last['setKey'] as String;
+        expect(
+          await act(tester, 'completeSet', nextSetKey),
+          isFalse,
+          reason: 'mola sürerken set onaylanmaz',
+        );
+        expect(await act(tester, 'addRest', firstRestKey), isTrue);
+        final extended = (await tester.runAsync(reloadDraft))!.restEndsAtMs;
+        expect(await act(tester, 'addRest', firstRestKey), isFalse);
+        expect((await tester.runAsync(reloadDraft))!.restEndsAtMs, extended);
+        final currentRestKey = shown.last['restKey'] as String;
+        expect(await act(tester, 'skipRest', currentRestKey), isTrue);
+        expect(
+          shown.last['setKey'],
+          nextSetKey,
+          reason: 'mola, set anahtarını değiştirmez',
+        );
+        expect(await act(tester, 'completeSet', nextSetKey), isTrue);
+        final secondRestKey = shown.last['restKey'] as String;
+        expect(secondRestKey, isNot(currentRestKey));
+        expect(await act(tester, 'skipRest', currentRestKey), isFalse);
+        expect((await tester.runAsync(reloadDraft))!.restEndsAtMs, isNotNull);
+        expect(await act(tester, 'skipRest', secondRestKey), isTrue);
+        await close(tester);
+      },
+    );
+
+    testWidgets('kaldırılıp aynı sıraya eklenen set eski komutu kabul etmez', (
+      tester,
+    ) async {
+      await seed([(60, 10)]);
+      await open(tester);
+      expect(
+        await act(tester, 'completeSet', shown.last['setKey'] as String),
+        isTrue,
+      );
+      final removedKey = shown.last['setKey'] as String;
+      await tester.tap(find.text('Çıkar'));
+      await tester.pump();
+      await tester.tap(find.text('Set Ekle'));
+      await tester.pump();
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pump();
+      expect(shown.last['setKey'], isNot(removedKey));
+      expect(await act(tester, 'completeSet', removedKey), isFalse);
+      expect(
+        (await tester.runAsync(reloadDraft))!.exercises.single.sets.last.done,
+        isFalse,
+      );
+      await close(tester);
+    });
+
+    testWidgets('doğal mola bitişi native karttaki sıradaki seti bayatlatmaz', (
+      tester,
+    ) async {
+      await seed([(60, 10)]);
+      await WorkoutDraftService().save(
+        WorkoutDraft(
+          title: 'Push',
+          routineId: routineId,
+          startedAtMs: DateTime.now().millisecondsSinceEpoch,
+          sessionDateMs: DateTime.now().millisecondsSinceEpoch,
+          restStartedAtMs: DateTime.now().millisecondsSinceEpoch,
+          restEndsAtMs: DateTime.now()
+              .add(const Duration(seconds: 1))
+              .millisecondsSinceEpoch,
+          exercises: [
+            DraftExercise(
+              exerciseId: (await db.workoutDao.getRoutineExercises(
+                routineId,
+              )).single.exercise.id,
+              restSec: 0,
+              previous: null,
+              sets: [DraftSet(weight: 60, reps: 10, done: true), DraftSet()],
+            ),
+          ],
+        ),
+      );
+      await open(tester, resume: true);
+      final key = shown.last['setKey'] as String;
+      final restKey = shown.last['restKey'] as String;
+      // Gerçek saat ilerler; Dart'ın fake timer/yeniden çizimi çalıştırılmaz.
+      // Native staleDate yüzeyi kendi başına bu anahtarı gösterebilir.
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(seconds: 2)),
+      );
+      expect(await act(tester, 'completeSet', key), isTrue);
+      expect(await act(tester, 'skipRest', restKey), isFalse);
+      expect(
+        (await tester.runAsync(reloadDraft))!.exercises.single.sets.last.done,
+        isTrue,
+      );
+      await close(tester);
+    });
+
+    testWidgets('taslak dışarıdan silinince eski kart yeniden yazamaz', (
+      tester,
+    ) async {
+      await seed([(60, 10)]);
+      await open(tester);
+      final key = shown.last['setKey'] as String;
+      await tester.runAsync(() => WorkoutDraftService().clear());
+      expect(await act(tester, 'completeSet', key), isFalse);
+      expect(await tester.runAsync(reloadDraft), isNull);
+      await close(tester);
+    });
+
+    testWidgets('clear sonrası bekleyen alan yazımı kartı yeniden yayımlamaz',
         (tester) async {
+      await seed([(60, 10)]);
+      await open(tester);
+      final publications = shown.length;
+      await tester.enterText(kgField(0), '65');
+      await tester.runAsync(() => WorkoutDraftService().clear());
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(shown, hasLength(publications));
+      expect(await tester.runAsync(reloadDraft), isNull);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await close(tester);
+    });
+
+    testWidgets('kilo adımı seçimi kartı yeniler ve eski komutu reddeder',
+        (tester) async {
+      await seed([(60, 10)]);
+      await open(tester);
+      final key = shown.last['setKey'] as String;
+      await tester.tap(find.byTooltip('Kilo adımını değiştir'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ChoiceChip, '5 kg'));
+      await tester.pumpAndSettle();
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pump();
+      final updatedKey = shown.last['setKey'] as String;
+      expect(updatedKey, isNot(key));
+      expect(shown.last['stepUpLabel'], '+5 kg');
+      expect(await act(tester, 'stepUp', key), isFalse);
+      expect(await act(tester, 'stepUp', updatedKey), isTrue);
+      expect((await tester.runAsync(reloadDraft))!
+          .exercises.single.sets.first.weight, 65);
+      await close(tester);
+    });
+
+    testWidgets('taslaktan dönüş eski native kartın komutunu kabul etmez',
+        (tester) async {
+      await seed([(60, 10)]);
+      await open(tester);
+      final key = shown.last['setKey'] as String;
+      await close(tester);
+      await open(tester, resume: true);
+      expect(shown.last['setKey'], isNot(key));
+      expect(await act(tester, 'completeSet', key), isFalse);
+      expect(await act(tester, 'completeSet', shown.last['setKey'] as String),
+          isTrue);
+      await close(tester);
+    });
+
+    testWidgets('son seti geri almak eski tamamla komutunu canlandırmaz',
+        (tester) async {
+      await seed([(60, 10)]);
+      await open(tester);
+      expect(await act(tester, 'completeSet', shown.last['setKey'] as String),
+          isTrue);
+      final lastKey = shown.last['setKey'] as String;
+      expect(await act(tester, 'completeSet', lastKey), isTrue);
+      await tester.tap(find.byKey(const ValueKey('set.complete.1')));
+      await tester.pump();
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      expect(shown.last['setKey'], isNot(lastKey));
+      expect(await act(tester, 'completeSet', lastKey), isFalse);
+      expect((await tester.runAsync(reloadDraft))!
+          .exercises.single.sets.last.done, isFalse);
+      await close(tester);
+    });
+
+    testWidgets('bitiriş yazımı sürerken native komut durumu değiştirmez',
+        (tester) async {
+      await seed([(60, 10)]);
+      final blocking = _BlockingSaveDao(db);
+      overrideDao = blocking;
+      await open(tester);
+      expect(await act(tester, 'completeSet', shown.last['setKey'] as String),
+          isTrue);
+      final key = shown.last['setKey'] as String;
+      await tester.tap(find.text('Bitir'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('session.finishAnyway')));
+      await tester.pump();
+      expect(blocking.started.isCompleted, isTrue);
+      expect(await act(tester, 'stepUp', key), isFalse);
+      expect((await tester.runAsync(reloadDraft))!
+          .exercises.single.sets.last.weight, isNull);
+      blocking.release.complete();
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pump();
+      // Başarısız kayıt sonrasında kilit çözülür, seans düzeltilebilir kalır.
+      expect(await act(tester, 'stepUp', key), isTrue);
+      await close(tester);
+    });
+
+    testWidgets('ilk native komut yazımı beklerken ikinci komut reddedilir',
+        (tester) async {
+      await seed([(60, 10)]);
+      final paused = _PausedDraftWrites();
+      overrideDrafts = paused;
+      await open(tester);
+      final firstKey = shown.last['setKey'] as String;
+      paused.pause = true;
+
+      Future<Object?> send(String key) async {
+        const codec = StandardMethodCodec();
+        final reply = Completer<Object?>();
+        await TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .handlePlatformMessage(
+          WorkoutLiveActivity.channel.name,
+          codec.encodeMethodCall(MethodCall('action',
+              {'action': 'completeSet', 'setKey': key})),
+          (data) => reply.complete(data == null ? null : codec.decodeEnvelope(data)),
+        );
+        return reply.future;
+      }
+
+      var firstCompleted = false;
+      final first = send(firstKey).then((value) {
+        firstCompleted = true;
+        return value;
+      });
+      await tester.pump();
+      try {
+        expect(paused.started.isCompleted, isTrue);
+        final nextKey = shown.last['setKey'] as String;
+        expect(nextKey, isNot(firstKey));
+        final second = send(nextKey);
+        await tester.pump();
+        expect(await second, isFalse,
+            reason: 'ilk komut hâlâ taslak yazımını bekler');
+        expect(firstCompleted, isFalse);
+      } finally {
+        paused.release.complete();
+      }
+      await tester.pump();
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pump();
+      expect(await first, isTrue);
+      final draft = (await tester.runAsync(reloadDraft))!;
+      expect(draft.exercises.single.sets.first.done, isTrue);
+      expect(draft.exercises.single.sets.last.done, isFalse);
+      await close(tester);
+    });
+
+    testWidgets('bayat set kimliği yok sayılır; ± ve ✓ görünen değerle', (
+      tester,
+    ) async {
       await seed([(60, 10), (60, 10)]);
       await open(tester);
       final first = shown.last;
@@ -238,12 +571,19 @@ void main() {
       d = await tester.runAsync(reloadDraft);
       final w = d!.exercises.single.sets[0].weight!;
       expect(w, greaterThan(60));
-      expect(d.exercises.single.sets[1].weight, isNull,
-          reason: 'sonraki sete dokunulmaz');
-      expect(shown.last['target'] as String, contains(w.toString().replaceAll('.0', '')));
+      expect(
+        d.exercises.single.sets[1].weight,
+        isNull,
+        reason: 'sonraki sete dokunulmaz',
+      );
+      expect(
+        shown.last['target'] as String,
+        contains(w.toString().replaceAll('.0', '')),
+      );
 
       // ✓ : kartta görünen kilo kaydedilir, sıradaki sete geçilir.
-      expect(await act(tester, 'completeSet', key), isTrue);
+      final updatedKey = shown.last['setKey'] as String;
+      expect(await act(tester, 'completeSet', updatedKey), isTrue);
       d = await tester.runAsync(reloadDraft);
       final s0 = d!.exercises.single.sets[0];
       expect((s0.done, s0.weight), (true, w));
@@ -382,10 +722,46 @@ void main() {
     for (var i = 0; i < 3; i++) {
       await tester.pump(const Duration(seconds: 1));
     }
-    expect(find.byKey(const ValueKey('set-timer-stop')), findsOneWidget,
-        reason: 'sayaç 3 saat tıkından sonra hâlâ çalışıyor olmalı');
+    expect(
+      find.byKey(const ValueKey('set-timer-stop')),
+      findsOneWidget,
+      reason: 'sayaç 3 saat tıkından sonra hâlâ çalışıyor olmalı',
+    );
     await close(tester);
   });
+}
+
+class _BlockingSaveDao extends WorkoutDao {
+  _BlockingSaveDao(super.db);
+  final started = Completer<void>();
+  final release = Completer<void>();
+
+  @override
+  Future<int> insertSessionWithSets(WorkoutSessionsCompanion session,
+      List<WorkoutSetsCompanion> Function(int) buildSets) async {
+    started.complete();
+    await release.future;
+    throw StateError('synthetic save failure');
+  }
+}
+
+class _PausedDraftWrites extends WorkoutDraftService {
+  bool pause = false;
+  final started = Completer<void>();
+  final release = Completer<void>();
+
+  @override
+  Future<bool> saveIfCurrent(WorkoutDraft draft, {
+    required int expectedClearCount,
+    bool Function()? isCurrent,
+  }) async {
+    if (pause) {
+      if (!started.isCompleted) started.complete();
+      await release.future;
+    }
+    return super.saveIfCurrent(draft,
+        expectedClearCount: expectedClearCount, isCurrent: isCurrent);
+  }
 }
 
 /// Ses/titreşim yok; ses oynatıcısı test ortamında kurulmaz.

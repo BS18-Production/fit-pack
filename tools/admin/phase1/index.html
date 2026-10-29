@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src https://*.supabase.co http://127.0.0.1:54321 http://localhost:54321; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Fit Pack · Ürün ve destek</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">İçeriğe geç</a>
+  <header class="topbar">
+    <a class="brand" href="./index.html" aria-label="Fit Pack yönetim ana sayfası"><span class="monogram" aria-hidden="true">FP</span><span>FIT PACK<small>Ürün ve destek</small></span></a>
+    <div class="top-actions"><span id="mode-label" class="badge">BAĞLI DEĞİL</span><button id="exit" class="quiet" hidden>Oturumu kapat</button></div>
+  </header>
+  <main id="main" tabindex="-1">
+    <section id="entry" class="entry">
+      <div class="intro">
+        <p class="eyebrow">YÖNETİM · FAZ 1</p>
+        <h1>Doğru veri.<br>Kontrollü destek.</h1>
+        <p class="lead">Kullanımı toplu gör. Bir hesabın kayıt kapsamını yalnız destek amacıyla incele.</p>
+        <ul class="principles"><li>Ölçüm yalnız açık tercihle başlar.</li><li>Sağlık değerleri bu panelde yer almaz.</li><li>Bireysel destek erişimi kayıt altındadır.</li></ul>
+        <button id="demo" class="primary">Sentetik demoyu aç <span aria-hidden="true">→</span></button>
+        <p class="muted small">Demo Supabase veya giriş isteği yapmaz. Gerçek kullanıcı verisi içermez.</p>
+      </div>
+      <section class="login card" aria-labelledby="login-title">
+        <div class="section-head"><div><p class="eyebrow">YETKİLİ ERİŞİM</p><h2 id="login-title">Canlı panele bağlan</h2></div><span class="lock-mark" aria-hidden="true">◈</span></div>
+        <p class="muted">Mevcut Supabase hesabı kullanılır. Yönetici yetkisi ve sunucu etkinleştirmesi ayrıca gerekir.</p>
+        <form id="login-form" autocomplete="off">
+          <label for="project">Supabase proje adresi</label><input id="project" type="url" placeholder="https://proje.supabase.co" required spellcheck="false" autocapitalize="off">
+          <label for="publishable">Publishable / anon anahtar</label><input id="publishable" type="password" required spellcheck="false" autocomplete="off" aria-describedby="key-help"><p id="key-help" class="field-help">Yalnız istemci anahtarı. Yönetim veya secret anahtarı kabul edilmez.</p>
+          <label for="email">Yönetici e-postası</label><input id="email" type="email" autocomplete="username" required autocapitalize="off">
+          <label for="password">Parola</label><input id="password" type="password" autocomplete="current-password" required>
+          <button class="primary full" type="submit">Giriş yap</button>
+        </form>
+        <form id="mfa-form" hidden>
+          <label for="totp">Doğrulama uygulamasındaki 6 haneli kod</label><input id="totp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required>
+          <button class="primary full" type="submit">İki aşamalı girişi doğrula</button>
+          <p class="field-help">Bu panel yeni doğrulama yöntemi oluşturmaz; hesabında kurulmuş yöntemi kullanır.</p>
+        </form>
+        <p class="login-note">Oturum yalnız bu sayfanın belleğinde tutulur. Sayfa yenilendiğinde yeniden giriş gerekir.</p>
+      </section>
+    </section>
+    <p id="status" class="status" role="status" aria-live="polite" hidden></p>
+    <section id="workspace" hidden>
+      <div id="demo-banner" class="demo-banner" hidden><strong>Sentetik yerel demo; canlı veri değil</strong><span>Gösterilen hesaplar, sayılar ve tarihler örnek veridir.</span></div>
+      <div class="workspace-head"><div><p class="eyebrow">FIT PACK · VERİ GÖRÜNÜRLÜĞÜ</p><h1 id="view-title">Ürün özeti</h1></div><span id="updated" class="muted small"></span></div>
+      <nav class="tabs" aria-label="Yönetim görünümleri"><button id="tab-overview" aria-current="page">Ürün özeti</button><button id="tab-support">Kullanıcı desteği</button></nav>
+      <section id="overview" aria-label="Toplu ürün kullanımı">
+        <div class="toolbar"><p>Yalnız analitiğe izin veren hesapların gözlenen kullanımı.</p><div class="range"><label for="days">Dönem</label><select id="days"><option value="7">Son 7 gün</option><option value="14">Son 14 gün</option><option value="30">Son 30 gün</option></select><button id="refresh" class="quiet">Yenile</button></div></div>
+        <div id="metrics" class="metric-grid"></div>
+        <div class="overview-grid"><section class="card activity-card"><div class="section-head"><div><p class="eyebrow">GÜNLÜK GÖZLEM</p><h2>Kullanım ritmi</h2></div><span class="legend"><i></i>Ziyaret başlangıcı</span></div><div id="chart" class="chart"></div><p class="field-help">Günlük pencereler UTC. Antrenman tarihi veya son giriş zamanı kullanım ziyareti sayılmaz.</p></section><aside class="card coverage-card"><p class="eyebrow">BU SAYILARA GÜVENEBİLİR MİYİM?</p><h2>Ölçüm kapsamı</h2><dl id="coverage" class="detail-list"></dl><p class="notice">Ölçüm öncesi geçmiş doldurulmaz. İzin vermeyen ve henüz veri göndermeyen hesapların kullanımı bu sayılarda görünmez.</p></aside></div>
+        <div class="health-grid journey-grid"><section class="card"><p class="eyebrow">CEVAPLAR OLMADAN</p><h2>Kurulumda gözlenen adımlar</h2><div id="onboarding"></div><p class="field-help">Her adım bağımsız erişimdir; sıralı dönüşüm hunisi değildir. İzin öncesi adımlar görünmeyebilir.</p></section><section class="card"><p class="eyebrow">YALNIZ KABA TEKNİK BİLGİ</p><h2>Sürüm ve platform</h2><div id="versions"></div><p class="field-help">Bir hesap birden fazla grupta bulunabilir; hesap sayıları toplanmaz. Ayrıntılı cihaz modeli yoktur.</p></section></div>
+        <div class="health-grid"><section class="card"><p class="eyebrow">TEKNİK GÖZLEM</p><h2>Bildirilen hatalar</h2><div id="errors"></div><p class="field-help">Bildirilen hatalar ölçülür; bu bir çökme oranı değildir.</p></section><section class="card"><p class="eyebrow">VERİ AKIŞI</p><h2>Eşitleme sonuçları</h2><div id="sync"></div><p class="field-help">Ölçülen denemeler; bütün cihazların durumunu kanıtlamaz.</p></section></div>
+      </section>
+      <section id="support" aria-label="Kontrollü kullanıcı desteği" hidden>
+        <div class="support-layout"><section class="card support-search"><p class="eyebrow">TEK HESAP · SALT OKUNUR</p><h2>Bir destek isteğini incele</h2><p class="muted">Yalnız hesap durumu, kategori sayıları ve kayıt zamanları açılır. Kilo, öğün, set veya ölçüm değerleri getirilmez.</p><form id="support-form" autocomplete="off"><label for="lookup">Tam e-posta veya hesap kimliği</label><input id="lookup" required placeholder="kullanici@example.test" autocapitalize="off" spellcheck="false"><label for="reason">Destek amacı</label><select id="reason" required><option value="">Amaç seç</option><option value="account_setup">Hesap kurulumu</option><option value="sync_issue">Eşitleme sorunu</option><option value="missing_records">Eksik kayıt bildirimi</option></select><button type="submit" class="primary full">Kayıt kapsamını aç</button></form><p class="notice">Canlı erişimde yetkin sunucuda denetlenir ve erişim günlüğü yazılır. Günlük yazılamazsa bilgi gösterilmez.</p></section><section id="support-result" class="card support-result" aria-live="polite"><div class="empty-state"><span class="empty-mark" aria-hidden="true">⌕</span><h2>Henüz hesap açılmadı</h2><p>Destek amacıyla bir hesabı aradığında yalnız izin verilen özet burada görünür.</p></div></section></div>
+      </section>
+      <footer><span>Ham ürün olayları: 30 gün · Tercih ve erişim geçmişi: 180 gün</span><span>Analitik tercihi, pazarlama veya kişiselleştirilmiş gönderim izni değildir.</span></footer>
+    </section>
+  </main>
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>

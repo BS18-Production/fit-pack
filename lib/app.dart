@@ -29,6 +29,7 @@ import 'features/update/update_providers.dart';
 import 'features/auth/auth_gate.dart';
 import 'features/health/body_providers.dart';
 import 'features/health/step_providers.dart';
+import 'features/analytics/analytics_lifecycle.dart';
 
 class FitPackApp extends ConsumerStatefulWidget {
   const FitPackApp({super.key});
@@ -163,7 +164,8 @@ class _FitPackAppState extends ConsumerState<FitPackApp> {
                     systemNavigationBarContrastEnforced: false,
                   ),
           child: GlassBackground(
-            child: _DayRolloverGuard(child: child ?? const SizedBox.shrink()),
+            child: AnalyticsLifecycle(
+              child: _DayRolloverGuard(child: child ?? const SizedBox.shrink())),
           ),
         );
       },

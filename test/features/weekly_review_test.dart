@@ -23,13 +23,14 @@ void main() {
         isDeload: false,
         durationMin: dk,
       );
-  WorkoutSet set(int sessionId,
-          {int exerciseId = 1,
+  WorkoutSet set(
+    int sessionId, {
+    int exerciseId = 1,
           double? kg = 100,
           int? reps = 10,
           bool complete = true,
-          bool warmup = false}) =>
-      WorkoutSet(
+    bool warmup = false,
+  }) => WorkoutSet(
         id: ++seq,
         sessionId: sessionId,
         exerciseId: exerciseId,
@@ -40,8 +41,7 @@ void main() {
         setType: 'normal',
         isComplete: complete,
       );
-  FoodLog ogun(DateTime d, {double kcal = 500, double protein = 40}) =>
-      FoodLog(
+  FoodLog ogun(DateTime d, {double kcal = 500, double protein = 40}) => FoodLog(
         id: ++seq,
         date: d,
         mealType: 'lunch',
@@ -54,19 +54,87 @@ void main() {
       );
   BodyMeasurement tarti(DateTime d, double kg) =>
       BodyMeasurement(id: ++seq, date: d, weightKg: kg);
-  ExerciseProgressPoint nokta(int id, String ad, DateTime d, double kg,
-          int reps) =>
-      ExerciseProgressPoint(
-          exerciseId: id, name: ad, date: d, weightKg: kg, reps: reps);
+  ExerciseProgressPoint nokta(
+    int id,
+    String ad,
+    DateTime d,
+    double kg,
+    int reps,
+  ) => ExerciseProgressPoint(
+    exerciseId: id,
+    name: ad,
+    date: d,
+    weightKg: kg,
+    reps: reps,
+  );
 
   // ───────────────────────── W-1 / W-2: pencere ─────────────────────────
 
+  test(
+    'haftalık taahhüt antrenman günüdür; aynı gün iki seans iki gün olmaz',
+    () {
+      final a = seans(hafta);
+      final b = seans(DateTime(hafta.year, hafta.month, hafta.day, 18));
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
+          weekStart: hafta,
+          now: pazarAksami,
+          weeklyGoal: 2,
+          sessions: [a, b],
+        ),
+      );
+      expect(r.workout.sessions, 2);
+      expect(r.workout.trainingDays, 1);
+      expect(r.workout.targetKnown, isTrue);
+      expect(r.focus.kind, FocusKind.completePlan);
+      expect(r.focus.done, 1);
+      expect(r.focus.planned, 2);
+    },
+  );
+
+  test('hedef geçmişi bilinmiyorsa mevcut rutin hedefi geçmişe taşınmaz', () {
+    final r = buildWeeklyReview(
+      WeeklyReviewInput(
+        weekStart: hafta,
+        now: pazarAksami,
+        weeklyTargetKnown: false,
+        scheduledWeekdays: {1, 3, 5},
+        weeklyGoal: 3,
+        sessions: [seans(hafta)],
+      ),
+    );
+    expect(r.workout.sessions, 1);
+    expect(r.workout.trainingDays, 1);
+    expect(r.workout.targetKnown, isFalse);
+    expect(r.workout.planned, isNull);
+    expect(r.focus.kind, isNot(FocusKind.completePlan));
+  });
+
+  test('dönem ortasında yürürlüğe giren hedef tüm haftayı yargılamaz', () {
+    final r = buildWeeklyReview(
+      WeeklyReviewInput(
+        weekStart: hafta,
+        now: pazarAksami,
+        weeklyGoal: 3,
+        weeklyTargetKnown: true,
+        weeklyTargetCoversWholePeriod: false,
+        sessions: [seans(hafta)],
+      ),
+    );
+    expect(r.workout.planned, 3);
+    expect(r.workout.targetKnown, isTrue);
+    expect(r.workout.targetCoversWholePeriod, isFalse);
+    expect(r.focus.kind, isNot(FocusKind.completePlan));
+  });
+
   group('W-1 hafta penceresi [start, end)', () {
-    test('bitiş anı dahil DEĞİL — bir sonraki haftanın ilk seansı sayılmaz',
+    test(
+      'bitiş anı dahil DEĞİL — bir sonraki haftanın ilk seansı sayılmaz',
         () {
       final ic = seans(pzt.add(const Duration(days: 6, hours: 23)));
       final sinirda = seans(pzt.add(const Duration(days: 7))); // pzt 00:00
-      final r = buildWeeklyReview(WeeklyReviewInput(
+        final r = buildWeeklyReview(
+          WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         sessions: [ic], // sağlayıcı zaten [start, end) sorgular
@@ -74,27 +142,27 @@ void main() {
           ogun(pzt.add(const Duration(days: 6, hours: 23))),
           ogun(sinirda.date), // sınırdaki öğün süzülmeli
         ],
-      ));
+          ),
+        );
       expect(r.workout.sessions, 1);
       expect(r.nutrition.loggedDays, 1, reason: 'bitiş anı hariç');
-    });
+      },
+    );
   });
 
   group('W-2 tamamlanmamış hafta', () {
     test('çarşamba öğlen → 3 günlük veri, bitmedi', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
-        weekStart: hafta,
-        now: DateTime(2026, 9, 16, 12),
-      ));
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(weekStart: hafta, now: DateTime(2026, 9, 16, 12)),
+      );
       expect(r.period.isComplete, isFalse);
       expect(r.period.daysElapsed, 3);
     });
 
     test('bitmiş hafta → 7 gün', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
-        weekStart: hafta,
-        now: DateTime(2026, 9, 22, 9),
-      ));
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(weekStart: hafta, now: DateTime(2026, 9, 22, 9)),
+      );
       expect(r.period.isComplete, isTrue);
       expect(r.period.daysElapsed, 7);
     });
@@ -104,7 +172,8 @@ void main() {
 
   group('W-3 / W-4 beslenme (Samet kuralı)', () {
     test('3 gün kayıt → ortalama 3 güne bölünür, 7\'ye DEĞİL', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         kcalGoal: 3000,
@@ -115,7 +184,8 @@ void main() {
           ogun(pzt.add(const Duration(days: 2)), kcal: 3000, protein: 150),
           ogun(pzt.add(const Duration(days: 4)), kcal: 2500, protein: 100),
         ],
-      ));
+        ),
+      );
       expect(r.nutrition.loggedDays, 3);
       // (2000 + 3000 + 2500) / 3 = 2500 — 7'ye bölünseydi 1071.
       expect(r.nutrition.avgKcal, 2500);
@@ -123,14 +193,15 @@ void main() {
     });
 
     test('kayıtsız hafta → ortalama YOK, sıfır da değil', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
-        weekStart: hafta,
-        now: pazarAksami,
-        kcalGoal: 3000,
-      ));
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(weekStart: hafta, now: pazarAksami, kcalGoal: 3000),
+      );
       expect(r.nutrition.loggedDays, 0);
-      expect(r.nutrition.avgKcal, isNull,
-          reason: 'kayıt yoksa "0 kalori yedin" denmez');
+      expect(
+        r.nutrition.avgKcal,
+        isNull,
+        reason: 'kayıt yoksa "0 kalori yedin" denmez',
+      );
       expect(r.nutrition.avgProtein, isNull);
     });
   });
@@ -140,8 +211,8 @@ void main() {
     // ama hiç kayıt yok (bilinçli beyan: 0 kalori).
     final carsamba = pzt.add(const Duration(days: 2));
     final cuma = pzt.add(const Duration(days: 4));
-    WeeklyReview hesap({Set<DateTime> done = const {}}) =>
-        buildWeeklyReview(WeeklyReviewInput(
+    WeeklyReview hesap({Set<DateTime> done = const {}}) => buildWeeklyReview(
+      WeeklyReviewInput(
           weekStart: hafta,
           now: pazarAksami,
           kcalGoal: 3000,
@@ -151,17 +222,22 @@ void main() {
             ogun(pzt, kcal: 800, protein: 30),
             ogun(carsamba, kcal: 2800, protein: 160),
           ],
-        ));
+      ),
+    );
 
     test('tamamlanmış gün yoksa eski kural aynen (kayıtlı günler)', () {
       final n = hesap().nutrition;
       expect(n.basis, NutritionBasis.loggedDays);
       expect(n.avgKcal, 1800); // (800 + 2800) / 2
-      expect(n.proteinHitDays, isNull,
-          reason: 'tamamlanmış gün yokken başarı/başarısızlık çıkarılmaz');
+      expect(
+        n.proteinHitDays,
+        isNull,
+        reason: 'tamamlanmış gün yokken başarı/başarısızlık çıkarılmaz',
+      );
     });
 
-    test('tamamlanmış gün varsa ortalama YALNIZ onlardan; yarım gün dışarıda',
+    test(
+      'tamamlanmış gün varsa ortalama YALNIZ onlardan; yarım gün dışarıda',
         () {
       final n = hesap(done: {carsamba}).nutrition;
       expect(n.basis, NutritionBasis.completedDays);
@@ -171,7 +247,8 @@ void main() {
       expect(n.excludedLoggedDays, 1, reason: 'pazartesi hesaba katılmadı');
       expect(n.loggedDays, 2, reason: 'kayıt alışkanlığı sayısı değişmez');
       expect(n.proteinHitDays, 1);
-    });
+      },
+    );
 
     test('kayıtsız tamamlanmış gün 0 kalori sayılır (Samet kararı)', () {
       final n = hesap(done: {carsamba, cuma}).nutrition;
@@ -197,7 +274,8 @@ void main() {
 
   group('W-5 kilo', () {
     test('tek ölçüm → trend iddiası yok', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         goalDirection: GoalDirection.lose,
@@ -206,14 +284,19 @@ void main() {
           tarti(pzt.subtract(const Duration(days: 3)), 86),
           tarti(pzt.add(const Duration(days: 2)), 85),
         ],
-      ));
+        ),
+      );
       expect(r.weight.singleMeasurement, isTrue);
-      expect(r.weight.meaning, WeightMeaning.unknown,
-          reason: 'tek ölçümden yön yorumu çıkarılmaz');
+      expect(
+        r.weight.meaning,
+        WeightMeaning.unknown,
+        reason: 'tek ölçümden yön yorumu çıkarılmaz',
+      );
     });
 
     test('iki haftanın ortalaması → fark ve hedefe göre anlam', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         goalDirection: GoalDirection.lose,
@@ -224,14 +307,16 @@ void main() {
           tarti(pzt.add(const Duration(days: 1)), 85.2),
           tarti(pzt.add(const Duration(days: 5)), 84.8),
         ],
-      ));
+        ),
+      );
       expect(r.weight.count, 2);
       expect(r.weight.delta, closeTo(-1.0, 0.001));
       expect(r.weight.meaning, WeightMeaning.onTrack);
     });
 
     test('aynı değişim "al" hedefinde tersine sayılır', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         goalDirection: GoalDirection.gain,
@@ -242,7 +327,8 @@ void main() {
           tarti(pzt.add(const Duration(days: 1)), 85.2),
           tarti(pzt.add(const Duration(days: 5)), 84.8),
         ],
-      ));
+        ),
+      );
       expect(r.weight.meaning, WeightMeaning.against);
     });
   });
@@ -256,34 +342,43 @@ void main() {
     ];
 
     test('yön bu haftadan SONRA seçildiyse bu hafta "bilinmiyor"', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: DateTime(2026, 9, 25),
         goalDirection: GoalDirection.gain,
         goalDirectionSince: DateTime(2026, 9, 23), // haftadan sonra
         measurements: olcumler,
-      ));
-      expect(r.weight.meaning, WeightMeaning.unknown,
-          reason: 'sonradan seçilen hedef eski haftayı yargılayamaz');
+        ),
+      );
+      expect(
+        r.weight.meaning,
+        WeightMeaning.unknown,
+        reason: 'sonradan seçilen hedef eski haftayı yargılayamaz',
+      );
     });
 
     test('yön hafta İÇİNDE seçildiyse bu hafta yorumlanır', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         goalDirection: GoalDirection.gain,
         goalDirectionSince: pzt.add(const Duration(days: 3)),
         measurements: olcumler,
-      ));
+        ),
+      );
       expect(r.weight.meaning, WeightMeaning.against);
     });
 
     test('yön seçilmemişse "bilinmiyor"', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         measurements: olcumler,
-      ));
+        ),
+      );
       expect(r.weight.meaning, WeightMeaning.unknown);
     });
   });
@@ -292,49 +387,66 @@ void main() {
 
   group('W-7 odak cümlesi — kural sırası', () {
     test('1) plan tamamlanmadı (hafta bittiyse)', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         scheduledWeekdays: {1, 3, 5, 6},
         sessions: [seans(pzt), seans(pzt.add(const Duration(days: 2)))],
-        foodLogs: [for (var d = 0; d < 7; d++) ogun(pzt.add(Duration(days: d)))],
-      ));
+          foodLogs: [
+            for (var d = 0; d < 7; d++) ogun(pzt.add(Duration(days: d))),
+          ],
+        ),
+      );
       expect(r.focus.kind, FocusKind.completePlan);
       expect(r.focus.done, 2);
       expect(r.focus.planned, 4);
     });
 
     test('1) hafta bitmediyse plan için "kaçırdın" denmez', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: DateTime(2026, 9, 16, 12),
         scheduledWeekdays: {1, 3, 5, 6},
         sessions: [seans(pzt)],
-        foodLogs: [for (var d = 0; d < 3; d++) ogun(pzt.add(Duration(days: d)))],
-      ));
+          foodLogs: [
+            for (var d = 0; d < 3; d++) ogun(pzt.add(Duration(days: d))),
+          ],
+        ),
+      );
       expect(r.focus.kind, isNot(FocusKind.completePlan));
     });
 
     test('2) 3 haftadır aynı kilo ve aralık üstü → kiloyu artır', () {
       final pts = [
         for (var w = 0; w < 3; w++)
-          nokta(7, 'Bench Press',
+          nokta(
+            7,
+            'Bench Press',
               pzt.subtract(Duration(days: 7 * w)).add(const Duration(days: 1)),
-              80, 12),
+            80,
+            12,
+          ),
       ];
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         targetRepsMaxByExercise: {7: 12},
         progressPoints: pts,
-        foodLogs: [for (var d = 0; d < 7; d++) ogun(pzt.add(Duration(days: d)))],
-      ));
+          foodLogs: [
+            for (var d = 0; d < 7; d++) ogun(pzt.add(Duration(days: d))),
+          ],
+        ),
+      );
       expect(r.focus.kind, FocusKind.increaseWeight);
       expect(r.focus.exerciseName, 'Bench Press');
     });
 
     test('2) kilo artmışsa takılı sayılmaz', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         targetRepsMaxByExercise: {7: 12},
@@ -343,32 +455,40 @@ void main() {
           nokta(7, 'Bench', pzt.subtract(const Duration(days: 6)), 80, 12),
           nokta(7, 'Bench', pzt.add(const Duration(days: 1)), 82.5, 12),
         ],
-        foodLogs: [for (var d = 0; d < 7; d++) ogun(pzt.add(Duration(days: d)))],
-      ));
+          foodLogs: [
+            for (var d = 0; d < 7; d++) ogun(pzt.add(Duration(days: d))),
+          ],
+        ),
+      );
       expect(r.focus.kind, isNot(FocusKind.increaseWeight));
     });
 
     test('3) beslenme kaydı az → kayıt alışkanlığı', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         foodLogs: [ogun(pzt), ogun(pzt.add(const Duration(days: 1)))],
-      ));
+        ),
+      );
       expect(r.focus.kind, FocusKind.loggingHabit);
       expect(r.focus.done, 2);
     });
 
     test('3) pazartesi 1 günlük kayıtla "alışkanlık" denmez', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pzt.add(const Duration(hours: 20)),
         foodLogs: [ogun(pzt)],
-      ));
+        ),
+      );
       expect(r.focus.kind, FocusKind.keepRhythm);
     });
 
     test('4) kilo 2 haftadır hedefin tersine → kaloriyi gözden geçir', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         goalDirection: GoalDirection.lose,
@@ -378,13 +498,17 @@ void main() {
           tarti(pzt.subtract(const Duration(days: 5)), 85),
           tarti(pzt.add(const Duration(days: 2)), 86),
         ],
-        foodLogs: [for (var d = 0; d < 7; d++) ogun(pzt.add(Duration(days: d)))],
-      ));
+          foodLogs: [
+            for (var d = 0; d < 7; d++) ogun(pzt.add(Duration(days: d))),
+          ],
+        ),
+      );
       expect(r.focus.kind, FocusKind.reviewCalories);
     });
 
     test('4) yön yeni seçildiyse 2 haftalık trend yargılanmaz', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         goalDirection: GoalDirection.lose,
@@ -394,28 +518,37 @@ void main() {
           tarti(pzt.subtract(const Duration(days: 5)), 85),
           tarti(pzt.add(const Duration(days: 2)), 86),
         ],
-        foodLogs: [for (var d = 0; d < 7; d++) ogun(pzt.add(Duration(days: d)))],
-      ));
+          foodLogs: [
+            for (var d = 0; d < 7; d++) ogun(pzt.add(Duration(days: d))),
+          ],
+        ),
+      );
       expect(r.focus.kind, FocusKind.keepRhythm);
     });
 
     test('5) hiçbiri → aynı ritmi sürdür', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
-        foodLogs: [for (var d = 0; d < 7; d++) ogun(pzt.add(Duration(days: d)))],
-      ));
+          foodLogs: [
+            for (var d = 0; d < 7; d++) ogun(pzt.add(Duration(days: d))),
+          ],
+        ),
+      );
       expect(r.focus.kind, FocusKind.keepRhythm);
     });
 
     test('sıra: plan eksik VE kayıt az → plan kazanır (ilk kural)', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         scheduledWeekdays: {1, 3},
         sessions: [seans(pzt)],
         foodLogs: [ogun(pzt)],
-      ));
+        ),
+      );
       expect(r.focus.kind, FocusKind.completePlan);
     });
   });
@@ -426,7 +559,8 @@ void main() {
     test('her hareket ayrı; toplanmaz, en fazla 3, en çok ilerleyen önde', () {
       final once = pzt.subtract(const Duration(days: 4));
       final bu = pzt.add(const Duration(days: 2));
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         progressPoints: [
@@ -441,25 +575,34 @@ void main() {
           nokta(5, 'Press', once, 50, 8),
           nokta(5, 'Press', bu, 45, 8), // gerileme — listelenmez
         ],
-      ));
+        ),
+      );
       expect(r.progress.length, 3, reason: 'en fazla 3 hareket');
       expect(r.progress.first.name, 'Squat');
       expect(r.progress.map((p) => p.name), isNot(contains('Press')));
-      expect(r.progress.map((p) => p.name).toSet().length, 3,
-          reason: 'her satır tek hareket');
+      expect(
+        r.progress.map((p) => p.name).toSet().length,
+        3,
+        reason: 'her satır tek hareket',
+      );
     });
 
     test('önceki kaydı olmayan hareket listelenmez', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
-        progressPoints: [nokta(1, 'Bench', pzt.add(const Duration(days: 1)), 80, 8)],
-      ));
+          progressPoints: [
+            nokta(1, 'Bench', pzt.add(const Duration(days: 1)), 80, 8),
+          ],
+        ),
+      );
       expect(r.progress, isEmpty);
     });
 
     test('karşılaştırma EN SON kayda göre, eski rekora göre değil', () {
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: hafta,
         now: pazarAksami,
         progressPoints: [
@@ -467,9 +610,13 @@ void main() {
           nokta(1, 'Bench', pzt.subtract(const Duration(days: 3)), 80, 8),
           nokta(1, 'Bench', pzt.add(const Duration(days: 1)), 85, 8),
         ],
-      ));
-      expect(r.progress.single.deltaE1rm, greaterThan(0),
-          reason: 'son kayıt 80 → bu hafta 85 = ilerleme');
+        ),
+      );
+      expect(
+        r.progress.single.deltaE1rm,
+        greaterThan(0),
+        reason: 'son kayıt 80 → bu hafta 85 = ilerleme',
+      );
     });
   });
 
@@ -482,15 +629,20 @@ void main() {
       s1.id: [set(s1.id, kg: 100, reps: 10), set(s1.id, kg: 60, reps: 12)],
       s2.id: [set(s2.id, kg: 80, reps: 8, complete: false)],
     };
-    final r = buildWeeklyReview(WeeklyReviewInput(
+    final r = buildWeeklyReview(
+      WeeklyReviewInput(
       weekStart: hafta,
       now: pazarAksami,
       sessions: [s1, s2],
       setsBySession: sets,
       bodyWeightKg: 85,
-    ));
+      ),
+    );
     final ana = aggregateWorkouts(
-        sessions: [s1, s2], setsBySession: sets, bodyWeightKg: 85);
+      sessions: [s1, s2],
+      setsBySession: sets,
+      bodyWeightKg: 85,
+    );
     expect(r.workout.sessions, ana.sessions);
     expect(r.workout.volumeKg, ana.volumeKg);
     expect(r.workout.kcalBurned, ana.kcalBurned);
@@ -511,7 +663,8 @@ void main() {
       isCustom: false,
       isArchived: false,
     );
-    final r = buildWeeklyReview(WeeklyReviewInput(
+    final r = buildWeeklyReview(
+      WeeklyReviewInput(
       weekStart: hafta,
       now: pazarAksami,
       sessions: [s],
@@ -524,9 +677,11 @@ void main() {
           set(s.id, complete: false),
         ],
       },
-    ));
-    expect(r.muscleSets, {'chest': 2},
-        reason: 'birincil kas yoksa listenin ilki');
+      ),
+    );
+    expect(r.muscleSets, {
+      'chest': 2,
+    }, reason: 'birincil kas yoksa listenin ilki');
   });
 
   group('görsel özet yardımcıları (2026-09-30)', () {
@@ -551,14 +706,16 @@ void main() {
 
     test('geçen haftanın hacmi ana sayfayla aynı hesapla bulunur', () {
       final onceki = seans(pzt.subtract(const Duration(days: 3)));
-      final r = buildWeeklyReview(WeeklyReviewInput(
+      final r = buildWeeklyReview(
+        WeeklyReviewInput(
         weekStart: pzt,
         now: pazarAksami,
         prevSessions: [onceki],
         prevSetsBySession: {
           onceki.id: [set(onceki.id, kg: 100, reps: 5)],
         },
-      ));
+        ),
+      );
       expect(r.workout.prevVolumeKg, 500);
     });
   });

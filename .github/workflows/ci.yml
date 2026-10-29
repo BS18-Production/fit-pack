@@ -87,6 +87,18 @@ jobs:
 
       - run: deno task test
 
+      - name: Product data type checks
+        working-directory: supabase/functions/product-data
+        run: deno task check
+
+      - name: Product data handler tests
+        working-directory: supabase/functions/product-data
+        run: deno task test
+
+      - name: Admin model and UI contracts
+        working-directory: tools/admin/phase1
+        run: node --test admin.test.mjs ui.test.mjs
+
   # Yalnız gecelik/elle: iOS tarafı derleniyor mu (imzasız).
   ios-build:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'

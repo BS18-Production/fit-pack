@@ -2916,5 +2916,213 @@
   "prog3cEmptyTitle": "{count, plural, =1{1 more workout to compare} other{{count} more workouts to compare}}",
   "@prog3cEmptyTitle": {"placeholders": {"count": {"type": "int"}}},
   "prog3cEmptyMsg": "Log workouts on two different days and your progress shows up here.",
-  "prog3cStartWorkout": "Go to training"
+  "prog3cStartWorkout": "Go to training",
+  "analyticsSectionTitle": "Your usage preference",
+  "analyticsSwitchTitle": "Help improve Fit Pack",
+  "analyticsSwitchDescription": "Share limited usage and technical information. Off by default.",
+  "analyticsNotAvailable": "This feature is not available yet. Your usage information is not shared.",
+  "analyticsConsentTitle": "Share usage information?",
+  "analyticsConsentDescription": "App visits, onboarding steps, workout starts and saves, app version and limited error/sync codes linked to your account are shared to improve Fit Pack. Weight, reps, foods, photos, steps and your written text are not sent. Raw usage information is kept for 30 days and preference history for 180 days. You can turn it off at any time; pending information is removed from this device. If you turn it off while offline, withdrawal reaches the server after reconnecting.",
+  "analyticsConsentAccept": "Share usage information",
+  "analyticsEnabled": "Usage sharing is on.",
+  "analyticsDisabled": "Usage sharing is off; pending information was removed.",
+  "analyticsPreferenceError": "Your preference could not be confirmed with the server. If you turned sharing off, it stopped on this device; withdrawal will be sent after reconnecting.",
+  "analyticsPurposeBoundary": "This choice does not allow advertising, special offers or personalized notification delivery. You can use the app with sharing off.",
+  "analyticsWithdraw": "Withdraw my server analytics preference",
+  "setupPlanSourceQuestion": "How would you like to plan your training?",
+  "setupSourceCatalog": "Help me choose a program",
+  "setupSourceCatalogDesc": "Match an existing gym program to your answers.",
+  "setupSourceOwn": "I will use my own routine",
+  "setupSourceOwnDesc": "Keep your own plan. You can create or choose routines after setup.",
+  "setupDaysQuestion": "How many training days fit a busy week?",
+  "setupDaysCount": "{count} days",
+  "@setupDaysCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setupTimeQuestion": "Optional: time available per workout",
+  "setupTimeNone": "No time limit",
+  "setupMinutes": "{count} min",
+  "@setupMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setupOwnTitle": "Your plan stays yours",
+  "setupOwnReason": "You chose your own routine, so no catalog program will be added. Your weekly target is saved; choose or create your routine in Training.",
+  "setupRecommendationReason": "Your experience and {days}-day budget were used to choose from the existing catalog. You can change either answer.",
+  "@setupRecommendationReason": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "setupFrequencyMismatch": "You chose {selected} days. This catalog program recommends {program} days. Your target will not be changed and the program content will stay the same.",
+  "@setupFrequencyMismatch": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "program": {
+        "type": "int"
+      }
+    }
+  },
+  "setupTimeEstimate": "Longest routine: about {minutes} min, excluding warm-up, equipment changes and waiting.",
+  "@setupTimeEstimate": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "setupTimeMismatch": "This may exceed your {minutes}-minute budget. Sets and rest times will not be shortened automatically.",
+  "@setupTimeMismatch": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "setupOwnTime": "Your time budget is saved. Check the duration of your own routine before starting.",
+  "setupConfirmMismatch": "I have reviewed these differences and choose to use this route.",
+  "setupChangeAnswers": "Change my answers",
+  "setupLocalPreference": "These training preferences are saved for this account on this device. They do not sync to other devices.",
+  "setupNutritionChoice": "Choose your nutrition direction to continue. It will not be selected for you.",
+  "setupSaveError": "Your training choices could not be saved. Your setup is still open; try again.",
+  "goalTitle": "Your goal journey",
+  "goalWhyTitle": "What matters to you?",
+  "goalWhyDescription": "Choose what you want to understand from your real records. You can change this and keep logging without choosing.",
+  "goalPurposeRoutine": "Build a rhythm I can sustain",
+  "goalPurposeStrength": "Understand progress in one exercise",
+  "goalPurposeReturn": "Return to my own routine",
+  "goalLocalOnly": "These preferences stay on this device for this account. They do not change your program or nutrition targets.",
+  "goalLoadError": "Could not read your goal. Retry without changing your plan.",
+  "goalBaselineTitle": "Your starting point",
+  "goalNoBaseline": "No earlier records here. Your first real workout will give you a starting point.",
+  "goalBaselineCount": "Records on {count} days in the 28 days before this journey.",
+  "@goalBaselineCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalRecordsScope": "Records may be incomplete. An unlogged day does not mean you did nothing.",
+  "goalChooseExercise": "Choose an exercise from your real records",
+  "goalRouteTitle": "Your weekly route",
+  "goalWeeklyDays": "Weekly plan: {count} training days",
+  "@goalWeeklyDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalTargetUnknown": "No confirmed target for this week yet.",
+  "goalTimeBudget": "Your time constraint: {count} minutes per workout",
+  "@goalTimeBudget": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalNoRoute": "No routine selected. You can use your own routine or choose a catalog program in Workouts.",
+  "goalRouteExplanation": "Your existing routine order stays the same. A weekly time plan is not a new exercise prescription.",
+  "goalChooseNextWeek": "Choose next week’s training days",
+  "goalNextWeekOnly": "Choose the number of separate days. This applies from next week; earlier weeks keep their own target.",
+  "goalConfirmTitle": "Confirm next week’s plan",
+  "goalConfirmNextWeek": "Plan {count} separate training days from next week? Your routine, weights and nutrition targets stay the same.",
+  "@goalConfirmNextWeek": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalTodayTitle": "Your next real step",
+  "goalResumeAction": "Continue your workout",
+  "goalTodayRecorded": "Your workout is recorded today. You can review it.",
+  "goalTodayDescription": "See your workout plan and choose when to begin. Rest days do not require opening the app.",
+  "goalOpenNextAction": "Open the next step",
+  "goalMilestonesTitle": "Progress you can see",
+  "goalMilestoneStart": "A real starting record",
+  "goalMilestoneCompare": "Two different days to compare",
+  "goalMilestoneReview": "A weekly reflection you chose",
+  "goalComparisonBoundary": "These are recorded sets, not a strength score. Different equipment or technique can affect the comparison.",
+  "goalNeedComparison": "Choose an exercise. Two different days of completed working sets are needed for comparison.",
+  "goalReturnEvidence": "Your next real record starts your return. Old peak weights are context, not today’s obligation.",
+  "goalRhythmEvidence": "Look for a rhythm you can repeat. A week of records does not guarantee a body or strength outcome.",
+  "goalReflectionTitle": "Reflect on the last complete week",
+  "goalRecordedDays": "Records on {count} separate training days",
+  "@goalRecordedDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalPastTargetUnknown": "That week’s target is unknown; no success or failure is inferred.",
+  "goalRecordsAccurate": "These records represent my week",
+  "goalTimeObstacle": "My available time was the obstacle",
+  "goalTimeReason": "You reported a time constraint; there are records on {count} days. You can choose a realistic budget for next week. Nothing changes automatically.",
+  "@goalTimeReason": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalMarkReviewed": "Save my reflection",
+  "goalAddMissingRecord": "I trained but did not log it",
+  "goalOpenWeek": "Open the weekly details",
+  "goalFlexTitle": "Your plan can change",
+  "goalFlexDescription": "Travel or a break can change your available time. Choose a future plan when it suits you; missed sessions are not a debt.",
+  "goalHealthBoundary": "If pain or an injury affects training, seek appropriate professional guidance. This app does not provide treatment or a rehabilitation plan.",
+  "goalReminderSettings": "Manage existing reminders",
+  "goalEntryTitle": "Connect your records to a goal",
+  "goalEntryDescription": "Your reason, your route and your weekly reflection",
+  "goalTrainingDaysLabel": "Training days",
+  "goalSessionCount": "{count} workout records; more than one on a day still counts as one training day.",
+  "@goalSessionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalSuggestDays": "Consider {count} days next week",
+  "@goalSuggestDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalAccountChanged": "Your account changed. Reopen this page from your current account.",
+  "goalEffectiveFrom": "Target effective from {date}",
+  "@goalEffectiveFrom": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "goalRecordedStart": "Your first workout is recorded. It is now a real starting point.",
+  "goalStepDone": "Completed",
+  "goalStepPending": "Not yet recorded",
+  "goalAccountDeletedCleanupWarning": "Your account was deleted. Some local training preferences could not be cleared on this device.",
+  "goalSetupRecovery": "Your catalog choice is saved, but its routines are not here yet. Review the program to complete setup.",
+  "goalCompleteRoute": "Review and finish program setup",
+  "asReplaceExercise": "Replace exercise",
+  "asReplaceExplanation": "Completed sets and any entered values stay with the original exercise. Only empty sets move to the exercise you choose. If there are no empty sets, it starts with one new set. This change applies only to this session.",
+  "asReplaceChoose": "Choose exercise",
+  "asReplaceError": "The exercise could not be replaced. Your current sets are unchanged. Try again."
 }

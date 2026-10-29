@@ -24,6 +24,8 @@ struct WorkoutActivityAttributes: ActivityAttributes {
     var canComplete: Bool
     /// Kartın gösterdiği set (eylem bununla döner; bayatsa yok sayılır).
     var setKey: String
+    /// Mola eyleminin hedef sürümü; eski ActivityKit içerikleriyle uyumlu.
+    var restKey: String?
     /// ± düğme etiketleri ("−2,5 kg"); boşsa düğme yok.
     var stepDownLabel: String
     var stepUpLabel: String

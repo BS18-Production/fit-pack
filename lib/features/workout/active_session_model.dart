@@ -98,6 +98,8 @@ class SessionExerciseEntry {
   int restSec;
   // Hareket açılan rutinde var mı — dinlenme değişikliği rutine yazılır mı.
   final bool inRoutine;
+  // Değiştirilen hareket rutinde zaten olsa da yalnız bu seansa aittir.
+  final bool sessionOnly;
   // Seans öncesi kişisel rekorlar (record_calc) — canlı modda, yalnız ağırlık
   // ölçümlü hareketlerde yüklenir. 0 = geçmiş yok → anlık rozet üretilmez.
   // Seans içinde rekor kırılınca güncellenir ki aynı seansta yalnız gerçek
@@ -117,6 +119,7 @@ class SessionExerciseEntry {
     required this.restSec,
     required Units units,
     this.inRoutine = false,
+    this.sessionOnly = false,
     this.advice,
     this.appliedIncrementKg,
   }) : previous = prevLabel(
@@ -132,6 +135,7 @@ class SessionExerciseEntry {
     restSec: restSec,
     previous: previous,
     appliedIncrementKg: appliedIncrementKg,
+    sessionOnly: sessionOnly,
     sets: sets.map((s) => s.toDraft()).toList(),
   );
 

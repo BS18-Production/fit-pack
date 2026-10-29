@@ -56,6 +56,7 @@ class AppRoutes {
   static const cloud = '/cloud';
   static const profile = '/profile';
   static const settings = '/settings';
+
   /// Kapı karar verene kadar gösterilen nötr ekran (docs/20 §7.1).
   static const splash = '/splash';
   static const accountError = '/account-error';
@@ -64,9 +65,11 @@ class AppRoutes {
   /// Zorunlu güncelleme (docs/23 §3.2) — kapının üçüncü "dur" ekranı.
   static const updateRequired = '/update-required';
   static const attribution = '/settings/attribution';
+
   /// Haftalık değerlendirme (docs/22 §4). Ana sayfa "Bu Hafta"dan ve haftalık
   /// bildirimden açılır.
   static const weeklyReview = '/insights/week';
+  static const goalJourney = '/goals/journey';
 
   /// [weeksBack] hafta önceki değerlendirme (`w=1` geçen hafta) — "Haftan
   /// hazır" kartı (docs/50) yeni haftanın ilk günü kapanan haftayı açar.
@@ -87,7 +90,8 @@ class AppRoutes {
   static const calendar = '/calendar';
   static String calendarAt(DateTime d) => '$calendar?date=${_ymd(d)}';
 
-  static String _ymd(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
+  static String _ymd(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-'
       '${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   // ── Parametreli rotalar: `*Path` = router tanımı, fonksiyon = çağrı ──

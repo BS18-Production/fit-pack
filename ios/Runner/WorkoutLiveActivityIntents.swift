@@ -5,11 +5,12 @@ import Foundation
 ///
 /// Dosya İKİ hedefte derlenir: eklenti düğmeyi çizer, `perform` ise
 /// **uygulama sürecinde** çalışır (sistem uygulamayı arka planda uyandırır,
-/// kilit açılmaz). Uygulama eylemi Dart'taki açık seans ekranına iletir —
+/// arayüzü öne açmaz). Kilit doğrulaması sistemin yüzey politikasına bağlıdır.
+/// Uygulama eylemi Dart'taki açık seans ekranına iletir —
 /// seans durumunun tek sahibi orası; burada durum tutulmaz.
 enum LiveActivityActionRouter {
   /// Uygulama hedefinde `AppDelegate` kurar; eklentide nil kalır.
-  /// (eylem adı, set kimliği — dinlenme eylemlerinde boş)
+  /// (eylem adı, set veya mola sürümü)
   @MainActor static var handler: (@MainActor (String, String) async -> Bool)?
 
   @MainActor static func run(_ action: String, setKey: String = "") async {
@@ -66,10 +67,14 @@ struct AddRestIntent: LiveActivityIntent {
   static var title: LocalizedStringResource = "Add 15 seconds"
   static var isDiscoverable: Bool = false
 
-  init() {}
+  @Parameter(title: "Rest")
+  var restKey: String
+
+  init() { self.restKey = "" }
+  init(restKey: String) { self.restKey = restKey }
 
   func perform() async throws -> some IntentResult {
-    await LiveActivityActionRouter.run("addRest")
+    await LiveActivityActionRouter.run("addRest", setKey: restKey)
     return .result()
   }
 }
@@ -79,10 +84,14 @@ struct SkipRestIntent: LiveActivityIntent {
   static var title: LocalizedStringResource = "Skip rest"
   static var isDiscoverable: Bool = false
 
-  init() {}
+  @Parameter(title: "Rest")
+  var restKey: String
+
+  init() { self.restKey = "" }
+  init(restKey: String) { self.restKey = restKey }
 
   func perform() async throws -> some IntentResult {
-    await LiveActivityActionRouter.run("skipRest")
+    await LiveActivityActionRouter.run("skipRest", setKey: restKey)
     return .result()
   }
 }

@@ -4767,4 +4767,376 @@ class AppL10nTr extends AppL10n {
 
   @override
   String get prog3cStartWorkout => 'Antrenmana git';
+
+  @override
+  String get analyticsSectionTitle => 'Kullanım tercihin';
+
+  @override
+  String get analyticsSwitchTitle => 'Fit Pack’in gelişimine katkıda bulun';
+
+  @override
+  String get analyticsSwitchDescription =>
+      'Sınırlı kullanım ve teknik bilgiler paylaş. Varsayılan olarak kapalıdır.';
+
+  @override
+  String get analyticsNotAvailable =>
+      'Bu özellik henüz kullanıma açılmadı. Kullanım bilgilerin paylaşılmıyor.';
+
+  @override
+  String get analyticsConsentTitle =>
+      'Kullanım bilgilerini paylaşmak ister misin?';
+
+  @override
+  String get analyticsConsentDescription =>
+      'Hesabınla ilişkili uygulama açılışları, kurulum adımları, antrenman başlatma ve kaydetme işlemleri, sürüm ve sınırlı hata/eşitleme kodları Fit Pack’i geliştirmek için paylaşılır. Kilo, tekrar, besin, fotoğraf, adım ve yazdığın metinler gönderilmez. Ham kullanım bilgileri 30 gün, tercih geçmişi 180 gün saklanır. İstediğin zaman kapatabilirsin; bekleyen bilgiler cihazından silinir. Çevrimdışıyken kapatırsan sunucuya geri alma bağlantı gelince iletilir.';
+
+  @override
+  String get analyticsConsentAccept => 'Kullanım bilgilerini paylaş';
+
+  @override
+  String get analyticsEnabled => 'Kullanım paylaşımı açıldı.';
+
+  @override
+  String get analyticsDisabled =>
+      'Kullanım paylaşımı kapatıldı; bekleyen bilgiler silindi.';
+
+  @override
+  String get analyticsPreferenceError =>
+      'Tercihin sunucuyla doğrulanamadı. Paylaşımı kapattıysan cihazda durdu; bağlantı gelince geri alma iletilecek.';
+
+  @override
+  String get analyticsPurposeBoundary =>
+      'Bu tercih reklam, özel paket veya kişiselleştirilmiş bildirim gönderme izni değildir. Uygulamayı paylaşım kapalıyken de kullanabilirsin.';
+
+  @override
+  String get analyticsWithdraw => 'Sunucudaki analitik tercihimi geri çek';
+
+  @override
+  String get setupPlanSourceQuestion =>
+      'Antrenmanını nasıl planlamak istersin?';
+
+  @override
+  String get setupSourceCatalog => 'Program seçmeme yardım et';
+
+  @override
+  String get setupSourceCatalogDesc =>
+      'Cevaplarını mevcut salon programlarıyla eşleştir.';
+
+  @override
+  String get setupSourceOwn => 'Kendi rutinimi kullanacağım';
+
+  @override
+  String get setupSourceOwnDesc =>
+      'Kendi planın korunur. Kurulumdan sonra rutin seçebilir veya oluşturabilirsin.';
+
+  @override
+  String get setupDaysQuestion =>
+      'Yoğun bir haftada kaç gün antrenmana yer ayırabilirsin?';
+
+  @override
+  String setupDaysCount(int count) {
+    return '$count gün';
+  }
+
+  @override
+  String get setupTimeQuestion =>
+      'İsteğe bağlı: bir antrenmana ayırabileceğin süre';
+
+  @override
+  String get setupTimeNone => 'Süre sınırım yok';
+
+  @override
+  String setupMinutes(int count) {
+    return '$count dk';
+  }
+
+  @override
+  String get setupOwnTitle => 'Planın sende kalıyor';
+
+  @override
+  String get setupOwnReason =>
+      'Kendi rutinini seçtiğin için katalog programı eklenmeyecek. Haftalık hedefin kaydedilir; Antrenman bölümünde rutinini seçebilir veya oluşturabilirsin.';
+
+  @override
+  String setupRecommendationReason(int days) {
+    return 'Deneyimin ve haftalık $days günlük bütçen mevcut katalogla eşleştirildi. İki cevabı da değiştirebilirsin.';
+  }
+
+  @override
+  String setupFrequencyMismatch(int selected, int program) {
+    return 'Seçimin $selected gün. Bu katalog programı $program gün öneriyor. Hedefin değiştirilmeyecek; programın içeriği de aynı kalacak.';
+  }
+
+  @override
+  String setupTimeEstimate(int minutes) {
+    return 'En uzun rutin yaklaşık $minutes dk; ısınma, ekipman değişimi ve bekleme dahil değil.';
+  }
+
+  @override
+  String setupTimeMismatch(int minutes) {
+    return 'Bu rota $minutes dakikalık bütçeni aşabilir. Setler ve dinlenme süreleri otomatik kısaltılmayacak.';
+  }
+
+  @override
+  String get setupOwnTime =>
+      'Süre bütçen kaydedilir. Başlamadan önce kendi rutininin süresini kontrol et.';
+
+  @override
+  String get setupConfirmMismatch =>
+      'Bu farkları gördüm; bu rotayı kullanmayı seçiyorum.';
+
+  @override
+  String get setupChangeAnswers => 'Cevaplarımı değiştir';
+
+  @override
+  String get setupLocalPreference =>
+      'Antrenman tercihlerin bu cihazda, bu hesap için saklanır. Diğer cihazlarına taşınmaz.';
+
+  @override
+  String get setupNutritionChoice =>
+      'Devam etmek için beslenme yönünü seç. Senin yerine seçim yapılmaz.';
+
+  @override
+  String get setupSaveError =>
+      'Antrenman tercihlerin kaydedilemedi. Kurulum açık kaldı; tekrar deneyebilirsin.';
+
+  @override
+  String get goalTitle => 'Hedef yolculuğun';
+
+  @override
+  String get goalWhyTitle => 'Senin için ne önemli?';
+
+  @override
+  String get goalWhyDescription =>
+      'Gerçek kayıtlarında neyi görmek istediğini seç. Sonradan değiştirebilir, seçim yapmadan da kayıt tutabilirsin.';
+
+  @override
+  String get goalPurposeRoutine => 'Sürdürebileceğim bir düzen kurmak';
+
+  @override
+  String get goalPurposeStrength => 'Bir hareketimdeki ilerlemeyi görmek';
+
+  @override
+  String get goalPurposeReturn => 'Kendi düzenime geri dönmek';
+
+  @override
+  String get goalLocalOnly =>
+      'Bu tercihler bu cihazda, bu hesabın için tutulur. Programını veya beslenme hedeflerini değiştirmez.';
+
+  @override
+  String get goalLoadError =>
+      'Hedefin okunamadı. Planını değiştirmeden yeniden dene.';
+
+  @override
+  String get goalBaselineTitle => 'Başlangıç noktan';
+
+  @override
+  String get goalNoBaseline =>
+      'Burada önceki kayıt yok. İlk gerçek antrenmanın başlangıç noktan olacak.';
+
+  @override
+  String goalBaselineCount(int count) {
+    return 'Bu yolculuktan önceki 28 günde $count ayrı günde kayıt var.';
+  }
+
+  @override
+  String get goalRecordsScope =>
+      'Kayıtların kısmi olabilir. Kayıt olmayan gün, hiçbir şey yapmadığın anlamına gelmez.';
+
+  @override
+  String get goalChooseExercise => 'Gerçek kayıtlarından bir hareket seç';
+
+  @override
+  String get goalRouteTitle => 'Haftalık rotan';
+
+  @override
+  String goalWeeklyDays(int count) {
+    return 'Haftalık plan: $count antrenman günü';
+  }
+
+  @override
+  String get goalTargetUnknown =>
+      'Bu hafta için doğrulanmış bir hedef henüz yok.';
+
+  @override
+  String goalTimeBudget(int count) {
+    return 'Seçtiğin süre sınırı: antrenman başına $count dakika';
+  }
+
+  @override
+  String get goalNoRoute =>
+      'Seçili rutin yok. Antrenman bölümünde kendi rutinini kullanabilir veya katalogdan program seçebilirsin.';
+
+  @override
+  String get goalRouteExplanation =>
+      'Mevcut rutin sıran korunur. Haftalık zaman planı, yeni bir antrenman reçetesi değildir.';
+
+  @override
+  String get goalChooseNextWeek => 'Gelecek haftanın gün hedefini seç';
+
+  @override
+  String get goalNextWeekOnly =>
+      'Ayrı antrenman günü sayısını seç. Değişiklik gelecek hafta başlar; önceki haftanın hedefi korunur.';
+
+  @override
+  String get goalConfirmTitle => 'Gelecek haftanın planını onayla';
+
+  @override
+  String goalConfirmNextWeek(int count) {
+    return 'Gelecek haftadan itibaren $count ayrı antrenman günü planlansın mı? Rutinin, ağırlıkların ve beslenme hedeflerin değişmez.';
+  }
+
+  @override
+  String get goalTodayTitle => 'Sıradaki gerçek adımın';
+
+  @override
+  String get goalResumeAction => 'Antrenmanına devam et';
+
+  @override
+  String get goalTodayRecorded =>
+      'Bugünkü antrenmanın kaydedildi. Özetini inceleyebilirsin.';
+
+  @override
+  String get goalTodayDescription =>
+      'Antrenman planını gör, ne zaman başlayacağını sen seç. Dinlenme günlerinde uygulamayı açman gerekmez.';
+
+  @override
+  String get goalOpenNextAction => 'Sıradaki adımı aç';
+
+  @override
+  String get goalMilestonesTitle => 'Görebileceğin ilerleme';
+
+  @override
+  String get goalMilestoneStart => 'Gerçek bir başlangıç kaydı';
+
+  @override
+  String get goalMilestoneCompare => 'Karşılaştırabileceğin iki farklı gün';
+
+  @override
+  String get goalMilestoneReview => 'Kendi seçiminle haftalık değerlendirme';
+
+  @override
+  String get goalComparisonBoundary =>
+      'Bunlar kayıtlı setlerdir, güç puanı değildir. Ekipman veya teknik farkı karşılaştırmayı etkileyebilir.';
+
+  @override
+  String get goalNeedComparison =>
+      'Bir hareket seç. Karşılaştırma için iki farklı günde tamamlanmış çalışma seti gerekir.';
+
+  @override
+  String get goalReturnEvidence =>
+      'Sıradaki gerçek kaydın dönüşünün başlangıcıdır. Eski en yüksek ağırlıkların, bugünkü zorunluluğun değildir.';
+
+  @override
+  String get goalRhythmEvidence =>
+      'Tekrar edebileceğin düzeni ara. Bir haftalık kayıt, vücut veya güç sonucu garantisi vermez.';
+
+  @override
+  String get goalReflectionTitle => 'Kapanan haftaya bak';
+
+  @override
+  String goalRecordedDays(int count) {
+    return '$count ayrı antrenman gününde kayıt var';
+  }
+
+  @override
+  String get goalPastTargetUnknown =>
+      'O haftanın hedefi bilinmiyor; başarı veya başarısızlık çıkarılmıyor.';
+
+  @override
+  String get goalRecordsAccurate => 'Bu kayıtlar haftamı doğru temsil ediyor';
+
+  @override
+  String get goalTimeObstacle => 'Ayırabildiğim zaman planı zorlaştırdı';
+
+  @override
+  String goalTimeReason(int count) {
+    return 'Zamanının kısıtlandığını söyledin; $count ayrı günde kayıt var. Gelecek hafta için gerçekçi bütçeyi sen seçebilirsin. Hiçbir şey otomatik değişmez.';
+  }
+
+  @override
+  String get goalMarkReviewed => 'Değerlendirmemi kaydet';
+
+  @override
+  String get goalAddMissingRecord => 'Yaptım ama kaydetmedim';
+
+  @override
+  String get goalOpenWeek => 'Haftanın ayrıntılarını aç';
+
+  @override
+  String get goalFlexTitle => 'Planın değişebilir';
+
+  @override
+  String get goalFlexDescription =>
+      'Seyahat veya ara verme ayırabildiğin zamanı değiştirebilir. Gelecek planını sana uyduğunda seç; kaçan antrenmanlar borç değildir.';
+
+  @override
+  String get goalHealthBoundary =>
+      'Ağrı veya yaralanma antrenmanını etkiliyorsa uygun bir uzmana danışabilirsin. Bu uygulama tedavi veya rehabilitasyon planı vermez.';
+
+  @override
+  String get goalReminderSettings => 'Mevcut hatırlatmaları yönet';
+
+  @override
+  String get goalEntryTitle => 'Kayıtlarını bir hedefe bağla';
+
+  @override
+  String get goalEntryDescription => 'Amacın, rotan ve haftalık değerlendirmen';
+
+  @override
+  String get goalTrainingDaysLabel => 'Antrenman günü';
+
+  @override
+  String goalSessionCount(int count) {
+    return '$count antrenman kaydı; aynı gün birden çok kayıt tek antrenman günü sayılır.';
+  }
+
+  @override
+  String goalSuggestDays(int count) {
+    return 'Gelecek hafta $count günü değerlendir';
+  }
+
+  @override
+  String get goalAccountChanged =>
+      'Hesabın değişti. Bu sayfayı güncel hesabından yeniden aç.';
+
+  @override
+  String goalEffectiveFrom(String date) {
+    return 'Hedefin yürürlük tarihi: $date';
+  }
+
+  @override
+  String get goalRecordedStart =>
+      'İlk antrenmanın kaydedildi. Artık gerçek bir başlangıç noktan var.';
+
+  @override
+  String get goalStepDone => 'Tamamlandı';
+
+  @override
+  String get goalStepPending => 'Henüz kaydedilmedi';
+
+  @override
+  String get goalAccountDeletedCleanupWarning =>
+      'Hesabın silindi. Bu cihazdaki bazı antrenman tercihleri temizlenemedi.';
+
+  @override
+  String get goalSetupRecovery =>
+      'Katalog seçimin kaydedilmiş, fakat rutinleri henüz burada yok. Kurulumu tamamlamak için programı inceleyebilirsin.';
+
+  @override
+  String get goalCompleteRoute => 'Programı incele, kurulumu tamamla';
+
+  @override
+  String get asReplaceExercise => 'Hareketi değiştir';
+
+  @override
+  String get asReplaceExplanation =>
+      'Tamamlanan setler ve girilmiş değerler eski harekette kalır. Yalnız boş setler seçtiğin harekete geçer. Boş set yoksa yeni hareket bir setle başlar. Değişiklik yalnız bu seans içindir.';
+
+  @override
+  String get asReplaceChoose => 'Hareket seç';
+
+  @override
+  String get asReplaceError =>
+      'Hareket değiştirilemedi. Mevcut setlerin korundu. Tekrar dene.';
 }

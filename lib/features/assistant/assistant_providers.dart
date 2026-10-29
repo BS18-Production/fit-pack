@@ -39,6 +39,8 @@ final assistantSnapshotProvider = StreamProvider.autoDispose<AssistantData>((
 ) {
   ref.watch(currentUserProvider); // hesap değişiminde eski sonuç gösterilmez
   final goal = ref.watch(weeklyGoalProvider.future);
+  final period = ref.watch(currentWeeklyTargetProvider.future);
+  final history = ref.watch(weeklyTargetHistoryProvider.future);
   final day = ref.watch(currentDayProvider);
   final weekStart = ref.watch(weekStartProvider);
   final db = ref.watch(databaseProvider);
@@ -64,9 +66,22 @@ final assistantSnapshotProvider = StreamProvider.autoDispose<AssistantData>((
       final start = addDays(day, -30);
       final end = addDays(day, 1);
       final sessions = await wo.getAllSessions();
+      final currentTarget = await period;
+      final targets = await history;
       return AssistantData(
         now: day,
         weeklyGoal: await goal,
+        weeklyTargetKnown: currentTarget.targetKnown,
+        weeklyGoalForPeriod: (start) {
+          final target = resolveWeeklyTargetPeriod(
+            periodStart: start,
+            currentWeekStart: currentTarget.start,
+            currentDate: day,
+            history: targets,
+            legacyCurrentGoal: currentTarget.targetDays,
+          );
+          return target.coversWholePeriod ? target.targetDays : null;
+        },
         weekStart: weekStart,
         sessions: sessions.where((v) => v.date.isBefore(end)).toList(),
         sets: await wo.getSetsForSessions(sessions.map((v) => v.id).toList()),

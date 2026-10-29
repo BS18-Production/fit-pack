@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,20 +13,24 @@ import '../../data/providers.dart';
 import '../../l10n/app_l10n.dart';
 import '../../shared/widgets/glass.dart';
 import '../auth/auth_gate.dart';
-import '../explore/program_catalog.dart';
+import '../cloud/auth_service.dart';
+import '../analytics/analytics_events.dart';
+import '../analytics/analytics_providers.dart';
+import '../analytics/analytics_settings_section.dart';
 import '../explore/program_install.dart';
 import '../explore/program_labels.dart';
 import '../workout/recall_offer.dart';
 import 'onboarding_calc.dart';
 import 'program_recommendation.dart';
-import '../home/weekly_goal.dart';
+import 'training_setup.dart';
+import 'training_setup_providers.dart';
 import '../home/providers/weekly_goal_provider.dart';
 import '../../shared/widgets/fitpack_icon.dart';
 
 /// İlk açılış akışı (docs/15 V2 + docs/49 "ilk antrenmanın hazır").
 ///
-/// 4 sayfa: Antrenmanın (deneyim + haftada kaç gün) → Senin için önerimiz
-/// (katalogdan bir program ya da "Kendim kuracağım") → Seni tanıyalım (kilo +
+/// 4 sayfa: Plan kaynağı + kesin gün/süre (katalogda deneyim) → Rota
+/// önizlemesi + uyumsuzluk onayı → Seni tanıyalım (kilo + açık beslenme yönü;
 /// hedef; boy/cinsiyet/yaş Profil'de, docs/49 karar 3) → Planın hazır
 /// (kalori/protein + değer projeksiyonu). Karşılama sayfası
 /// **giriş öncesine taşındı** (`features/auth/welcome_screen.dart`, docs/18
@@ -60,16 +65,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pageController = PageController();
   int _page = 0;
 
-  // Sayfa 0–1 — antrenman + program önerisi (docs/49). Kalıcı değil: yalnız
-  // öneriyi seçmek için; uygun kolon yok, şema değişmez.
+  // Kesin gün seçimi ve deneyim, hesapla sınırlı cihaz tercihidir.
+  TrainingPlanSource? _planSource;
   TrainingExperience? _experience;
-  WeeklyDays? _days;
-  bool _useProgram = true;
+  int? _exactDays;
+  int? _sessionBudgetMinutes;
+  bool _mismatchAccepted = false;
 
   // Sayfa 2 — vücut bilgileri
   final _weightCtrl = TextEditingController();
   final _goalWeightCtrl = TextEditingController();
-  OnboardingPhase _phase = OnboardingPhase.cut;
+  OnboardingPhase? _phase;
 
   // Sayfa 3 — hedefler
   final _kcalCtrl = TextEditingController();
@@ -107,15 +113,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void _refreshSuggestedGoals() {
     if (_goalsEdited) return;
     final w = _weight;
-    if (w == null || w <= 0) return;
-    final g = suggestGoals(weightKg: w, phase: _phase);
+    if (w == null || w <= 0 || _phase == null) return;
+    final g = suggestGoals(weightKg: w, phase: _phase!);
     _kcalCtrl.text = g.kcal.toString();
     _proteinCtrl.text = g.protein.toString();
+  }
+
+  final _analyticsSteps = <String>{};
+
+  void _recordStep(String step) {
+    if (!_analyticsSteps.add(step)) return;
+    unawaited(
+      ref.read(analyticsControllerProvider).trackOwned(
+        ref.read(currentUserProvider)?.id,
+        AnalyticsEventName.onboardingStepCompleted,
+        {'step': step},
+      ),
+    );
   }
 
   void _next() {
     FocusScope.of(context).unfocus();
     if (_page < _lastPage) {
+      if (_page == 1) _recordStep('training');
+      if (_page == _aboutYouPage) _recordStep('nutrition');
       // "Seni tanıyalım"dan çıkarken hedefleri öner.
       if (_page == _aboutYouPage) _refreshSuggestedGoals();
       _pageController.nextPage(
@@ -139,10 +160,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   /// İleri tuşu, mevcut adımın zorunlu alanları doluysa aktif olur.
   bool get _canAdvance {
     switch (_page) {
-      case 0: // Antrenmanın — iki soru da cevaplanmalı
-        return _experience != null && _days != null;
-      case _aboutYouPage: // Seni tanıyalım — kilo zorunlu
-        return _weight != null && _weight! > 0;
+      case 0:
+        return _setup != null;
+      case 1:
+        final setup = _setup;
+        if (setup == null) return false;
+        final mismatch =
+            setup.planSource == TrainingPlanSource.catalog &&
+            (!setup.catalogFrequencyMatches || setup.exceedsTimeBudget);
+        return !mismatch || _mismatchAccepted;
+      case _aboutYouPage:
+        return _weight != null && _weight! > 0 && _phase != null;
       case _lastPage: // Planın hazır — kalori/protein zorunlu
         final kcal = int.tryParse(_kcalCtrl.text);
         final protein = int.tryParse(_proteinCtrl.text);
@@ -154,36 +182,56 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _finish() async {
     if (_saving) return;
+    final analytics = ref.read(analyticsControllerProvider);
+    final analyticsOwner = ref.read(currentUserProvider)?.id;
     final l = AppL10n.of(context);
     // Hedefler sayı olarak okunamıyorsa kaydetmeye hiç girme — kullanıcıya
     // söyle (M-10: eski int.parse boş alanda sessizce çöküyordu).
     final kcal = int.tryParse(_kcalCtrl.text);
     final protein = int.tryParse(_proteinCtrl.text);
     if (kcal == null || protein == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l.onbGoalsNumberError)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l.onbGoalsNumberError)));
       return;
     }
     setState(() => _saving = true);
     final messenger = ScaffoldMessenger.of(context);
-    final program = _recommended;
+    final setup = _setup;
+    if (setup == null || _phase == null) {
+      setState(() => _saving = false);
+      return;
+    }
+    final program = setup.recommendedProgram;
+    final owner = ref.read(weeklyGoalAccountProvider);
+    bool sameOwner() => mounted && ref.read(weeklyGoalAccountProvider) == owner;
+    void releaseSaving() {
+      if (mounted) setState(() => _saving = false);
+    }
+
     try {
+      // Tercih/haftalık hedef hatası sessizce varsayılana dönüşmez.
+      await ref
+          .read(trainingSetupProfileProvider.notifier)
+          .save(setup, expectedAccount: owner);
+      if (!sameOwner()) throw StateError('Kurulum sırasında hesap değişti');
+      await ref
+          .read(selectedWeeklyGoalProvider.notifier)
+          .setGoal(
+            setup.exactDays,
+            expectedAccount: owner,
+            allowIncompleteOnboardingRetry: true,
+          );
+      if (!sameOwner()) throw StateError('Kurulum sırasında hesap değişti');
       final dao = ref.read(userProfileDaoProvider);
       // Boy/cinsiyet/yaş artık sorulmuyor (docs/49 karar 3): profilde
       // (ör. senkronla gelen) değer varsa korunur, üzerine boş yazılmaz.
       final existing = await dao.getProfile();
-      // Haftalık hedef (docs/52) yardımcı bilgi: yazılamazsa kurulum
-      // yarıda kalmaz — hedef program/plan önceliğinden hesaplanır.
-      if (_days != null) {
-        try {
-          await ref.read(selectedWeeklyGoalProvider.notifier)
-              .setGoal(onboardingWeeklyGoal(_days!));
-        } catch (_) {}
-      }
+      if (!sameOwner()) throw StateError('Kurulum sırasında hesap değişti');
       await dao.completeOnboarding(
         kcalGoal: kcal,
         proteinGoal: protein,
-        phase: _phase.dbValue,
+        phase: _phase!.dbValue,
         heightCm: existing?.heightCm,
         goalWeightKg: _goalWeight,
         birthDate: existing?.birthDate,
@@ -194,25 +242,48 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         // Profille aynı transaction'da yazılır (CR-014).
         initialWeightKg: _weight,
       );
+      if (!sameOwner()) {
+        releaseSaving();
+        return;
+      }
     } catch (e) {
       // Kayıt başarısız — kullanıcı bilsin ve tekrar deneyebilsin (M-10:
       // eskiden hata sessizce yutulup düğme takılı kalıyordu).
       debugPrint('[fitpack.onboarding] profil kaydedilemedi | HATA: $e');
-      messenger.showSnackBar(SnackBar(content: Text(l.onbSaveError)));
+      messenger.showSnackBar(SnackBar(content: Text(l.setupSaveError)));
       if (mounted) setState(() => _saving = false);
       return;
     }
+
+    unawaited(
+      analytics.trackOwned(
+        analyticsOwner,
+        AnalyticsEventName.onboardingStepCompleted,
+        const {'step': 'complete'},
+      ),
+    );
 
     // Program ayrı adım: profil kaydı tamamlandı, kurulum bunun yüzünden
     // geri alınmaz. Başarısızsa kullanıcı söylenir, Keşfet'ten ekleyebilir.
     if (program != null) {
       try {
-        await installCatalogProgram(ref.read(workoutDaoProvider), l, program);
+        final dao = ref.read(workoutDaoProvider);
+        final installed = await dao.getActiveRoutines();
+        if (!sameOwner()) {
+          releaseSaving();
+          return;
+        }
+        if (!installed.any((routine) => routine.programKey == program.key)) {
+          await installCatalogProgram(dao, l, program);
+        }
       } catch (e) {
-        debugPrint('[fitpack.onboarding] program eklenemedi '
-            '(${program.key}) | HATA: $e');
-        messenger
-            .showSnackBar(SnackBar(content: Text(l.onbProgramInstallError)));
+        debugPrint(
+          '[fitpack.onboarding] program eklenemedi '
+          '(${program.key}) | HATA: $e',
+        );
+        messenger.showSnackBar(
+          SnackBar(content: Text(l.onbProgramInstallError)),
+        );
       }
     }
 
@@ -224,8 +295,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           .read(notificationPrefsProvider.notifier)
           .enableWeeklyReviewByDefault();
     } catch (e) {
-      debugPrint('[fitpack.onboarding] haftalık bildirim ayarı yazılamadı '
-          '| HATA: $e');
+      debugPrint(
+        '[fitpack.onboarding] haftalık bildirim ayarı yazılamadı '
+        '| HATA: $e',
+      );
     }
 
     // Home provider'ları reaktif: profil, kilo ve rutinler DB'ye yazılınca
@@ -234,6 +307,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     // Kapı durumu yalnız kayıt tamamlandıktan sonra güncellenir. Güncellenmeden
     // Ana Sayfa'ya gidilemez: `redirect` hâlâ "onboarded değil" görür ve
     // kullanıcıyı buraya geri yollar (docs/18 §5.1).
+    if (!sameOwner()) {
+      releaseSaving();
+      return;
+    }
     ref.read(authGateProvider).markOnboarded();
     if (mounted) {
       setState(() => _saving = false);
@@ -241,11 +318,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  /// Kurulum sonunda eklenecek program — "Kendim kuracağım" seçildiyse yok.
-  CatalogProgram? get _recommended {
-    final exp = _experience, days = _days;
-    if (!_useProgram || exp == null || days == null) return null;
-    return programByKey(recommendProgram(exp, days));
+  TrainingSetupProfile? get _setup {
+    final source = _planSource, days = _exactDays;
+    if (source == null ||
+        days == null ||
+        (source == TrainingPlanSource.catalog && _experience == null)) {
+      return null;
+    }
+    return TrainingSetupProfile(
+      planSource: source,
+      experience: source == TrainingPlanSource.catalog ? _experience : null,
+      exactDays: days,
+      sessionBudgetMinutes: _sessionBudgetMinutes,
+    );
   }
 
   @override
@@ -263,16 +348,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   onPageChanged: (i) => setState(() => _page = i),
                   children: [
                     _TrainingPage(
+                    source: _planSource,
                       experience: _experience,
-                      days: _days,
-                      onExperience: (v) => setState(() => _experience = v),
-                      onDays: (v) => setState(() => _days = v),
+                    days: _exactDays,
+                    budget: _sessionBudgetMinutes,
+                    onSource: (v) => setState(() {
+                      _planSource = v;
+                      _mismatchAccepted = false;
+                    }),
+                    onExperience: (v) => setState(() {
+                      _experience = v;
+                      _mismatchAccepted = false;
+                    }),
+                    onDays: (v) => setState(() {
+                      _exactDays = v;
+                      _mismatchAccepted = false;
+                    }),
+                    onBudget: (v) => setState(() {
+                      _sessionBudgetMinutes = v;
+                      _mismatchAccepted = false;
+                    }),
                     ),
                     _ProgramPage(
-                      experience: _experience,
-                      days: _days,
-                      useProgram: _useProgram,
-                      onChanged: (v) => setState(() => _useProgram = v),
+                    setup: _setup,
+                    mismatchAccepted: _mismatchAccepted,
+                    onAccepted: (v) => setState(() => _mismatchAccepted = v),
+                    onChangeAnswers: _back,
                     ),
                     _AboutYouPage(
                       weightCtrl: _weightCtrl,
@@ -314,16 +415,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
 class _TrainingPage extends StatelessWidget {
   const _TrainingPage({
+    required this.source,
     required this.experience,
     required this.days,
+    required this.budget,
+    required this.onSource,
     required this.onExperience,
     required this.onDays,
+    required this.onBudget,
   });
 
+  final TrainingPlanSource? source;
   final TrainingExperience? experience;
-  final WeeklyDays? days;
+  final int? days, budget;
+  final ValueChanged<TrainingPlanSource> onSource;
   final ValueChanged<TrainingExperience> onExperience;
-  final ValueChanged<WeeklyDays> onDays;
+  final ValueChanged<int> onDays;
+  final ValueChanged<int?> onBudget;
 
   @override
   Widget build(BuildContext context) {
@@ -333,20 +441,30 @@ class _TrainingPage extends StatelessWidget {
           TrainingExperience.some => l.onbExpSome,
           TrainingExperience.long => l.onbExpLong,
         };
-    String daysLabel(WeeklyDays d) => switch (d) {
-          WeeklyDays.twoThree => l.onbDays23,
-          WeeklyDays.four => l.onbDays4,
-          WeeklyDays.fiveSix => l.onbDays56,
-        };
     return ListView(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.lg,
+      ),
       children: [
         Text(l.onbTrainingTitle, style: context.texts.headlineSmall),
         AppSpacing.vGapSm,
-        Text(l.onbTrainingSubtitle,
-            style: context.texts.bodyMedium
-                ?.copyWith(color: context.colors.onSurfaceVariant)),
+        Text(l.setupPlanSourceQuestion, style: context.texts.titleMedium),
+        AppSpacing.vGapMd,
+        _OptionCard(
+          selected: source == TrainingPlanSource.catalog,
+          onTap: () => onSource(TrainingPlanSource.catalog),
+          title: l.setupSourceCatalog,
+          lines: [l.setupSourceCatalogDesc],
+        ),
+        AppSpacing.vGapMd,
+        _OptionCard(
+          selected: source == TrainingPlanSource.own,
+          onTap: () => onSource(TrainingPlanSource.own),
+          title: l.setupSourceOwn,
+          lines: [l.setupSourceOwnDesc],
+        ),
+        if (source == TrainingPlanSource.catalog) ...[
         AppSpacing.vGapLg,
         Text(l.onbExperienceQ, style: context.texts.titleMedium),
         AppSpacing.vGapSm,
@@ -359,80 +477,150 @@ class _TrainingPage extends StatelessWidget {
               onTap: () => onExperience(e),
             ),
           ),
+        ],
+        if (source != null) ...[
         AppSpacing.vGapLg,
-        Text(l.onbDaysQ, style: context.texts.titleMedium),
+          Text(l.setupDaysQuestion, style: context.texts.titleMedium),
         AppSpacing.vGapSm,
-        Row(
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
           children: [
-            for (final (i, d) in WeeklyDays.values.indexed) ...[
-              if (i > 0) AppSpacing.hGapMd,
-              Expanded(
-                child: _ChoiceChipTile(
-                  label: daysLabel(d),
-                  selected: days == d,
-                  onTap: () => onDays(d),
+              for (final day in [2, 3, 4, 5, 6])
+                ChoiceChip(
+                  key: ValueKey('setup.days.$day'),
+                  label: Text(l.setupDaysCount(day)),
+                  selected: days == day,
+                  onSelected: (_) => onDays(day),
                 ),
+            ],
+          ),
+          AppSpacing.vGapLg,
+          Text(l.setupTimeQuestion, style: context.texts.titleMedium),
+          AppSpacing.vGapSm,
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: [
+              ChoiceChip(
+                label: Text(l.setupTimeNone),
+                selected: budget == null,
+                onSelected: (_) => onBudget(null),
+                ),
+              for (final minutes in trainingSetupBudgets)
+                ChoiceChip(
+                  key: ValueKey('setup.budget.$minutes'),
+                  label: Text(l.setupMinutes(minutes)),
+                  selected: budget == minutes,
+                  onSelected: (_) => onBudget(minutes),
               ),
             ],
+          ),
           ],
+        AppSpacing.vGapLg,
+        Consumer(
+          builder: (context, ref, _) {
+            if (!ref.watch(analyticsControllerProvider).available) {
+              return const SizedBox.shrink();
+            }
+            return const AnalyticsSettingsSection();
+          },
         ),
       ],
     );
   }
 }
 
-// ──────────────────────────────────────────── Sayfa 1: Senin için önerimiz
+// ──────────────────────────────────────────── Sayfa 1: Rota önizlemesi
 
 class _ProgramPage extends StatelessWidget {
   const _ProgramPage({
-    required this.experience,
-    required this.days,
-    required this.useProgram,
-    required this.onChanged,
+    required this.setup,
+    required this.mismatchAccepted,
+    required this.onAccepted,
+    required this.onChangeAnswers,
   });
 
-  final TrainingExperience? experience;
-  final WeeklyDays? days;
-  final bool useProgram;
-  final ValueChanged<bool> onChanged;
+  final TrainingSetupProfile? setup;
+  final bool mismatchAccepted;
+  final ValueChanged<bool> onAccepted;
+  final VoidCallback onChangeAnswers;
 
   @override
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
-    final exp = experience, d = days;
-    // Sayfaya ancak iki cevapla gelinir (İleri kilitli); yine de güvenli.
-    final program =
-        exp == null || d == null ? null : programByKey(recommendProgram(exp, d));
-    final muted = context.colors.onSurfaceVariant;
+    final value = setup;
+    final program = value?.recommendedProgram;
+    if (value == null) return const SizedBox.shrink();
+    final mismatch =
+        program != null &&
+        (!value.catalogFrequencyMatches || value.exceedsTimeBudget);
     return ListView(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.lg,
+      ),
       children: [
         Text(l.onbProgramTitle, style: context.texts.headlineSmall),
+        AppSpacing.vGapMd,
+        GlassCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                program == null ? l.setupOwnTitle : l.programTitle(program),
+                style: context.texts.titleMedium,
+              ),
         AppSpacing.vGapSm,
-        Text(l.onbProgramSubtitle,
-            style: context.texts.bodyMedium?.copyWith(color: muted)),
-        AppSpacing.vGapLg,
-        if (program != null)
-          _OptionCard(
-            selected: useProgram,
-            onTap: () => onChanged(true),
-            title: l.programTitle(program),
-            lines: [
+              Text(
+                program == null
+                    ? l.setupOwnReason
+                    : l.setupRecommendationReason(value.exactDays),
+              ),
+              if (program != null) ...[
+                AppSpacing.vGapSm,
+                Text(
               '${l.exDaysPerWeek(program.daysPerWeek)} · '
                   '${l.exRoutineCount(program.routines.length)}',
-              l.programSplitDesc(program.split),
-              if (restDayNote(exp!, d!)) l.onbProgramRestNote,
+                ),
+                Text(l.programSplitDesc(program.split)),
+                if (value.longestRoutineMinutes != null) ...[
+                  AppSpacing.vGapSm,
+                  Text(l.setupTimeEstimate(value.longestRoutineMinutes!)),
+                ],
+              ] else if (value.sessionBudgetMinutes != null) ...[
+                AppSpacing.vGapSm,
+                Text(l.setupOwnTime),
+              ],
             ],
-            action: l.onbProgramUse,
           ),
-        AppSpacing.vGapMd,
-        _OptionCard(
-          selected: !useProgram || program == null,
-          onTap: () => onChanged(false),
-          title: l.onbProgramSkip,
-          lines: [l.onbProgramSkipDesc],
         ),
+        if (program != null && !value.catalogFrequencyMatches) ...[
+          AppSpacing.vGapLg,
+          Text(l.setupFrequencyMismatch(value.exactDays, program.daysPerWeek)),
+        ],
+        if (value.exceedsTimeBudget) ...[
+          AppSpacing.vGapLg,
+          Text(l.setupTimeMismatch(value.sessionBudgetMinutes!)),
+        ],
+        if (mismatch) ...[
+          AppSpacing.vGapSm,
+          CheckboxListTile(
+            key: const ValueKey('setup.confirmMismatch'),
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            value: mismatchAccepted,
+            onChanged: (v) => onAccepted(v ?? false),
+            title: Text(l.setupConfirmMismatch),
+          ),
+        ],
+        AppSpacing.vGapMd,
+        TextButton(
+          onPressed: onChangeAnswers,
+          child: Text(l.setupChangeAnswers),
+        ),
+        AppSpacing.vGapMd,
+        Text(l.setupLocalPreference, style: context.texts.bodySmall),
       ],
     );
   }
@@ -445,7 +633,6 @@ class _OptionCard extends StatelessWidget {
     required this.onTap,
     required this.title,
     required this.lines,
-    this.action,
   });
 
   final bool selected;
@@ -453,14 +640,15 @@ class _OptionCard extends StatelessWidget {
   final String title;
   final List<String> lines;
 
-  /// Seçiliyken kartın altında gösterilen eylem adı ("Bu programla başla").
-  final String? action;
-
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final fg = selected ? colors.onPrimaryContainer : colors.onSurfaceVariant;
-    return InkWell(
+    return Semantics(
+      selected: selected,
+      inMutuallyExclusiveGroup: true,
+      button: true,
+      child: InkWell(
       onTap: onTap,
       borderRadius: AppRadius.brMd,
       child: Container(
@@ -490,29 +678,26 @@ class _OptionCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
+                  Text(
+                    title,
                       style: context.texts.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: selected ? colors.onPrimaryContainer : null,
-                      )),
+                    ),
+                  ),
                   for (final line in lines) ...[
                     AppSpacing.vGapXs,
-                    Text(line,
-                        style: context.texts.bodySmall?.copyWith(color: fg)),
-                  ],
-                  if (selected && action != null) ...[
-                    AppSpacing.vGapSm,
-                    Text(action!,
-                        style: context.texts.labelLarge?.copyWith(
-                          color: colors.primary,
-                          fontWeight: FontWeight.w700,
-                        )),
+                    Text(
+                      line,
+                      style: context.texts.bodySmall?.copyWith(color: fg),
+                    ),
                   ],
                 ],
               ),
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -531,7 +716,7 @@ class _AboutYouPage extends ConsumerWidget {
 
   final TextEditingController weightCtrl;
   final TextEditingController goalWeightCtrl;
-  final OnboardingPhase phase;
+  final OnboardingPhase? phase;
   final ValueChanged<OnboardingPhase> onPhaseChanged;
   final VoidCallback onWeightChanged;
 
@@ -541,13 +726,18 @@ class _AboutYouPage extends ConsumerWidget {
     final units = ref.watch(unitsProvider);
     return ListView(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.lg,
+      ),
       children: [
         Text(l.onbAboutYouTitle, style: context.texts.headlineSmall),
         AppSpacing.vGapSm,
-        Text(l.onbAboutYouSubtitle,
-            style: context.texts.bodyMedium
-                ?.copyWith(color: context.colors.onSurfaceVariant)),
+        Text(
+          l.onbAboutYouSubtitle,
+          style: context.texts.bodyMedium?.copyWith(
+            color: context.colors.onSurfaceVariant,
+          ),
+        ),
         AppSpacing.vGapLg,
         GlassCard(
           child: Column(
@@ -570,14 +760,18 @@ class _AboutYouPage extends ConsumerWidget {
         AppSpacing.vGapLg,
         Text(l.onbYourGoal, style: context.texts.titleMedium),
         AppSpacing.vGapSm,
-        ...OnboardingPhase.values.map((p) => Padding(
+        Text(l.setupNutritionChoice, style: context.texts.bodySmall),
+        AppSpacing.vGapSm,
+        ...OnboardingPhase.values.map(
+          (p) => Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: _PhaseTile(
                 phase: p,
                 selected: p == phase,
                 onTap: () => onPhaseChanged(p),
               ),
-            )),
+          ),
+        ),
       ],
     );
   }
@@ -598,7 +792,11 @@ class _PhaseTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
     final colors = context.colors;
-    return InkWell(
+    return Semantics(
+      selected: selected,
+      inMutuallyExclusiveGroup: true,
+      button: true,
+      child: InkWell(
       onTap: onTap,
       borderRadius: AppRadius.brMd,
       child: Container(
@@ -627,22 +825,27 @@ class _PhaseTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(phaseLabel(l, phase),
+                  Text(
+                    phaseLabel(l, phase),
                       style: context.texts.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: selected ? colors.onPrimaryContainer : null,
-                      )),
-                  Text(phaseDescription(l, phase),
+                    ),
+                  ),
+                  Text(
+                    phaseDescription(l, phase),
                       style: context.texts.bodySmall?.copyWith(
                         color: selected
                             ? colors.onPrimaryContainer
                             : colors.onSurfaceVariant,
-                      )),
+                    ),
+                  ),
                 ],
               ),
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -664,7 +867,7 @@ class _PlanPage extends ConsumerWidget {
   final TextEditingController proteinCtrl;
   final double? weightKg;
   final double? goalWeightKg;
-  final OnboardingPhase phase;
+  final OnboardingPhase? phase;
   final VoidCallback onEdited;
 
   @override
@@ -675,39 +878,47 @@ class _PlanPage extends ConsumerWidget {
 
     // Projeksiyon — kullanıcının GİRDİĞİ kaloriyle hesaplanır (düzenledikçe
     // dürüstçe güncellenir). Veri tutarsızsa hiç gösterilmez (docs/15 §A3).
-    final weeks = weightKg == null
+    final weeks = weightKg == null || phase == null
         ? null
         : projectWeeks(
             weightKg: weightKg!,
             goalWeightKg: goalWeightKg,
-            phase: phase,
+            phase: phase!,
             kcalGoal: int.tryParse(kcalCtrl.text),
           );
     // Projeksiyon metni görüntü biriminde ("78 kg" / "172 lb").
-    final goalStr =
-        goalWeightKg == null ? '' : units.weight(goalWeightKg!);
+    final goalStr = goalWeightKg == null ? '' : units.weight(goalWeightKg!);
 
     return ListView(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.lg,
+      ),
       children: [
         Text.rich(
-          TextSpan(children: [
+          TextSpan(
+            children: [
             TextSpan(text: l.onbPlanReadyTitle),
             WidgetSpan(
               alignment: PlaceholderAlignment.middle,
               child: Padding(
                 padding: const EdgeInsets.only(left: 6),
-                child: FitPackIcon.material(Icons.auto_awesome_rounded,
-                    size: 22, color: context.colors.secondary),
+                  child: FitPackIcon.material(
+                    Icons.auto_awesome_rounded,
+                    size: 22,
+                    color: context.colors.secondary,
+                  ),
               ),
             ),
-          ]),
+            ],
+          ),
           style: context.texts.headlineSmall,
         ),
         AppSpacing.vGapSm,
-        Text(l.expPlanSubtitle,
-            style: context.texts.bodyMedium?.copyWith(color: muted)),
+        Text(
+          l.expPlanSubtitle,
+          style: context.texts.bodyMedium?.copyWith(color: muted),
+        ),
         AppSpacing.vGapLg,
         GlassCard(
           child: Column(
@@ -743,8 +954,10 @@ class _PlanPage extends ConsumerWidget {
                     color: context.semantic.success.withValues(alpha: 0.16),
                     borderRadius: AppRadius.brMd,
                   ),
-                  child: FitPackIcon.material(Icons.trending_up_rounded,
-                      color: context.semantic.success),
+                  child: FitPackIcon.material(
+                    Icons.trending_up_rounded,
+                    color: context.semantic.success,
+                  ),
                 ),
                 AppSpacing.hGapMd,
                 Expanded(
@@ -758,9 +971,10 @@ class _PlanPage extends ConsumerWidget {
                         style: context.texts.titleSmall,
                       ),
                       AppSpacing.vGapXs,
-                      Text(l.onbProjectionNote,
-                          style: context.texts.bodySmall
-                              ?.copyWith(color: muted)),
+                      Text(
+                        l.onbProjectionNote,
+                        style: context.texts.bodySmall?.copyWith(color: muted),
+                      ),
                     ],
                   ),
                 ),
@@ -800,7 +1014,8 @@ class _NumField extends StatelessWidget {
       keyboardType: TextInputType.numberWithOptions(decimal: decimal),
       inputFormatters: [
         FilteringTextInputFormatter.allow(
-            RegExp(decimal ? r'[0-9.,]' : r'[0-9]')),
+          RegExp(decimal ? r'[0-9.,]' : r'[0-9]'),
+        ),
       ],
       decoration: InputDecoration(
         labelText: label,
@@ -826,7 +1041,11 @@ class _ChoiceChipTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return InkWell(
+    return Semantics(
+      selected: selected,
+      inMutuallyExclusiveGroup: true,
+      button: true,
+      child: InkWell(
       onTap: onTap,
       borderRadius: AppRadius.brMd,
       child: Container(
@@ -843,11 +1062,14 @@ class _ChoiceChipTile extends StatelessWidget {
             width: selected ? 2 : 1,
           ),
         ),
-        child: Text(label,
+        child: Text(
+          label,
             style: context.texts.titleSmall?.copyWith(
               fontWeight: FontWeight.w600,
               color: selected ? colors.onPrimaryContainer : null,
-            )),
+          ),
+        ),
+      ),
       ),
     );
   }
@@ -863,7 +1085,9 @@ class _ProgressDots extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.xxl, vertical: AppSpacing.lg),
+        horizontal: AppSpacing.xxl,
+        vertical: AppSpacing.lg,
+      ),
       child: Row(
         children: List.generate(total, (i) {
           final active = i <= current;

@@ -7,6 +7,8 @@ import 'sync_controller.dart';
 import 'sync_ownership.dart';
 import 'sync_pull.dart';
 import 'sync_push.dart';
+import '../analytics/analytics_providers.dart';
+import '../analytics/analytics_sync.dart';
 
 /// Sunucu yüzeyi. Supabase başlatılamadıysa (ağ yok / yanlış config) yine de
 /// nesne kurulur; istemci çağrı anında çözülür → hata yalnız o çağrıda çıkar,
@@ -56,10 +58,23 @@ final syncPullProvider = Provider<SyncPull>(
 /// sorulmaz. Böylece çevrimdışıyken de "oturum var" bilinir ve kuyruk ağ
 /// gelir gelmez boşalır (docs/18 §5.1 Kural 1).
 final syncControllerProvider = Provider<SyncController>((ref) {
+  final analytics = ref.read(analyticsControllerProvider);
   final controller = SyncController(
     db: ref.watch(databaseProvider),
     push: ref.watch(syncPushProvider),
     currentUserId: _sessionUserId,
+    onCycle: (owner, result, elapsed, pending) => recordAnalyticsSync(
+      analytics,
+      owner: owner,
+      direction: 'push',
+      outcome: analyticsSyncOutcome(
+        result.error,
+        permanent: result.permanent > 0,
+        ok: result.ok,
+      ),
+      pending: pending,
+      elapsed: elapsed,
+    ),
   );
   ref.onDispose(controller.stop);
   return controller;

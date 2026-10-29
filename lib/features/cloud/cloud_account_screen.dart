@@ -185,6 +185,11 @@ class _AccountPanelState extends ConsumerState<_AccountPanel> {
           SnackBar(content: Text(l.cloudDeleted)),
         );
       }
+    } on AccountDeletedLocalCleanupException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.goalAccountDeletedCleanupWarning)));
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

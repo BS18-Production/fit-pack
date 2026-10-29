@@ -1,0 +1,6 @@
+{
+  "tasks": {
+    "check": "deno check index.ts",
+    "test": "node --test handler_test.ts"
+  }
+}

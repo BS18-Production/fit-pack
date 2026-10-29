@@ -36,6 +36,7 @@ import 'package:fit_pack/features/update/update_required_screen.dart';
 import 'package:fit_pack/shared/widgets/app_shell.dart';
 import 'package:fit_pack/shared/widgets/glass.dart';
 import 'app_routes.dart';
+import '../../features/goals/goal_journey_screen.dart';
 import '../../features/assistant/assistant_screen.dart';
 import '../../features/assistant/assistant_quality_screen.dart';
 
@@ -88,6 +89,11 @@ GoRouter createAppRouter({
     router.go(AppRoutes.home);
   },
   routes: [
+    GoRoute(
+      path: AppRoutes.goalJourney,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const GoalJourneyScreen()),
+    ),
     // ── Zorunlu giriş kapısı (docs/18 §5.1) ──
     GoRoute(
       path: AppRoutes.welcome,
@@ -97,8 +103,9 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.auth,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(AuthScreen(
-          signUp: state.uri.queryParameters['mode'] == 'signup')),
+      builder: (context, state) => _glass(
+        AuthScreen(signUp: state.uri.queryParameters['mode'] == 'signup'),
+      ),
     ),
     GoRoute(
       path: AppRoutes.resetPassword,
@@ -142,9 +149,8 @@ GoRouter createAppRouter({
           routes: [
             GoRoute(
               path: AppRoutes.home,
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: HomeScreen(),
-              ),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: HomeScreen()),
             ),
           ],
         ),
@@ -152,9 +158,8 @@ GoRouter createAppRouter({
           routes: [
             GoRoute(
               path: AppRoutes.workout,
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: WorkoutListScreen(),
-              ),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: WorkoutListScreen()),
             ),
           ],
         ),
@@ -162,9 +167,8 @@ GoRouter createAppRouter({
           routes: [
             GoRoute(
               path: AppRoutes.nutrition,
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: NutritionScreen(),
-              ),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: NutritionScreen()),
             ),
           ],
         ),
@@ -172,9 +176,8 @@ GoRouter createAppRouter({
           routes: [
             GoRoute(
               path: AppRoutes.progress,
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: BodyMetricsScreen(),
-              ),
+              pageBuilder: (context, state) =>
+                  const NoTransitionPage(child: BodyMetricsScreen()),
             ),
           ],
         ),
@@ -188,29 +191,45 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.workoutCalendar,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(WorkoutCalendarScreen(
-        initialDate: DateTime.tryParse(state.uri.queryParameters['date'] ?? ''),
-      )),
+      builder: (context, state) => _glass(
+        WorkoutCalendarScreen(
+          initialDate: DateTime.tryParse(
+            state.uri.queryParameters['date'] ?? '',
+          ),
+        ),
+      ),
     ),
     GoRoute(
       path: AppRoutes.calendar,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(CalendarScreen(
-        initialDate: DateTime.tryParse(state.uri.queryParameters['date'] ?? ''),
-      )),
+      builder: (context, state) => _glass(
+        CalendarScreen(
+          initialDate: DateTime.tryParse(
+            state.uri.queryParameters['date'] ?? '',
+          ),
+        ),
+      ),
     ),
     GoRoute(
       path: AppRoutes.weeklyReview,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(WeeklyReviewScreen(
+      builder: (context, state) => _glass(
+        WeeklyReviewScreen(
         initialOffset:
             int.tryParse(state.uri.queryParameters['w'] ?? '') ?? 0,
-      )),
     ),
-    GoRoute(path: AppRoutes.assistant, parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(const AssistantScreen())),
-    GoRoute(path: AppRoutes.assistantQuality, parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(const AssistantQualityScreen())),
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.assistant,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const AssistantScreen()),
+    ),
+    GoRoute(
+      path: AppRoutes.assistantQuality,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => _glass(const AssistantQualityScreen()),
+    ),
     // İlerleme fotoğrafları (docs/19). Karşılaştırma iki kimliği sorgudan alır.
     GoRoute(
       path: AppRoutes.progressPhotos,
@@ -220,10 +239,12 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.photoComparePath,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(PhotoCompareScreen(
+      builder: (context, state) => _glass(
+        PhotoCompareScreen(
         a: int.tryParse(state.uri.queryParameters['a'] ?? '') ?? -1,
         b: int.tryParse(state.uri.queryParameters['b'] ?? '') ?? -1,
-      )),
+        ),
+      ),
     ),
     // Antrenman V2 (docs/09-workout-v2.md) — rutinler + aktif seans.
     GoRoute(
@@ -234,14 +255,16 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.routineEditPath,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(RoutineBuilderScreen(
-          routineId: int.parse(state.pathParameters['id']!))),
+      builder: (context, state) => _glass(
+        RoutineBuilderScreen(routineId: int.parse(state.pathParameters['id']!)),
+      ),
     ),
     GoRoute(
       path: AppRoutes.routinePreviewPath,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(RoutinePreviewScreen(
-          routineId: int.parse(state.pathParameters['id']!))),
+      builder: (context, state) => _glass(
+        RoutinePreviewScreen(routineId: int.parse(state.pathParameters['id']!)),
+      ),
     ),
     GoRoute(
       path: AppRoutes.workoutActive,
@@ -252,13 +275,17 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.workoutActiveResume,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(const ActiveSessionScreen(resume: true)),
+      builder: (context, state) =>
+          _glass(const ActiveSessionScreen(resume: true)),
     ),
     GoRoute(
       path: AppRoutes.workoutActiveRoutinePath,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(ActiveSessionScreen(
-          routineId: int.parse(state.pathParameters['routineId']!))),
+      builder: (context, state) => _glass(
+        ActiveSessionScreen(
+          routineId: int.parse(state.pathParameters['routineId']!),
+        ),
+      ),
     ),
     // Geçmiş antrenman ekle (H-B) — kronometresiz, tarih seçilir.
     GoRoute(
@@ -266,31 +293,39 @@ GoRouter createAppRouter({
       parentNavigatorKey: _rootNavigatorKey,
       // Takvimden gelince gün hazır (`date=`) — tarih seçici açılmaz.
       builder: (context, state) {
-        final day =
-            DateTime.tryParse(state.uri.queryParameters['date'] ?? '');
-        return _glass(ActiveSessionScreen(
+        final day = DateTime.tryParse(state.uri.queryParameters['date'] ?? '');
+        return _glass(
+          ActiveSessionScreen(
           manualDate: day ?? DateTime.now(),
           pickDateOnOpen: day == null,
-        ));
+          ),
+        );
       },
     ),
     GoRoute(
       path: AppRoutes.programPath,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(ProgramDetailScreen(
-          programKey: state.pathParameters['programKey']!)),
+      builder: (context, state) => _glass(
+        ProgramDetailScreen(programKey: state.pathParameters['programKey']!),
+      ),
     ),
     GoRoute(
       path: AppRoutes.workoutSessionPath,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(WorkoutSessionDetailScreen(
-          sessionId: int.parse(state.pathParameters['sessionId']!))),
+      builder: (context, state) => _glass(
+        WorkoutSessionDetailScreen(
+          sessionId: int.parse(state.pathParameters['sessionId']!),
+        ),
+      ),
     ),
     GoRoute(
       path: AppRoutes.summaryPath,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(WorkoutSummaryScreen(
-          sessionId: int.parse(state.pathParameters['sessionId']!))),
+      builder: (context, state) => _glass(
+        WorkoutSummaryScreen(
+          sessionId: int.parse(state.pathParameters['sessionId']!),
+        ),
+      ),
     ),
     GoRoute(
       path: AppRoutes.exercises,
@@ -306,8 +341,11 @@ GoRouter createAppRouter({
     GoRoute(
       path: AppRoutes.exerciseDetailPath,
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => _glass(ExerciseDetailScreen(
-          exerciseId: int.parse(state.pathParameters['id']!))),
+      builder: (context, state) => _glass(
+        ExerciseDetailScreen(
+          exerciseId: int.parse(state.pathParameters['id']!),
+        ),
+      ),
     ),
     GoRoute(
       path: AppRoutes.foods,
@@ -341,4 +379,3 @@ GoRouter createAppRouter({
     ),
   ],
 );
-

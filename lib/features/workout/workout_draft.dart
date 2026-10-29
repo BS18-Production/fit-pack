@@ -61,12 +61,14 @@ class DraftExercise {
   // Kullanıcı ilerleme önerisini uyguladıysa kullanılan artış (kg) — devam
   // edince öneriler aynı kalsın (docs/21 #3). Eski taslakta yok → null.
   final double? appliedIncrementKg;
+  final bool sessionOnly;
   DraftExercise({
     required this.exerciseId,
     required this.restSec,
     required this.previous,
     required this.sets,
     this.appliedIncrementKg,
+    this.sessionOnly = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -75,6 +77,7 @@ class DraftExercise {
         'prev': previous,
         'sets': sets.map((s) => s.toJson()).toList(),
         if (appliedIncrementKg != null) 'inc': appliedIncrementKg,
+        if (sessionOnly) 'sessionOnly': true,
       };
 
   factory DraftExercise.fromJson(Map<String, dynamic> j) => DraftExercise(
@@ -85,6 +88,7 @@ class DraftExercise {
             .map((e) => DraftSet.fromJson(e as Map<String, dynamic>))
             .toList(),
         appliedIncrementKg: (j['inc'] as num?)?.toDouble(),
+        sessionOnly: j['sessionOnly'] == true,
       );
 }
 
@@ -171,6 +175,11 @@ class WorkoutDraft {
 
 /// Taslağı disk üzerinde okur/yazar/siler.
 class WorkoutDraftService {
+  WorkoutDraftService({Future<SharedPreferences> Function()? preferences})
+      : _preferences = preferences ?? SharedPreferences.getInstance;
+
+  final Future<SharedPreferences> Function() _preferences;
+
   // Her silmede artar. Açık seans ekranı başladığı andaki değeri saklar;
   // değer değiştiyse taslak başka yerden silinmiştir (hesap değişimi, banner
   // "Sil") ve ekranın geciken yazımı onu geri getirmemelidir. Statik: hesap
@@ -178,22 +187,104 @@ class WorkoutDraftService {
   static int _clearCount = 0;
   int get clearCount => _clearCount;
 
+  // Hesap temizliği başka bir servis örneği kullanabilir. Bütün yazmalar
+  // aynı sırada: başlamış yazma biter, ardından clear onu kaldırır. Bir
+  // hatanın kuyruğu kilitlememesi için çağırana dönen hata ayrıca tüketilir.
+  static Future<void>? _writes;
+  static Object? _lastWrite;
+
+  static Future<T> _serialize<T>(Future<T> Function() action) {
+    final previous = _writes;
+    final ticket = Object();
+    _lastWrite = ticket;
+    Future<T> run() async {
+      try {
+        return await Future<T>.sync(action);
+      } finally {
+        // Son iş kendi sonucu dönmeden kuyruğu bırakır. Tamamlanmış bir
+        // Future'ı veya onun oluşturulduğu zamanlayıcı bölgesini tutmayız.
+        if (identical(_lastWrite, ticket)) {
+          _writes = null;
+          _lastWrite = null;
+        }
+      }
+    }
+
+    final result = previous == null ? run() : previous.then((_) => run());
+    _writes = result.then<void>((_) {}, onError: (Object _, StackTrace _) {});
+    return result;
+  }
+
   Future<void> save(WorkoutDraft draft) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kDraftKey, draft.encode());
+    await saveIfCurrent(draft, expectedClearCount: _clearCount);
   }
 
-  Future<WorkoutDraft?> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_kDraftKey);
-    if (raw == null) return null;
-    return WorkoutDraft.decode(raw);
+  /// Seçim başlamadan yakalanan nesil hâlâ geçerliyse taslağı yazar.
+  /// [isCurrent] ayrıca hesap/ekran sahipliğini doğrulayabilir; kuyruğu ve
+  /// tercih yüklemesini bekledikten sonra yeniden kontrol edilir. false,
+  /// bayat işlemdir; depolama hatası ise çağırana exception olarak gider.
+  /// Platforma başlamış yazma iptal edilemez. Sahiplik yazarken değişirse
+  /// yalnız bu yazının sonucu, kuyruk bırakılmadan kaldırılır; başka bir
+  /// servis yazması araya giremez. Bu sıra süreç içi korumadır, ani süreç
+  /// kapanmasında disk dayanıklılığı garantisi değildir.
+  Future<bool> saveIfCurrent(
+    WorkoutDraft draft, {
+    required int expectedClearCount,
+    bool Function()? isCurrent,
+  }) {
+    bool current() =>
+        expectedClearCount == _clearCount && (isCurrent?.call() ?? true);
+    if (!current()) return Future<bool>.value(false);
+    // Mutable set değerleri kuyruk beklerken değişse de çağrı anı saklanır.
+    final encoded = draft.encode();
+    return _serialize(() async {
+      if (!current()) return false;
+      final prefs = await _preferences();
+      if (!current()) return false;
+      try {
+        if (!await prefs.setString(_kDraftKey, encoded)) {
+          throw StateError('Workout draft could not be saved');
+        }
+        if (!current()) {
+          if (!await prefs.remove(_kDraftKey)) {
+            throw StateError('Stale workout draft could not be cleared');
+          }
+          return false;
+        }
+      } catch (_) {
+        // SharedPreferences önce bellek kopyasını günceller. Başarısız
+        // platform yazısı sonraki load'a başarılı kayıt gibi görünmesin.
+        await prefs.reload();
+        rethrow;
+      }
+      return true;
+    });
   }
 
-  Future<void> clear() async {
+  // SharedPreferences cache'i platform yazısı bitmeden değişir. Okuma da
+  // sıraya girer: yeniden açılan ekran henüz sonucu bilinmeyen adayı görmez;
+  // tercih yüklenirken başlayan başka yazma da okumanın önüne geçemez.
+  Future<WorkoutDraft?> load() => _serialize(() async {
+        final prefs = await _preferences();
+        final raw = prefs.getString(_kDraftKey);
+        if (raw == null) return null;
+        return WorkoutDraft.decode(raw);
+      });
+
+  Future<void> clear() {
+    // Bekleyen eski yazmalar, kaldırma sıra beklerken bile geçersizdir.
     _clearCount++;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_kDraftKey);
+    return _serialize(() async {
+      final prefs = await _preferences();
+      try {
+        if (!await prefs.remove(_kDraftKey)) {
+          throw StateError('Workout draft could not be cleared');
+        }
+      } catch (_) {
+        await prefs.reload();
+        rethrow;
+      }
+    });
   }
 }
 

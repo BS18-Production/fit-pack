@@ -24,18 +24,28 @@ class WeeklyStreak {
   /// başlamadı" ile "önceki hafta kaçtı" durumlarını ayırır (docs/24 §2).
   final bool hasEarlierSessions;
 
+  /// Varsayılan 3, kullanıcıya ait doğrulanmış hedef sayılmaz.
+  final bool targetKnown;
+
+  /// Eski haftaların hedefi kaydedilmemişse seri yalnız bilinen dönemleri
+  /// kapsar; bilinmeyen hafta başarısızlık olarak yorumlanmaz.
+  final bool historyLimited;
+
   const WeeklyStreak({
     required this.weeks,
     required this.thisWeekDone,
     required this.weeklyGoal,
     this.hasEarlierSessions = false,
+    this.targetKnown = true,
+    this.historyLimited = false,
   });
 
-  bool get thisWeekComplete => thisWeekDone >= weeklyGoal;
+  bool get thisWeekComplete => targetKnown && thisWeekDone >= weeklyGoal;
 
   /// Hedefe kalan antrenman günü (tamamlandıysa 0).
-  int get remaining =>
-      thisWeekDone >= weeklyGoal ? 0 : weeklyGoal - thisWeekDone;
+  int get remaining => !targetKnown || thisWeekDone >= weeklyGoal
+      ? 0
+      : weeklyGoal - thisWeekDone;
 }
 
 /// Gün anahtarı: yerel günü UTC gün-epoch'una indirger. DST/saat oynamalarına
@@ -49,6 +59,8 @@ WeeklyStreak computeWeeklyStreak({
   required int weeklyGoal,
   required DateTime now,
   required int weekStart, // DateTime.monday | DateTime.sunday
+  int? Function(DateTime periodStart)? goalForWeek,
+  bool targetKnown = true,
 }) {
   final goal = weeklyGoal < 1 ? 1 : weeklyGoal;
 
@@ -63,11 +75,33 @@ WeeklyStreak computeWeeklyStreak({
   final thisWeek = _dayKey(startOfWeek(now, weekStart));
   final thisWeekDone = daysPerWeek[thisWeek]?.length ?? 0;
 
+  int? targetAt(int dayKey) {
+    if (goalForWeek == null) return targetKnown ? goal : null;
+    final utc = DateTime.fromMillisecondsSinceEpoch(
+      dayKey * Duration.millisecondsPerDay,
+      isUtc: true,
+    );
+    final target = goalForWeek(DateTime(utc.year, utc.month, utc.day));
+    return target != null && target >= 1 && target <= 7 ? target : null;
+  }
+
+  final currentTarget = targetAt(thisWeek);
+  final currentKnown = targetKnown && currentTarget != null;
+
   // Bu hafta tamamlandıysa ondan, tamamlanmadıysa (devam ediyor — kırmaz)
   // geçen haftadan geriye ardışık tamamlanan haftaları say.
-  var cursor = thisWeekDone >= goal ? thisWeek : thisWeek - 7;
+  var cursor = currentKnown && thisWeekDone >= currentTarget
+      ? thisWeek
+      : thisWeek - 7;
   var weeks = 0;
-  while ((daysPerWeek[cursor]?.length ?? 0) >= goal) {
+  var historyLimited = false;
+  while (true) {
+    final target = targetAt(cursor);
+    if (target == null) {
+      historyLimited = true;
+      break;
+    }
+    if ((daysPerWeek[cursor]?.length ?? 0) < target) break;
     weeks++;
     cursor -= 7;
   }
@@ -75,7 +109,9 @@ WeeklyStreak computeWeeklyStreak({
   return WeeklyStreak(
     weeks: weeks,
     thisWeekDone: thisWeekDone,
-    weeklyGoal: goal,
+    weeklyGoal: currentTarget ?? goal,
     hasEarlierSessions: daysPerWeek.keys.any((w) => w < thisWeek),
+    targetKnown: currentKnown,
+    historyLimited: historyLimited,
   );
 }

@@ -27,6 +27,9 @@ class WorkoutLiveState {
   /// arada set değiştiyse (gecikmiş/çift dokunuş) eylem uygulanmaz.
   final String setKey;
 
+  /// Etkin mola sürümü; doğal bitiş sıradaki set anahtarını değiştirmez.
+  final String restKey;
+
   /// ± düğmelerinin etiketi ("−2,5 kg" / "+1 tekrar"); boşsa düğme yok
   /// (süre/mesafe hareketi).
   final String stepDownLabel;
@@ -42,6 +45,7 @@ class WorkoutLiveState {
     required this.totalSets,
     this.canComplete = false,
     this.setKey = '',
+    this.restKey = '',
     this.stepDownLabel = '',
     this.stepUpLabel = '',
   });
@@ -58,6 +62,7 @@ class WorkoutLiveState {
         'totalSets': totalSets,
         'canComplete': canComplete,
         'setKey': setKey,
+        'restKey': restKey,
         'stepDownLabel': stepDownLabel,
         'stepUpLabel': stepUpLabel,
       };
@@ -74,13 +79,14 @@ class WorkoutLiveState {
       other.totalSets == totalSets &&
       other.canComplete == canComplete &&
       other.setKey == setKey &&
+      other.restKey == restKey &&
       other.stepDownLabel == stepDownLabel &&
       other.stepUpLabel == stepUpLabel;
 
   @override
   int get hashCode => Object.hash(exercise, setLabel, target, restStartedAt,
       restEndsAt, doneSets, totalSets, canComplete, setKey, stepDownLabel,
-      stepUpLabel);
+      stepUpLabel, restKey);
 }
 
 /// Kilit ekranı metinleri — seans boyunca sabit, aktif dilden (ARB) gelir.
@@ -136,7 +142,7 @@ class WorkoutLiveLabels {
 enum LiveAction { completeSet, stepDown, stepUp, addRest, skipRest }
 
 /// Eylemi uygulayan taraf. [setKey]: dokunulan kartın gösterdiği set
-/// ([WorkoutLiveState.setKey]; dinlenme eylemlerinde yok). `true` =
+/// ([WorkoutLiveState.setKey]; dinlenmede [WorkoutLiveState.restKey]). `true` =
 /// uygulandı; `false` = açık seans yok ya da kart bayat.
 typedef LiveActionHandler = Future<bool> Function(
     LiveAction action, String? setKey);
@@ -153,6 +159,9 @@ typedef LiveActionHandler = Future<bool> Function(
 /// kaydedilir, kanal çağrıları sırayla gider.
 class WorkoutLiveActivity {
   static const channel = MethodChannel('fit_pack/live_activity');
+  // Hesap/taslak dışarıdan temizlenince bekleyen eski yayınlar da iptal olur.
+  static int _endGeneration = 0;
+  int _generation = _endGeneration;
 
   WorkoutLiveState? _last;
   WorkoutLiveLabels? _lastLabels;
@@ -175,6 +184,12 @@ class WorkoutLiveActivity {
     WorkoutLiveLabels? labels,
   }) {
     if (!_supported) return Future.value();
+    if (_generation != _endGeneration) {
+      _generation = _endGeneration;
+      _active = false;
+      _last = null;
+      _lastLabels = null;
+    }
     if (_active && state == _last && labels == _lastLabels) return _queue;
     final method = _active ? 'update' : 'start';
     _active = true;
@@ -186,7 +201,9 @@ class WorkoutLiveActivity {
       'startedAtMs': startedAt.millisecondsSinceEpoch,
       if (labels != null) 'labels': labels.toMap(),
     };
+    final generation = _endGeneration;
     return _enqueue(() async {
+      if (generation != _endGeneration) return;
       try {
         await channel.invokeMethod<bool>(method, args);
       } catch (_) {
@@ -202,10 +219,13 @@ class WorkoutLiveActivity {
 
   Future<void> end() {
     if (!_supported || !_active) return Future.value();
+    final generation = _generation;
     _active = false;
     _last = null;
     _lastLabels = null;
     return _enqueue(() async {
+      // Eski ekranın kuyruktaki kapanışı yeni hesaba/seansa dokunamaz.
+      if (generation != _endGeneration) return;
       try {
         await channel.invokeMethod<bool>('end');
       } catch (_) {
@@ -218,6 +238,7 @@ class WorkoutLiveActivity {
   /// kilit ekranında kart kalmasın. Uygulama seans sürerken öldürülmüşse
   /// kart sahipsiz kalır; seans ekranı açık değilken çağrılır.
   static Future<void> endAll() async {
+    _endGeneration++;
     if (kIsWeb ||
         (defaultTargetPlatform != TargetPlatform.iOS &&
             defaultTargetPlatform != TargetPlatform.android)) {

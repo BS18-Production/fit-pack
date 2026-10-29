@@ -20,6 +20,8 @@ import '../workout/workout_ui.dart';
 import 'weekly_review.dart';
 import 'weekly_review_providers.dart';
 import '../../shared/widgets/fitpack_icon.dart';
+import '../goals/goal_journey_screen.dart';
+import '../home/providers/weekly_goal_provider.dart';
 
 /// **Haftalık değerlendirme ekranı** (docs/22 §4, görsel yenileme §10).
 ///
@@ -114,18 +116,17 @@ class _WeeklyReviewViewState extends ConsumerState<WeeklyReviewView> {
               ],
             ),
             _KpiGrid(review: r),
+          const GoalJourneyEntryCard(),
             AppSpacing.vGapLg,
             _FocusCard(review: r),
             AppSpacing.vGapLg,
-            _SectionTitle(
-                title: l.wrProgressTitle, info: [l.wrProgressSource]),
+          _SectionTitle(title: l.wrProgressTitle, info: [l.wrProgressSource]),
             _ProgressCard(review: r),
             AppSpacing.vGapLg,
             _SectionTitle(title: l.wrMuscleTitle, info: [l.wrMuscleSource]),
             _MuscleCard(review: r),
             AppSpacing.vGapLg,
-            _SectionTitle(
-                title: l.wrDirectionLabel, info: [l.wrWeightSource]),
+          _SectionTitle(title: l.wrDirectionLabel, info: [l.wrWeightSource]),
             const _DirectionCard(),
             AppSpacing.vGapXl,
           ],
@@ -164,13 +165,16 @@ class _WeekHeader extends StatelessWidget {
         Expanded(
           child: Column(
             children: [
-              Text('${f.format(period.start)} – ${f.format(son)}',
-                  style: context.texts.titleMedium),
+              Text(
+                '${f.format(period.start)} – ${f.format(son)}',
+                style: context.texts.titleMedium,
+              ),
               if (!period.isComplete)
                 Text(
                   l.wrInProgress(period.daysElapsed),
-                  style: context.texts.bodySmall
-                      ?.copyWith(color: context.colors.onSurfaceVariant),
+                  style: context.texts.bodySmall?.copyWith(
+                    color: context.colors.onSurfaceVariant,
+                  ),
                 ),
             ],
           ),
@@ -198,26 +202,39 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppL10n.of(context);
     return Padding(
-      padding: const EdgeInsets.only(left: AppSpacing.xs, bottom: AppSpacing.xs),
+      padding: const EdgeInsets.only(
+        left: AppSpacing.xs,
+        bottom: AppSpacing.xs,
+      ),
       child: Row(
         children: [
           Expanded(
-            child: Text(title,
-                style: context.texts.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w800)),
+            child: Text(
+              title,
+              style: context.texts.titleSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
           ),
           IconButton(
             tooltip: l.wrHowCalculated,
             visualDensity: VisualDensity.compact,
-            icon: FitPackIcon.material(Icons.info_outline_rounded,
-                size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
+            icon: FitPackIcon.material(
+              Icons.info_outline_rounded,
+              size: AppIconSize.sm,
+              color: context.colors.onSurfaceVariant,
+            ),
             onPressed: () => showModalBottomSheet<void>(
               context: context,
               showDragHandle: true,
               builder: (ctx) => SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl),
+                    AppSpacing.xl,
+                    0,
+                    AppSpacing.xl,
+                    AppSpacing.xl,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,7 +259,8 @@ class _SectionTitle extends StatelessWidget {
 
 /// "+0,4 kg" / "−1,0 kg" — işaretli, birimle.
 String _signed(BuildContext context, Units u, double kg) {
-  final s = '${context.numFmt.format(u.weightFromKg(kg.abs()))} ${u.weightUnit}';
+  final s =
+      '${context.numFmt.format(u.weightFromKg(kg.abs()))} ${u.weightUnit}';
   if (kg > 0) return '+$s';
   if (kg < 0) return '−$s';
   return s;
@@ -294,12 +312,15 @@ class _KpiTile extends StatelessWidget {
               FitPackIcon.material(icon, size: 16, color: c.primary),
               const SizedBox(width: 6),
               Flexible(
-                child: Text(label,
+                child: Text(
+                  label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: context.texts.labelMedium?.copyWith(
                         color: c.onSurfaceVariant,
-                        fontWeight: FontWeight.w700)),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),
@@ -308,18 +329,25 @@ class _KpiTile extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text.rich(
-              TextSpan(children: [
+              TextSpan(
+                children: [
                 TextSpan(
                     text: value,
-                    style: context.texts.headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.w800, height: 1.1)),
+                    style: context.texts.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
+                    ),
+                  ),
                 if (unit != null)
                   TextSpan(
                       text: ' $unit',
                       style: context.texts.titleSmall?.copyWith(
                           color: c.onSurfaceVariant,
-                          fontWeight: FontWeight.w600)),
-              ]),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
           if (d != null) ...[
@@ -333,25 +361,33 @@ class _KpiTile extends StatelessWidget {
                             ? Icons.arrow_downward_rounded
                             : Icons.remove_rounded,
                     size: 14,
-                    color: toneColor),
+                  color: toneColor,
+                ),
                 const SizedBox(width: 2),
                 Flexible(
-                  child: Text(d.text,
+                  child: Text(
+                    d.text,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: context.texts.labelMedium?.copyWith(
-                          color: toneColor, fontWeight: FontWeight.w800)),
+                      color: toneColor,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ),
               ],
             ),
           ],
           for (final n in notes) ...[
             const SizedBox(height: 2),
-            Text(n,
+            Text(
+              n,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: context.texts.bodySmall
-                    ?.copyWith(color: c.onSurfaceVariant)),
+              style: context.texts.bodySmall?.copyWith(
+                color: c.onSurfaceVariant,
+              ),
+            ),
           ],
         ],
       ),
@@ -369,39 +405,60 @@ class _KpiGrid extends ConsumerWidget {
     final u = ref.watch(unitsProvider);
     final nf = context.numFmt;
     final w = review.workout;
+    final periodTarget = ref
+        .watch(weeklyTargetForPeriodProvider(review.period.start))
+        .valueOrNull;
     final n = review.nutrition;
     final kg = review.weight;
     // Hafta sürüyorsa tam haftayla kıyas yanıltır: değişim oku yok, yalnız
     // "Geçen hafta: X" (W-2).
     final complete = review.period.isComplete;
 
-    final sessionsDelta = w.sessions - w.prevSessions;
+    final sessionsDelta = w.trainingDays - w.prevTrainingDays;
     final workouts = _KpiTile(
       icon: Icons.fitness_center_rounded,
-      label: l.wrKpiWorkouts,
-      value: '${w.sessions}',
-      unit: w.planned != null ? '/ ${w.planned}' : null,
-      delta: complete && sessionsDelta != 0
-          ? _Delta('${sessionsDelta > 0 ? '+' : '−'}${sessionsDelta.abs()}',
-              sessionsDelta.sign, countTone(sessionsDelta))
+      label: l.goalTrainingDaysLabel,
+      value: '${w.trainingDays}',
+      unit: w.targetCoversWholePeriod && w.planned != null
+          ? '/ ${w.planned}'
           : null,
-      notes: [l.wrPrevValue('${w.prevSessions}')],
+      delta: complete && sessionsDelta != 0
+          ? _Delta(
+              '${sessionsDelta > 0 ? '+' : '−'}${sessionsDelta.abs()}',
+              sessionsDelta.sign,
+              countTone(sessionsDelta),
+            )
+          : null,
+      notes: [
+        l.wrPrevValue('${w.prevTrainingDays}'),
+        l.goalSessionCount(w.sessions),
+        if (!w.targetCoversWholePeriod &&
+            periodTarget?.targetEffectiveFrom != null)
+          l.goalEffectiveFrom(
+            context.dateFmt('yMMMd').format(periodTarget!.targetEffectiveFrom!),
+          ),
+      ],
     );
 
     final pct = percentChange(w.volumeKg, w.prevVolumeKg);
     final volume = _KpiTile(
       icon: Icons.stacked_bar_chart_rounded,
       label: l.wrKpiVolume,
-      value: w.volumeKg == 0 ? '0' : nf.format(u.weightFromKg(w.volumeKg).round()),
+      value: w.volumeKg == 0
+          ? '0'
+          : nf.format(u.weightFromKg(w.volumeKg).round()),
       unit: u.weightUnit,
       delta: complete && pct != null && pct != 0
-          ? _Delta('${pct > 0 ? '+' : '−'}${pct.abs()}%', pct.sign,
-              countTone(pct))
+          ? _Delta(
+              '${pct > 0 ? '+' : '−'}${pct.abs()}%',
+              pct.sign,
+              countTone(pct),
+            )
           : null,
       notes: [
-        l.wrPrevValue(w.prevVolumeKg == 0
-            ? '0'
-            : u.weight(w.prevVolumeKg, frac: 0)),
+        l.wrPrevValue(
+          w.prevVolumeKg == 0 ? '0' : u.weight(w.prevVolumeKg, frac: 0),
+        ),
       ],
     );
 
@@ -440,12 +497,17 @@ class _KpiGrid extends ConsumerWidget {
     final weight = _KpiTile(
       icon: Icons.monitor_weight_rounded,
       label: l.wrKpiWeight,
-      value: kg.weekAvg == null ? '—' : context.numFmt.format(u.weightFromKg(kg.weekAvg!)),
+      value: kg.weekAvg == null
+          ? '—'
+          : context.numFmt.format(u.weightFromKg(kg.weekAvg!)),
       unit: kg.weekAvg == null ? null : u.weightUnit,
       delta: kg.delta == null || kg.singleMeasurement
           ? null
-          : _Delta(_signed(context, u, kg.delta!), kg.delta!.sign.toInt(),
-              weightTone(kg.meaning)),
+          : _Delta(
+              _signed(context, u, kg.delta!),
+              kg.delta!.sign.toInt(),
+              weightTone(kg.meaning),
+            ),
       notes: kg.count == 0
           ? [l.wrNoRecord]
           : [
@@ -469,11 +531,7 @@ class _KpiGrid extends ConsumerWidget {
         );
 
     return Column(
-      children: [
-        row(workouts, volume),
-        AppSpacing.vGapMd,
-        row(food, weight),
-      ],
+      children: [row(workouts, volume), AppSpacing.vGapMd, row(food, weight)],
     );
   }
 }
@@ -514,7 +572,11 @@ class _FocusCard extends StatelessWidget {
               color: c.primary.withValues(alpha: 0.16),
               borderRadius: AppRadius.brMd,
             ),
-            child: FitPackIcon.material(Icons.flag_rounded, color: c.primary, size: 20),
+            child: FitPackIcon.material(
+              Icons.flag_rounded,
+              color: c.primary,
+              size: 20,
+            ),
           ),
           AppSpacing.hGapMd,
           Expanded(
@@ -524,16 +586,23 @@ class _FocusCard extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(l.wrFocusTitle,
+                      child: Text(
+                        l.wrFocusTitle,
                           style: context.texts.labelLarge?.copyWith(
-                              color: c.primary, fontWeight: FontWeight.w800)),
+                          color: c.primary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ),
                     _InfoButton(info: [l.wrFocusSource]),
                   ],
                 ),
-                Text(metin,
-                    style: context.texts.bodyLarge
-                        ?.copyWith(fontWeight: FontWeight.w600)),
+                Text(
+                  metin,
+                  style: context.texts.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
@@ -559,7 +628,11 @@ class _InfoButton extends StatelessWidget {
         builder: (ctx) => SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl),
+              AppSpacing.xl,
+              0,
+              AppSpacing.xl,
+              AppSpacing.xl,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -574,8 +647,11 @@ class _InfoButton extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xs),
-        child: FitPackIcon.material(Icons.info_outline_rounded,
-            size: AppIconSize.sm, color: context.colors.onSurfaceVariant),
+        child: FitPackIcon.material(
+          Icons.info_outline_rounded,
+          size: AppIconSize.sm,
+          color: context.colors.onSurfaceVariant,
+        ),
       ),
     );
   }
@@ -591,9 +667,12 @@ class _EmptyLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
         width: double.infinity,
-        child: Text(text,
-            style: context.texts.bodyMedium
-                ?.copyWith(color: context.colors.onSurfaceVariant)),
+    child: Text(
+      text,
+      style: context.texts.bodyMedium?.copyWith(
+        color: context.colors.onSurfaceVariant,
+      ),
+    ),
       );
 }
 
@@ -613,31 +692,44 @@ class _ProgressCard extends ConsumerWidget {
           : Column(
               children: [
                 for (final (i, p) in review.progress.indexed) ...[
-                  if (i > 0) Divider(height: AppSpacing.lg, color: c.outlineVariant),
+                  if (i > 0)
+                    Divider(height: AppSpacing.lg, color: c.outlineVariant),
                   Row(
                     children: [
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(p.name,
+                            Text(
+                              p.name,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: context.texts.bodyMedium
-                                    ?.copyWith(fontWeight: FontWeight.w700)),
-                            Text('${u.lift(p.bestWeightKg)} × ${p.bestReps}',
-                                style: context.texts.bodySmall
-                                    ?.copyWith(color: c.onSurfaceVariant)),
+                              style: context.texts.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              '${u.lift(p.bestWeightKg)} × ${p.bestReps}',
+                              style: context.texts.bodySmall?.copyWith(
+                                color: c.onSurfaceVariant,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      FitPackIcon.material(Icons.arrow_upward_rounded,
-                          size: 14, color: context.semantic.success),
+                      FitPackIcon.material(
+                        Icons.arrow_upward_rounded,
+                        size: 14,
+                        color: context.semantic.success,
+                      ),
                       const SizedBox(width: 2),
-                      Text(l.wrProgressDelta(u.lift(p.deltaE1rm)),
+                      Text(
+                        l.wrProgressDelta(u.lift(p.deltaE1rm)),
                           style: context.texts.labelLarge?.copyWith(
                               color: context.semantic.success,
-                              fontWeight: FontWeight.w800)),
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -672,10 +764,12 @@ class _MuscleCard extends StatelessWidget {
                       children: [
                         SizedBox(
                           width: 92,
-                          child: Text(WorkoutUi.muscleLabel(e.key),
+                          child: Text(
+                            WorkoutUi.muscleLabel(e.key),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: context.texts.bodySmall),
+                            style: context.texts.bodySmall,
+                          ),
                         ),
                         Expanded(
                           child: ClipRRect(
@@ -684,7 +778,8 @@ class _MuscleCard extends StatelessWidget {
                               children: [
                                 Container(
                                     height: 8,
-                                    color: c.primary.withValues(alpha: 0.12)),
+                                  color: c.primary.withValues(alpha: 0.12),
+                                ),
                                 FractionallySizedBox(
                                   widthFactor: e.value / max,
                                   child: Container(height: 8, color: c.primary),
@@ -695,10 +790,13 @@ class _MuscleCard extends StatelessWidget {
                         ),
                         SizedBox(
                           width: 56,
-                          child: Text(l.wrMuscleRow(e.value),
+                          child: Text(
+                            l.wrMuscleRow(e.value),
                               textAlign: TextAlign.end,
                               style: context.texts.bodySmall?.copyWith(
-                                  fontWeight: FontWeight.w700)),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -720,8 +818,9 @@ class _DirectionCard extends ConsumerWidget {
     final profile = ref.watch(userProfileProvider).valueOrNull;
     final dir = GoalDirection.tryParse(profile?.goalDirection);
     final conflict = ref.watch(goalConflictProvider).valueOrNull ?? false;
-    final muted = context.texts.bodySmall
-        ?.copyWith(color: context.colors.onSurfaceVariant);
+    final muted = context.texts.bodySmall?.copyWith(
+      color: context.colors.onSurfaceVariant,
+    );
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -733,12 +832,17 @@ class _DirectionCard extends ConsumerWidget {
               showSelectedIcon: false,
               segments: [
                 ButtonSegment(
-                    value: GoalDirection.lose, label: Text(l.wrDirLose)),
+                  value: GoalDirection.lose,
+                  label: Text(l.wrDirLose),
+                ),
                 ButtonSegment(
                     value: GoalDirection.maintain,
-                    label: Text(l.wrDirMaintain)),
+                  label: Text(l.wrDirMaintain),
+                ),
                 ButtonSegment(
-                    value: GoalDirection.gain, label: Text(l.wrDirGain)),
+                  value: GoalDirection.gain,
+                  label: Text(l.wrDirGain),
+                ),
               ],
               selected: {?dir},
               onSelectionChanged: (s) => ref

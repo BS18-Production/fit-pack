@@ -12,6 +12,8 @@ import 'sync_controller.dart';
 import 'sync_health.dart';
 import 'sync_providers.dart';
 import 'sync_pull.dart';
+import '../analytics/analytics_providers.dart';
+import '../analytics/analytics_sync.dart';
 
 /// Çekme tetikleyicileri ve inen verinin ekrana yansıtılması — **tek yerde**
 /// (docs/20 §6.5).
@@ -33,6 +35,7 @@ class SyncRefresh {
 
   /// Çekme yereli değiştirdiğinde çağrılır — okuma önbelleklerini tazeler.
   final void Function() onChanged;
+  final void Function(String, PullResult, Duration)? onPull;
 
   /// Test için zaman kaynağı.
   final DateTime Function() now;
@@ -42,6 +45,7 @@ class SyncRefresh {
     required this.pull,
     required this.controller,
     required this.onChanged,
+    this.onPull,
     DateTime Function()? now,
   }) : now = now ?? DateTime.now;
 
@@ -58,13 +62,25 @@ class SyncRefresh {
   /// Hata **yutulur**: yereldeki veri doğru, kullanıcı çalışmaya devam eder
   /// (docs/18 Kural 1). Çağıran isterse sonucu okur.
   Future<PullResult> pullNow(String userId, {bool full = false}) async {
+    final elapsed = Stopwatch()..start();
     try {
       final result = await pull.pullAll(userId: userId, full: full);
       if (result.changed > 0) onChanged();
+      _observePull(userId, result, elapsed.elapsed);
       return result;
     } catch (e) {
       syncLog('çekme başarısız (yerelle devam)', error: e);
-      return PullResult(error: e);
+      final result = PullResult(error: e);
+      _observePull(userId, result, elapsed.elapsed);
+      return result;
+    }
+  }
+
+  void _observePull(String owner, PullResult result, Duration elapsed) {
+    try {
+      onPull?.call(owner, result, elapsed);
+    } catch (_) {
+      // Analitik katmanı çekme davranışını değiştiremez.
     }
   }
 
@@ -76,7 +92,9 @@ class SyncRefresh {
   /// yanlış olurdu.
   Future<PullResult?> pullIfStale(String userId) async {
     final last = await SyncHealth(db, now: now).lastPullOk();
-    if (last != null && now().difference(last) < foregroundInterval) return null;
+    if (last != null && now().difference(last) < foregroundInterval) {
+      return null;
+    }
     return pullNow(userId);
   }
 
@@ -109,10 +127,30 @@ class ManualSyncResult {
 }
 
 final syncRefreshProvider = Provider<SyncRefresh>((ref) {
+  final analytics = ref.read(analyticsControllerProvider);
+  final controller = ref.watch(syncControllerProvider);
   return SyncRefresh(
     db: ref.watch(databaseProvider),
     pull: ref.watch(syncPullProvider),
-    controller: ref.watch(syncControllerProvider),
+    controller: controller,
+    onPull: (owner, result, elapsed) {
+      if (!analytics.available || !analytics.enabled) return;
+      unawaited(
+        controller
+            .pendingCount()
+            .then((pending) {
+              recordAnalyticsSync(
+                analytics,
+                owner: owner,
+                direction: 'pull',
+                outcome: analyticsSyncOutcome(result.error),
+                pending: pending,
+                elapsed: elapsed,
+              );
+            })
+            .catchError((_) {}),
+      );
+    },
     // Güne ve kullanıcıya bağlı okuma önbellekleri — tek liste.
     onChanged: () {
       ref.invalidate(userProfileProvider);

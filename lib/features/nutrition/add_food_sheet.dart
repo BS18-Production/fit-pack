@@ -20,6 +20,9 @@ import 'custom_food_dialog.dart';
 import 'meal_types.dart';
 import 'nutrition_habits.dart' show mealForTime;
 import 'nutrition_providers.dart' show selectedDateProvider;
+import 'nutrition_entry_scope.dart';
+import '../cloud/auth_service.dart' show authStateProvider;
+import '../sync/sync_providers.dart' show syncOwnershipProvider;
 import '../../shared/widgets/fitpack_icon.dart';
 
 /// **Yemek ekleme paneli** (2026-09-30 yeniden tasarım — NEXT_TASKS
@@ -49,6 +52,10 @@ Future<void> showAddFoodSheet(
     // Kök navigator (C-1): sekme navigator'ında açılan panel buzlu alt
     // çubuğun ARKASINDA kalıyordu (AppShell extendBody).
     useRootNavigator: true,
+    // Kapatma düğmesi ve sistem Geri kullanılır; bekleyen yazma sürükleme
+    // veya dış alana dokunmayla panelden koparılamaz.
+    enableDrag: false,
+    isDismissible: false,
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: context.colors.surface,
@@ -89,22 +96,39 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   bool _saving = false;
   // Bu açılışta eklenenler — "Geri al" son eklemeyi siler.
   int _sessionCount = 0;
-  ({String label, List<int> ids})? _lastAdded;
+  ({String label, List<int> ids, List<({Food food, double grams})> recentBefore, Map<int, double> gramsBefore})? _lastAdded;
   // OpenFoodFacts metin araması (paketli ürünler).
   bool _offSearching = false;
   List<OffProduct> _offResults = const [];
 
-  DateTime get _day => ref.read(selectedDateProvider);
+  late final DateTime _day;
+  late final NutritionEntryScope _entryScope;
 
   @override
   void initState() {
     super.initState();
     final d = ref.read(selectedDateProvider);
+    _day = d;
+    _entryScope = NutritionEntryScope(ref.read(syncOwnershipProvider));
     _meal =
         widget.mealType ??
         (DateUtils.isSameDay(d, DateTime.now())
             ? mealForTime(DateTime.now())
             : 'lunch');
+    // listenManual aboneliğini Riverpod widget kapanınca kendisi temizler.
+    ref.listenManual(authStateProvider, (_, next) {
+      final event = next.valueOrNull;
+      if (event == null) return;
+      _entryScope.observeAccount(event.session?.user.id);
+      if (mounted && !_entryScope.isCurrent) {
+        setState(() {
+          _editing = null;
+          _lastAdded = null;
+          _all = [];
+          _setRecent([]);
+        });
+      }
+    }, fireImmediately: true);
     _load();
     if (widget.startWithBarcode) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -125,7 +149,7 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
       final dao = ref.read(nutritionDaoProvider);
       final foods = await dao.getAllFoods();
       final recent = await dao.getRecentPortions();
-      if (!mounted) return;
+      if (!mounted || !_entryScope.isCurrent) return;
       setState(() {
         _all = foods;
         _recent = recent;
@@ -156,14 +180,15 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   // ───────── ekleme ─────────
 
   Future<void> _add(Food f, double grams) async {
-    if (_saving || grams <= 0) return;
+    if (_saving || _loading || !grams.isFinite || grams <= 0 || grams > 5000) return;
     setState(() => _saving = true);
     final l = AppL10n.of(context);
     final m = macrosFor(f, grams);
+    final dao = ref.read(nutritionDaoProvider);
+    final recentBefore = _recent;
+    final gramsBefore = _lastGrams;
     try {
-      final id = await ref
-          .read(nutritionDaoProvider)
-          .insertFoodLog(
+      final id = await _entryScope.run(() => dao.insertFoodLog(
             FoodLogsCompanion(
               date: Value(_day),
               mealType: Value(_meal),
@@ -174,45 +199,48 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
               computedCarb: Value(m.carb),
               computedFat: Value(m.fat),
             ),
-          );
+          ));
+      if (!mounted || !_entryScope.isCurrent) return;
       HapticFeedback.lightImpact();
-      if (!mounted) return;
       setState(() {
-        _saving = false;
         _sessionCount++;
-        _lastAdded = (label: '${f.name} · ${m.kcal.round()} kcal', ids: [id]);
+        _lastAdded = (label: '${f.name} · ${m.kcal.round()} kcal', ids: [id], recentBefore: recentBefore, gramsBefore: gramsBefore);
         _editing = null;
         _pushRecent(f, grams);
       });
     } catch (e) {
       debugPrint('[fitpack.nutrition] besin eklenemedi | HATA: $e');
       if (!mounted) return;
-      setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l.nutritionAddFailed),
           backgroundColor: context.colors.error,
         ),
       );
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 
   Future<void> _undo() async {
     final last = _lastAdded;
-    if (last == null) return;
+    if (last == null || _saving || _loading) return;
+    final dao = ref.read(nutritionDaoProvider);
+    setState(() => _saving = true);
     try {
-      await ref.read(nutritionDaoProvider).deleteFoodLogs(last.ids);
-    } catch (e) {
-      // Şerit yerinde kalır → kullanıcı tekrar deneyebilir (CR-019).
-      debugPrint('[fitpack.nutrition] geri al başarısız | HATA: $e');
+      await _entryScope.run(() => dao.deleteFoodLogs(last.ids));
+      if (!mounted || !_entryScope.isCurrent) return;
+      setState(() {
+        _lastAdded = null;
+        _sessionCount = (_sessionCount - 1).clamp(0, 1 << 30);
+        _setRecent(last.recentBefore, lastGrams: last.gramsBefore);
+      });
+    } catch (_) {
+      // Başarısız geri alma şeridi ve son miktarı korur; yeniden denenebilir.
       if (mounted) _showError(AppL10n.of(context).commonUndoFailed);
-      return;
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-    if (!mounted) return;
-    setState(() {
-      _lastAdded = null;
-      _sessionCount = (_sessionCount - 1).clamp(0, 1 << 30);
-    });
   }
 
   void _showError(String message) {
@@ -223,13 +251,17 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
 
   /// Eklenen besin "Son eklediklerin"in başına geçer (panel açıkken de).
   void _pushRecent(Food f, double grams) {
-    _recent = [
+    _setRecent([
       (food: f, grams: grams),
       for (final r in _recent)
         if (r.food.id != f.id) r,
-    ].take(8).toList();
-    _recentRank = {for (final (i, r) in _recent.indexed) r.food.id: i};
-    _lastGrams = {..._lastGrams, f.id: grams};
+    ].take(8).toList(), lastGrams: {..._lastGrams, f.id: grams});
+  }
+
+  void _setRecent(List<({Food food, double grams})> recent, {Map<int, double>? lastGrams}) {
+    _recent = recent;
+    _recentRank = {for (final (i, r) in recent.indexed) r.food.id: i};
+    _lastGrams = lastGrams ?? {for (final r in recent) r.food.id: r.grams};
   }
 
   void _addToList(Food f) {
@@ -249,6 +281,7 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
   }
 
   Future<void> _quick() async {
+    if (_saving || _loading) return;
     final r = await showDialog<_QuickEntry>(
       context: context,
       builder: (_) => const _QuickAddDialog(),
@@ -257,35 +290,36 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
     final l = AppL10n.of(context);
     final name = r.name.isEmpty ? l.nhQuickDefaultName : r.name;
     setState(() => _saving = true);
+    final dao = ref.read(nutritionDaoProvider);
+    final recentBefore = _recent;
+    final gramsBefore = _lastGrams;
     try {
-      final id = await ref
-          .read(nutritionDaoProvider)
-          .quickAddLog(
+      final id = await _entryScope.run(() => dao.quickAddLog(
             day: _day,
             mealType: _meal,
             name: name,
             kcal: r.kcal,
             protein: r.protein,
             portionLabel: l.nhPortion,
-          );
+          ));
+      if (!mounted || !_entryScope.isCurrent) return;
       HapticFeedback.lightImpact();
-      if (!mounted) return;
       setState(() {
-        _saving = false;
         _sessionCount++;
-        _lastAdded = (label: '$name · ${r.kcal.round()} kcal', ids: [id]);
+        _lastAdded = (label: '$name · ${r.kcal.round()} kcal', ids: [id], recentBefore: recentBefore, gramsBefore: gramsBefore);
       });
       _load(); // yeni besin listeye (ve son eklenenlere) girsin
     } catch (e) {
       debugPrint('[fitpack.nutrition] hızlı ekleme kaydedilemedi | HATA: $e');
       if (!mounted) return;
-      setState(() => _saving = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l.nutritionAddFailed),
           backgroundColor: context.colors.error,
         ),
       );
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 
@@ -384,147 +418,161 @@ class _AddFoodSheetState extends ConsumerState<AddFoodSheet> {
     final searching = _query.isNotEmpty;
     final editing = _editing;
 
-    return DraggableScrollableSheet(
-      initialChildSize: 0.94,
-      maxChildSize: 0.95,
-      minChildSize: 0.5,
-      expand: false,
-      builder: (context, scroll) => Padding(
-        padding: EdgeInsets.only(bottom: context.sheetBottomInset),
-        child: Column(
-          children: [
-            _Header(
-              meal: _meal,
-              day: _day,
-              sessionCount: _sessionCount,
-              onMeal: (m) => setState(() => _meal = m),
-              onDone: () => Navigator.of(context).pop(),
-            ),
-            if (_lastAdded != null)
-              _AddedBanner(label: l.afAdded(_lastAdded!.label), onUndo: _undo),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                AppSpacing.sm,
-                AppSpacing.lg,
-                0,
-              ),
-              child: _SearchField(
-                controller: _search,
-                autofocus: widget.autofocusSearch && !widget.startWithBarcode,
-                onChanged: (_) => setState(() {
-                  _offResults = const [];
-                  _editing = null;
-                }),
-                onScan: _scan,
-              ),
-            ),
-            Expanded(
-              child: _loading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _loadError
-                  ? ErrorState(message: l.nutritionLoadError, onRetry: _load)
-                  : editing != null
-                  ? SingleChildScrollView(controller: scroll, child: FoodAmountPanel(
-                key: ValueKey(editing.id),
-                food: editing,
-                initial: _portion(editing),
-                addLabel: _addToMeal(l, _meal),
-                saving: _saving,
-                onClose: () => setState(() => _editing = null),
-                onAdd: (grams) => _add(editing, grams),
-              ))
-                  : CustomScrollView(
-                      controller: scroll,
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      slivers: [
-                        if (!searching) ...[
-                          SliverToBoxAdapter(
-                            child: _Shortcuts(
-                              onScan: _scan,
-                              onQuick: _saving ? null : _quick,
-                              onCustom: _custom,
-                            ),
-                          ),
-                          if (_recent.isNotEmpty) ...[
-                            _SectionTitle(l.afRecent),
-                            SliverList.list(
-                              children: [for (final r in _recent) _row(r.food)],
-                            ),
-                          ],
-                          _SectionTitle(l.afAllCount(_all.length)),
-                          SliverToBoxAdapter(
-                            child: _CategoryChips(
-                              categories: availableFoodCategories(_all),
-                              selected: _category,
-                              onSelect: (cat) =>
-                                  setState(() => _category = cat),
-                            ),
-                          ),
-                        ] else
-                          _SectionTitle(l.afResults(results.length)),
-                        if (results.isEmpty)
-                          SliverToBoxAdapter(
-                            child: _NoResults(
-                              query: _query,
-                              onQuick: _quick,
-                              onCustom: _custom,
-                            ),
-                          )
-                        else
-                          SliverList.builder(
-                            itemCount: results.length,
-                            itemBuilder: (_, i) => _row(results[i]),
-                          ),
-                        // Listede yoksa: paketli ürünü internette ara.
-                        if (searching && _query.length >= 2) ...[
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md,
+    return PopScope(
+      canPop: !_saving && editing == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !_saving && _editing != null) {
+          setState(() => _editing = null);
+        }
+      },
+      child: AbsorbPointer(
+        absorbing: _saving,
+        child: DraggableScrollableSheet(
+          shouldCloseOnMinExtent: false,
+          initialChildSize: 0.94,
+          maxChildSize: 0.95,
+          minChildSize: 0.5,
+          expand: false,
+          builder: (context, scroll) => Padding(
+            padding: EdgeInsets.only(bottom: context.sheetBottomInset),
+            child: Column(
+              children: [
+                _Header(
+                  meal: _meal,
+                  day: _day,
+                  sessionCount: _sessionCount,
+                  onMeal: (m) => setState(() => _meal = m),
+                  onDone: _saving ? null : () => Navigator.of(context).pop(),
+                ),
+                if (_lastAdded != null)
+                  _AddedBanner(label: l.afAdded(_lastAdded!.label), onUndo: _saving || _loading ? null : _undo),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.sm,
+                    AppSpacing.lg,
+                    0,
+                  ),
+                  child: _SearchField(
+                    controller: _search,
+                    autofocus: widget.autofocusSearch && !widget.startWithBarcode,
+                    onChanged: (_) => setState(() {
+                      _offResults = const [];
+                      _editing = null;
+                    }),
+                    onScan: _scan,
+                  ),
+                ),
+                Expanded(
+                  child: !_entryScope.isCurrent
+                      ? ErrorState(message: l.accountErrorTitle)
+                      : _loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _loadError
+                      ? ErrorState(message: l.nutritionLoadError, onRetry: _load)
+                      : editing != null
+                      ? SingleChildScrollView(controller: scroll, child: FoodAmountPanel(
+                    key: ValueKey(editing.id),
+                    food: editing,
+                    initial: _portion(editing),
+                    addLabel: _addToMeal(l, _meal),
+                    saving: _saving,
+                    onClose: () => setState(() => _editing = null),
+                    onAdd: (grams) => _add(editing, grams),
+                  ))
+                      : CustomScrollView(
+                          controller: scroll,
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          slivers: [
+                            if (!searching) ...[
+                              SliverToBoxAdapter(
+                                child: _Shortcuts(
+                                  onScan: _scan,
+                                  onQuick: _saving ? null : _quick,
+                                  onCustom: _custom,
+                                ),
                               ),
-                              child: ListTile(
-                                leading: _offSearching
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : FitPackIcon.material(
-                                        Icons.travel_explore_rounded,
+                              if (_recent.isNotEmpty) ...[
+                                _SectionTitle(l.afRecent),
+                                SliverList.list(
+                                  children: [for (final r in _recent) _row(r.food)],
+                                ),
+                              ],
+                              _SectionTitle(l.afAllCount(_all.length)),
+                              SliverToBoxAdapter(
+                                child: _CategoryChips(
+                                  categories: availableFoodCategories(_all),
+                                  selected: _category,
+                                  onSelect: (cat) =>
+                                      setState(() => _category = cat),
+                                ),
+                              ),
+                            ] else
+                              _SectionTitle(l.afResults(results.length)),
+                            if (results.isEmpty)
+                              SliverToBoxAdapter(
+                                child: _NoResults(
+                                  query: _query,
+                                  onQuick: _quick,
+                                  onCustom: _custom,
+                                ),
+                              )
+                            else
+                              SliverList.builder(
+                                itemCount: results.length,
+                                itemBuilder: (_, i) => _row(results[i]),
+                              ),
+                            // Listede yoksa: paketli ürünü internette ara.
+                            if (searching && _query.length >= 2) ...[
+                              SliverToBoxAdapter(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.md,
+                                  ),
+                                  child: ListTile(
+                                    leading: _offSearching
+                                        ? const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : FitPackIcon.material(
+                                            Icons.travel_explore_rounded,
+                                            color: c.secondary,
+                                          ),
+                                    title: Text(
+                                      _offSearching
+                                          ? l.nutritionOffSearching
+                                          : l.nutritionOffSearchFor(_query),
+                                      style: context.texts.bodyMedium?.copyWith(
                                         color: c.secondary,
                                       ),
-                                title: Text(
-                                  _offSearching
-                                      ? l.nutritionOffSearching
-                                      : l.nutritionOffSearchFor(_query),
-                                  style: context.texts.bodyMedium?.copyWith(
-                                    color: c.secondary,
+                                    ),
+                                    onTap: _offSearching ? null : _searchOff,
                                   ),
                                 ),
-                                onTap: _offSearching ? null : _searchOff,
                               ),
+                              if (_offResults.isNotEmpty)
+                                SliverList.list(
+                                  children: [
+                                    for (final p in _offResults)
+                                      _OffRow(product: p, onTap: () => _pickOff(p)),
+                                  ],
+                                ),
+                            ],
+                            const SliverToBoxAdapter(
+                              child: SizedBox(height: AppSpacing.xl),
                             ),
-                          ),
-                          if (_offResults.isNotEmpty)
-                            SliverList.list(
-                              children: [
-                                for (final p in _offResults)
-                                  _OffRow(product: p, onTap: () => _pickOff(p)),
-                              ],
-                            ),
-                        ],
-                        const SliverToBoxAdapter(
-                          child: SizedBox(height: AppSpacing.xl),
+                          ],
                         ),
-                      ],
-                    ),
-            ),
+                ),
 
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -547,7 +595,7 @@ class _Header extends StatelessWidget {
   final DateTime day;
   final int sessionCount;
   final ValueChanged<String> onMeal;
-  final VoidCallback onDone;
+  final VoidCallback? onDone;
   const _Header({
     required this.meal,
     required this.day,
@@ -695,7 +743,7 @@ class _MealPicker extends StatelessWidget {
 /// "✓ Menemen · 194 kcal eklendi   Geri al"
 class _AddedBanner extends StatelessWidget {
   final String label;
-  final VoidCallback onUndo;
+  final VoidCallback? onUndo;
   const _AddedBanner({required this.label, required this.onUndo});
 
   @override
@@ -933,7 +981,7 @@ class _CategoryChips extends StatelessWidget {
     final l = AppL10n.of(context);
     if (categories.isEmpty) return const SizedBox.shrink();
     return SizedBox(
-      height: 44,
+      height: AppA11y.minTapTarget,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -1213,7 +1261,7 @@ class FoodAmountPanelState extends State<FoodAmountPanel> {
   }
 
   void _setGrams(double g, {bool syncField = true}) {
-    setState(() => _grams = g.clamp(1, 5000).toDouble());
+    setState(() => _grams = g > 0 && g.isFinite ? g.clamp(0, 5000).toDouble() : 1);
     if (syncField) _field.text = _fieldText();
   }
 
@@ -1222,11 +1270,16 @@ class FoodAmountPanelState extends State<FoodAmountPanel> {
     _field.text = _fieldText();
   }
 
-  void _step(int dir) => _setGrams(
+  bool get _canDecrease => _unitMode ? _units > 0.25 : _grams > 1;
+
+  void _step(int dir) {
+    if (dir < 0 && !_canDecrease) return;
+    _setGrams(
     _unitMode
         ? (_units + dir * 0.5).clamp(0.25, 99) * _portionG
-        : _grams + dir * 10,
-  );
+        : (_grams + dir * 10).clamp(1, 5000).toDouble(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1300,9 +1353,13 @@ class FoodAmountPanelState extends State<FoodAmountPanel> {
               ),
             ],
           ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          Wrap(
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.sm,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.end,
             children: [
+              Row(mainAxisSize: MainAxisSize.min, children: [
               Text(
                 '${m.kcal.round()}',
                 style: context.texts.headlineMedium?.copyWith(
@@ -1318,7 +1375,7 @@ class FoodAmountPanelState extends State<FoodAmountPanel> {
                   color: c.onSurfaceVariant,
                 ),
               ),
-              const Spacer(),
+              ]),
               if (hasUnit(f))
                 SegmentedButton<bool>(
                   showSelectedIcon: false,
@@ -1327,7 +1384,7 @@ class FoodAmountPanelState extends State<FoodAmountPanel> {
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   segments: [
-                    ButtonSegment(value: true, label: Text(unitLabel)),
+                    ButtonSegment(value: true, label: Text(unitLabel, maxLines: 2, overflow: TextOverflow.ellipsis)),
                     const ButtonSegment(value: false, label: Text('g')),
                   ],
                   selected: {_unitMode},
@@ -1349,7 +1406,7 @@ class FoodAmountPanelState extends State<FoodAmountPanel> {
             children: [
               IconButton.filledTonal(
                 tooltip: l.expAmountDecrease,
-                onPressed: () => _step(-1),
+                onPressed: _canDecrease ? () => _step(-1) : null,
                 icon: const FitPackIcon.material(Icons.remove_rounded),
               ),
               Expanded(
@@ -1370,9 +1427,7 @@ class FoodAmountPanelState extends State<FoodAmountPanel> {
                     decoration: InputDecoration(
                       labelText: l.expAmount,
                       isDense: true,
-                      suffixText: _unitMode
-                          ? '$unitLabel · ${_grams.round()} g'
-                          : 'g',
+                      suffixText: _unitMode ? null : 'g',
                     ),
                     onChanged: (v) {
                       final n = double.tryParse(v.replaceAll(',', '.'));
@@ -1392,29 +1447,27 @@ class FoodAmountPanelState extends State<FoodAmountPanel> {
               ),
             ],
           ),
+          if (_unitMode) ...[
+            AppSpacing.vGapSm,
+            Text(
+              '$unitLabel · ${context.numFmt.format(_grams)} g',
+              textAlign: TextAlign.center,
+              style: context.texts.bodySmall,
+            ),
+          ],
           AppSpacing.vGapSm,
-          Row(
+          Wrap(
+            spacing: AppSpacing.xs,
+            runSpacing: AppSpacing.xs,
             children: [
               for (final p in presets)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: ChoiceChip(
-                      label: SizedBox(
-                        width: double.infinity,
-                        child: Text(
-                          _unitMode ? fmtNum(p) : '${p.round()} g',
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      showCheckmark: false,
-                      selected: _unitMode
-                          ? (_units - p).abs() < 0.01
-                          : (_grams - p).abs() < 0.5,
-                      onSelected: (_) =>
-                          _setGrams(_unitMode ? p * _portionG : p),
-                    ),
-                  ),
+                ChoiceChip(
+                  label: Text(_unitMode ? fmtNum(p) : '${p.round()} g'),
+                  showCheckmark: false,
+                  selected: _unitMode
+                      ? (_units - p).abs() < 0.01
+                      : (_grams - p).abs() < 0.5,
+                  onSelected: (_) => _setGrams(_unitMode ? p * _portionG : p),
                 ),
             ],
           ),

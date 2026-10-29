@@ -1815,5 +1815,213 @@
   "prog3cNoData": "kayıt yok",
   "prog3cEmptyTitle": "{count, plural, =1{Karşılaştırma için 1 antrenman daha} other{Karşılaştırma için {count} antrenman daha}}",
   "prog3cEmptyMsg": "İki farklı günde antrenman kaydedince gelişimin burada görünür.",
-  "prog3cStartWorkout": "Antrenmana git"
+  "prog3cStartWorkout": "Antrenmana git",
+  "analyticsSectionTitle": "Kullanım tercihin",
+  "analyticsSwitchTitle": "Fit Pack’in gelişimine katkıda bulun",
+  "analyticsSwitchDescription": "Sınırlı kullanım ve teknik bilgiler paylaş. Varsayılan olarak kapalıdır.",
+  "analyticsNotAvailable": "Bu özellik henüz kullanıma açılmadı. Kullanım bilgilerin paylaşılmıyor.",
+  "analyticsConsentTitle": "Kullanım bilgilerini paylaşmak ister misin?",
+  "analyticsConsentDescription": "Hesabınla ilişkili uygulama açılışları, kurulum adımları, antrenman başlatma ve kaydetme işlemleri, sürüm ve sınırlı hata/eşitleme kodları Fit Pack’i geliştirmek için paylaşılır. Kilo, tekrar, besin, fotoğraf, adım ve yazdığın metinler gönderilmez. Ham kullanım bilgileri 30 gün, tercih geçmişi 180 gün saklanır. İstediğin zaman kapatabilirsin; bekleyen bilgiler cihazından silinir. Çevrimdışıyken kapatırsan sunucuya geri alma bağlantı gelince iletilir.",
+  "analyticsConsentAccept": "Kullanım bilgilerini paylaş",
+  "analyticsEnabled": "Kullanım paylaşımı açıldı.",
+  "analyticsDisabled": "Kullanım paylaşımı kapatıldı; bekleyen bilgiler silindi.",
+  "analyticsPreferenceError": "Tercihin sunucuyla doğrulanamadı. Paylaşımı kapattıysan cihazda durdu; bağlantı gelince geri alma iletilecek.",
+  "analyticsPurposeBoundary": "Bu tercih reklam, özel paket veya kişiselleştirilmiş bildirim gönderme izni değildir. Uygulamayı paylaşım kapalıyken de kullanabilirsin.",
+  "analyticsWithdraw": "Sunucudaki analitik tercihimi geri çek",
+  "setupPlanSourceQuestion": "Antrenmanını nasıl planlamak istersin?",
+  "setupSourceCatalog": "Program seçmeme yardım et",
+  "setupSourceCatalogDesc": "Cevaplarını mevcut salon programlarıyla eşleştir.",
+  "setupSourceOwn": "Kendi rutinimi kullanacağım",
+  "setupSourceOwnDesc": "Kendi planın korunur. Kurulumdan sonra rutin seçebilir veya oluşturabilirsin.",
+  "setupDaysQuestion": "Yoğun bir haftada kaç gün antrenmana yer ayırabilirsin?",
+  "setupDaysCount": "{count} gün",
+  "@setupDaysCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setupTimeQuestion": "İsteğe bağlı: bir antrenmana ayırabileceğin süre",
+  "setupTimeNone": "Süre sınırım yok",
+  "setupMinutes": "{count} dk",
+  "@setupMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "setupOwnTitle": "Planın sende kalıyor",
+  "setupOwnReason": "Kendi rutinini seçtiğin için katalog programı eklenmeyecek. Haftalık hedefin kaydedilir; Antrenman bölümünde rutinini seçebilir veya oluşturabilirsin.",
+  "setupRecommendationReason": "Deneyimin ve haftalık {days} günlük bütçen mevcut katalogla eşleştirildi. İki cevabı da değiştirebilirsin.",
+  "@setupRecommendationReason": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "setupFrequencyMismatch": "Seçimin {selected} gün. Bu katalog programı {program} gün öneriyor. Hedefin değiştirilmeyecek; programın içeriği de aynı kalacak.",
+  "@setupFrequencyMismatch": {
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "program": {
+        "type": "int"
+      }
+    }
+  },
+  "setupTimeEstimate": "En uzun rutin yaklaşık {minutes} dk; ısınma, ekipman değişimi ve bekleme dahil değil.",
+  "@setupTimeEstimate": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "setupTimeMismatch": "Bu rota {minutes} dakikalık bütçeni aşabilir. Setler ve dinlenme süreleri otomatik kısaltılmayacak.",
+  "@setupTimeMismatch": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "setupOwnTime": "Süre bütçen kaydedilir. Başlamadan önce kendi rutininin süresini kontrol et.",
+  "setupConfirmMismatch": "Bu farkları gördüm; bu rotayı kullanmayı seçiyorum.",
+  "setupChangeAnswers": "Cevaplarımı değiştir",
+  "setupLocalPreference": "Antrenman tercihlerin bu cihazda, bu hesap için saklanır. Diğer cihazlarına taşınmaz.",
+  "setupNutritionChoice": "Devam etmek için beslenme yönünü seç. Senin yerine seçim yapılmaz.",
+  "setupSaveError": "Antrenman tercihlerin kaydedilemedi. Kurulum açık kaldı; tekrar deneyebilirsin.",
+  "goalTitle": "Hedef yolculuğun",
+  "goalWhyTitle": "Senin için ne önemli?",
+  "goalWhyDescription": "Gerçek kayıtlarında neyi görmek istediğini seç. Sonradan değiştirebilir, seçim yapmadan da kayıt tutabilirsin.",
+  "goalPurposeRoutine": "Sürdürebileceğim bir düzen kurmak",
+  "goalPurposeStrength": "Bir hareketimdeki ilerlemeyi görmek",
+  "goalPurposeReturn": "Kendi düzenime geri dönmek",
+  "goalLocalOnly": "Bu tercihler bu cihazda, bu hesabın için tutulur. Programını veya beslenme hedeflerini değiştirmez.",
+  "goalLoadError": "Hedefin okunamadı. Planını değiştirmeden yeniden dene.",
+  "goalBaselineTitle": "Başlangıç noktan",
+  "goalNoBaseline": "Burada önceki kayıt yok. İlk gerçek antrenmanın başlangıç noktan olacak.",
+  "goalBaselineCount": "Bu yolculuktan önceki 28 günde {count} ayrı günde kayıt var.",
+  "@goalBaselineCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalRecordsScope": "Kayıtların kısmi olabilir. Kayıt olmayan gün, hiçbir şey yapmadığın anlamına gelmez.",
+  "goalChooseExercise": "Gerçek kayıtlarından bir hareket seç",
+  "goalRouteTitle": "Haftalık rotan",
+  "goalWeeklyDays": "Haftalık plan: {count} antrenman günü",
+  "@goalWeeklyDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalTargetUnknown": "Bu hafta için doğrulanmış bir hedef henüz yok.",
+  "goalTimeBudget": "Seçtiğin süre sınırı: antrenman başına {count} dakika",
+  "@goalTimeBudget": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalNoRoute": "Seçili rutin yok. Antrenman bölümünde kendi rutinini kullanabilir veya katalogdan program seçebilirsin.",
+  "goalRouteExplanation": "Mevcut rutin sıran korunur. Haftalık zaman planı, yeni bir antrenman reçetesi değildir.",
+  "goalChooseNextWeek": "Gelecek haftanın gün hedefini seç",
+  "goalNextWeekOnly": "Ayrı antrenman günü sayısını seç. Değişiklik gelecek hafta başlar; önceki haftanın hedefi korunur.",
+  "goalConfirmTitle": "Gelecek haftanın planını onayla",
+  "goalConfirmNextWeek": "Gelecek haftadan itibaren {count} ayrı antrenman günü planlansın mı? Rutinin, ağırlıkların ve beslenme hedeflerin değişmez.",
+  "@goalConfirmNextWeek": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalTodayTitle": "Sıradaki gerçek adımın",
+  "goalResumeAction": "Antrenmanına devam et",
+  "goalTodayRecorded": "Bugünkü antrenmanın kaydedildi. Özetini inceleyebilirsin.",
+  "goalTodayDescription": "Antrenman planını gör, ne zaman başlayacağını sen seç. Dinlenme günlerinde uygulamayı açman gerekmez.",
+  "goalOpenNextAction": "Sıradaki adımı aç",
+  "goalMilestonesTitle": "Görebileceğin ilerleme",
+  "goalMilestoneStart": "Gerçek bir başlangıç kaydı",
+  "goalMilestoneCompare": "Karşılaştırabileceğin iki farklı gün",
+  "goalMilestoneReview": "Kendi seçiminle haftalık değerlendirme",
+  "goalComparisonBoundary": "Bunlar kayıtlı setlerdir, güç puanı değildir. Ekipman veya teknik farkı karşılaştırmayı etkileyebilir.",
+  "goalNeedComparison": "Bir hareket seç. Karşılaştırma için iki farklı günde tamamlanmış çalışma seti gerekir.",
+  "goalReturnEvidence": "Sıradaki gerçek kaydın dönüşünün başlangıcıdır. Eski en yüksek ağırlıkların, bugünkü zorunluluğun değildir.",
+  "goalRhythmEvidence": "Tekrar edebileceğin düzeni ara. Bir haftalık kayıt, vücut veya güç sonucu garantisi vermez.",
+  "goalReflectionTitle": "Kapanan haftaya bak",
+  "goalRecordedDays": "{count} ayrı antrenman gününde kayıt var",
+  "@goalRecordedDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalPastTargetUnknown": "O haftanın hedefi bilinmiyor; başarı veya başarısızlık çıkarılmıyor.",
+  "goalRecordsAccurate": "Bu kayıtlar haftamı doğru temsil ediyor",
+  "goalTimeObstacle": "Ayırabildiğim zaman planı zorlaştırdı",
+  "goalTimeReason": "Zamanının kısıtlandığını söyledin; {count} ayrı günde kayıt var. Gelecek hafta için gerçekçi bütçeyi sen seçebilirsin. Hiçbir şey otomatik değişmez.",
+  "@goalTimeReason": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalMarkReviewed": "Değerlendirmemi kaydet",
+  "goalAddMissingRecord": "Yaptım ama kaydetmedim",
+  "goalOpenWeek": "Haftanın ayrıntılarını aç",
+  "goalFlexTitle": "Planın değişebilir",
+  "goalFlexDescription": "Seyahat veya ara verme ayırabildiğin zamanı değiştirebilir. Gelecek planını sana uyduğunda seç; kaçan antrenmanlar borç değildir.",
+  "goalHealthBoundary": "Ağrı veya yaralanma antrenmanını etkiliyorsa uygun bir uzmana danışabilirsin. Bu uygulama tedavi veya rehabilitasyon planı vermez.",
+  "goalReminderSettings": "Mevcut hatırlatmaları yönet",
+  "goalEntryTitle": "Kayıtlarını bir hedefe bağla",
+  "goalEntryDescription": "Amacın, rotan ve haftalık değerlendirmen",
+  "goalTrainingDaysLabel": "Antrenman günü",
+  "goalSessionCount": "{count} antrenman kaydı; aynı gün birden çok kayıt tek antrenman günü sayılır.",
+  "@goalSessionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalSuggestDays": "Gelecek hafta {count} günü değerlendir",
+  "@goalSuggestDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "goalAccountChanged": "Hesabın değişti. Bu sayfayı güncel hesabından yeniden aç.",
+  "goalEffectiveFrom": "Hedefin yürürlük tarihi: {date}",
+  "@goalEffectiveFrom": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "goalRecordedStart": "İlk antrenmanın kaydedildi. Artık gerçek bir başlangıç noktan var.",
+  "goalStepDone": "Tamamlandı",
+  "goalStepPending": "Henüz kaydedilmedi",
+  "goalAccountDeletedCleanupWarning": "Hesabın silindi. Bu cihazdaki bazı antrenman tercihleri temizlenemedi.",
+  "goalSetupRecovery": "Katalog seçimin kaydedilmiş, fakat rutinleri henüz burada yok. Kurulumu tamamlamak için programı inceleyebilirsin.",
+  "goalCompleteRoute": "Programı incele, kurulumu tamamla",
+  "asReplaceExercise": "Hareketi değiştir",
+  "asReplaceExplanation": "Tamamlanan setler ve girilmiş değerler eski harekette kalır. Yalnız boş setler seçtiğin harekete geçer. Boş set yoksa yeni hareket bir setle başlar. Değişiklik yalnız bu seans içindir.",
+  "asReplaceChoose": "Hareket seç",
+  "asReplaceError": "Hareket değiştirilemedi. Mevcut setlerin korundu. Tekrar dene."
 }
